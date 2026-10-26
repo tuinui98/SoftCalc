@@ -1,0 +1,13 @@
+# Original Microsoft binaries and help - EULA forbids redistribution
+*.exe
+*.chm
+*.chm1
+*.msi
+*.cab
+extracted/
+
+# Probe output that may contain raw copies of program content
+spec/raw/
+
+# Local-only files
+*.local.*

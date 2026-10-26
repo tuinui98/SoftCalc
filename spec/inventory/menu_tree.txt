@@ -1,0 +1,196 @@
+﻿# PowerCalc menu tree
+# captured: 2026-10-27 05:40:08  window: 'PowerToy Calc'
+# '&' marks the Alt access key; key= is the accelerator hint
+
+&File
+    &Help  [id=32804]
+    ----
+    S&ave History  [id=32801]
+    ----
+    &Save Functions && Variables  [id=32783]
+    &Load Functions && Variables  [id=32784]
+    ----
+    E&xit  [id=105]
+&View
+    &Clear History  [id=32800]
+    ----
+    &Numeric Calc  [id=32779]
+    H&istory View  [id=32780]
+    &Advanced View  [radio-on, id=32781]
+    ----
+    &Hexadecimal Output  [id=32806]
+    &Decimal Output  [radio-on, id=32807]
+    &Binary Output  [id=32808]
+    ----
+    &Show Samples  [checked, id=32802]
+    ----
+    Advanced &Options
+        &Degrees  [id=32774]
+        &Radians  [radio-on, id=32775]
+        &Grads  [id=32776]
+        ----
+        R&PN Mode  [id=32805]
+        ----
+        &Low Precision (32)  [radio-on, id=32810]
+        &Medium Precision (64)  [id=32811]
+        &High Precision (128)  [id=32812]
+        &Extreme Precision (512) ** very slow  [id=32813]
+F&unctions
+    Basic Operations
+        +  [id=5000]
+        -  [id=5001]
+        *  [id=5002]
+        /  [id=5003]
+        ^  [id=5004]
+        sqrt  [id=5005]
+        abs  [id=5006]
+    Trig Functions
+        cos  [id=5007]
+        cosh  [id=5008]
+        acos  [id=5009]
+        acosh  [id=5010]
+        sin  [id=5011]
+        sinh  [id=5012]
+        asin  [id=5013]
+        asinh  [id=5014]
+        tan  [id=5015]
+        tanh  [id=5016]
+        atan  [id=5017]
+        atanh  [id=5018]
+    Log Functions
+        exp  [id=5019]
+        log10  [id=5020]
+        ln  [id=5021]
+    ----
+    &User Functions
+        g(x)  [id=6000]
+        function(var)  [id=6001]
+&Conversions
+    Length
+        inches (in)
+            feet (ft)  [id=5022]
+            yard (yd)  [id=5023]
+            mile (mile)  [id=5024]
+            millimeter (mm)  [id=5025]
+            centimeter (cm)  [id=5026]
+            meter (m)  [id=5027]
+            kilometer (km)  [id=5028]
+        feet (ft)
+            inches (in)  [id=5029]
+            yard (yd)  [id=5030]
+            mile (mile)  [id=5031]
+            millimeter (mm)  [id=5032]
+            centimeter (cm)  [id=5033]
+            meter (m)  [id=5034]
+            kilometer (km)  [id=5035]
+        yard (yd)
+            inches (in)  [id=5036]
+            feet (ft)  [id=5037]
+            mile (mile)  [id=5038]
+            millimeter (mm)  [id=5039]
+            centimeter (cm)  [id=5040]
+            meter (m)  [id=5041]
+            kilometer (km)  [id=5042]
+        mile (mile)
+            inches (in)  [id=5043]
+            feet (ft)  [id=5044]
+            yard (yd)  [id=5045]
+            millimeter (mm)  [id=5046]
+            centimeter (cm)  [id=5047]
+            meter (m)  [id=5048]
+            kilometer (km)  [id=5049]
+        millimeter (mm)
+            inches (in)  [id=5050]
+            feet (ft)  [id=5051]
+            yard (yd)  [id=5052]
+            mile (mile)  [id=5053]
+            centimeter (cm)  [id=5054]
+            meter (m)  [id=5055]
+            kilometer (km)  [id=5056]
+        centimeter (cm)
+            inches (in)  [id=5057]
+            feet (ft)  [id=5058]
+            yard (yd)  [id=5059]
+            mile (mile)  [id=5060]
+            millimeter (mm)  [id=5061]
+            meter (m)  [id=5062]
+            kilometer (km)  [id=5063]
+        meter (m)
+            inches (in)  [id=5064]
+            feet (ft)  [id=5065]
+            yard (yd)  [id=5066]
+            mile (mile)  [id=5067]
+            millimeter (mm)  [id=5068]
+            centimeter (cm)  [id=5069]
+            kilometer (km)  [id=5070]
+        kilometer (km)
+            inches (in)  [id=5071]
+            feet (ft)  [id=5072]
+            yard (yd)  [id=5073]
+            mile (mile)  [id=5074]
+            millimeter (mm)  [id=5075]
+            centimeter (cm)  [id=5076]
+            meter (m)  [id=5077]
+    Mass
+        pounds (lb)
+            ounce (oz)  [id=5078]
+            grams (g)  [id=5079]
+            kilograms (kg)  [id=5080]
+        ounce (oz)
+            pounds (lb)  [id=5081]
+            grams (g)  [id=5082]
+            kilograms (kg)  [id=5083]
+        grams (g)
+            pounds (lb)  [id=5084]
+            ounce (oz)  [id=5085]
+            kilograms (kg)  [id=5086]
+        kilograms (kg)
+            pounds (lb)  [id=5087]
+            ounce (oz)  [id=5088]
+            grams (g)  [id=5089]
+    Time
+        day (d)
+            minute (min)  [id=5090]
+            second (s)  [id=5091]
+        minute (min)
+            day (d)  [id=5092]
+            second (s)  [id=5093]
+        second (s)
+            day (d)  [id=5094]
+            minute (min)  [id=5095]
+    Velocity
+        mile per hour (mi/h)
+            meter per second (m/s)  [id=5096]
+            foot per hour (ft/h)  [id=5097]
+            kilometer per hour (km/h)  [id=5098]
+            knot (knot)  [id=5099]
+        meter per second (m/s)
+            mile per hour (mi/h)  [id=5100]
+            foot per hour (ft/h)  [id=5101]
+            kilometer per hour (km/h)  [id=5102]
+            knot (knot)  [id=5103]
+        foot per hour (ft/h)
+            mile per hour (mi/h)  [id=5104]
+            meter per second (m/s)  [id=5105]
+            kilometer per hour (km/h)  [id=5106]
+            knot (knot)  [id=5107]
+        kilometer per hour (km/h)
+            mile per hour (mi/h)  [id=5108]
+            meter per second (m/s)  [id=5109]
+            foot per hour (ft/h)  [id=5110]
+            knot (knot)  [id=5111]
+        knot (knot)
+            mile per hour (mi/h)  [id=5112]
+            meter per second (m/s)  [id=5113]
+            foot per hour (ft/h)  [id=5114]
+            kilometer per hour (km/h)  [id=5115]
+    Temperature
+        celsius (c)
+            fahrenheit (f)  [id=5116]
+            kelvin (k)  [id=5117]
+        fahrenheit (f)
+            celsius (c)  [id=5118]
+            kelvin (k)  [id=5119]
+        kelvin (k)
+            celsius (c)  [id=5120]
+            fahrenheit (f)  [id=5121]
