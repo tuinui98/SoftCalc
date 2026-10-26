@@ -1,0 +1,14 @@
+# Group R - retests: precision 512, built-in override
+@set prec=512 angle=rad base=dec rpn=off
+pi
+1/3
+2^1000
+@set prec=128
+pi
+@set prec=32
+sin(1)
+sin(x)=1
+sin(1)
+sin(pi/2)
+cos(x)=x
+cos(5)

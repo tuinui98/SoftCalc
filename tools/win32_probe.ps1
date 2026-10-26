@@ -56,8 +56,8 @@ public static class Win
 	public static string Text(IntPtr hwnd)
 	{
 		// WM_GETTEXT reads control text across processes; GetWindowText does not
-		var sb = new StringBuilder(1024);
-		SendMessageW(hwnd, 0x000D, (IntPtr)1024, sb);
+		var sb = new StringBuilder(65536);
+		SendMessageW(hwnd, 0x000D, (IntPtr)65536, sb);
 		return sb.ToString();
 	}
 

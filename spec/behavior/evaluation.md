@@ -67,6 +67,7 @@ Each evaluation appends two lines: the input as typed, then the result
 - `pi`, `e` built in, cannot be reassigned (`pi=3` gives
   `Evaluation failed`).
 - No `ans`, `$1`, or similar history references (all unknown tokens).
+  The original uses the keyword `answer` instead; see `session.md`.
 
 ## Variables
 - `name=expr` prints `Variable Added`; also used to update.
@@ -83,8 +84,8 @@ Each evaluation appends two lines: the input as typed, then the result
 - Bodies see **current** variable values at call time (`zzk(t)=t*zzv`
   follows changes to zzv), unlike variables.
 - Recursion is rejected at definition.
-- `sin(x)=1` was accepted as `Function Added`; whether it shadows the
-  built-in was not tested. To verify.
+- `sin(x)=1` is accepted as `Function Added`, but the built-in still
+  wins when called (see `session.md`).
 - Calling a function without parentheses or with `()` is an error.
 
 ## Conversions
@@ -110,9 +111,8 @@ Each evaluation appends two lines: the input as typed, then the result
   decimal or big-precision, not binary double.
 - Overflow handling: `10^1000` = `1.e1000`; a 500-digit integer of 9s
   rounds to `1.e500`.
-- **512 open question:** at 512 the output was identical to 128 digits.
-  Either the setting did not apply through the posted command, or
-  display is capped. To re-test.
+- 512: retested in `session.md`; works (about 500 digits). The 512 rows
+  in `L_precision.tsv` are not trustworthy.
 
 ## Errors and edge input
 - Empty input: nothing is added to History.

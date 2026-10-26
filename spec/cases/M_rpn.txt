@@ -1,0 +1,23 @@
+# Group M - RPN mode
+@set prec=32 angle=rad base=dec rpn=on
+64 53 +
+2 3 ^
+1 2 3 + *
+5 sqrt
+2 3
++
+1 0 /
+3 4 -
+10 2 /
+2 neg
+-2 3 *
+pi 2 *
+4 zzx
+1+2
+@keep on
+@clear
+5
+3
++
+@keep off
+@set rpn=off

@@ -1,0 +1,23 @@
+# Group Q - answer references and auto-insert (history kept)
+@set prec=32 angle=rad base=dec rpn=off
+@keep on
+@clear
+5+5
+@keys +
+@enter
+@keys *2
+@enter
+@keys -
+@keys 1
+@enter
+answer
+answer*3
+ans
+$1
+answer+answer
+@clear
+answer
+@keys +
+@keys 7
+@enter
+@keep off

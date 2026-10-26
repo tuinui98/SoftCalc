@@ -1,0 +1,35 @@
+﻿sequence	key	input_after	history_after
+7 + 8 Ent	7	7	
+7 + 8 Ent	+	7+	
+7 + 8 Ent	8	7+8	
+7 + 8 Ent	Ent		7+8 \n 	15
+9 / 0 Ent	9	9	
+9 / 0 Ent	/	9/	
+9 / 0 Ent	0	9/0	
+9 / 0 Ent	Ent	9/0	9/0 \n 	ERROR:Evaluation failed
+1 2 Clr	1	1	
+1 2 Clr	2	12	
+1 2 Clr	Clr		
+5 M+ MR	5	5	
+5 M+ MR	M+		memory = 5 \n 	Variable Added
+5 M+ MR	MR	memory	memory = 5 \n 	Variable Added
+MC 5 M+ 3 M+ MR	MC	memory = 	memory =  \n 	ERROR:Unknown characters occurred []
+MC 5 M+ 3 M+ MR	5	memory = 5	memory =  \n 	ERROR:Unknown characters occurred []
+MC 5 M+ 3 M+ MR	M+	memory = memory + memory = 5	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5]
+MC 5 M+ 3 M+ MR	3	memory = memory + memory = 53	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5]
+MC 5 M+ 3 M+ MR	M+	memory = memory + memory = memory + memory = 53	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5] \n memory = memory + memory = memory + memory = 53 \n 	ERROR:Unknown characters occurred [memory=memory]
+MC 5 M+ 3 M+ MR	MR	memory = memory + memory = memory + memory = 53memory	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5] \n memory = memory + memory = memory + memory = 53 \n 	ERROR:Unknown characters occurred [memory=memory]
+MC 5 M+ 3 M- MR	MC	memory = 	memory =  \n 	ERROR:Unknown characters occurred []
+MC 5 M+ 3 M- MR	5	memory = 5	memory =  \n 	ERROR:Unknown characters occurred []
+MC 5 M+ 3 M- MR	M+	memory = memory + memory = 5	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5]
+MC 5 M+ 3 M- MR	3	memory = memory + memory = 53	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5]
+MC 5 M+ 3 M- MR	M-	memory = memory - memory = memory + memory = 53	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5] \n memory = memory - memory = memory + memory = 53 \n 	ERROR:Unknown characters occurred [memory=memory]
+MC 5 M+ 3 M- MR	MR	memory = memory - memory = memory + memory = 53memory	memory =  \n 	ERROR:Unknown characters occurred [] \n memory = memory + memory = 5 \n 	ERROR:Unknown characters occurred [memory=5] \n memory = memory - memory = memory + memory = 53 \n 	ERROR:Unknown characters occurred [memory=memory]
+MC MR	MC	memory = 	memory =  \n 	ERROR:Unknown characters occurred []
+MC MR	MR	memory = memory	memory =  \n 	ERROR:Unknown characters occurred []
+2 Ent * 3 Ent	2	2	
+2 Ent * 3 Ent	Ent		2 \n 	2
+2 Ent * 3 Ent	*	answer*	2 \n 	2
+2 Ent * 3 Ent	3	answer*3	2 \n 	2
+2 Ent * 3 Ent	Ent		2 \n 	2 \n answer*3 \n 	6
+Ent	Ent		

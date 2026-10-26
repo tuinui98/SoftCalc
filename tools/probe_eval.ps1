@@ -6,7 +6,13 @@
 # file syntax:
 #   # comment
 #   @set prec=32|64|128|512 angle=deg|rad|grad base=hex|dec|bin rpn=on|off
-#   <input line>                (blank line = submit empty input)
+#   @keep on|off   keep History between cases (default off: clear each)
+#   @clear         clear History now
+#   @keys <text>   type <text> char by char into the current Input (no
+#                  Enter); records the Input text afterwards
+#   @enter         press Enter on the current Input; records the delta
+#   <input line>   replace Input with the line, press Enter, record the
+#                  History delta (blank line = submit empty input)
 # Settings are restored to their starting values at the end. Needs
 # elevation: run via run_elevated.ps1 -Probe "probe_eval.ps1 <group>".
 
@@ -165,6 +171,7 @@ $current = $start_settings.Clone()
 #==================================================================
 $rows = New-Object System.Collections.Generic.List[string]
 $rows.Add("input`tprec`tangle`tbase`trpn`tms`toutput")
+$keep = $false
 foreach ($line in Get-Content $case_file -Encoding UTF8)
 {
 	if ($line.StartsWith("#"))
@@ -181,14 +188,49 @@ foreach ($line in Get-Content $case_file -Encoding UTF8)
 			$current[$kv[0]] = $kv[1]
 		}
 		Set-Settings $main $wanted
+		$actual = Get-CurrentSettings $main
+		$mismatch = @($wanted.Keys | Where-Object { $actual[$_] -ne $wanted[$_] })
+		if ($mismatch.Count -gt 0)
+		{
+			$rows.Add("@set`t`t`t`t`t`t<SETTING NOT APPLIED: " + (($mismatch | ForEach-Object { "$_ wanted=$($wanted[$_]) actual=$($actual[$_])" }) -join "; ") + ">")
+		}
+		continue
+	}
+	if ($line.StartsWith("@keep"))
+	{
+		$keep = $line.Substring(5).Trim() -eq "on"
+		continue
+	}
+	if ($line -eq "@clear")
+	{
+		Send-MenuCommand $main $CMD_CLEAR_HISTORY
+		Start-Sleep -Milliseconds 150
+		continue
+	}
+	if ($line.StartsWith("@keys "))
+	{
+		# Real WM_CHAR input, so the program's own keystroke handling runs
+		foreach ($ch in $line.Substring(6).ToCharArray())
+		{
+			[void][Win]::PostMessageW($edit, $WM_CHAR, [IntPtr][int]$ch, [IntPtr]1)
+			Start-Sleep -Milliseconds 40
+		}
+		Start-Sleep -Milliseconds 200
+		$rows.Add("$line`t$($current.prec)`t$($current.angle)`t$($current.base)`t$($current.rpn)`t0`t<input now: '" + [Win]::Text($edit) + "'>")
 		continue
 	}
 
-	Send-MenuCommand $main $CMD_CLEAR_HISTORY
-	Start-Sleep -Milliseconds 150
+	if (-not $keep)
+	{
+		Send-MenuCommand $main $CMD_CLEAR_HISTORY
+		Start-Sleep -Milliseconds 150
+	}
 	$before = [Win]::Text($history)
-	[void][EvalApi]::SendMessageW($edit, $WM_SETTEXT, [IntPtr]::Zero, $line)
-	[void][Win]::SendMessageW($edit, $EM_SETSEL, [IntPtr]$line.Length, [IntPtr]$line.Length)
+	if ($line -ne "@enter")
+	{
+		[void][EvalApi]::SendMessageW($edit, $WM_SETTEXT, [IntPtr]::Zero, $line)
+		[void][Win]::SendMessageW($edit, $EM_SETSEL, [IntPtr]$line.Length, [IntPtr]$line.Length)
+	}
 	[void][Win]::PostMessageW($edit, $WM_KEYDOWN, [IntPtr]$VK_RETURN, [IntPtr]0x001C0001)
 	[void][Win]::PostMessageW($edit, $WM_CHAR, [IntPtr]$VK_RETURN, [IntPtr]0x001C0001)
 	[void][Win]::PostMessageW($edit, $WM_KEYUP, [IntPtr]$VK_RETURN, [IntPtr]0xC01C0001)

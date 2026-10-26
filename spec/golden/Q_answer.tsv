@@ -1,0 +1,18 @@
+﻿input	prec	angle	base	rpn	ms	output
+5+5	32	rad	dec	off	367	5+5 \n 	10
+@keys +	32	rad	dec	off	0	<input now: 'answer+'>
+@enter	32	rad	dec	off	390	answer+ \n 	ERROR:Unknown characters occurred []
+@keys *2	32	rad	dec	off	0	<input now: 'answer+*2'>
+@enter	32	rad	dec	off	406	answer+*2 \n 	ERROR:Unknown characters occurred []
+@keys -	32	rad	dec	off	0	<input now: 'answer+*2-'>
+@keys 1	32	rad	dec	off	0	<input now: 'answer+*2-1'>
+@enter	32	rad	dec	off	389	answer+*2-1 \n 	ERROR:Unknown characters occurred []
+answer	32	rad	dec	off	398	answer \n 	10
+answer*3	32	rad	dec	off	384	answer*3 \n 	30
+ans	32	rad	dec	off	379	ans \n 	ERROR:Unknown characters occurred [ans]
+$1	32	rad	dec	off	378	$1 \n 	ERROR:Unknown characters occurred [$1]
+answer+answer	32	rad	dec	off	368	answer+answer \n 	60
+answer	32	rad	dec	off	415	answer \n 	60
+@keys +	32	rad	dec	off	0	<input now: 'answer+'>
+@keys 7	32	rad	dec	off	0	<input now: 'answer+7'>
+@enter	32	rad	dec	off	384	answer+7 \n 	67

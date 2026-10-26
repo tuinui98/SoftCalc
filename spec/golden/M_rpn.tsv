@@ -1,0 +1,18 @@
+﻿input	prec	angle	base	rpn	ms	output
+64 53 +	32	rad	dec	on	384	64 53 + \n 	117
+2 3 ^	32	rad	dec	on	374	2 3 ^ \n 	8
+1 2 3 + *	32	rad	dec	on	376	1 2 3 + * \n 	5
+5 sqrt	32	rad	dec	on	390	5 sqrt \n 	2.2360679774997896964091736687313
+2 3	32	rad	dec	on	374	2 3 \n 	ERROR:Unknown characters occurred []
++	32	rad	dec	on	371	+ \n 	ERROR:Unknown characters occurred [+]
+1 0 /	32	rad	dec	on	373	1 0 / \n 	ERROR:Evaluation failed
+3 4 -	32	rad	dec	on	389	3 4 - \n 	-1
+10 2 /	32	rad	dec	on	391	10 2 / \n 	5
+2 neg	32	rad	dec	on	385	2 neg \n 	ERROR:Unknown characters occurred [neg]
+-2 3 *	32	rad	dec	on	373	-2 3 * \n 	-6
+pi 2 *	32	rad	dec	on	374	pi 2 * \n 	6.283185307179586476925286766559
+4 zzx	32	rad	dec	on	391	4 zzx \n 	ERROR:Unknown characters occurred [zzx]
+1+2	32	rad	dec	on	419	1+2 \n 	ERROR:Unknown characters occurred [1+2]
+5	32	rad	dec	on	402	5 \n 	5
+3	32	rad	dec	on	398	3 \n 	3
++	32	rad	dec	on	385	+ \n 	ERROR:Unknown characters occurred [+]

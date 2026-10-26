@@ -43,8 +43,8 @@ Conflicts to settle:
 
 ## E4. Answer references
 - Original: typing an operator into an empty Input after a result
-  inserts `answer` automatically (reported by the user; to capture in
-  Phase 2). Keep that.
+  inserts `answer` automatically (confirmed, see
+  `behavior/session.md`). Keep that.
 - Accept `ans` and `answer` for the last result.
 - Accept `$1`, `$2`, ... for earlier results. Decide numbering: `$1` as
   the first result in History (stable line-number style) or as the most
