@@ -1,0 +1,20 @@
+# Group H - variables (temporary names start with zz)
+@set prec=32 angle=rad base=dec rpn=off
+zza=5
+zza*2
+zza=zza+1
+zza
+ZZA
+2zza
+zza zza
+zzb=zzundefined
+zzlong_name_1=1
+zzlong_name_1
+zzb=
+zz1=3
+zzc = 2*zza
+zzc
+zza=1
+zzc
+pi=3
+e=1

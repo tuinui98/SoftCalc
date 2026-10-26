@@ -1,0 +1,26 @@
+﻿input	prec	angle	base	rpn	ms	output
+zzf(x)=x^2	32	rad	dec	off	366	zzf(x)=x^2 \n 	Function Added
+zzf(3)	32	rad	dec	off	374	zzf(3) \n 	9
+zzf(zzf(2))	32	rad	dec	off	371	zzf(zzf(2)) \n 	16
+zzf	32	rad	dec	off	373	zzf \n 	ERROR:Unknown characters occurred [zzf]
+zzf()	32	rad	dec	off	374	zzf() \n 	ERROR:Unknown characters occurred []
+zzg(x,y)=x+y	32	rad	dec	off	371	zzg(x,y)=x+y \n 	Function Added
+zzg(1,2)	32	rad	dec	off	377	zzg(1,2) \n 	3
+zzg(1)	32	rad	dec	off	373	zzg(1) \n 	ERROR:Unknown characters occurred []
+zzg(1,2,3)	32	rad	dec	off	374	zzg(1,2,3) \n 	ERROR:Unknown characters occurred []
+zzh(x)=zzh(x-1)	32	rad	dec	off	372	zzh(x)=zzh(x-1) \n 	ERROR:Unknown characters occurred []
+zzh(1)	32	rad	dec	off	415	zzh(1) \n 	ERROR:Unknown characters occurred []
+zzv=10	32	rad	dec	off	421	zzv=10 \n 	Variable Added
+zzk(t)=t*zzv	32	rad	dec	off	375	zzk(t)=t*zzv \n 	Function Added
+zzk(2)	32	rad	dec	off	390	zzk(2) \n 	20
+zzv=20	32	rad	dec	off	442	zzv=20 \n 	Variable Added
+zzk(2)	32	rad	dec	off	453	zzk(2) \n 	40
+zzf(x)=x+1	32	rad	dec	off	391	zzf(x)=x+1 \n 	Function Added
+zzf(1)	32	rad	dec	off	375	zzf(1) \n 	2
+zzm(x)=x*i	32	rad	dec	off	380	zzm(x)=x*i \n 	Function Added
+zzm(2)	32	rad	dec	off	379	zzm(2) \n 	2i
+zzn(x)=sin(x)	32	rad	dec	off	368	zzn(x)=sin(x) \n 	Function Added
+zzn(pi/2)	32	rad	dec	off	379	zzn(pi/2) \n 	1
+g(5)	32	rad	dec	off	383	g(5) \n 	5
+function(pi)	32	rad	dec	off	420	function(pi) \n 	-3.1415926535897932384626433832795
+sin(x)=1	32	rad	dec	off	388	sin(x)=1 \n 	Function Added

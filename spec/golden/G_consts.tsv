@@ -1,0 +1,12 @@
+﻿input	prec	angle	base	rpn	ms	output
+pi	32	rad	dec	off	400	pi \n 	3.1415926535897932384626433832795
+e	32	rad	dec	off	435	e \n 	2.7182818284590452353602874713527
+PI	32	rad	dec	off	409	PI \n 	3.1415926535897932384626433832795
+ans	32	rad	dec	off	391	ans \n 	ERROR:Unknown characters occurred [ans]
+ans*2	32	rad	dec	off	420	ans*2 \n 	ERROR:Unknown characters occurred [ans]
+$1	32	rad	dec	off	387	$1 \n 	ERROR:Unknown characters occurred [$1]
+$2+1	32	rad	dec	off	380	$2+1 \n 	ERROR:Unknown characters occurred [$2]
+$0	32	rad	dec	off	373	$0 \n 	ERROR:Unknown characters occurred [$0]
+$999	32	rad	dec	off	382	$999 \n 	ERROR:Unknown characters occurred [$999]
+2*pi	32	rad	dec	off	367	2*pi \n 	6.283185307179586476925286766559
+pie	32	rad	dec	off	390	pie \n 	ERROR:Unknown characters occurred [pie]

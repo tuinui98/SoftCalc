@@ -1,0 +1,125 @@
+﻿id	menu_path	inserted_into_empty	inserted_after_1
+5000	Functions > Basic Operations > +	+	1+
+5001	Functions > Basic Operations > -	-	1-
+5002	Functions > Basic Operations > *	*	1*
+5003	Functions > Basic Operations > /	/	1/
+5004	Functions > Basic Operations > ^	^	1^
+5005	Functions > Basic Operations > sqrt	sqrt()	sqrt(1)
+5006	Functions > Basic Operations > abs	abs()	abs(1)
+5007	Functions > Trig Functions > cos	cos()	cos(1)
+5008	Functions > Trig Functions > cosh	cosh()	cosh(1)
+5009	Functions > Trig Functions > acos	acos()	acos(1)
+5010	Functions > Trig Functions > acosh	acosh()	acosh(1)
+5011	Functions > Trig Functions > sin	sin()	sin(1)
+5012	Functions > Trig Functions > sinh	sinh()	sinh(1)
+5013	Functions > Trig Functions > asin	asin()	asin(1)
+5014	Functions > Trig Functions > asinh	asinh()	asinh(1)
+5015	Functions > Trig Functions > tan	tan()	tan(1)
+5016	Functions > Trig Functions > tanh	tanh()	tanh(1)
+5017	Functions > Trig Functions > atan	atan()	atan(1)
+5018	Functions > Trig Functions > atanh	atanh()	atanh(1)
+5019	Functions > Log Functions > exp	exp()	exp(1)
+5020	Functions > Log Functions > log10	log10()	log10(1)
+5021	Functions > Log Functions > ln	ln()	ln(1)
+6000	Functions > User Functions > g(x)	g()	g(1)
+6001	Functions > User Functions > function(var)	function()	function(1)
+5022	Conversions > Length > inches (in) > feet (ft)	 [in->ft]	1 [in->ft]
+5023	Conversions > Length > inches (in) > yard (yd)	 [in->yd]	1 [in->yd]
+5024	Conversions > Length > inches (in) > mile (mile)	 [in->mile]	1 [in->mile]
+5025	Conversions > Length > inches (in) > millimeter (mm)	 [in->mm]	1 [in->mm]
+5026	Conversions > Length > inches (in) > centimeter (cm)	 [in->cm]	1 [in->cm]
+5027	Conversions > Length > inches (in) > meter (m)	 [in->m]	1 [in->m]
+5028	Conversions > Length > inches (in) > kilometer (km)	 [in->km]	1 [in->km]
+5029	Conversions > Length > feet (ft) > inches (in)	 [ft->in]	1 [ft->in]
+5030	Conversions > Length > feet (ft) > yard (yd)	 [ft->yd]	1 [ft->yd]
+5031	Conversions > Length > feet (ft) > mile (mile)	 [ft->mile]	1 [ft->mile]
+5032	Conversions > Length > feet (ft) > millimeter (mm)	 [ft->mm]	1 [ft->mm]
+5033	Conversions > Length > feet (ft) > centimeter (cm)	 [ft->cm]	1 [ft->cm]
+5034	Conversions > Length > feet (ft) > meter (m)	 [ft->m]	1 [ft->m]
+5035	Conversions > Length > feet (ft) > kilometer (km)	 [ft->km]	1 [ft->km]
+5036	Conversions > Length > yard (yd) > inches (in)	 [yd->in]	1 [yd->in]
+5037	Conversions > Length > yard (yd) > feet (ft)	 [yd->ft]	1 [yd->ft]
+5038	Conversions > Length > yard (yd) > mile (mile)	 [yd->mile]	1 [yd->mile]
+5039	Conversions > Length > yard (yd) > millimeter (mm)	 [yd->mm]	1 [yd->mm]
+5040	Conversions > Length > yard (yd) > centimeter (cm)	 [yd->cm]	1 [yd->cm]
+5041	Conversions > Length > yard (yd) > meter (m)	 [yd->m]	1 [yd->m]
+5042	Conversions > Length > yard (yd) > kilometer (km)	 [yd->km]	1 [yd->km]
+5043	Conversions > Length > mile (mile) > inches (in)	 [mile->in]	1 [mile->in]
+5044	Conversions > Length > mile (mile) > feet (ft)	 [mile->ft]	1 [mile->ft]
+5045	Conversions > Length > mile (mile) > yard (yd)	 [mile->yd]	1 [mile->yd]
+5046	Conversions > Length > mile (mile) > millimeter (mm)	 [mile->mm]	1 [mile->mm]
+5047	Conversions > Length > mile (mile) > centimeter (cm)	 [mile->cm]	1 [mile->cm]
+5048	Conversions > Length > mile (mile) > meter (m)	 [mile->m]	1 [mile->m]
+5049	Conversions > Length > mile (mile) > kilometer (km)	 [mile->km]	1 [mile->km]
+5050	Conversions > Length > millimeter (mm) > inches (in)	 [mm->in]	1 [mm->in]
+5051	Conversions > Length > millimeter (mm) > feet (ft)	 [mm->ft]	1 [mm->ft]
+5052	Conversions > Length > millimeter (mm) > yard (yd)	 [mm->yd]	1 [mm->yd]
+5053	Conversions > Length > millimeter (mm) > mile (mile)	 [mm->mile]	1 [mm->mile]
+5054	Conversions > Length > millimeter (mm) > centimeter (cm)	 [mm->cm]	1 [mm->cm]
+5055	Conversions > Length > millimeter (mm) > meter (m)	 [mm->m]	1 [mm->m]
+5056	Conversions > Length > millimeter (mm) > kilometer (km)	 [mm->km]	1 [mm->km]
+5057	Conversions > Length > centimeter (cm) > inches (in)	 [cm->in]	1 [cm->in]
+5058	Conversions > Length > centimeter (cm) > feet (ft)	 [cm->ft]	1 [cm->ft]
+5059	Conversions > Length > centimeter (cm) > yard (yd)	 [cm->yd]	1 [cm->yd]
+5060	Conversions > Length > centimeter (cm) > mile (mile)	 [cm->mile]	1 [cm->mile]
+5061	Conversions > Length > centimeter (cm) > millimeter (mm)	 [cm->mm]	1 [cm->mm]
+5062	Conversions > Length > centimeter (cm) > meter (m)	 [cm->m]	1 [cm->m]
+5063	Conversions > Length > centimeter (cm) > kilometer (km)	 [cm->km]	1 [cm->km]
+5064	Conversions > Length > meter (m) > inches (in)	 [m->in]	1 [m->in]
+5065	Conversions > Length > meter (m) > feet (ft)	 [m->ft]	1 [m->ft]
+5066	Conversions > Length > meter (m) > yard (yd)	 [m->yd]	1 [m->yd]
+5067	Conversions > Length > meter (m) > mile (mile)	 [m->mile]	1 [m->mile]
+5068	Conversions > Length > meter (m) > millimeter (mm)	 [m->mm]	1 [m->mm]
+5069	Conversions > Length > meter (m) > centimeter (cm)	 [m->cm]	1 [m->cm]
+5070	Conversions > Length > meter (m) > kilometer (km)	 [m->km]	1 [m->km]
+5071	Conversions > Length > kilometer (km) > inches (in)	 [km->in]	1 [km->in]
+5072	Conversions > Length > kilometer (km) > feet (ft)	 [km->ft]	1 [km->ft]
+5073	Conversions > Length > kilometer (km) > yard (yd)	 [km->yd]	1 [km->yd]
+5074	Conversions > Length > kilometer (km) > mile (mile)	 [km->mile]	1 [km->mile]
+5075	Conversions > Length > kilometer (km) > millimeter (mm)	 [km->mm]	1 [km->mm]
+5076	Conversions > Length > kilometer (km) > centimeter (cm)	 [km->cm]	1 [km->cm]
+5077	Conversions > Length > kilometer (km) > meter (m)	 [km->m]	1 [km->m]
+5078	Conversions > Mass > pounds (lb) > ounce (oz)	 [lb->oz]	1 [lb->oz]
+5079	Conversions > Mass > pounds (lb) > grams (g)	 [lb->g]	1 [lb->g]
+5080	Conversions > Mass > pounds (lb) > kilograms (kg)	 [lb->kg]	1 [lb->kg]
+5081	Conversions > Mass > ounce (oz) > pounds (lb)	 [oz->lb]	1 [oz->lb]
+5082	Conversions > Mass > ounce (oz) > grams (g)	 [oz->g]	1 [oz->g]
+5083	Conversions > Mass > ounce (oz) > kilograms (kg)	 [oz->kg]	1 [oz->kg]
+5084	Conversions > Mass > grams (g) > pounds (lb)	 [g->lb]	1 [g->lb]
+5085	Conversions > Mass > grams (g) > ounce (oz)	 [g->oz]	1 [g->oz]
+5086	Conversions > Mass > grams (g) > kilograms (kg)	 [g->kg]	1 [g->kg]
+5087	Conversions > Mass > kilograms (kg) > pounds (lb)	 [kg->lb]	1 [kg->lb]
+5088	Conversions > Mass > kilograms (kg) > ounce (oz)	 [kg->oz]	1 [kg->oz]
+5089	Conversions > Mass > kilograms (kg) > grams (g)	 [kg->g]	1 [kg->g]
+5090	Conversions > Time > day (d) > minute (min)	 [d->min]	1 [d->min]
+5091	Conversions > Time > day (d) > second (s)	 [d->s]	1 [d->s]
+5092	Conversions > Time > minute (min) > day (d)	 [min->d]	1 [min->d]
+5093	Conversions > Time > minute (min) > second (s)	 [min->s]	1 [min->s]
+5094	Conversions > Time > second (s) > day (d)	 [s->d]	1 [s->d]
+5095	Conversions > Time > second (s) > minute (min)	 [s->min]	1 [s->min]
+5096	Conversions > Velocity > mile per hour (mi/h) > meter per second (m/s)	 [mi/h->m/s]	1 [mi/h->m/s]
+5097	Conversions > Velocity > mile per hour (mi/h) > foot per hour (ft/h)	 [mi/h->ft/h]	1 [mi/h->ft/h]
+5098	Conversions > Velocity > mile per hour (mi/h) > kilometer per hour (km/h)	 [mi/h->km/h]	1 [mi/h->km/h]
+5099	Conversions > Velocity > mile per hour (mi/h) > knot (knot)	 [mi/h->knot]	1 [mi/h->knot]
+5100	Conversions > Velocity > meter per second (m/s) > mile per hour (mi/h)	 [m/s->mi/h]	1 [m/s->mi/h]
+5101	Conversions > Velocity > meter per second (m/s) > foot per hour (ft/h)	 [m/s->ft/h]	1 [m/s->ft/h]
+5102	Conversions > Velocity > meter per second (m/s) > kilometer per hour (km/h)	 [m/s->km/h]	1 [m/s->km/h]
+5103	Conversions > Velocity > meter per second (m/s) > knot (knot)	 [m/s->knot]	1 [m/s->knot]
+5104	Conversions > Velocity > foot per hour (ft/h) > mile per hour (mi/h)	 [ft/h->mi/h]	1 [ft/h->mi/h]
+5105	Conversions > Velocity > foot per hour (ft/h) > meter per second (m/s)	 [ft/h->m/s]	1 [ft/h->m/s]
+5106	Conversions > Velocity > foot per hour (ft/h) > kilometer per hour (km/h)	 [ft/h->km/h]	1 [ft/h->km/h]
+5107	Conversions > Velocity > foot per hour (ft/h) > knot (knot)	 [ft/h->knot]	1 [ft/h->knot]
+5108	Conversions > Velocity > kilometer per hour (km/h) > mile per hour (mi/h)	 [km/h->mi/h]	1 [km/h->mi/h]
+5109	Conversions > Velocity > kilometer per hour (km/h) > meter per second (m/s)	 [km/h->m/s]	1 [km/h->m/s]
+5110	Conversions > Velocity > kilometer per hour (km/h) > foot per hour (ft/h)	 [km/h->ft/h]	1 [km/h->ft/h]
+5111	Conversions > Velocity > kilometer per hour (km/h) > knot (knot)	 [km/h->knot]	1 [km/h->knot]
+5112	Conversions > Velocity > knot (knot) > mile per hour (mi/h)	 [knot->mi/h]	1 [knot->mi/h]
+5113	Conversions > Velocity > knot (knot) > meter per second (m/s)	 [knot->m/s]	1 [knot->m/s]
+5114	Conversions > Velocity > knot (knot) > foot per hour (ft/h)	 [knot->ft/h]	1 [knot->ft/h]
+5115	Conversions > Velocity > knot (knot) > kilometer per hour (km/h)	 [knot->km/h]	1 [knot->km/h]
+5116	Conversions > Temperature > celsius (c) > fahrenheit (f)	 [c->f]	1 [c->f]
+5117	Conversions > Temperature > celsius (c) > kelvin (k)	 [c->k]	1 [c->k]
+5118	Conversions > Temperature > fahrenheit (f) > celsius (c)	 [f->c]	1 [f->c]
+5119	Conversions > Temperature > fahrenheit (f) > kelvin (k)	 [f->k]	1 [f->k]
+5120	Conversions > Temperature > kelvin (k) > celsius (c)	 [k->c]	1 [k->c]
+5121	Conversions > Temperature > kelvin (k) > fahrenheit (f)	 [k->f]	1 [k->f]

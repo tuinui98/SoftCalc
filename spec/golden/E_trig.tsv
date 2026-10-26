@@ -1,0 +1,22 @@
+﻿input	prec	angle	base	rpn	ms	output
+sin(pi/2)	32	rad	dec	off	365	sin(pi/2) \n 	1
+sin(90)	32	rad	dec	off	408	sin(90) \n 	0.13494513131108720188423555479261
+cos(0)	32	rad	dec	off	419	cos(0) \n 	1
+tan(pi/2)	32	rad	dec	off	418	tan(pi/2) \n 	ERROR:Evaluation failed
+asin(2)	32	rad	dec	off	372	asin(2) \n 	(1.5707963267948966192313216916398-1.316957896924816708625046347308i)
+acos(-1)	32	rad	dec	off	387	acos(-1) \n 	3.1415926535897932384626433832795
+atan(1)	32	rad	dec	off	405	atan(1) \n 	0.78539816339744830961566084581988
+sinh(1)	32	rad	dec	off	374	sinh(1) \n 	1.1752011936438014568823818505956
+atanh(1)	32	rad	dec	off	369	atanh(1) \n 	ERROR:Evaluation failed
+acosh(0)	32	rad	dec	off	368	acosh(0) \n 	1.5707963267948966192313216916398i
+sin(90)	32	deg	dec	off	375	sin(90) \n 	1
+sin(pi/2)	32	deg	dec	off	365	sin(pi/2) \n 	0.027412133592044293517788488196453
+cos(180)	32	deg	dec	off	404	cos(180) \n 	-1
+tan(45)	32	deg	dec	off	399	tan(45) \n 	1
+tan(90)	32	deg	dec	off	371	tan(90) \n 	ERROR:Evaluation failed
+asin(1)	32	deg	dec	off	397	asin(1) \n 	90
+atan(1)	32	deg	dec	off	405	atan(1) \n 	45
+sinh(1)	32	deg	dec	off	372	sinh(1) \n 	1.1752011936438014568823818505956
+sin(100)	32	grad	dec	off	368	sin(100) \n 	1
+cos(200)	32	grad	dec	off	375	cos(200) \n 	-1
+asin(1)	32	grad	dec	off	372	asin(1) \n 	100

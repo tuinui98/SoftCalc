@@ -1,0 +1,19 @@
+﻿input	prec	angle	base	rpn	ms	output
+zza=5	32	rad	dec	off	395	zza=5 \n 	Variable Added
+zza*2	32	rad	dec	off	370	zza*2 \n 	10
+zza=zza+1	32	rad	dec	off	363	zza=zza+1 \n 	Variable Added
+zza	32	rad	dec	off	382	zza \n 	6
+ZZA	32	rad	dec	off	376	ZZA \n 	6
+2zza	32	rad	dec	off	373	2zza \n 	ERROR:Unknown characters occurred [2zza]
+zza zza	32	rad	dec	off	385	zza zza \n 	ERROR:Unknown characters occurred [zzazza]
+zzb=zzundefined	32	rad	dec	off	416	zzb=zzundefined \n 	ERROR:Unknown characters occurred [zzundefined]
+zzlong_name_1=1	32	rad	dec	off	393	zzlong_name_1=1 \n 	ERROR:Garbage prior to the =
+zzlong_name_1	32	rad	dec	off	415	zzlong_name_1 \n 	ERROR:Unknown characters occurred [zzlong_name_1]
+zzb=	32	rad	dec	off	385	zzb= \n 	ERROR:Unknown characters occurred []
+zz1=3	32	rad	dec	off	381	zz1=3 \n 	ERROR:Garbage prior to the =
+zzc = 2*zza	32	rad	dec	off	373	zzc = 2*zza \n 	Variable Added
+zzc	32	rad	dec	off	375	zzc \n 	12
+zza=1	32	rad	dec	off	371	zza=1 \n 	Variable Added
+zzc	32	rad	dec	off	378	zzc \n 	12
+pi=3	32	rad	dec	off	401	pi=3 \n 	ERROR:Evaluation failed
+e=1	32	rad	dec	off	380	e=1 \n 	ERROR:Evaluation failed

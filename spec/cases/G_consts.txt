@@ -1,0 +1,13 @@
+# Group G - constants and history references
+@set prec=32 angle=rad base=dec rpn=off
+pi
+e
+PI
+ans
+ans*2
+$1
+$2+1
+$0
+$999
+2*pi
+pie

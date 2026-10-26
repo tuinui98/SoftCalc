@@ -1,0 +1,28 @@
+# Group J - conversion evaluation
+@set prec=32 angle=rad base=dec rpn=off
+1 [in->cm]
+1[in->cm]
+12 [in->ft]
+1 [mile->km]
+1 [kg->lb]
+1 [g->kg]
+1 [d->s]
+100 [km/h->mi/h]
+1 [knot->m/s]
+0 [c->f]
+-40 [c->f]
+100 [c->k]
+0 [k->c]
+32 [f->c]
+(1+1) [ft->in]
+2*3 [ft->in]
+1 [ft->in] [in->cm]
+1 [IN->CM]
+1 [in->kg]
+1 [in->]
+1 [xx->in]
+1 in->cm
+[in->cm]
+zzq=2
+zzq [ft->in]
+1 [ft->in]+1

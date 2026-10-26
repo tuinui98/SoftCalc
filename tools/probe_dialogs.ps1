@@ -119,7 +119,7 @@ function Close-Popup([IntPtr]$popup)
 #  BLOCK 1 - Prepare : Advanced view, locate both toolbars
 #==================================================================
 $proc = Get-PowerCalc
-$main = $proc.MainWindowHandle
+$main = (Get-MainWindow $proc)
 Send-MenuCommand $main 32781
 Start-Sleep -Milliseconds 700
 

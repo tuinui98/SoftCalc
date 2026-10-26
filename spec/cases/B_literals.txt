@@ -1,0 +1,19 @@
+# Group B - number literals
+@set prec=32 angle=rad base=dec rpn=off
+1e3
+1.5e-3
+1E+2
+.5
+5.
+0x1F
+0xff
+0XFF
+101b
+0b101
+1,000
+1 000
+00012
+1.2.3
+1e
+0x
+2b

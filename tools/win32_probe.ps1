@@ -84,6 +84,41 @@ function Get-PowerCalc
 	return $proc
 }
 
+function Get-MainWindow($proc)
+{
+	# Process.MainWindowHandle can pick an untitled helper window after a relaunch
+	foreach ($h in [Win]::TopWindowsOf([uint32]$proc.Id))
+	{
+		if ([Win]::ClassOf($h) -eq "CALCVIEWCLASS")
+		{
+			return $h
+		}
+	}
+	throw "PowerCalc main window (CALCVIEWCLASS) not found"
+}
+
+function Start-PowerCalc
+{
+	# Only an XP layer gets past the OS block; caller must be elevated
+	$dir = Join-Path (Split-Path -Parent $PSScriptRoot) "extracted"
+	$psi = New-Object System.Diagnostics.ProcessStartInfo (Join-Path $dir "PowerCalc.exe")
+	$psi.UseShellExecute = $false
+	$psi.WorkingDirectory = $dir
+	$psi.EnvironmentVariables["__COMPAT_LAYER"] = "WINXPSP2"
+	$p = [System.Diagnostics.Process]::Start($psi)
+	for ($i = 0; $i -lt 50; $i++)
+	{
+		Start-Sleep -Milliseconds 200
+		$p.Refresh()
+		if ($p.MainWindowHandle -ne [IntPtr]::Zero)
+		{
+			break
+		}
+	}
+	Start-Sleep -Milliseconds 500
+	return $p
+}
+
 function Send-MenuCommand([IntPtr]$hwnd, [int]$id)
 {
 	# Same message a menu click produces; posted so a modal dialog cannot block us

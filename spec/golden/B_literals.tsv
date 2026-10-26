@@ -1,0 +1,18 @@
+﻿input	prec	angle	base	rpn	ms	output
+1e3	32	rad	dec	off	385	1e3 \n 	1000
+1.5e-3	32	rad	dec	off	384	1.5e-3 \n 	0.0015
+1E+2	32	rad	dec	off	437	1E+2 \n 	100
+.5	32	rad	dec	off	412	.5 \n 	0.5
+5.	32	rad	dec	off	389	5. \n 	5
+0x1F	32	rad	dec	off	421	0x1F \n 	31
+0xff	32	rad	dec	off	421	0xff \n 	255
+0XFF	32	rad	dec	off	378	0XFF \n 	255
+101b	32	rad	dec	off	377	101b \n 	5
+0b101	32	rad	dec	off	378	0b101 \n 	ERROR:Unknown characters occurred [0b101]
+1,000	32	rad	dec	off	391	1,000 \n 	ERROR:Unknown characters occurred [1,000]
+1 000	32	rad	dec	off	377	1 000 \n 	1000
+00012	32	rad	dec	off	368	00012 \n 	12
+1.2.3	32	rad	dec	off	390	1.2.3 \n 	ERROR:Unknown characters occurred [1.2.3]
+1e	32	rad	dec	off	403	1e \n 	1
+0x	32	rad	dec	off	7163	<CRASH exit=0x>
+2b	32	rad	dec	off	433	2b \n 	ERROR:Unknown characters occurred [2b]

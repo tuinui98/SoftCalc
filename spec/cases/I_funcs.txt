@@ -1,0 +1,27 @@
+# Group I - user functions (temporary names start with zz)
+@set prec=32 angle=rad base=dec rpn=off
+zzf(x)=x^2
+zzf(3)
+zzf(zzf(2))
+zzf
+zzf()
+zzg(x,y)=x+y
+zzg(1,2)
+zzg(1)
+zzg(1,2,3)
+zzh(x)=zzh(x-1)
+zzh(1)
+zzv=10
+zzk(t)=t*zzv
+zzk(2)
+zzv=20
+zzk(2)
+zzf(x)=x+1
+zzf(1)
+zzm(x)=x*i
+zzm(2)
+zzn(x)=sin(x)
+zzn(pi/2)
+g(5)
+function(pi)
+sin(x)=1

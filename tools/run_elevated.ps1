@@ -8,10 +8,12 @@
 # elevated child (no second prompt), runs the probe, and writes a log.
 #
 # Usage: .\tools\run_elevated.ps1 -Probe probe_views.ps1
+#        .\tools\run_elevated.ps1 -Probe probe_eval.ps1 -Group A_arith
 
 param
 (
 	[Parameter(Mandatory = $true)][string]$Probe,
+	[string]$Group = "",
 	[switch]$Inner
 )
 
@@ -21,6 +23,10 @@ $log = Join-Path $root "spec\raw\probe_log.txt"
 if (-not $Inner)
 {
 	$args_line = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`" -Probe `"$Probe`" -Inner"
+	if ($Group)
+	{
+		$args_line += " -Group `"$Group`""
+	}
 	# -Wait would also wait for PowerCalc, which the child may start
 	$p = Start-Process powershell -Verb RunAs -ArgumentList $args_line -WindowStyle Hidden -PassThru
 	$p.WaitForExit()
@@ -38,16 +44,28 @@ if (-not $Inner)
 Start-Transcript -Path $log -Force | Out-Null
 try
 {
+	. "$PSScriptRoot\win32_probe.ps1"
 	if (-not (Get-Process -Name PowerCalc -ErrorAction SilentlyContinue))
 	{
-		$psi = New-Object System.Diagnostics.ProcessStartInfo (Join-Path $root "extracted\PowerCalc.exe")
-		$psi.UseShellExecute = $false
-		$psi.WorkingDirectory = Join-Path $root "extracted"
-		$psi.EnvironmentVariables["__COMPAT_LAYER"] = "WINXPSP2"
-		[void][System.Diagnostics.Process]::Start($psi)
-		Start-Sleep -Seconds 3
+		[void](Start-PowerCalc)
 	}
-	& (Join-Path $PSScriptRoot $Probe)
+	if ($Group)
+	{
+		# Comma-separated groups run in sequence under the same UAC consent
+		foreach ($g in ($Group -split ","))
+		{
+			"===== group $g"
+			if (-not (Get-Process -Name PowerCalc -ErrorAction SilentlyContinue))
+			{
+				[void](Start-PowerCalc)
+			}
+			& (Join-Path $PSScriptRoot $Probe) -Group $g.Trim()
+		}
+	}
+	else
+	{
+		& (Join-Path $PSScriptRoot $Probe)
+	}
 }
 catch
 {

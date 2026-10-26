@@ -12,7 +12,7 @@ $views = [ordered]@{ numeric = 32779; history = 32780; advanced = 32781 }
 $view_by_mode = @{ 1 = 32779; 2 = 32780; 3 = 32781 }    # iViewMode -> command id (inferred)
 
 $proc = Get-PowerCalc
-$hwnd = $proc.MainWindowHandle
+$hwnd = (Get-MainWindow $proc)
 $state_key = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Applets\Calculator\State"
 $start_mode = (Get-ItemProperty $state_key).iViewMode
 

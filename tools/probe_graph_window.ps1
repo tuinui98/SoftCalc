@@ -11,7 +11,7 @@ $CMD_GRAPH_WINDOW = 97
 $spec_dir = Join-Path (Split-Path -Parent $PSScriptRoot) "spec"
 
 $proc = Get-PowerCalc
-$main = $proc.MainWindowHandle
+$main = (Get-MainWindow $proc)
 Send-MenuCommand $main 32781
 Start-Sleep -Milliseconds 700
 

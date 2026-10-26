@@ -1,0 +1,27 @@
+﻿input	prec	angle	base	rpn	ms	output
+1 [in->cm]	32	rad	dec	off	363	1 [in->cm] \n 	2.54
+1[in->cm]	32	rad	dec	off	378	1[in->cm] \n 	2.54
+12 [in->ft]	32	rad	dec	off	381	12 [in->ft] \n 	1
+1 [mile->km]	32	rad	dec	off	373	1 [mile->km] \n 	1.609344
+1 [kg->lb]	32	rad	dec	off	391	1 [kg->lb] \n 	2.2046224760379583079434311509628
+1 [g->kg]	32	rad	dec	off	371	1 [g->kg] \n 	0.001
+1 [d->s]	32	rad	dec	off	415	1 [d->s] \n 	86400
+100 [km/h->mi/h]	32	rad	dec	off	384	100 [km/h->mi/h] \n 	62.137119223733396961743418436332
+1 [knot->m/s]	32	rad	dec	off	384	1 [knot->m/s] \n 	0.51444444444444444444444444444444
+0 [c->f]	32	rad	dec	off	367	0 [c->f] \n 	32
+-40 [c->f]	32	rad	dec	off	371	-40 [c->f] \n 	-40
+100 [c->k]	32	rad	dec	off	374	100 [c->k] \n 	373.15
+0 [k->c]	32	rad	dec	off	433	0 [k->c] \n 	-273.15
+32 [f->c]	32	rad	dec	off	372	32 [f->c] \n 	0
+(1+1) [ft->in]	32	rad	dec	off	374	(1+1) [ft->in] \n 	24
+2*3 [ft->in]	32	rad	dec	off	386	2*3 [ft->in] \n 	72
+1 [ft->in] [in->cm]	32	rad	dec	off	399	1 [ft->in] [in->cm] \n 	30.48
+1 [IN->CM]	32	rad	dec	off	372	1 [IN->CM] \n 	2.54
+1 [in->kg]	32	rad	dec	off	418	1 [in->kg] \n 	ERROR:Unknown characters occurred [1[in->kg]]
+1 [in->]	32	rad	dec	off	382	1 [in->] \n 	ERROR:Unknown characters occurred [1[in->]]
+1 [xx->in]	32	rad	dec	off	387	1 [xx->in] \n 	ERROR:Unknown characters occurred [1[xx->in]]
+1 in->cm	32	rad	dec	off	400	1 in->cm \n 	ERROR:Unknown characters occurred [1in->cm]
+[in->cm]	32	rad	dec	off	373	[in->cm] \n 	ERROR:Unknown characters occurred []
+zzq=2	32	rad	dec	off	432	zzq=2 \n 	Variable Added
+zzq [ft->in]	32	rad	dec	off	417	zzq [ft->in] \n 	24
+1 [ft->in]+1	32	rad	dec	off	377	1 [ft->in]+1 \n 	13

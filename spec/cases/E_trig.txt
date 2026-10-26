@@ -1,0 +1,26 @@
+# Group E - trig under each angle mode
+@set prec=32 angle=rad base=dec rpn=off
+sin(pi/2)
+sin(90)
+cos(0)
+tan(pi/2)
+asin(2)
+acos(-1)
+atan(1)
+sinh(1)
+atanh(1)
+acosh(0)
+@set angle=deg
+sin(90)
+sin(pi/2)
+cos(180)
+tan(45)
+tan(90)
+asin(1)
+atan(1)
+sinh(1)
+@set angle=grad
+sin(100)
+cos(200)
+asin(1)
+@set angle=rad
