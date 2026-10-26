@@ -1,0 +1,11 @@
+﻿# PowerCalc menu tree
+# captured: 2026-10-27 06:02:45  window: 'Graph'
+# '&' marks the Alt access key; key= is the accelerator hint
+
+&File
+    &Save as bitmap  [id=32788]
+&View
+    &XY Graph  [radio-on, id=32814]
+    &Polar Graph  [id=32815]
+    ----
+    &Show Grid  [checked, id=32816]

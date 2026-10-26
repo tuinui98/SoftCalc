@@ -1,0 +1,59 @@
+﻿# PowerCalc toolbar dialogs
+# captured: 2026-10-27 06:02:02
+
+## graph toolbar
+  [0] cmd=92 'Add' enabled=True separator=False
+  [1] cmd=96 'Edit' enabled=True separator=False
+  [2] cmd=95 'Delete' enabled=True separator=False
+  [3] cmd=97 'Window' enabled=True separator=False
+
+### graph / Add
+  EDITWINDOWCLASS id=0 'Add Function' 400x100 @(182,182) style=0x14C80000
+      Edit id=0 '' 382x25 @(191,214) style=0x50001084
+      Button id=0 'OK' 100x28 @(361,245) style=0x50000000
+      Button id=0 'Cancel' 100x28 @(473,245) style=0x50000000
+  menu bar: none
+  closed via cancel: True
+
+### graph / Edit
+  EDITWINDOWCLASS id=0 'Edit Function' 400x100 @(208,208) style=0x14C80000
+      Static id=0 'g(x)=' 100x25 @(217,240) style=0x50000002
+      Edit id=0 'x' 282x25 @(317,240) style=0x50001084
+      Button id=0 'OK' 100x28 @(387,271) style=0x50000000
+      Button id=0 'Cancel' 100x28 @(499,271) style=0x50000000
+  menu bar: none
+  closed via cancel: True
+
+### graph / Window
+  CALCGRAPHWINCLASS id=0 'Graph' 600x500 @(0,0) style=0x16CF0000
+      FUNCTIONLISTCLASS id=0 '' 351x43 @(245,47) style=0x56000000
+          ComboBox id=0 'g(x)=x' 351x21 @(245,69) style=0x50000203
+          ToolbarWindow32 id=0 '' 351x22 @(245,47) style=0x50009B45
+      ITEMLISTCLASS id=0 '' 241x449 @(4,47) style=0x56000000
+          CALCRANGEEDITCLASS id=0 '' 217x347 @(16,83) style=0x56000000
+              Edit id=0 '-10.000000' 217x25 @(16,106) style=0x50001084
+              Edit id=0 '10.000000' 217x25 @(16,160) style=0x50001084
+              Edit id=0 '1.000000' 217x25 @(16,214) style=0x50001084
+              Edit id=0 '-10.000000' 217x25 @(16,268) style=0x50001084
+              Edit id=0 '10.000000' 217x25 @(16,322) style=0x50001084
+              Edit id=0 '1.000000' 217x25 @(16,376) style=0x50001084
+              Button id=0 'Apply' 92x23 @(141,407) style=0x56000000
+          Button id=0 'Range' 219x23 @(15,59) style=0x56000000
+      CALCGRAPHVIEWCLASS id=0 '' 351x406 @(245,90) style=0x56000000
+  menu bar: yes (dump separately)
+  closed via cancel: True
+
+## variables toolbar
+  [0] cmd=92 'Add' enabled=True separator=False
+  [1] cmd=96 'Edit' enabled=False separator=False
+  [2] cmd=95 'Delete' enabled=False separator=False
+
+### variables / Add
+  EDITWINDOWCLASS id=0 'Add Variable' 400x100 @(234,234) style=0x14C80000
+      Edit id=0 '' 382x25 @(243,266) style=0x50001084
+      Button id=0 'OK' 100x28 @(413,297) style=0x50000000
+      Button id=0 'Cancel' 100x28 @(525,297) style=0x50000000
+  menu bar: none
+  closed via cancel: True
+
+leftover windows after probe: 0

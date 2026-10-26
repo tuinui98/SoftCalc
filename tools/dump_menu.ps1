@@ -4,11 +4,14 @@
 # Reads the menu bar of the live PowerCalc window through Win32 menu
 # APIs. Never sends messages, clicks, or keystrokes to the target.
 #
-# Usage: .\tools\dump_menu.ps1 [-OutFile spec\inventory\menu_tree.txt]
+# Usage: .\tools\dump_menu.ps1 [-OutFile spec\inventory\menu_tree.txt] [-Hwnd <window>]
+# -Hwnd dumps another PowerCalc window (e.g. the Graph window) instead
+# of the main window.
 
 param
 (
-	[string]$OutFile = ""
+	[string]$OutFile = "",
+	[long]$Hwnd = 0
 )
 
 Add-Type @"
@@ -151,7 +154,12 @@ if (-not $proc)
 	Write-Error "PowerCalc is not running"
 	exit 1
 }
-$menu_bar = [MenuApi]::GetMenu($proc.MainWindowHandle)
+$target = $proc.MainWindowHandle
+if ($Hwnd -ne 0)
+{
+	$target = [IntPtr]$Hwnd
+}
+$menu_bar = [MenuApi]::GetMenu($target)
 if ($menu_bar -eq [IntPtr]::Zero)
 {
 	Write-Error "Window has no menu bar"

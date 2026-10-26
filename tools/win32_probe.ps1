@@ -37,6 +37,7 @@ public static class Win
 	[DllImport("user32.dll")] public static extern bool IsWindowEnabled(IntPtr hwnd);
 	[DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
 	[DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdc, uint flags);
+	[DllImport("user32.dll")] public static extern IntPtr GetMenu(IntPtr hwnd);
 
 	public static List<IntPtr> Children(IntPtr parent)
 	{
