@@ -40,6 +40,8 @@ golden row's settings. Everything not listed must match the golden file.
 | L_precision | `1e-40` | 1.e-40 | 1e-40 | FIX |
 | L_precision | `10^1000` | 1.e1000 | 1e1000 | FIX |
 | N_errors | 500 nines | 1.e500 | 1e500 | FIX |
+| T_bases | `-2^200` (hex) | 0x1.*0x10^0x32 | -0x1*0x10^0x32 | FIX unary minus below `^`, no dangling dot |
+| T_bases | all `.b` / `.*` rows | e.g. `0x1.*0x10^0x20`, `(11.b+100.bi)` | `0x1*0x10^0x20`, `(11b+100bi)` | FIX no dangling dot |
 
 Notes
 - Machine-readable copy for the tests: `engine/tests/expected_diffs.py`.

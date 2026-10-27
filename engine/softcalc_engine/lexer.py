@@ -2,8 +2,9 @@
 
 Implements SPEC 5.1 and 5.2: whitespace separates tokens except inside
 a digit run (`1 000` = 1000), C-style names, decimal / scientific /
-hex / binary / octal literals, the `101b` binary suffix, and imaginary
-literals such as `2i` or `3j`.
+hex / binary / octal literals, the `101b` binary suffix, imaginary
+literals such as `2i` or `3j`, result references `$1`, and conversion
+tags `[from->to]` (SPEC 5.9).
 """
 
 import re
@@ -29,9 +30,10 @@ SUFFIX_BINARY = re.compile(r"[01]+b")
 class Token:
     """One lexical token.
 
-    kind is one of: number, imag, name, op, end. For numbers, text holds
-    the literal and base its radix; value conversion happens later so
-    the evaluator can pick the working precision.
+    kind is one of: number, imag, name, op, ref, tag, end. For numbers,
+    text holds the literal and base its radix; value conversion happens
+    later so the evaluator can pick the working precision. A ref holds
+    the digits after `$`; a tag holds `from->to` in lower case.
     """
 
     kind: str
@@ -87,6 +89,18 @@ def read_number(text, i):
     # end BLOCK 3
 
 
+def read_tag(text, i):
+    """Read `[from->to]` at text[i]; units may contain `/` (mi/h)."""
+    close = text.find("]", i)
+    if close < 0:
+        raise CalcError("Missing ']' in conversion")
+    body = "".join(text[i + 1:close].split()).lower()
+    source, arrow, target = body.partition("->")
+    if not arrow:
+        raise CalcError("Conversion needs '->' inside [ ]")
+    return Token("tag", f"{source}->{target}", i), close + 1
+
+
 def tokenize(text):
     """Convert input text into a list of Tokens ending with an `end` token."""
     text = join_digit_spaces(text)
@@ -114,6 +128,17 @@ def tokenize(text):
         if ch in OPERATORS:
             tokens.append(Token("op", ch, i))
             i += 1
+            continue
+        if ch == "$":
+            match = re.compile(r"\d+").match(text, i + 1)
+            if not match:
+                raise CalcError("Expected a number after '$'")
+            tokens.append(Token("ref", match.group(), i))
+            i = match.end()
+            continue
+        if ch == "[":
+            token, i = read_tag(text, i)
+            tokens.append(token)
             continue
         raise CalcError(f"Unknown character '{ch}'")
     tokens.append(Token("end", "", len(text)))
