@@ -36,4 +36,28 @@ internal static class InputRules
 
 	public const string MemoryClear = "memory=0";
 	public const string MemoryRecall = "memory";
+
+	// RPN keypad, line-based like the original (owner's choice A):
+	// Ent after a number separates items with a space; Ent after an operator,
+	// a function name, or a trailing space evaluates the line.
+	public static (string Text, bool Submit) RpnEnter(string text)
+	{
+		if (text.Length == 0 || text.EndsWith(' '))
+		{
+			return (text, true);
+		}
+		string last = text.Split(' ', StringSplitOptions.RemoveEmptyEntries)[^1];
+		bool lastIsNumber = char.IsDigit(last[^1]) || last[^1] == '.';
+		return lastIsNumber ? (text + " ", false) : (text, true);
+	}
+
+	// RPN keypad operator: appended as its own item, then the line is evaluated
+	public static string RpnOperator(string text, char symbol)
+	{
+		if (text.Length == 0 || text.EndsWith(' '))
+		{
+			return text + symbol;
+		}
+		return text + " " + symbol;
+	}
 }
