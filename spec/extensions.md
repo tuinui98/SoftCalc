@@ -75,8 +75,16 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   since they are operators.
 - `date - date` = number of days; `date + n`, `date - n` = date.
 - Result of date type prints as `dd.mm.yyyy`.
-- Open: accept Buddhist-era years (พ.ศ.)? A `today` keyword? Weekday
-  name in the result?
+- Decided 2026-10-27:
+  - Gregorian years only; no Buddhist-era (พ.ศ.) input.
+  - `today` keyword: the current local date.
+  - Epoch conversion: `epoch(date_or_datetime)` gives Unix seconds,
+    `fromepoch(n)` gives a date/time. Local time zone. [names DEF]
+  - Long format: `longdate(x)` gives for example
+    `Tuesday, 27 October 2026`, `longtime(x)` gives `14:05:09`,
+    `longdatetime(x)` both. [names DEF]
+- Open: time-of-day literal syntax (needed for `fromepoch` results
+  and `longtime` input), e.g. `27.10.2026 14:05:09`.
 
 ## E8. Currency conversion
 - Same tag syntax as units: `100 [usd->thb]`, chainable, case-
@@ -86,9 +94,12 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   their date; offline use falls back to the cache, and the result line
   notes the rate date when it is old.
 - This is the only network access in the program.
-- Open: which source (for example ECB daily reference rates, free, no
-  key, about 30 currencies including THB); refresh automatically once
-  a day or only on demand?
+- Decided 2026-10-27: source is the ECB daily reference rates (free, no
+  key, about 30 currencies including THB, cross rates via EUR). Rates
+  are fetched **when a currency conversion is evaluated**, never in
+  the background. To avoid refetching on every line, a fetch is skipped
+  when the cache already holds the latest ECB publication (ECB updates
+  once per working day). [DEF]
 
 ## E9. Display control, copy, always on top
 - Display decimals: a setting separate from calculation precision.
@@ -106,9 +117,25 @@ Decisions on E1-E6 are settled in `SPEC.md`.
 - Clicking a History line puts the **original input text** (with the
   variable names) back into the Input box for editing.
 - Past lines are never recalculated.
-- History does not persist across program restarts (as the original).
 - To confirm: the interpretation above, and whether the result line
   shows only the number.
+
+## E12. Persistent history
+- Decided 2026-10-27: History is saved to a file (differs from the
+  original, which starts empty).
+  - Loaded when the program starts; written when it closes, with the
+    History as it is at that moment.
+  - Rolling: a setting caps the number of entries kept; oldest entries
+    drop first.
+  - Two windows (two running instances) may load the same history
+    file at the same time; no exclusive lock.
+- Consequence to accept or change: with two instances, each one writes
+  its own History on close, so the instance closed last wins and the
+  other's new entries are lost. Alternative: on close, re-read the
+  file and merge new entries by timestamp before writing.
+- History file format: UTF-8, one entry per record holding the
+  original input, the numeric display form, the result, and a
+  timestamp (needed for E10 click-to-recall and for merging).
 
 ## E11. Compound interest tool and functions
 - Tools menu > *Compound Interest*: own window with
@@ -123,6 +150,8 @@ Decisions on E1-E6 are settled in `SPEC.md`.
     balance; copy and export CSV.
 - Input-box functions for the same maths, Excel-style names:
   `fv(rate, n, pmt, pv)`, `pv(...)`, `pmt(...)`, `nper(...)`.
-- Open: Excel sign convention (money paid out is negative) or plain
-  positive values? Rate per period or annual rate plus frequency in the
-  functions?
+- Decided 2026-10-27: signed cash flows as in Excel (money paid out
+  negative, money received positive), e.g. `fv(0.05/12, 120, -100,
+  -1000)` is positive. [interpreted from "ใช้เป็นเครื่องหมาย +-"]
+- Open: rate per period (Excel) or annual rate plus frequency in the
+  functions? Default: rate per period, as Excel. [DEF]
