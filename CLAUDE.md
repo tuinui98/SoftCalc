@@ -28,7 +28,8 @@ stdin/stdout:
   SPEC 5.4, infix and RPN), evaluation at selected precision + guard
   digits, variables/functions/answer/`$n` state, number formatting
   (SPEC 6.2), units, dates, finance. No file or network I/O of its own.
-- `ui/` (C# WinForms, .NET 10): windows, settings and history files in
+- `ui/` (C# WinForms, .NET 10, standard controls: the owner wants the
+  original's UX, not its look): windows, settings and history files in
   `%APPDATA%\SoftCalc\`, graph drawing, ECB rate fetch, engine
   watchdog/restart.
 Golden tests drive the engine directly, without the UI.
@@ -45,8 +46,18 @@ python -m venv .venv                      # once
 Frozen engine: `powershell -ExecutionPolicy Bypass -File build\build_engine.ps1`
 writes `engine\dist\softcalc-engine.exe`; `test_frozen_exe_answers` runs
 against it when it exists.
-.NET SDK: `C:\Program Files\dotnet\dotnet.exe` (10.0.x). It may not be on
-the PATH of an already-open shell.
+UI (run from `ui/`; .NET SDK at `C:\Program Files\dotnet\dotnet.exe`, 10.0.x,
+may not be on the PATH of an already-open shell):
+```
+dotnet build                     # SoftCalc + SoftCalc.Tests
+dotnet test                      # unit tests + engine session tests over real pipes
+dotnet test --filter "FullyQualifiedName~InputRulesTests"   # one class
+dotnet run --project SoftCalc    # start the app
+```
+The app finds the engine via `SOFTCALC_ENGINE`, then `softcalc-engine.exe`
+next to `SoftCalc.exe`, then `engine/.venv` (development).
+`tools/drive_softcalc.ps1` types lines into a running SoftCalc through
+window messages and saves a screenshot to `spec/raw/` (own app only).
 
 ## Probing the original (only if behavior needs re-checking)
 - `extracted/PowerCalc.exe` runs only under an XP compat layer, and every

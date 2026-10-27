@@ -1,0 +1,99 @@
+// EngineSessionTests.cs - The UI's engine connection against the real engine
+//
+// Uses the development engine (engine/.venv) found by EngineLocator, so
+// these tests also check the Python side through the same pipe the
+// window uses. Skipped when no engine is available.
+
+using System.Text.Json.Nodes;
+using SoftCalc.Engine;
+
+namespace SoftCalc.Tests;
+
+public sealed class EngineSessionTests : IAsyncLifetime
+{
+	private EngineSession? _session;
+
+	public async Task InitializeAsync()
+	{
+		_session = new EngineSession(EngineLocator.Locate());
+		await _session.StartAsync();
+	}
+
+	public Task DisposeAsync()
+	{
+		_session?.Dispose();
+		return Task.CompletedTask;
+	}
+
+	private EngineSession Session => _session ?? throw new InvalidOperationException();
+
+	[Fact]
+	public async Task EvalReturnsDisplayAndResult()
+	{
+		await Session.EvalAsync("x=5");
+		var reply = await Session.EvalAsync("2x+1");
+		Assert.Equal(("result", "2x+1", "2*5+1", "11"), (reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
+	}
+
+	[Fact]
+	public async Task ErrorsAndEmptyInputAreKinds()
+	{
+		Assert.Equal("error", (await Session.EvalAsync("1/0")).Kind);
+		Assert.Equal("empty", (await Session.EvalAsync("")).Kind);
+	}
+
+	[Fact]
+	public async Task NonAsciiSurvivesThePipe()
+	{
+		var reply = await Session.EvalAsync("ก=1");
+		Assert.Equal(("error", "ก=1"), (reply.Kind, reply.Input));
+	}
+
+	[Fact]
+	public async Task SettingsAreTracked()
+	{
+		var settings = await Session.ChangeSettingsAsync(new JsonObject { ["base"] = "hex" });
+		Assert.Equal("hex", (string?)settings["base"]);
+		Assert.Equal("0xFF", (await Session.EvalAsync("255")).Text);
+	}
+
+	[Fact]
+	public async Task StateListsUserFunctions()
+	{
+		await Session.EvalAsync("grow(p, n)=p*2^n");
+		var state = await Session.StateAsync();
+		var grow = Assert.Single(state.Functions, f => f.Name == "grow");
+		Assert.Equal(new[] { "p", "n" }, grow.Parameters);
+		Assert.Equal("grow(p, n)=", grow.Head);
+	}
+
+	[Fact]
+	public async Task CatalogAndMenuInsert()
+	{
+		var catalog = await Session.CatalogAsync();
+		Assert.Contains(catalog.ConversionGroups, g => g.Key == "Length");
+		var (text, caret) = await Session.MenuInsertAsync(new JsonObject
+		{
+			["kind"] = "function", ["name"] = "sqrt", ["text"] = "2", ["caret"] = 1,
+		});
+		Assert.Equal(("sqrt(2)", 7), (text, caret));
+	}
+
+	[Fact]
+	public async Task CrashIsRecoveredWithDefinitionsAndSettings()
+	{
+		string? notice = null;
+		Session.Restarted += (_, reason) => notice = reason;
+		await Session.EvalAsync("keep=41");
+		await Session.ChangeSettingsAsync(new JsonObject { ["precision"] = 64 });
+
+		Session.Client!.KillForTest();
+		var lost = await Session.EvalAsync("keep+1");
+		Assert.Equal("error", lost.Kind);
+		Assert.NotNull(notice);
+
+		Assert.Equal("42", (await Session.EvalAsync("keep+1")).Text);
+		Assert.Equal(64, (int?)Session.Settings["precision"]);
+		Assert.Equal(64 + 2, (await Session.EvalAsync("1/3")).Text.Length);
+	}
+}

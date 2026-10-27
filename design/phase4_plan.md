@@ -70,6 +70,11 @@ One JSON object per line, request `{"id", "op", ...}`, response
 - `rates` {ecb_xml} hands fetched currency data to the engine
 
 ## 5. UI design (C# WinForms, .NET 10)
+Owner decision 2026-10-27: standard WinForms controls and default font
+first, no custom colors or owner-drawn headers; the goal is the
+original's UX, not its look. Points below about owner-drawn pieces are
+deferred until the owner asks for styling.
+
 - Native controls where the original used them: menu, RichTextBox for
   History, TextBox for Input, ListView for Variables, ToolStrip
   toolbars, ComboBox for functions.
