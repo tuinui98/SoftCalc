@@ -212,13 +212,15 @@ Full original tree: `inventory/menu_tree.txt`.
   form (`2^200` at 32 gives `1.6069380442589902755419620923412e60`; at 64
   all 61 digits).
 
-### 6.2 Number format [KEEP, flagged DEF]
-- Trailing zeros trimmed. Values with a single significant digit in
-  scientific form print as `1.e100`, `1.e-40` (dot kept) [DEF: keep].
+### 6.2 Number format
+- Trailing zeros trimmed [KEEP]. A mantissa with no fractional digits
+  prints without a dot: `1e100`, `1e-40` (original `1.e100`) [FIX].
 - Hex output: `0xFF`, `-0x1`, fractions `0x3.8`,
-  `0x0.1999...9A`.
-- Binary output: `11111111.b` (dot before `b`), fractions `11.1b`,
-  large or small values `1.b*10b^101000b` [DEF: keep].
+  `0x0.1999...9A` [KEEP].
+- Binary output: `11111111b`, fractions `11.1b`, large or small values
+  `1b*10b^101000b`, `1.1001...1101b*10b^-100b` (original put a dot
+  before `b` even without fraction, `11111111.b`, `1.b*10b^...`)
+  [FIX].
 - Octal output, new: `0o17`, same layout rules as hex [EXT, DEF].
 - Complex: `1i`, `2i`, `(3+4i)`, `(11+2i)`; results with a zero
   imaginary part print as real; hex `(0x3+0x4i)`.
@@ -251,11 +253,12 @@ Full original tree: `inventory/menu_tree.txt`.
 ## 8. Persistence and files
 - Settings (precision, base, angle, RPN, view, samples, window rect,
   graph mode, grid, XY and Polar ranges) and user variables/functions
-  persist between runs. Stored in the clone's own location
-  (`%APPDATA%\<app>\`), not the original's registry key. [DEF]
-- First run offers a one-time import of user functions from the
-  original's key `HKCU\Software\Microsoft\Windows\CurrentVersion\Applets\Calculator\Functions`
-  if present. [DEF]
+  persist between runs. Stored in the clone's own file under
+  `%APPDATA%\<app>\`. The clone never reads or writes the registry.
+- First run starts from defaults: precision 32, Radians, decimal
+  output, RPN off, Advanced View, Show Samples on, XY graph with grid,
+  default ranges (4), and the two sample functions `g(x)=x` and
+  `function(var)=var*cos(var)`. No import from the original.
 - **`.pcf` Save** (original's format, with values fixed):
   UTF-16 LE without BOM, CRLF, variables first as `name=value`, then
   functions as `name(p1, p2) = body`. The original wrote variables with
@@ -267,15 +270,15 @@ Full original tree: `inventory/menu_tree.txt`.
   UTF-8 text exactly as shown in the History pane.
 - Graph *Save as bitmap*: PNG (4).
 
-## 9. Minor default decisions (review)
-Marked [DEF] above. Each can be changed before implementation.
+## 9. Minor default decisions
+Marked [DEF] above; reviewed and accepted by the owner 2026-10-27.
 1. Octal output menu item and Basic Operations entries for `mod ! %`.
 2. `2e` = 2*e; scientific notation needs digits after `e`.
 3. `$n` errors after Clear History; `answer` survives it.
 4. RPN also accepts `!`, `%`, `mod`.
-5. Keep the original's `1.e100` and `11111111.b` number formats.
+5. Owner changed: drop the dangling dot (`1e100`, `11111111b`), see 6.2.
 6. Specific error messages with the same `ERROR:` prefix.
-7. Settings in `%APPDATA%`, optional one-time import of old functions.
+7. Owner changed: own settings file only, no registry, no import, see 8.
 8. Graph bitmap saved as PNG.
 9. Samples pane content written new.
 

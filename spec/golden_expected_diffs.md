@@ -31,6 +31,13 @@ golden row's settings. Everything not listed must match the golden file.
 | Q_answer | `ans` | error | 30 | EXT alias (answer is 30 there) |
 | Q_answer | `$1` | error | 30 | EXT `$1` = latest result |
 | O_keypad | all `MC` / `M+` / `M-` sequences | broken macros | per SPEC 7 | FIX memory keys |
+| C_base | `255` (bin) | 11111111.b | 11111111b | FIX no dangling dot |
+| C_base | `-1` (bin) | -1.b | -1b | FIX |
+| C_base | `2^40` (bin) | 1.b*10b^101000b | 1b*10b^101000b | FIX |
+| L_precision | `10^100` | 1.e100 | 1e100 | FIX |
+| L_precision | `1e-40` | 1.e-40 | 1e-40 | FIX |
+| L_precision | `10^1000` | 1.e1000 | 1e1000 | FIX |
+| N_errors | 500 nines | 1.e500 | 1e500 | FIX |
 
 Notes
 - Golden runs clear History before every case unless the case file says
