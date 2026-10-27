@@ -40,6 +40,23 @@ public class InputRulesTests
 	}
 
 	[Theory]
+	[InlineData("3+4", "answer*2", "3+4")]          // typed text wins
+	[InlineData("", "answer*2", "answer*2")]        // empty Enter repeats the last line
+	[InlineData("", "x=x+1", "x=x+1")]              // definitions repeat too
+	[InlineData("", "1/0", "1/0")]                  // and errors
+	[InlineData("  ", "answer*2", "  ")]            // spaces are not empty: an error, as typed
+	public void SubmitRepeatsLastLineWhenEmpty(string text, string lastInput, string expected)
+	{
+		Assert.Equal(expected, InputRules.ResolveSubmit(text, lastInput));
+	}
+
+	[Fact]
+	public void EmptySubmitWithEmptyHistoryDoesNothing()
+	{
+		Assert.Null(InputRules.ResolveSubmit("", null));
+	}
+
+	[Theory]
 	[InlineData("12", "12 ", false)]           // after a number: separate
 	[InlineData("12 3", "12 3 ", false)]
 	[InlineData("1.5", "1.5 ", false)]

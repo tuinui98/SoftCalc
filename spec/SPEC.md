@@ -259,7 +259,11 @@ Full original tree: `inventory/menu_tree.txt`.
 - Each entry: the input line, then the result on the next line,
   indented with a tab. Definitions print `Variable Added` or
   `Function Added`. Errors print `ERROR:` plus a message.
-- Empty input adds nothing.
+- Enter on an empty Input repeats the newest History line as typed
+  (`answer*2` again gives a new value each time); definitions and errors
+  repeat too; with an empty History nothing happens [KEEP, from
+  `golden/U_repeat.tsv`; a UI rule, so the engine golden runner skips U].
+  The keypad `Ent` on an empty Input does the same, also in RPN mode.
 - On success the Input is cleared; on error the Input keeps its text.
 
 ### 6.4 Error messages [DEF]

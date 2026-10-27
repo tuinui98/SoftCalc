@@ -18,6 +18,8 @@ GROUPS = [
     "N_errors", "Q_answer", "R_retest", "S_format", "T_bases",
 ]
 KEEP_GROUPS = {"Q_answer"}
+# U_repeat (Enter on empty Input repeats the last line) is a UI rule,
+# tested in ui/SoftCalc.Tests/InputRulesTests.cs, so it is not listed in GROUPS.
 
 
 def run_group(group):

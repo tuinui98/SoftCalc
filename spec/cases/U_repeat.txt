@@ -1,0 +1,17 @@
+# Group U - Enter on an empty Input after earlier lines (history kept)
+@set prec=32 angle=rad base=dec rpn=off
+@keep on
+@clear
+5
+answer*2
+
+
+x=1
+x=x+1
+
+x
+1/0
+
+3+4
+@clear
+
