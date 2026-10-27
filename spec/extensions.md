@@ -199,3 +199,15 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   `1:30 2` are not joined into one duration; RPN items keep their
   spaces. The RPN History display used to join digit runs
   (`1 2 +` showed `12 +`), fixed with this change.
+
+## E13. More time units and UTC/local (added 2026-10-27)
+- Time units now: `yr mo wk d h min s` (original had `d min s`).
+  1 yr = 365.2425 days (mean Gregorian year), 1 mo = 1/12 yr
+  (30.436875 days), 1 wk = 7 days. [DEF: owner may prefer 365 / 30]
+- Long-name aliases inside tags only: `year(s) month(s) week(s) day(s)
+  hour(s) hr minute(s) sec second(s)`. Outside `[ ]` these stay free
+  names for variables.
+- Conversions menu > Time lists the new units too.
+- `[utc->local]` and `[local->utc]` on dates and date-times, using the
+  current local UTC offset (same limitation as epoch). Numbers,
+  durations and other units are errors in these tags.

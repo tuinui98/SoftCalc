@@ -12,8 +12,8 @@ from dataclasses import dataclass, field
 
 import mpmath
 
-from .dates import (DATE_LITERAL, DURATION_LITERAL, DateValue, DurationValue, TextValue,
-                    parse_duration, parse_literal, today)
+from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationValue, TextValue,
+                    convert_zone, parse_duration, parse_literal, today)
 from .errors import CalcError
 from .formatting import format_number, working_digits
 from .functions import Functions, binary, negate, postfix
@@ -299,6 +299,8 @@ class Engine:
             return binary(node[1], left, self.eval_node(node[3], builtins, scope, depth))
         if kind == "conv":
             value = self.eval_node(node[3], builtins, scope, depth)
+            if node[1] in ZONES or node[2] in ZONES:
+                return convert_zone(value, node[1], node[2])
             if not isinstance(value, mpmath.mpf):
                 raise CalcError("Only real numbers can be converted")
             return convert(value, node[1], node[2])

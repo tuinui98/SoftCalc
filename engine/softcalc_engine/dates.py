@@ -190,6 +190,25 @@ def local_offset():
     return datetime.now().astimezone().utcoffset()
 
 
+ZONES = ("utc", "local")
+
+
+def convert_zone(value, source, target):
+    """`[utc->local]` / `[local->utc]` on a date or date-time [EXT].
+
+    Uses the current local UTC offset, like epoch().
+    """
+    if not isinstance(value, DateValue):
+        raise CalcError(f"[{source}->{target}] needs a date")
+    if source not in ZONES or target not in ZONES:
+        raise CalcError(f"Cannot convert {source} to {target}")
+    if source == target:
+        return value
+    offset = local_offset()
+    moment = value.moment + offset if source == "utc" else value.moment - offset
+    return DateValue(moment, True)
+
+
 def to_epoch(value):
     if not isinstance(value, DateValue):
         raise CalcError("epoch needs a date")
