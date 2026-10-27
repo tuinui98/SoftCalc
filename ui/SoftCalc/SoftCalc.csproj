@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<!-- SoftCalc.csproj - SoftCalc desktop UI (WinForms); talks to the Python engine process -->
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>SoftCalc</RootNamespace>
+		<AssemblyName>SoftCalc</AssemblyName>
+		<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="SoftCalc.Tests" />
+	</ItemGroup>
+
+</Project>
