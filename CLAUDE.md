@@ -8,7 +8,8 @@ SoftCalc: a personal-use, clean-room clone of the Windows XP
 - The behavior contract is `spec/SPEC.md`. Extensions and their
   decisions are in `spec/extensions.md`. Post-clone ideas are in
   `spec/ideas.md`.
-- The build plan and milestones are in `design/phase4_plan.md`.
+- The build plan and milestones are in `design/phase4_plan.md`; the current
+  state and the next step are in `design/STATUS.md` (read it first).
 - Golden data recorded from the original is in `spec/golden/*.tsv`.
   Cases the clone must answer differently on purpose are in
   `spec/golden_expected_diffs.md`.
