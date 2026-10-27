@@ -34,7 +34,7 @@ powercalc/                  (repo; folder name stays, product is SoftCalc)
     tests/                  pytest: golden runner + unit tests
   ui/
     SoftCalc.sln
-    SoftCalc/               WinForms app (net8.0-windows)
+    SoftCalc/               WinForms app (net10.0-windows)
     SoftCalc.Tests/         UI-side unit tests (history merge, settings)
   build/                    packaging scripts (PyInstaller, dotnet publish)
 ```
@@ -69,7 +69,7 @@ One JSON object per line, request `{"id", "op", ...}`, response
 - `finance` {principal, rate, years, ...} -> totals and period table
 - `rates` {ecb_xml} hands fetched currency data to the engine
 
-## 5. UI design (C# WinForms, .NET 8)
+## 5. UI design (C# WinForms, .NET 10)
 - Native controls where the original used them: menu, RichTextBox for
   History, TextBox for Input, ListView for Variables, ToolStrip
   toolbars, ComboBox for functions.
@@ -86,7 +86,7 @@ One JSON object per line, request `{"id", "op", ...}`, response
 ## 6. Milestones (each ends with tests passing, a commit, and a tag)
 | # | content | done when |
 |---|---|---|
-| M0 | toolchain: install .NET 8 SDK, Python venv, pytest, PyInstaller check on Python 3.14 | `dotnet --version`, `pytest` run empty |
+| M0 | toolchain: install .NET 10 SDK, Python venv, pytest, PyInstaller check on Python 3.14 | `dotnet --version`, `pytest` run empty |
 | M1 | engine core: lexer, parser, arithmetic, precision, formatting, functions, complex, errors | golden A, B, D, E, F, G, L, N pass (with expected diffs) |
 | M2 | engine: variables, functions, answer/$n, conversions, bases, RPN, menu insertion | golden C, H, I, J, M, Q, R, menu_insert pass |
 | M3 | engine extensions: dates/epoch (E7), display decimals (E9), finance functions (E11), .pcf text | unit tests |
@@ -117,7 +117,7 @@ fixed memory semantics, not the original output.
 
 ## 8. Decisions needed before M0
 1. Approve this plan (or change milestones/scope).
-2. Install the .NET 8 SDK (system install, about 200 MB; winget or the
+2. Install the .NET 10 SDK (system install, about 200 MB; winget or the
    Microsoft installer).
 3. C# conventions in section 7 (adds a C# addendum to the owner's
    global rules file, or keep them project-local in `CLAUDE.md`).
