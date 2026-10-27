@@ -1,0 +1,13 @@
+﻿input	prec	angle	base	rpn	ms	output
+5	32	rad	dec	off	396	5 \n 	5
+answer*2	32	rad	dec	off	408	answer*2 \n 	10
+	32	rad	dec	off	391	answer*2 \n 	20
+	32	rad	dec	off	394	answer*2 \n 	40
+x=1	32	rad	dec	off	393	x=1 \n 	Variable Added
+x=x+1	32	rad	dec	off	407	x=x+1 \n 	Variable Added
+	32	rad	dec	off	393	x=x+1 \n 	Variable Added
+x	32	rad	dec	off	404	x \n 	3
+1/0	32	rad	dec	off	416	1/0 \n 	ERROR:Evaluation failed
+	32	rad	dec	off	421	1/0 \n 	ERROR:Evaluation failed
+3+4	32	rad	dec	off	377	3+4 \n 	7
+	32	rad	dec	off	15051	<no history change; input now: ''>

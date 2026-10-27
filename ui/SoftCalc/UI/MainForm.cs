@@ -325,7 +325,13 @@ internal sealed class MainForm : Form
 		_input.ReadOnly = true;
 		try
 		{
-			var reply = await _session.EvalAsync(_input.Text);
+			string? lastInput = _history.Entries.LastOrDefault(entry => entry.Kind != "notice")?.Input;
+			string? line = InputRules.ResolveSubmit(_input.Text, lastInput);
+			if (line == null)
+			{
+				return;
+			}
+			var reply = await _session.EvalAsync(line);
 			if (reply.Kind == "empty")
 			{
 				return;

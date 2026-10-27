@@ -34,6 +34,18 @@ internal static class InputRules
 		return subtract ? $"memory=-{operand}" : $"memory={operand}";
 	}
 
+	// Enter on an empty Input repeats the newest History line as typed, including
+	// definitions and errors; nothing when History is empty (observed, golden U_repeat).
+	// Returns the text to evaluate, or null for nothing to do.
+	public static string? ResolveSubmit(string text, string? lastInput)
+	{
+		if (text.Length > 0)
+		{
+			return text;
+		}
+		return string.IsNullOrEmpty(lastInput) ? null : lastInput;
+	}
+
 	public const string MemoryClear = "memory=0";
 	public const string MemoryRecall = "memory";
 
