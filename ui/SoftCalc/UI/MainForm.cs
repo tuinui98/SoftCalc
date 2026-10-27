@@ -35,6 +35,8 @@ internal sealed class MainForm : Form
 	private readonly TableLayoutPanel _column = new() { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4 };
 	private readonly GroupBox _samplesBox = new() { Text = "Samples", Dock = DockStyle.Fill };
 	private readonly Panel _keypadHost = new() { Dock = DockStyle.Fill, Height = 150 };
+	private readonly GroupBox _inputBox = new() { Text = "Input", Dock = DockStyle.Fill, Height = 52 };
+	private readonly InputRecall _recall;
 	private readonly MenuStrip _menu = new();
 	private readonly ToolStripMenuItem _functionsMenu = new("F&unctions");
 	private readonly ToolStripMenuItem _conversionsMenu = new("&Conversions");
@@ -51,6 +53,10 @@ internal sealed class MainForm : Form
 	public MainForm(EngineSession session)
 	{
 		_session = session;
+		_recall = new InputRecall(() => _history.Entries
+			.Where(entry => entry.Kind != "notice")
+			.Select(entry => entry.Input)
+			.ToList());
 		_session.Restarted += (_, reason) => _history.Append(
 			new HistoryEntry("notice", "", "(engine restarted)", reason));
 		Text = "SoftCalc";
@@ -76,8 +82,7 @@ internal sealed class MainForm : Form
 		var historyBox = new GroupBox { Text = "History", Dock = DockStyle.Fill };
 		historyBox.Controls.Add(_history);
 		_samplesBox.Controls.Add(_samples);
-		var inputBox = new GroupBox { Text = "Input", Dock = DockStyle.Fill, Height = 52 };
-		inputBox.Controls.Add(_input);
+		_inputBox.Controls.Add(_input);
 		_keypadHost.Controls.Add(_keypad);
 		_keypadHost.Resize += (_, _) => CenterKeypad();
 
@@ -87,7 +92,7 @@ internal sealed class MainForm : Form
 		_column.RowStyles.Add(new RowStyle(SizeType.Absolute, 150));
 		_column.Controls.Add(historyBox, 0, 0);
 		_column.Controls.Add(_samplesBox, 0, 1);
-		_column.Controls.Add(inputBox, 0, 2);
+		_column.Controls.Add(_inputBox, 0, 2);
 		_column.Controls.Add(_keypadHost, 0, 3);
 
 		// Sidebar placeholders; Graph and Variables arrive in M6
@@ -279,6 +284,7 @@ internal sealed class MainForm : Form
 		}
 		bool rpn = (bool?)settings["rpn"] == true;
 		_samples.Text = rpn ? Samples.Rpn : Samples.Infix;
+		_inputBox.Text = rpn ? "Input  -  RPN mode" : "Input";    // visible in every view
 	}
 
 	//==================================================================
@@ -325,6 +331,7 @@ internal sealed class MainForm : Form
 				return;
 			}
 			_history.Append(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
+			_recall.Reset();
 			_lastWasResult = reply.Kind == "result";
 			if (reply.Kind != "error")
 			{
@@ -408,6 +415,16 @@ internal sealed class MainForm : Form
 		{
 			e.SuppressKeyPress = true;    // no beep from a single-line TextBox
 			await SubmitAsync();
+		}
+		else if (e.KeyCode == Keys.Up || e.KeyCode == Keys.Down)
+		{
+			e.Handled = true;
+			string? text = e.KeyCode == Keys.Up ? _recall.Up(_input.Text) : _recall.Down();
+			if (text != null)
+			{
+				_input.Text = text;
+				_input.SelectionStart = _input.TextLength;
+			}
 		}
 	}
 
