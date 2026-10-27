@@ -5,7 +5,8 @@ a digit run (`1 000` = 1000), C-style names, decimal / scientific /
 hex / binary / octal literals, the `101b` binary suffix, imaginary
 literals such as `2i` or `3j`, date literals `28.11.2025 [14:05:09]`,
 duration literals `1:30[:00]`,
-result references `$1`, and conversion tags `[from->to]` (SPEC 5.9).
+result references `$1`, conversion tags `[from->to]` (SPEC 5.9), and
+format tags such as `[longdatetime]`.
 """
 
 import re
@@ -106,15 +107,18 @@ def read_number(text, i):
 
 
 def read_tag(text, i):
-    """Read `[from->to]` at text[i]; units may contain `/` (mi/h)."""
+    """Read `[from->to]` or a format tag `[name]` at text[i].
+
+    Units may contain `/` (mi/h). The token text is `from->to`, or just
+    the name for a format tag such as `[longdatetime]`.
+    """
     close = text.find("]", i)
     if close < 0:
         raise CalcError("Missing ']' in conversion")
     body = "".join(text[i + 1:close].split()).lower()
-    source, arrow, target = body.partition("->")
-    if not arrow:
-        raise CalcError("Conversion needs '->' inside [ ]")
-    return Token("tag", f"{source}->{target}", i), close + 1
+    if not body:
+        raise CalcError("Empty [ ]")
+    return Token("tag", body, i), close + 1
 
 
 def tokenize(text):

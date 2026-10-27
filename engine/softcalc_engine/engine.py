@@ -13,7 +13,8 @@ from dataclasses import dataclass, field
 import mpmath
 
 from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationValue, TextValue,
-                    convert_zone, parse_duration, parse_literal, today)
+                    convert_zone, now, parse_duration, parse_literal, today)
+from . import dates
 from .errors import CalcError
 from .formatting import format_number, working_digits
 from .functions import Functions, binary, negate, postfix
@@ -25,7 +26,7 @@ from .units import convert
 GUARD_DIGITS = 10
 PLOT_DIGITS = 20
 MAX_CALL_DEPTH = 200
-CONSTANT_NAMES = {"pi", "e", "i", "j", "today"}
+CONSTANT_NAMES = {"pi", "e", "i", "j", "today", "now"}
 ANSWER_NAMES = {"answer", "ans"}
 RESERVED = CONSTANT_NAMES | ANSWER_NAMES | {"mod"}
 DEFAULT_FUNCTIONS = ["g(x)=x", "function(var)=var*cos(var)"]
@@ -305,6 +306,11 @@ class Engine:
             if not isinstance(value, mpmath.mpf):
                 raise CalcError("Only real numbers can be converted")
             return convert(value, node[1], node[2])
+        if kind == "fmt":
+            fn = dates.FUNCTIONS.get(node[1])
+            if fn is None:
+                raise CalcError(f"Unknown format [{node[1]}]")
+            return fn(self.eval_node(node[2], builtins, scope, depth))
         raise CalcError(f"Cannot evaluate '{kind}'")
 
     def call(self, name, args, builtins, depth):
@@ -333,6 +339,8 @@ class Engine:
             return mpmath.mpc(0, 1)
         if key == "today":
             return today()
+        if key == "now":
+            return now()
         if key in ANSWER_NAMES:
             if self.answer is None:
                 raise CalcError("No previous result")

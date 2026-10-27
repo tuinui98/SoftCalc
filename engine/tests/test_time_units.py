@@ -70,3 +70,32 @@ def test_zone_tag_on_epoch_result():
 @pytest.mark.parametrize("line", ["5 [utc->local]", "1:30 [utc->local]", "27.10.2026 [utc->d]", "27.10.2026 [gmt->local]"])
 def test_zone_errors(line):
     assert run(line).kind == "error"
+
+
+#----------------------------------------------------------------------
+#  now and format tags
+#----------------------------------------------------------------------
+def test_now_has_time_and_is_today():
+    now_text = run("now").text
+    assert len(now_text) == 19 and now_text[:10] == run("today").text
+    assert run("now - today").kind == "result"
+
+
+@pytest.mark.parametrize("line, want", [
+    ("27.10.2026 14:05:09 [longdatetime]", "Tuesday, 27 October 2026 14:05:09"),
+    ("27.10.2026 14:05:09[longdate]", "Tuesday, 27 October 2026"),
+    ("27.10.2026 14:05:09 [LONGTIME]", "14:05:09"),
+    ("epoch(27.10.2026 14:05:09) [fromepoch]", "27.10.2026 14:05:09"),
+    ("27.10.2026 07:00 [utc->local] [local->utc] [longtime]", "07:00:00"),
+])
+def test_format_tags(line, want):
+    assert run(line).text == want
+
+
+def test_format_tag_matches_function():
+    assert run("now [longdatetime]").text[:-2] == run("longdatetime(now)").text[:-2]
+
+
+@pytest.mark.parametrize("line", ["5 [nope]", "1 [in-cm]", "1 []", "now [longdatetime] + 1", "now=5"])
+def test_format_tag_errors(line):
+    assert run(line).kind == "error"

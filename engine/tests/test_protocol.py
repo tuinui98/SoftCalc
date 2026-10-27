@@ -223,3 +223,9 @@ def test_frozen_exe_answers():
     finally:
         if proc.poll() is None:
             proc.kill()
+
+
+def test_format_insert_and_catalog(dispatcher):
+    response = ask(dispatcher, "menu_insert", kind="format", name="longdatetime", text="now")
+    assert response["text"] == "now [longdatetime]"
+    assert "longdatetime" in ask(dispatcher, "catalog")["formats"]

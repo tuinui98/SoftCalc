@@ -2,7 +2,7 @@
 
 SPEC 3 (observed in spec/golden/menu_insert.tsv): operators are inserted
 at the caret, functions wrap the whole current input, conversions append
-` [from->to]`. Returns the new text and caret position.
+` [from->to]`, format tags append ` [name]`. Returns the new text and caret position.
 """
 
 
@@ -16,6 +16,12 @@ def insert_function(text, name):
     new_text = f"{name}({text})"
     caret = len(new_text) - 1 if text == "" else len(new_text)
     return new_text, caret
+
+
+def insert_format(text, name):
+    """Format tag, e.g. `now` becomes `now [longdatetime]` [EXT]."""
+    new_text = f"{text} [{name}]"
+    return new_text, len(new_text)
 
 
 def insert_conversion(text, source, target):
