@@ -8,17 +8,26 @@ infinite or NaN are domain errors.
 
 import mpmath
 
+from . import dates, finance
 from .errors import CalcError
 
 ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
+NUMBER_TYPES = (mpmath.mpf, mpmath.mpc)
 
 
 def check_finite(value, what):
     """Raise for infinite or NaN results (ln(0), atanh(1), ...)."""
-    if mpmath.isinf(value) or mpmath.isnan(value):
+    if isinstance(value, NUMBER_TYPES) and (mpmath.isinf(value) or mpmath.isnan(value)):
         raise CalcError(f"{what} is undefined here")
     return value
+
+
+def require_numbers(what, *values):
+    """Dates and text cannot enter ordinary maths."""
+    for value in values:
+        if not isinstance(value, NUMBER_TYPES):
+            raise CalcError(f"{what} needs a number")
 
 
 def is_real(value):
@@ -51,19 +60,37 @@ class Functions:
         }
 
     def names(self):
-        return set(self.table)
+        return set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS)
+
+    def min_arity(self, name):
+        """Argument count used in RPN, where optional arguments cannot be told apart."""
+        entry = finance.FUNCTIONS.get(name.lower())
+        return entry[1] if entry else 1
 
     def call(self, name, args):
-        fn = self.table.get(name.lower())
+        key = name.lower()
+        if key in dates.FUNCTIONS:
+            self.check_count(key, args, 1, 1)
+            return dates.FUNCTIONS[key](args[0])
+        if key in finance.FUNCTIONS:
+            fn, low, high = finance.FUNCTIONS[key]
+            self.check_count(key, args, low, high)
+            return check_finite(fn(*args), key)
+        fn = self.table.get(key)
         if fn is None:
             raise CalcError(f"Unknown function '{name}'")
-        if len(args) != 1:
-            raise CalcError(f"{name.lower()} expects 1 argument")
+        self.check_count(key, args, 1, 1)
+        require_numbers(key, args[0])
         try:
             result = fn(args[0])
         except (ValueError, ZeroDivisionError) as exc:
-            raise CalcError(f"{name.lower()} is undefined here") from exc
-        return check_finite(result, name.lower())
+            raise CalcError(f"{key} is undefined here") from exc
+        return check_finite(result, key)
+
+    def check_count(self, key, args, low, high):
+        if not low <= len(args) <= high:
+            wanted = str(low) if low == high else f"{low} to {high}"
+            raise CalcError(f"{key} expects {wanted} argument(s)")
 
     #------------------------------------------------------------------
     #  Angle handling
@@ -98,7 +125,11 @@ class Functions:
 #  Operators
 #----------------------------------------------------------------------
 def binary(op, a, b):
-    """Apply + - * / ^ mod."""
+    """Apply + - * / ^ mod; date arithmetic goes to the dates module."""
+    if isinstance(a, dates.DateValue) or isinstance(b, dates.DateValue):
+        require_numbers_or_dates(op, a, b)
+        return dates.date_binary(op, a, b)
+    require_numbers(f"'{op}'", a, b)
     try:
         if op == "+":
             result = a + b
@@ -137,7 +168,19 @@ def factorial(x):
     return check_finite(mpmath.gamma(x + 1), "!")
 
 
+def require_numbers_or_dates(op, a, b):
+    for value in (a, b):
+        if isinstance(value, dates.TextValue):
+            raise CalcError(f"'{op}' cannot use text")
+
+
 def postfix(op, x):
+    require_numbers(op, x)
     if op == "!":
         return factorial(x)
     return x / 100    # '%' is percent [EXT]
+
+
+def negate(x):
+    require_numbers("'-'", x)
+    return -x
