@@ -19,10 +19,10 @@ def single_token(word):
     negative = word.startswith("-") and len(word) > 1
     tokens = tokenize(word[1:] if negative else word)
     if len(tokens) != 2:
-        raise CalcError(f"'{word}' is not a single RPN item")
+        raise CalcError(f"RPN mode: separate items with spaces, e.g. 12 3 + (got '{word}')")
     token = tokens[0]
     if negative and token.kind not in ("number", "imag"):
-        raise CalcError(f"'{word}' is not a single RPN item")
+        raise CalcError(f"RPN mode: separate items with spaces, e.g. 12 3 + (got '{word}')")
     return token, negative
 
 
