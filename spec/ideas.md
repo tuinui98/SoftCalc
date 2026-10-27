@@ -8,3 +8,9 @@ Not part of the clone scope. Revisit after the clone matches the original.
 - Idea: separate fields for name, parameter list, and body/value.
 - Idea: show the existing variable and function list inside the dialog
   (pick one to edit, see name clashes while typing).
+
+## Graph interface (owner, 2026-10-27)
+- The graph works; the owner wants its interface made easier to use
+  later. To discuss before building: for example zoom and pan with the
+  mouse, coordinates under the cursor, several functions at once,
+  auto-fit Y range, a trace cursor.

@@ -44,7 +44,7 @@ internal sealed class MainForm : Form
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
 	private readonly Dictionary<string, Dictionary<object, ToolStripMenuItem>> _settingItems = new();
 
-	private CalcView _view = CalcView.Advanced;
+	private CalcView _view = CalcView.History;    // owner's default view
 	private bool _lastWasResult;
 	private bool _busy;
 	private EngineState _state = new(new List<NamedValue>(), new List<NamedValue>(), new List<UserFunction>());
@@ -64,7 +64,7 @@ internal sealed class MainForm : Form
 		_session.Restarted += (_, reason) => _history.Append(
 			new HistoryEntry("notice", "", "(engine restarted)", reason));
 		Text = "SoftCalc";
-		Size = new Size(980, 700);
+		Size = new Size(400, 651);    // owner's portrait default; M7 remembers the user's size
 		StartPosition = FormStartPosition.CenterScreen;
 		KeyPreview = true;
 		BuildLayout();
@@ -73,7 +73,7 @@ internal sealed class MainForm : Form
 		_input.KeyDown += OnInputKeyDown;
 		_input.KeyPress += OnInputKeyPress;
 		_keypad.KeyPressedLabel += async (_, label) => await OnKeypad(label);
-		ApplyView(CalcView.Advanced);
+		ApplyView(CalcView.History);
 		Shown += async (_, _) => await StartEngineAsync();
 		FormClosed += (_, _) => _session.Dispose();
 	}
