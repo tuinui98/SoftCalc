@@ -17,6 +17,8 @@ golden row's settings. Everything not listed must match the golden file.
 | B_literals | `0x` | crash | error | FIX |
 | B_literals | `2b` | error | error (b undefined) | EXT rule `2b` = `2*b` |
 | D_complex | `j` | error | 1i | EXT `j` |
+| E_trig | `sin(90)` (rad) | 0.13494513131108720188423555479261 | 0.89399666360055789051826949840421 | FIX wrong radian result |
+| S_format | `-2^200` | 1.6069380442589902755419620923412e60 | -1.6069380442589902755419620923412e60 | FIX unary minus below `^` |
 | F_logs | `exp(-1000)` | 1.017932519480705747411831723934e395 | 5.0759588975494567652918094795743e-435 | FIX exponent sign |
 | G_consts | `ans`, `ans*2` | error | value of `answer` (depends on the previous case) | EXT alias |
 | H_vars | `2zza` (zza=6) | error | 12 | EXT implicit multiplication |
@@ -40,6 +42,9 @@ golden row's settings. Everything not listed must match the golden file.
 | N_errors | 500 nines | 1.e500 | 1e500 | FIX |
 
 Notes
+- Machine-readable copy for the tests: `engine/tests/expected_diffs.py`.
+  The dangling-dot rows are applied there as one rule
+  (`normalize_original`) instead of row by row.
 - Golden runs clear History before every case unless the case file says
   `@keep on`; `$n` cases there see an empty History and stay errors.
 - Mass factors derived from the exact pound also change `lb`/`oz`
