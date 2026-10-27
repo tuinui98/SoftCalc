@@ -161,6 +161,9 @@ Full original tree: `inventory/menu_tree.txt`.
   `(-8)^(1/3)` = `(1+1.732...i)`.
 - `exp(-1000)` must give about `5.08e-435` (original printed
   `1.0179...e395`) [FIX].
+- `sin(90)` in Radians must give `0.8939966636...` (original printed
+  `0.1349451313...`, wrong; its Degrees and Grads results are right)
+  [FIX].
 
 ### 5.6 Variables [KEEP unless noted]
 - `name=expr` defines or updates; prints `Variable Added`.
@@ -213,7 +216,17 @@ Full original tree: `inventory/menu_tree.txt`.
   all 61 digits).
 
 ### 6.2 Number format
-- Trailing zeros trimmed [KEEP]. A mantissa with no fractional digits
+- Round to the precision's significant digits; trim trailing zeros
+  [KEEP].
+- Fixed or scientific [KEEP], from `golden/S_format.tsv`:
+  - |x| >= 1: fixed when the integer part has at most `precision`
+    digits (`10^31` fixed at 32, `10^32` scientific);
+  - |x| < 1: fixed when the leading zeros after the point plus the
+    significant digits are at most `precision + 1` (`1e-33` fixed at 32,
+    `1/3*1e-10` scientific). Values between `1e-34` and `1e-39` at 32
+    were not probed; the rule is inferred from both sides.
+- Scientific form: mantissa, `e`, signed exponent without `+` or
+  padding: `1.5e32`, `5e-41`. A mantissa with no fractional digits
   prints without a dot: `1e100`, `1e-40` (original `1.e100`) [FIX].
 - Hex output: `0xFF`, `-0x1`, fractions `0x3.8`,
   `0x0.1999...9A` [KEEP].
