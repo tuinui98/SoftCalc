@@ -453,6 +453,12 @@ internal sealed class MainForm : Form
 	private async Task OnKeypad(string label)
 	{
 		_input.Focus();
+		bool rpn = (bool?)_session.Settings["rpn"] == true;
+		if (rpn && (label == "Ent" || (label.Length == 1 && OperatorSymbols.Contains(label[0]))))
+		{
+			await OnRpnKeypad(label);
+			return;
+		}
 		switch (label)
 		{
 			case "Ent":
@@ -479,6 +485,25 @@ internal sealed class MainForm : Form
 				_input.SelectedText = label;
 				break;
 		}
+	}
+
+	// RPN keypad: Ent separates numbers, an operator is appended and evaluates the line
+	private async Task OnRpnKeypad(string label)
+	{
+		if (label == "Ent")
+		{
+			var (text, submit) = InputRules.RpnEnter(_input.Text);
+			_input.Text = text;
+			_input.SelectionStart = _input.TextLength;
+			if (submit)
+			{
+				await SubmitAsync();
+			}
+			return;
+		}
+		_input.Text = InputRules.RpnOperator(_input.Text, label[0]);
+		_input.SelectionStart = _input.TextLength;
+		await SubmitAsync();
 	}
 
 	private async Task MemoryAddAsync(bool subtract)

@@ -38,4 +38,26 @@ public class InputRulesTests
 	{
 		Assert.Equal(expected, InputRules.MemoryAdd(input, hasMemory, subtract));
 	}
+
+	[Theory]
+	[InlineData("12", "12 ", false)]           // after a number: separate
+	[InlineData("12 3", "12 3 ", false)]
+	[InlineData("1.5", "1.5 ", false)]
+	[InlineData("12 ", "12 ", true)]           // already separated: evaluate
+	[InlineData("12 3 +", "12 3 +", true)]     // after an operator: evaluate
+	[InlineData("5 sqrt", "5 sqrt", true)]     // after a function: evaluate
+	[InlineData("", "", true)]
+	public void RpnEnterSeparatesOrEvaluates(string text, string expectedText, bool expectedSubmit)
+	{
+		Assert.Equal((expectedText, expectedSubmit), InputRules.RpnEnter(text));
+	}
+
+	[Theory]
+	[InlineData("12 3", '+', "12 3 +")]
+	[InlineData("12 3 ", '*', "12 3 *")]
+	[InlineData("", '-', "-")]
+	public void RpnOperatorIsItsOwnItem(string text, char symbol, string expected)
+	{
+		Assert.Equal(expected, InputRules.RpnOperator(text, symbol));
+	}
 }

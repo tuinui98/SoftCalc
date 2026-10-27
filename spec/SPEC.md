@@ -185,6 +185,11 @@ Full original tree: `inventory/menu_tree.txt`.
 - No stack across lines; leftover operands or a lone operator are an
   error. Infix input is rejected while RPN is on.
 - New operators (`!`, `%`, `mod`) work as postfix tokens too. [DEF]
+- Keypad in RPN mode (owner's choice, line-based): `Ent` after a number
+  adds a space to separate items; `Ent` after an operator, a function
+  name or a trailing space evaluates; an operator key appends itself as
+  an item and evaluates at once (`1 2 Ent 3 +` gives `12 3 +` = 15).
+  Typed Enter always evaluates. [EXT]
 - Definition lines (containing `=`) keep the infix form in RPN mode;
   a user function in RPN takes as many operands as it has parameters.
   [DEF]
