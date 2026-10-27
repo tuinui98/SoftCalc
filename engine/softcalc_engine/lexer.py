@@ -3,13 +3,14 @@
 Implements SPEC 5.1 and 5.2: whitespace separates tokens except inside
 a digit run (`1 000` = 1000), C-style names, decimal / scientific /
 hex / binary / octal literals, the `101b` binary suffix, imaginary
-literals such as `2i` or `3j`, result references `$1`, and conversion
-tags `[from->to]` (SPEC 5.9).
+literals such as `2i` or `3j`, date literals `28.11.2025 [14:05:09]`,
+result references `$1`, and conversion tags `[from->to]` (SPEC 5.9).
 """
 
 import re
 from dataclasses import dataclass
 
+from .dates import DATE_LITERAL
 from .errors import CalcError
 
 OPERATORS = "+-*/^()!%,="
@@ -30,7 +31,7 @@ SUFFIX_BINARY = re.compile(r"[01]+b")
 class Token:
     """One lexical token.
 
-    kind is one of: number, imag, name, op, ref, tag, end. For numbers,
+    kind is one of: number, imag, date, name, op, ref, tag, end. For numbers,
     text holds the literal and base its radix; value conversion happens
     later so the evaluator can pick the working precision. A ref holds
     the digits after `$`; a tag holds `from->to` in lower case.
@@ -42,9 +43,18 @@ class Token:
     base: int = 10
 
 
+DATE_BEFORE = re.compile(r"\d{1,2}\.\d{1,2}\.\d{4}$")
+
+
 def join_digit_spaces(text):
-    """Remove whitespace that sits between two digits (`1 000` -> `1000`)."""
-    return re.sub(r"(?<=\d)\s+(?=\d)", "", text)
+    """Remove whitespace that sits between two digits (`1 000` -> `1000`),
+    except the space between a date and its time (`27.10.2026 14:05`).
+    """
+    def keep_or_join(match):
+        if DATE_BEFORE.search(text, 0, match.start()):
+            return match.group()
+        return ""
+    return re.sub(r"(?<=\d)\s+(?=\d)", keep_or_join, text)
 
 
 def is_name_char(text, i):
@@ -110,6 +120,11 @@ def tokenize(text):
         ch = text[i]
         if ch.isspace():
             i += 1
+            continue
+        date = DATE_LITERAL.match(text, i) if ch.isdigit() else None
+        if date:
+            tokens.append(Token("date", date.group(), i))
+            i = date.end()
             continue
         if ch.isdigit() or (ch == "." and i + 1 < len(text) and text[i + 1].isdigit()):
             token, i = read_number(text, i)

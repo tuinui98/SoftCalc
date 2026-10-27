@@ -91,18 +91,38 @@ def signed_power(exponent, radix):
     return f"{sign}{body}"
 
 
-def format_real(value, digits, base="dec"):
-    """Format a real mpf in the given output base."""
+def round_decimals(value, decimals):
+    """Round half away from zero to a fixed number of decimal places."""
+    scale = mpmath.power(10, decimals)
+    magnitude = mpmath.floor(abs(value) * scale + mpmath.mpf("0.5")) / scale
+    return -magnitude if value < 0 else magnitude
+
+
+def pad_fraction(text, decimals):
+    """Show trailing zeros up to `decimals` places (fixed notation only)."""
+    if decimals <= 0 or "e" in text:
+        return text
+    int_part, _, frac_part = text.partition(".")
+    return int_part + "." + frac_part.ljust(decimals, "0")
+
+
+def format_real(value, digits, base="dec", decimals=None, pad_zeros=False):
+    """Format a real mpf in the given output base.
+
+    decimals / pad_zeros apply to decimal output only (extensions.md E9).
+    """
     radix = RADIX[base]
+    if base == "dec" and decimals is not None:
+        value = round_decimals(value, decimals)
     if value == 0:
-        return {"dec": "0", "hex": "0x0", "bin": "0b", "oct": "0o0"}[base]
+        zero = {"dec": "0", "hex": "0x0", "bin": "0b", "oct": "0o0"}[base]
+        return pad_fraction(zero, decimals) if base == "dec" and pad_zeros and decimals else zero
     negative, digit_str, exp_r = split_digits(value, digits, radix)
     sign = "-" if negative else ""
     kind, first, second = layout(digit_str, exp_r, digits)
     if base == "dec":
-        if kind == "fixed":
-            return sign + with_fraction(first, second)
-        return f"{sign}{first}e{second}"
+        text = sign + with_fraction(first, second) if kind == "fixed" else f"{sign}{first}e{second}"
+        return pad_fraction(text, decimals) if pad_zeros and decimals else text
     if base == "bin":
         if kind == "fixed":
             return sign + with_fraction(first, second) + "b"
@@ -136,16 +156,16 @@ def snap_complex(value):
     return value
 
 
-def format_number(value, digits, base="dec"):
+def format_number(value, digits, base="dec", decimals=None, pad_zeros=False):
     """Format a real or complex result for the History pane."""
     value = snap_complex(value)
     if not isinstance(value, mpmath.mpc):
-        return format_real(value, digits, base)
+        return format_real(value, digits, base, decimals, pad_zeros)
     re_part, im_part = value.real, value.imag
-    im_text = format_real(im_part, digits, base) + "i"
+    im_text = format_real(im_part, digits, base, decimals, pad_zeros) + "i"
     if re_part == 0 and base == "dec":
         return im_text
-    re_text = format_real(re_part, digits, base)
+    re_text = format_real(re_part, digits, base, decimals, pad_zeros)
     joiner = "" if im_text.startswith("-") else "+"
     return f"({re_text}{joiner}{im_text})"
 

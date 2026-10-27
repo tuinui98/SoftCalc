@@ -51,6 +51,8 @@ def parse_rpn(text, arity_of):
             stack.append(("neg", node) if negative else node)
         elif token.kind == "ref":
             stack.append(("ref", int(token.text)))
+        elif token.kind == "date":
+            stack.append(("date", token.text))
         elif token.kind == "op" and token.text in BINARY_OPS:
             left, right = pop(2, token.text)
             stack.append(("bin", token.text, left, right))

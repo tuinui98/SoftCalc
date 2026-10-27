@@ -161,3 +161,25 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   owner tries it.
 - Open: rate per period (Excel) or annual rate plus frequency in the
   functions? Default: rate per period, as Excel. [DEF]
+
+---
+## Implementation notes (M3, 2026-10-27)
+Choices made while implementing E7-E11 in the engine; all [DEF].
+- E7: `epoch` / `fromepoch` use the current UTC offset of the local zone
+  for every date (Windows rejects `timestamp()` near 1970; Thailand has
+  no daylight saving). `longdate`/`longtime`/`longdatetime` also accept
+  a number, taken as Unix seconds. English day and month names. In RPN
+  mode only date literals without a time work, since spaces separate
+  RPN items. `date + n` with a fractional n adds a time of day.
+- E9: `decimals` rounds half away from zero; it applies to decimal
+  output only (hex/bin/oct unchanged) and never to the stored value.
+  `pad_zeros` pads fixed notation only; scientific results stay as is.
+- E10: substituted tokens are variables, `answer`/`ans` and `$n`.
+  Constants (`pi`, `e`) and function names stay. Negative values are
+  wrapped in parentheses, and `*` is inserted where a value replaces a
+  name inside an implicit product (`2x` shows `2*5`). Digit runs joined
+  by spaces show joined (`1 000` shows `1000`).
+- E11: in RPN the finance functions take their 3 required operands.
+  The schedule rows follow the contribution frequency, or the
+  compounding frequency when there is no contribution (daily for
+  continuous); contributions use the effective rate per row.
