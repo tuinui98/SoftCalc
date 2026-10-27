@@ -4,7 +4,8 @@ Machine-readable form of spec/golden_expected_diffs.md. Keys are
 (group, input, angle); ERROR means any error line. Rows not listed must
 match the original, after normalize_original() applies the global
 format fix (no dangling dot: `1.e100` -> `1e100`, `11111111.b` ->
-`11111111b`).
+`11111111b`, hex `0x1.*0x10^0x20` ->
+`0x1*0x10^0x20`).
 """
 
 import re
@@ -28,9 +29,20 @@ OVERRIDES = {
     ("G_consts", "ans*2", "rad"): "6.283185307179586476925286766559",
     ("N_errors", "=5", "rad"): ERROR,
     ("S_format", "-2^200", "rad"): "-1.6069380442589902755419620923412e60",
+    ("H_vars", "2zza", "rad"): "12",
+    ("H_vars", "zzlong_name_1=1", "rad"): "Variable Added",
+    ("H_vars", "zzlong_name_1", "rad"): "1",
+    ("H_vars", "zz1=3", "rad"): "Variable Added",
+    ("I_funcs", "sin(x)=1", "rad"): ERROR,
+    ("R_retest", "sin(x)=1", "rad"): ERROR,
+    ("R_retest", "cos(x)=x", "rad"): ERROR,
+    ("Q_answer", "ans", "rad"): "30",
+    ("Q_answer", "$1", "rad"): "30",
+    ("J_conv", "1 [kg->lb]", "rad"): "2.2046226218487758072297380134503",
+    ("T_bases", "-2^200", "rad"): "-0x1*0x10^0x32",
 }
 
-DANGLING_DOT = re.compile(r"(\d)\.(?=[eb])")
+DANGLING_DOT = re.compile(r"([0-9A-F])\.(?=[eb*])")
 
 
 def normalize_original(text):

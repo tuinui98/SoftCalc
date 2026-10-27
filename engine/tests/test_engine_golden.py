@@ -1,8 +1,9 @@
 """tests/test_engine_golden.py - Run the engine against the golden data.
 
-Each golden group runs in its own Engine, in file order, clearing the
-result stack before every case as the recording did. Groups listed in
-GROUPS are the ones the current milestone must pass.
+Each golden group runs in its own Engine, in file order. The recording
+cleared History before every case, except in KEEP_GROUPS, so the result
+stack is cleared the same way. Groups listed in GROUPS are the ones the
+current milestone must pass.
 """
 
 import pytest
@@ -12,9 +13,11 @@ from golden import load_group
 from softcalc_engine.engine import Engine
 
 GROUPS = [
-    "A_arith", "B_literals", "D_complex", "E_trig", "F_logs",
-    "G_consts", "L_precision", "N_errors", "S_format",
+    "A_arith", "B_literals", "C_base", "D_complex", "E_trig", "F_logs",
+    "G_consts", "H_vars", "I_funcs", "J_conv", "L_precision", "M_rpn",
+    "N_errors", "Q_answer", "R_retest", "S_format", "T_bases",
 ]
+KEEP_GROUPS = {"Q_answer"}
 
 
 def run_group(group):
@@ -25,7 +28,8 @@ def run_group(group):
         engine.settings.angle = case.angle
         engine.settings.base = case.base
         engine.settings.rpn = case.rpn == "on"
-        engine.clear_history()
+        if group not in KEEP_GROUPS:
+            engine.clear_history()
         yield case, engine.evaluate(case.input)
 
 
@@ -44,17 +48,15 @@ def expected_for(case):
 def test_group(group):
     failures = []
     for case, got in run_group(group):
-        if case.base != "dec":
-            continue    # hex/bin/oct output arrives in M2
         want = expected_for(case)
         if want is ERROR:
             ok = got.kind == "error"
         elif want is None:
             ok = got.kind == "empty"
         else:
-            ok = got.kind == "result" and got.text == want
+            ok = got.kind in ("result", "definition") and got.text == want
         if not ok:
             want_text = "ERROR" if want is ERROR else want
-            failures.append(f"line {case.line_no}: {case.input!r} [{case.prec} {case.angle}]"
+            failures.append(f"line {case.line_no}: {case.input!r} [{case.prec} {case.angle} {case.base}]"
                             f"\n    want {want_text!r}\n    got  {got.kind} {got.text!r}")
     assert not failures, f"{len(failures)} mismatches:\n" + "\n".join(failures)

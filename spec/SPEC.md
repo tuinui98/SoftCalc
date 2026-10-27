@@ -185,6 +185,9 @@ Full original tree: `inventory/menu_tree.txt`.
 - No stack across lines; leftover operands or a lone operator are an
   error. Infix input is rejected while RPN is on.
 - New operators (`!`, `%`, `mod`) work as postfix tokens too. [DEF]
+- Definition lines (containing `=`) keep the infix form in RPN mode;
+  a user function in RPN takes as many operands as it has parameters.
+  [DEF]
 
 ### 5.9 Conversions
 - Syntax `expr [from->to]`, space before `[` optional,
@@ -234,9 +237,18 @@ Full original tree: `inventory/menu_tree.txt`.
   `1b*10b^101000b`, `1.1001...1101b*10b^-100b` (original put a dot
   before `b` even without fraction, `11111111.b`, `1.b*10b^...`)
   [FIX].
-- Octal output, new: `0o17`, same layout rules as hex [EXT, DEF].
+- Hex and binary follow the same fixed/scientific rule, counting
+  digits in that base (`golden/T_bases.tsv`) [KEEP]: 32 hex digits at
+  precision 32 (`2^127` fixed, `2^128` scientific); scientific forms
+  `0x6*0x10^0x20`, `0x5.555*0x10^-0x6`, `1.1b*10b^101000b`,
+  `1b*10b^-101000b`. Hex digits upper case. Working precision grows with
+  the base so 512 hex digits are exact.
+- Zero: `0`, `0x0`, `0b`. [DEF for `0b`; original `0.b`]
+- Octal output, new: `0o17`, `-0o10`, `0o0.4`, `0o1*0o10^0o50`, same
+  rules as hex [EXT, DEF].
 - Complex: `1i`, `2i`, `(3+4i)`, `(11+2i)`; results with a zero
-  imaginary part print as real; hex `(0x3+0x4i)`.
+  imaginary part print as real. In hex, binary and octal the real part
+  is always shown: `(0x3+0x4i)`, `(0x0+0x0.8i)`, `(0b-0.1bi)` [KEEP].
 
 ### 6.3 History format [KEEP]
 - Each entry: the input line, then the result on the next line,
