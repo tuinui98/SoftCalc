@@ -83,8 +83,8 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   - Long format: `longdate(x)` gives for example
     `Tuesday, 27 October 2026`, `longtime(x)` gives `14:05:09`,
     `longdatetime(x)` both. [names DEF]
-- Open: time-of-day literal syntax (needed for `fromepoch` results
-  and `longtime` input), e.g. `27.10.2026 14:05:09`.
+- Date-time literal `27.10.2026 14:05:09` (seconds optional), accepted
+  2026-10-27.
 
 ## E8. Currency conversion
 - Same tag syntax as units: `100 [usd->thb]`, chainable, case-
@@ -117,8 +117,7 @@ Decisions on E1-E6 are settled in `SPEC.md`.
 - Clicking a History line puts the **original input text** (with the
   variable names) back into the Input box for editing.
 - Past lines are never recalculated.
-- To confirm: the interpretation above, and whether the result line
-  shows only the number.
+- Interpretation confirmed by the owner 2026-10-27.
 
 ## E12. Persistent history
 - Decided 2026-10-27: History is saved to a file (differs from the
@@ -129,10 +128,16 @@ Decisions on E1-E6 are settled in `SPEC.md`.
     drop first.
   - Two windows (two running instances) may load the same history
     file at the same time; no exclusive lock.
-- Consequence to accept or change: with two instances, each one writes
-  its own History on close, so the instance closed last wins and the
-  other's new entries are lost. Alternative: on close, re-read the
-  file and merge new entries by timestamp before writing.
+- Decided 2026-10-27: merge on close, so no instance loses entries and
+  no instance needs to know whether others are running:
+  - every entry has a unique ID: process start time + PID + sequence
+    number (PID alone is reused by Windows);
+  - on close: take a short exclusive lock on the file, re-read it, union
+    with this instance's entries (dedupe by ID), sort by timestamp, keep
+    the newest N, write atomically (temp file + replace), unlock;
+  - Clear History records a "cleared at" timestamp in the file; the
+    merge drops every entry older than the newest such mark, so cleared
+    entries do not come back from another instance.
 - History file format: UTF-8, one entry per record holding the
   original input, the numeric display form, the result, and a
   timestamp (needed for E10 click-to-recall and for merging).
@@ -152,6 +157,7 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   `fv(rate, n, pmt, pv)`, `pv(...)`, `pmt(...)`, `nper(...)`.
 - Decided 2026-10-27: signed cash flows as in Excel (money paid out
   negative, money received positive), e.g. `fv(0.05/12, 120, -100,
-  -1000)` is positive. [interpreted from "ใช้เป็นเครื่องหมาย +-"]
+  -1000)` is positive. Confirmed 2026-10-27; to revisit after the
+  owner tries it.
 - Open: rate per period (Excel) or annual rate plus frequency in the
   functions? Default: rate per period, as Excel. [DEF]
