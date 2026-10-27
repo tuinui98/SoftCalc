@@ -126,6 +126,44 @@ internal sealed class EngineSession : IDisposable
 		return ((string?)reply["text"] ?? "", (int?)reply["caret"] ?? 0);
 	}
 
+	// Removes a user variable or function; returns false if there was none
+	public async Task<bool> DeleteAsync(string name)
+	{
+		try
+		{
+			await GuardedAsync("delete", new JsonObject { ["name"] = name });
+		}
+		catch (EngineRequestException)
+		{
+			return false;
+		}
+		await SnapshotDefinitionsAsync();
+		return true;
+	}
+
+	// Samples a one-parameter function; null entries are gaps (undefined or complex)
+	public async Task<IReadOnlyList<(double X, double Y)?>> PlotAsync(
+		string function, string mode, double start, double end, int samples)
+	{
+		var reply = await GuardedAsync("plot", new JsonObject
+		{
+			["function"] = function, ["mode"] = mode, ["start"] = start, ["end"] = end, ["samples"] = samples,
+		});
+		var points = new List<(double X, double Y)?>();
+		foreach (var node in reply["points"]?.AsArray() ?? new JsonArray())
+		{
+			if (node is JsonArray pair && pair.Count == 2)
+			{
+				points.Add(((double)pair[0]!, (double)pair[1]!));
+			}
+			else
+			{
+				points.Add(null);
+			}
+		}
+		return points;
+	}
+
 	//==================================================================
 	//  Plumbing
 	//==================================================================
