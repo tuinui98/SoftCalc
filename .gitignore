@@ -11,3 +11,18 @@ spec/raw/
 
 # Local-only files
 *.local.*
+
+# Python engine
+engine/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+engine/build/
+engine/dist/
+
+# .NET UI
+ui/**/bin/
+ui/**/obj/
+.vs/
+*.user
+*.egg-info/
