@@ -202,8 +202,8 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
 
 ## E13. More time units and UTC/local (added 2026-10-27)
 - Time units now: `yr mo wk d h min s` (original had `d min s`).
-  1 yr = 365.2425 days (mean Gregorian year), 1 mo = 1/12 yr
-  (30.436875 days), 1 wk = 7 days. [DEF: owner may prefer 365 / 30]
+  1 yr = 365 days, 1 mo = 30 days, 1 wk = 7 days (owner's choice
+  2026-10-27, replacing the mean Gregorian year); so 1 yr = 12.1666... mo.
 - Long-name aliases inside tags only: `year(s) month(s) week(s) day(s)
   hour(s) hr minute(s) sec second(s)`. Outside `[ ]` these stay free
   names for variables.
