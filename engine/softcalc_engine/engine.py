@@ -23,6 +23,7 @@ from .rpn import parse_rpn
 from .units import convert
 
 GUARD_DIGITS = 10
+PLOT_DIGITS = 20
 MAX_CALL_DEPTH = 200
 CONSTANT_NAMES = {"pi", "e", "i", "j", "today"}
 ANSWER_NAMES = {"answer", "ans"}
@@ -347,6 +348,77 @@ class Engine:
         if n < 1 or n > len(self.results):
             raise CalcError(f"No result ${n}")
         return self.results[-n]
+
+    #------------------------------------------------------------------
+    #  Queries for the UI (design/protocol.md)
+    #------------------------------------------------------------------
+    def working_context(self):
+        return mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS)
+
+    def value_of(self, text):
+        """Evaluate an expression without touching History, answer or $n."""
+        with self.working_context():
+            builtins = Functions(self.settings.angle)
+            tree = parse_line(text, is_function=lambda name: self.is_function(name, builtins))
+            if tree[0] in ("assign", "define"):
+                raise CalcError("A value is needed here, not a definition")
+            return self.eval_node(tree, builtins, {}, 0)
+
+    def state(self):
+        """Constants, user variables and user functions for the sidebar."""
+        with self.working_context():
+            constants = [{"name": "pi", "value": self.format_value(+mpmath.pi)},
+                         {"name": "e", "value": self.format_value(+mpmath.e)}]
+            variables = [{"name": name, "value": self.format_value(value)}
+                         for name, value in self.variables.values()]
+        functions = []
+        for fn in self.functions.values():
+            head = f"{fn.name}({', '.join(fn.params)})="
+            functions.append({"name": fn.name, "params": list(fn.params), "body": fn.body_text,
+                              "head": head, "source": head + fn.body_text})
+        return {"constants": constants, "variables": variables, "functions": functions}
+
+    def delete(self, name):
+        """Remove a user variable or function; returns which one it was."""
+        key = name.lower()
+        if key in self.variables:
+            del self.variables[key]
+            return "variable"
+        if key in self.functions:
+            del self.functions[key]
+            return "function"
+        raise CalcError(f"No user variable or function '{name}'")
+
+    def plot(self, name, mode, start, end, samples):
+        """Sample a one-parameter user function; None where it is undefined."""
+        fn = self.functions.get(name.lower())
+        if fn is None or len(fn.params) != 1:
+            raise CalcError(f"'{name}' is not a one-parameter function")
+        if samples < 2:
+            raise CalcError("samples must be at least 2")
+        points = []
+        with mpmath.workdps(PLOT_DIGITS):
+            builtins = Functions(self.settings.angle)
+            step = (mpmath.mpf(end) - start) / (samples - 1)
+            for index in range(samples):
+                t = mpmath.mpf(start) + step * index
+                points.append(self.plot_point(fn, builtins, t, mode))
+        return points
+
+    def plot_point(self, fn, builtins, t, mode):
+        try:
+            value = self.call(fn.name, [t], builtins, 0)
+        except CalcError:
+            return None
+        if isinstance(value, mpmath.mpc):
+            if abs(value.imag) > abs(value) * mpmath.mpf(10) ** -10:
+                return None
+            value = value.real
+        if not isinstance(value, mpmath.mpf) or mpmath.isinf(value) or mpmath.isnan(value):
+            return None
+        if mode == "polar":
+            return [float(value * mpmath.cos(t)), float(value * mpmath.sin(t))]
+        return [float(t), float(value)]
 
     #------------------------------------------------------------------
     #  .pcf definitions text (SPEC 8)
