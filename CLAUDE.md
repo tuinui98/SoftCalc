@@ -40,7 +40,11 @@ python -m venv .venv                      # once
 .venv/Scripts/python -m pip install -e ".[dev]"
 .venv/Scripts/python -m pytest -q         # all tests
 .venv/Scripts/python -m pytest tests/test_golden_data.py::test_reference_rows -q   # one test
+.venv/Scripts/python -m softcalc_engine   # protocol server on stdin/stdout (design/protocol.md)
 ```
+Frozen engine: `powershell -ExecutionPolicy Bypass -File build\build_engine.ps1`
+writes `engine\dist\softcalc-engine.exe`; `test_frozen_exe_answers` runs
+against it when it exists.
 .NET SDK: `C:\Program Files\dotnet\dotnet.exe` (10.0.x). It may not be on
 the PATH of an already-open shell.
 
