@@ -3,8 +3,8 @@
 Linear units convert through a base unit per category with exact
 international definitions (1 lb = 0.45359237 kg [FIX]). Temperature is
 affine and converts through kelvin. Time adds year, month, week and hour
-[EXT]; a year is the mean Gregorian year (365.2425 days) and a month is
-1/12 of it. Long names (`year`, `hours`, ...) are aliases of the tokens.
+[EXT]; a year is 365 days and a month 30 days (owner's choice), so a
+year is not exactly 12 months. Long names (`year`, `hours`, ...) are aliases of the tokens.
 """
 
 import mpmath
@@ -19,7 +19,7 @@ LINEAR = {
     "m": ("length", "1"), "km": ("length", "1000"),
     "lb": ("mass", "0.45359237"), "oz": ("mass", "0.45359237/16"),
     "g": ("mass", "0.001"), "kg": ("mass", "1"),
-    "yr": ("time", "31556952"), "mo": ("time", "2629746"), "wk": ("time", "604800"),
+    "yr": ("time", "31536000"), "mo": ("time", "2592000"), "wk": ("time", "604800"),
     "d": ("time", "86400"), "h": ("time", "3600"), "min": ("time", "60"), "s": ("time", "1"),
     "mi/h": ("velocity", "1609.344/3600"), "m/s": ("velocity", "1"),
     "ft/h": ("velocity", "0.3048/3600"), "km/h": ("velocity", "1000/3600"),
