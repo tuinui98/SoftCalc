@@ -198,7 +198,7 @@ Full original tree: `inventory/menu_tree.txt`.
 - Units [KEEP]:
   - Length `in ft yd mile mm cm m km`
   - Mass `lb oz g kg`
-  - Time `d min s`
+  - Time `d min s`; plus `yr mo wk h` and long-name aliases [EXT, see extensions.md E13]
   - Velocity `mi/h m/s ft/h km/h knot`
   - Temperature `c f k` (affine conversions)
 - Factors: exact international definitions: 1 in = 2.54 cm,
