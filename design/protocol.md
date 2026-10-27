@@ -69,13 +69,15 @@ deleted).
                "Trig Functions": [...], "Log Functions": [...],
                "Date Functions": [...], "Finance Functions": [...]},
  "conversions": {"Length": ["in", "ft", ...], "Time": [...], ...,
-                 "Time zone": ["utc", "local"]}}
+                 "Time zone": ["utc", "local"]},
+ "formats": ["longdatetime", "longdate", "longtime", "epoch", "fromepoch"]}
 ```
 
 ### `menu_insert`
 `{"kind": "operator", "symbol": "+", "text": "1", "caret": 1}`
 `{"kind": "function", "name": "sqrt", "text": "1", "caret": 1}`
 `{"kind": "conversion", "source": "in", "target": "cm", "text": "1", "caret": 1}`
+`{"kind": "format", "name": "longdatetime", "text": "now", "caret": 3}`
 -> `{"text": "...", "caret": <int>}` (SPEC 3 insertion rules).
 
 ### `plot`

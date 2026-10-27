@@ -11,6 +11,7 @@ Nodes are tuples:
     ("call", name, [args])
     ("neg", node)            ("pos", node)         ("post", op, node)
     ("bin", op, left, right) ("mul", left, right)  ("conv", src, dst, node)
+    ("fmt", name, node)
     ("assign", name, node)   ("define", name, [params], node)
 ("mul" marks implicit multiplication, kept apart for display.)
 """
@@ -130,8 +131,12 @@ class Parser:
         """
         node = self.additive()
         while self.peek().kind == "tag":
-            source, _, target = self.advance().text.partition("->")
-            node = ("conv", source, target, node)
+            body = self.advance().text
+            if "->" in body:
+                source, _, target = body.partition("->")
+                node = ("conv", source, target, node)
+            else:
+                node = ("fmt", body, node)    # `now [longdatetime]` [EXT]
             if self.peek().kind == "op" and self.peek().text in CONTINUE_OPS or self.at_mod():
                 node = self.additive(self.multiplicative(node))
         return node

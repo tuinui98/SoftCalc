@@ -85,6 +85,11 @@ def parse_duration(match):
     return DurationValue(int(hours) * 3600 + int(minutes) * 60 + seconds_value)
 
 
+def now():
+    """Current local date and time, to the second."""
+    return DateValue(datetime.now().replace(microsecond=0), True)
+
+
 def today():
     now = datetime.now()
     return DateValue(datetime(now.year, now.month, now.day), False)

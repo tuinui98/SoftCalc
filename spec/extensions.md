@@ -211,3 +211,15 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
 - `[utc->local]` and `[local->utc]` on dates and date-times, using the
   current local UTC offset (same limitation as epoch). Numbers,
   durations and other units are errors in these tags.
+
+## E7c. `now` and format tags (added 2026-10-27)
+- `now`: current local date and time to the second (reserved name, like
+  `today`, which stays the date at 00:00).
+- Format tags without an arrow apply a date function as a conversion:
+  `now [longdatetime]` = `longdatetime(now)`. Tags: `[longdatetime]`,
+  `[longdate]`, `[longtime]`, `[epoch]`, `[fromepoch]`; they chain with
+  unit and zone tags (`x [utc->local] [longdatetime]`). Text results
+  cannot be computed further. A number before a long-format tag is read
+  as Unix seconds, as in the functions.
+- Menu: protocol `catalog.formats` lists them; `menu_insert` kind
+  `format` appends ` [name]`.

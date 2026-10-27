@@ -35,6 +35,7 @@ CATALOG = {
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES)},
+    "formats": ["longdatetime", "longdate", "longtime", "epoch", "fromepoch"],
 }
 
 
@@ -130,6 +131,8 @@ class Dispatcher:
             new_text, new_caret = menu.insert_operator(text, caret, argument(request, "symbol", str))
         elif kind == "function":
             new_text, new_caret = menu.insert_function(text, argument(request, "name", str))
+        elif kind == "format":
+            new_text, new_caret = menu.insert_format(text, argument(request, "name", str))
         elif kind == "conversion":
             new_text, new_caret = menu.insert_conversion(
                 text, argument(request, "source", str), argument(request, "target", str))
