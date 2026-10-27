@@ -7,7 +7,8 @@ multiplication, unary sign, `* / mod`, `+ -`, and conversion tags last
 
 Nodes are tuples:
     ("num", text, base)      ("imag", text)        ("name", name)
-    ("ref", n)               ("date", text)        ("call", name, [args])
+    ("ref", n)               ("date", text)        ("duration", text)
+    ("call", name, [args])
     ("neg", node)            ("pos", node)         ("post", op, node)
     ("bin", op, left, right) ("mul", left, right)  ("conv", src, dst, node)
     ("assign", name, node)   ("define", name, [params], node)
@@ -215,9 +216,9 @@ class Parser:
         if token.kind == "ref":
             self.advance()
             return ("ref", int(token.text))
-        if token.kind == "date":
+        if token.kind in ("date", "duration"):
             self.advance()
-            return ("date", token.text)
+            return (token.kind, token.text)
         if token.kind == "name":
             if token.text.lower() == KEYWORD_MOD:
                 raise CalcError("'mod' needs a left operand")

@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 
 import mpmath
 
-from .dates import DATE_LITERAL, DateValue, TextValue, parse_literal, today
+from .dates import (DATE_LITERAL, DURATION_LITERAL, DateValue, DurationValue, TextValue,
+                    parse_duration, parse_literal, today)
 from .errors import CalcError
 from .formatting import format_number, working_digits
 from .functions import Functions, binary, negate, postfix
@@ -140,7 +141,7 @@ class Engine:
         return None
 
     def format_value(self, value):
-        if isinstance(value, DateValue):
+        if isinstance(value, (DateValue, DurationValue)):
             return value.text()
         if isinstance(value, TextValue):
             return value.text
@@ -154,8 +155,11 @@ class Engine:
         """Rebuild the input with values in place of variables, answer and $n.
 
         Explicit `*` is added where a value replaces a name inside an
-        implicit product, so `2x` shows as `2*5`.
+        implicit product, so `2x` shows as `2*5`. In RPN mode each
+        space-separated item is replaced on its own and spaces stay.
         """
+        if self.settings.rpn:
+            return re.sub(r"\S+", lambda m: self.display_rpn_item(m.group(), builtins), text)
         source = join_digit_spaces(text)
         tokens = tokenize(source)
         out = []
@@ -171,6 +175,13 @@ class Engine:
             cursor = end
         out.append(source[cursor:])
         return "".join(out)
+
+    def display_rpn_item(self, word, builtins):
+        tokens = tokenize(word)
+        if len(tokens) != 2:
+            return word
+        value = self.display_value(tokens[0], tokens[1], builtins)
+        return word if value is None else value
 
     def display_value(self, token, following, builtins):
         """Display text for a token that stands for a stored value, else None."""
@@ -265,6 +276,8 @@ class Engine:
             return mpmath.mpc(0, mpmath.mpf(node[1]))
         if kind == "date":
             return parse_literal(DATE_LITERAL.fullmatch(node[1]))
+        if kind == "duration":
+            return parse_duration(DURATION_LITERAL.fullmatch(node[1]))
         if kind == "name":
             return self.lookup(node[1], builtins, scope)
         if kind == "ref":
@@ -345,7 +358,7 @@ class Engine:
         lines = []
         with mpmath.workdps(self.settings.precision + GUARD_DIGITS):
             for name, value in self.variables.values():
-                if isinstance(value, DateValue):
+                if isinstance(value, (DateValue, DurationValue)):
                     lines.append(f"{name}={value.text()}")
                 elif not isinstance(value, TextValue):
                     lines.append(f"{name}={format_number(value, self.settings.precision)}")

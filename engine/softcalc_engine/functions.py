@@ -14,6 +14,7 @@ from .errors import CalcError
 ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
 NUMBER_TYPES = (mpmath.mpf, mpmath.mpc)
+TIME_TYPES = (dates.DateValue, dates.DurationValue)
 
 
 def check_finite(value, what):
@@ -126,7 +127,7 @@ class Functions:
 #----------------------------------------------------------------------
 def binary(op, a, b):
     """Apply + - * / ^ mod; date arithmetic goes to the dates module."""
-    if isinstance(a, dates.DateValue) or isinstance(b, dates.DateValue):
+    if isinstance(a, TIME_TYPES) or isinstance(b, TIME_TYPES):
         require_numbers_or_dates(op, a, b)
         return dates.date_binary(op, a, b)
     require_numbers(f"'{op}'", a, b)
@@ -182,5 +183,7 @@ def postfix(op, x):
 
 
 def negate(x):
+    if isinstance(x, dates.DurationValue):
+        return dates.DurationValue(-x.seconds)
     require_numbers("'-'", x)
     return -x

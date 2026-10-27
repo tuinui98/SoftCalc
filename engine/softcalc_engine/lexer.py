@@ -4,13 +4,14 @@ Implements SPEC 5.1 and 5.2: whitespace separates tokens except inside
 a digit run (`1 000` = 1000), C-style names, decimal / scientific /
 hex / binary / octal literals, the `101b` binary suffix, imaginary
 literals such as `2i` or `3j`, date literals `28.11.2025 [14:05:09]`,
+duration literals `1:30[:00]`,
 result references `$1`, and conversion tags `[from->to]` (SPEC 5.9).
 """
 
 import re
 from dataclasses import dataclass
 
-from .dates import DATE_LITERAL
+from .dates import DATE_LITERAL, DURATION_LITERAL
 from .errors import CalcError
 
 OPERATORS = "+-*/^()!%,="
@@ -31,7 +32,7 @@ SUFFIX_BINARY = re.compile(r"[01]+b")
 class Token:
     """One lexical token.
 
-    kind is one of: number, imag, date, name, op, ref, tag, end. For numbers,
+    kind is one of: number, imag, date, duration, name, op, ref, tag, end. For numbers,
     text holds the literal and base its radix; value conversion happens
     later so the evaluator can pick the working precision. A ref holds
     the digits after `$`; a tag holds `from->to` in lower case.
@@ -44,6 +45,8 @@ class Token:
 
 
 DATE_BEFORE = re.compile(r"\d{1,2}\.\d{1,2}\.\d{4}$")
+DURATION_AFTER = re.compile(r"\d+:")
+DURATION_BEFORE = re.compile(r"\d+:\d{1,2}(?::\d{1,2}(?:\.\d+)?)?$")
 
 
 def join_digit_spaces(text):
@@ -52,6 +55,9 @@ def join_digit_spaces(text):
     """
     def keep_or_join(match):
         if DATE_BEFORE.search(text, 0, match.start()):
+            return match.group()
+        # `2 1:30` and `1:30 2` must not merge into one duration
+        if DURATION_AFTER.match(text, match.end()) or DURATION_BEFORE.search(text, 0, match.start()):
             return match.group()
         return ""
     return re.sub(r"(?<=\d)\s+(?=\d)", keep_or_join, text)
@@ -121,10 +127,18 @@ def tokenize(text):
         if ch.isspace():
             i += 1
             continue
+        # Date literals first, so the time in `27.10.2026 14:05` stays part of the date
         date = DATE_LITERAL.match(text, i) if ch.isdigit() else None
         if date:
             tokens.append(Token("date", date.group(), i))
             i = date.end()
+            continue
+        duration = DURATION_LITERAL.match(text, i) if ch.isdigit() else None
+        if duration:
+            if is_name_char(text, duration.end()) or text[duration.end():duration.end() + 1] in (":", "."):
+                raise CalcError(f"Malformed duration near '{text[i:duration.end() + 1]}'")
+            tokens.append(Token("duration", duration.group(), i))
+            i = duration.end()
             continue
         if ch.isdigit() or (ch == "." and i + 1 < len(text) and text[i + 1].isdigit()):
             token, i = read_number(text, i)

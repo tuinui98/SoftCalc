@@ -1,8 +1,10 @@
-"""softcalc_engine/dates.py - Date and date-time values (extensions.md E7).
+"""softcalc_engine/dates.py - Date, date-time and duration values (extensions.md E7).
 
 Literals `dd.mm.yyyy` and `dd.mm.yyyy hh:mm[:ss]`, local time, Gregorian
-only. `date - date` gives days, `date +/- n` shifts by n days. Text
-results (long formats) are TextValue and cannot be used in arithmetic.
+only. `date - date` gives days, `date +/- n` shifts by n days. Duration
+literals `h:mm[:ss]` (hours may exceed 24) shift dates and combine with
+each other and with plain numbers as factors. Text results (long
+formats) are TextValue and cannot be used in arithmetic.
 """
 
 import re
@@ -15,6 +17,7 @@ import mpmath
 from .errors import CalcError
 
 DATE_LITERAL = re.compile(r"(\d{1,2})\.(\d{1,2})\.(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?")
+DURATION_LITERAL = re.compile(r"(\d+):(\d{1,2})(?::(\d{1,2}(?:\.\d+)?))?")
 SECONDS_PER_DAY = 86400
 EPOCH = datetime(1970, 1, 1)
 
@@ -30,6 +33,29 @@ class DateValue:
         if self.has_time:
             return self.moment.strftime("%d.%m.%Y %H:%M:%S")
         return self.moment.strftime("%d.%m.%Y")
+
+
+@dataclass(frozen=True)
+class DurationValue:
+    """A length of time in seconds (an mpf, may be negative or fractional)."""
+
+    seconds: object
+
+    def text(self):
+        """`h:mm:ss`, hours not wrapped at 24; fractional seconds kept."""
+        total = self.seconds
+        sign = "-" if total < 0 else ""
+        total = abs(total)
+        hours = int(mpmath.floor(total / 3600))
+        minutes = int(mpmath.floor((total - hours * 3600) / 60))
+        seconds = total - hours * 3600 - minutes * 60
+        whole = int(mpmath.floor(seconds))
+        text = f"{sign}{hours}:{minutes:02d}:{whole:02d}"
+        fraction = seconds - whole
+        if fraction:
+            digits = mpmath.nstr(fraction, 9, min_fixed=-30, max_fixed=30)
+            text += digits.lstrip("0").rstrip("0").rstrip(".")
+        return text
 
 
 @dataclass(frozen=True)
@@ -50,6 +76,15 @@ def parse_literal(match):
     return DateValue(moment, hour is not None)
 
 
+def parse_duration(match):
+    """DurationValue from a DURATION_LITERAL match; mm and ss must be < 60."""
+    hours, minutes, seconds = match.groups()
+    seconds_value = mpmath.mpf(seconds or 0)
+    if int(minutes) >= 60 or seconds_value >= 60:
+        raise CalcError(f"Invalid duration '{match.group(0)}'")
+    return DurationValue(int(hours) * 3600 + int(minutes) * 60 + seconds_value)
+
+
 def today():
     now = datetime.now()
     return DateValue(datetime(now.year, now.month, now.day), False)
@@ -63,31 +98,74 @@ def days_between(a, b):
     return mpmath.mpf(frac.numerator) / frac.denominator
 
 
-def shift(date, days):
-    """date + days; a fractional day adds a time of day."""
-    if isinstance(days, mpmath.mpc):
-        raise CalcError("Cannot add a complex value to a date")
-    seconds = mpmath.nint(days * SECONDS_PER_DAY)
+def shift_seconds(date, seconds):
+    """date + seconds (rounded to whole seconds); adds a time of day if needed."""
     try:
-        moment = date.moment + timedelta(seconds=int(seconds))
+        moment = date.moment + timedelta(seconds=int(mpmath.nint(seconds)))
     except OverflowError as exc:
         raise CalcError("Date out of range") from exc
     has_time = date.has_time or moment.time() != datetime.min.time()
     return DateValue(moment, has_time)
 
 
+def shift(date, days):
+    """date + days; a fractional day adds a time of day."""
+    if isinstance(days, mpmath.mpc):
+        raise CalcError("Cannot add a complex value to a date")
+    return shift_seconds(date, days * SECONDS_PER_DAY)
+
+
+def is_plain_real(value):
+    return isinstance(value, mpmath.mpf)
+
+
 def date_binary(op, a, b):
-    """Arithmetic where at least one side is a DateValue."""
+    """Arithmetic where at least one side is a DateValue or DurationValue."""
     a_date, b_date = isinstance(a, DateValue), isinstance(b, DateValue)
-    if op == "-" and a_date and b_date:
-        return days_between(a, b)
-    if op == "+" and a_date and not b_date:
-        return shift(a, b)
-    if op == "+" and b_date and not a_date:
-        return shift(b, a)
-    if op == "-" and a_date and not b_date:
-        return shift(a, -b)
-    raise CalcError(f"'{op}' is not defined for dates")
+    a_dur, b_dur = isinstance(a, DurationValue), isinstance(b, DurationValue)
+
+    #==================================================================
+    #  BLOCK 1 - Dates : date-date, date+-number, date+-duration
+    #==================================================================
+    if a_date or b_date:
+        if op == "-" and a_date and b_date:
+            return days_between(a, b)
+        if op in "+-" and a_date and b_dur:
+            return shift_seconds(a, b.seconds if op == "+" else -b.seconds)
+        if op == "+" and a_dur and b_date:
+            return shift_seconds(b, a.seconds)
+        if op == "+" and a_date and is_plain_real(b):
+            return shift(a, b)
+        if op == "+" and b_date and is_plain_real(a):
+            return shift(b, a)
+        if op == "-" and a_date and is_plain_real(b):
+            return shift(a, -b)
+        raise CalcError(f"'{op}' is not defined for these dates")
+    # end BLOCK 1
+
+    #==================================================================
+    #  BLOCK 2 - Durations : with durations, scaled by real numbers
+    #==================================================================
+    if a_dur and b_dur:
+        if op == "+":
+            return DurationValue(a.seconds + b.seconds)
+        if op == "-":
+            return DurationValue(a.seconds - b.seconds)
+        if op == "/":
+            if b.seconds == 0:
+                raise CalcError("Division by zero")
+            return a.seconds / b.seconds
+        raise CalcError(f"'{op}' is not defined for two durations")
+    if op == "*" and a_dur and is_plain_real(b):
+        return DurationValue(a.seconds * b)
+    if op == "*" and b_dur and is_plain_real(a):
+        return DurationValue(a * b.seconds)
+    if op == "/" and a_dur and is_plain_real(b):
+        if b == 0:
+            raise CalcError("Division by zero")
+        return DurationValue(a.seconds / b)
+    raise CalcError(f"'{op}' is not defined for a duration and this value")
+    # end BLOCK 2
 
 
 #----------------------------------------------------------------------
