@@ -1,0 +1,40 @@
+﻿history on screen: 1+2 \n 	3 \n zzsv=5 \n 	Variable Added \n 2*zzsv \n 	10 \n 1/0 \n 	ERROR:Evaluation failed
+save history: ok
+saved_history2.txt: 0 bytes, head=, text: 
+save funcs: ok
+saved_funcs2.pcf: 144 bytes, head=7A 00 7A 00, text: zzsv= | zzsw= | g(x) = x | function(var) = var*cos(var) | zzsf(x) = x*zzsw | 
+!! load t1_func_only.pcf : HANG (no response for 15 s), killed
+load t1_func_only.pcf: ok; program did not survive
+!! load t2_var_value.pcf : HANG (no response for 15 s), killed
+load t2_var_value.pcf: ok; program did not survive
+!! load t3_var_empty.pcf : HANG (no response for 15 s), killed
+load t3_var_empty.pcf: ok; program did not survive
+!! load t4_var_and_func.pcf : HANG (no response for 15 s), killed
+load t4_var_and_func.pcf: ok; program did not survive
+!! load t5_two_params.pcf : HANG (no response for 15 s), killed
+load t5_two_params.pcf: ok; program did not survive
+!! load t6_answer_body.pcf : HANG (no response for 15 s), killed
+load t6_answer_body.pcf: ok; program did not survive
+---- graph window in Polar mode
+CALCGRAPHWINCLASS id=0 'Graph' 600x500 @(0,0) style=0x16CF0000
+    FUNCTIONLISTCLASS id=0 '' 351x43 @(245,47) style=0x56000000
+        ComboBox id=0 'g(x)=x' 351x21 @(245,69) style=0x50000203
+        ToolbarWindow32 id=0 '' 351x22 @(245,47) style=0x50009B45
+    ITEMLISTCLASS id=0 '' 241x449 @(4,47) style=0x56000000
+        CALCRANGEEDITCLASS id=0 '' 217x347 @(16,83) style=0x56000000
+            Edit id=0 '-3.141593' 217x25 @(16,106) style=0x50001084
+            Edit id=0 '3.141593' 217x25 @(16,160) style=0x50001084
+            Edit id=0 '1.000000' 217x25 @(16,214) style=0x50001884
+            Edit id=0 '0.000000' 217x25 @(16,268) style=0x50001884
+            Edit id=0 '10.000000' 217x25 @(16,322) style=0x50001084
+            Edit id=0 '1.000000' 217x25 @(16,376) style=0x50001084
+            Button id=0 'Apply' 92x23 @(141,407) style=0x56000000
+        Button id=0 'Range' 219x23 @(15,59) style=0x56000000
+    CALCGRAPHVIEWCLASS id=0 '' 351x406 @(245,90) style=0x56000000
+variable list items: pi, e, zzev
+---- Edit Variable dialog
+EDITWINDOWCLASS id=0 'Edit Variable' 400x100 @(52,52) style=0x14C80000
+    Static id=0 'zzev=' 100x25 @(61,84) style=0x50000002
+    Edit id=0 '7' 282x25 @(161,84) style=0x50001084
+    Button id=0 'OK' 100x28 @(231,115) style=0x50000000
+    Button id=0 'Cancel' 100x28 @(343,115) style=0x50000000

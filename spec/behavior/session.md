@@ -30,9 +30,8 @@ Sources: `spec/golden/Q_answer.tsv`, `M_rpn.tsv`, `R_retest.tsv`,
 ## Precision 512 (retest)
 - With the setting verified, 512 works: `pi` and `1/3` print about 500
   digits, `2^1000` prints all 302 digits exactly; `2^1000` took ~630 ms.
-- The earlier 512 rows in `L_precision.tsv` matched 128 and are not
-  trustworthy (setting not confirmed then). Re-run L before relying on
-  them.
+- `L_precision.tsv` was re-run with verified settings; its 512 rows are
+  now valid.
 
 ## Defining a function with a built-in name
 - `sin(x)=1` and `cos(x)=x` print `Function Added`, but `sin(1)` and
@@ -70,20 +69,23 @@ Sources: `spec/golden/Q_answer.tsv`, `M_rpn.tsv`, `R_retest.tsv`,
   ```
 - Functions are written as `name(params) = body`, with `, ` between
   params.
-- **Observed problems in the saved file**:
-  - Variables are written with **empty values** (`zzpa=` although
-    zzpa was 5).
-  - `zzpf(x)=x*zzpa` was written as `x*answer`. Cause unknown; possibly
-    the auto-insert or an internal rewrite. To isolate.
-- **Loading that file hung the program** (100% of one CPU core for
-  10+ minutes, file kept open); the process had to be killed. Likely
-  trigger: the empty variable values. To isolate with small hand-made
-  files and a watchdog.
+- **Observed problems in the saved file** (retested with
+  `tools/probe_files2.ps1`):
+  - Variables are always written with **empty values** (`zzsv=`,
+    `zzsw=`; reproduced twice). Variable values are lost on save.
+  - `zzpf(x)=x*zzpa` was once written as `x*answer`; the retest wrote
+    `zzsf(x) = x*zzsw` correctly. Not reproduced, so not a spec item.
+- **Load Functions & Variables hangs every time** (100% of one core,
+  file kept open, killed by the watchdog after 15 s). Six hand-made
+  files all hung, including a single-function file
+  (`zzt(x) = x+1`), so the trigger is not empty values. Load is unusable
+  on this Windows 11 machine under the XP compat layer. Whether it worked
+  on real XP cannot be checked here.
+- Clone consequence: no working original to match for load. Define the
+  format from the save output above, keep variable values, and make
+  load tolerant (skip bad lines, report them).
 
 ## Save History
-- The dialog produced a **0-byte file** in this run. Unclear whether
-  saving failed or the run order was off. To retest.
-
-## Not done yet
-- Polar range panel (the run stopped at the hang before reaching it).
-- Edit Variable dialog.
+- Produces a **0-byte file**, reproduced twice with a non-empty History.
+  Same conclusion: broken here; the clone defines its own plain-text
+  format (input line, then tab-indented result, as on screen).

@@ -38,6 +38,14 @@ public static class Win
 	[DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
 	[DllImport("user32.dll")] public static extern bool PrintWindow(IntPtr hwnd, IntPtr hdc, uint flags);
 	[DllImport("user32.dll")] public static extern IntPtr GetMenu(IntPtr hwnd);
+	[DllImport("user32.dll")] public static extern IntPtr SendMessageTimeoutW(IntPtr hwnd, uint msg, IntPtr w, IntPtr l, uint flags, uint timeout_ms, out IntPtr result);
+
+	public static bool Responds(IntPtr hwnd, uint timeout_ms)
+	{
+		// WM_NULL with SMTO_ABORTIFHUNG: false if the UI thread does not answer
+		IntPtr r;
+		return SendMessageTimeoutW(hwnd, 0, IntPtr.Zero, IntPtr.Zero, 0x0002, timeout_ms, out r) != IntPtr.Zero;
+	}
 
 	public static List<IntPtr> Children(IntPtr parent)
 	{

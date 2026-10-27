@@ -111,8 +111,8 @@ Each evaluation appends two lines: the input as typed, then the result
   decimal or big-precision, not binary double.
 - Overflow handling: `10^1000` = `1.e1000`; a 500-digit integer of 9s
   rounds to `1.e500`.
-- 512: retested in `session.md`; works (about 500 digits). The 512 rows
-  in `L_precision.tsv` are not trustworthy.
+- 512 works (about 500 digits); `L_precision.tsv` was re-run with
+  verified settings and now holds valid 512 rows.
 
 ## Errors and edge input
 - Empty input: nothing is added to History.
