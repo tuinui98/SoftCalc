@@ -118,6 +118,12 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   variable names) back into the Input box for editing.
 - Past lines are never recalculated.
 - Interpretation confirmed by the owner 2026-10-27.
+- Layout changed by the owner 2026-10-27: the first line shows the input
+  as typed on the left; when variables, answer or $n were substituted,
+  the numeric form is shown right-aligned on the same line in a fainter
+  colour (nothing on the right otherwise). The result stays on the
+  second line, indented. Entries are selectable items; Ctrl+C copies the
+  selected entry (free text selection was given up for this layout).
 
 ## E12. Persistent history
 - Decided 2026-10-27: History is saved to a file (differs from the
