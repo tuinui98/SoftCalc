@@ -82,6 +82,12 @@ Full original tree: `inventory/menu_tree.txt`.
   - Range values display with 6 decimals.
   - Only one-parameter functions can be graphed.
   - Save as bitmap writes PNG (BMP optional). [DEF]
+- Dialog definitions go to the engine without adding History lines;
+  errors show in the dialog, which stays open. Delete in the Graph and
+  Variables toolbars needs no confirmation. [DEF]
+- Polar grid: circles every R Increment, spokes every 15 degrees. [DEF]
+- The sidebar graph and the Graph window share one function choice,
+  mode, grid and ranges.
 - Post-clone ideas for these dialogs: `ideas.md`.
 
 ## 5. Input language

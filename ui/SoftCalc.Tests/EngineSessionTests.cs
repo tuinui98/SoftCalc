@@ -80,6 +80,34 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
+	public async Task DeleteRemovesAndReportsMissing()
+	{
+		await Session.EvalAsync("gone=1");
+		Assert.True(await Session.DeleteAsync("gone"));
+		Assert.False(await Session.DeleteAsync("gone"));
+		Assert.Equal("error", (await Session.EvalAsync("gone")).Kind);
+	}
+
+	[Fact]
+	public async Task PlotReturnsPointsAndGaps()
+	{
+		await Session.EvalAsync("r(x)=sqrt(x)");
+		var points = await Session.PlotAsync("r", "xy", -1, 1, 3);
+		Assert.Null(points[0]);
+		Assert.Equal((1.0, 1.0), points[2]);
+	}
+
+	[Fact]
+	public async Task DeletedDefinitionStaysDeletedAfterRestart()
+	{
+		await Session.EvalAsync("temp=7");
+		await Session.DeleteAsync("temp");
+		Session.Client!.KillForTest();
+		await Session.EvalAsync("1");    // lost, triggers the restart
+		Assert.Equal("error", (await Session.EvalAsync("temp")).Kind);
+	}
+
+	[Fact]
 	public async Task CrashIsRecoveredWithDefinitionsAndSettings()
 	{
 		string? notice = null;

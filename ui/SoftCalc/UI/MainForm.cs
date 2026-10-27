@@ -2,8 +2,7 @@
 //
 // Standard WinForms controls (owner's choice: the original's UX, not its
 // look). Behavior follows spec/SPEC.md sections 2-7 and the engine
-// protocol in design/protocol.md. Sidebar contents arrive in M6, files
-// and persistence in M7.
+// protocol in design/protocol.md. Files and persistence arrive in M7.
 
 using System.Text.Json.Nodes;
 using SoftCalc.Engine;
@@ -49,6 +48,11 @@ internal sealed class MainForm : Form
 	private bool _lastWasResult;
 	private bool _busy;
 	private EngineState _state = new(new List<NamedValue>(), new List<NamedValue>(), new List<UserFunction>());
+	private readonly GraphSettings _graphSettings = new();
+	private DefinitionCommands _commands = null!;
+	private GraphPanel _graphPanel = null!;
+	private VariablesPanel _variablesPanel = null!;
+	private GraphWindow? _graphWindow;
 
 	public MainForm(EngineSession session)
 	{
@@ -95,12 +99,14 @@ internal sealed class MainForm : Form
 		_column.Controls.Add(_inputBox, 0, 2);
 		_column.Controls.Add(_keypadHost, 0, 3);
 
-		// Sidebar placeholders; Graph and Variables arrive in M6
-		var sidebar = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2 };
-		sidebar.RowStyles.Add(new RowStyle(SizeType.Percent, 60));
-		sidebar.RowStyles.Add(new RowStyle(SizeType.Percent, 40));
-		sidebar.Controls.Add(Placeholder("Graph"), 0, 0);
-		sidebar.Controls.Add(Placeholder("Variables"), 0, 1);
+		// Sidebar: Graph above Variables, each in its own titled box
+		_commands = new DefinitionCommands(_session, this, RefreshStateAsync);
+		_graphPanel = new GraphPanel(_session, _graphSettings, _commands, OpenGraphWindow) { Dock = DockStyle.Fill };
+		_variablesPanel = new VariablesPanel(_commands) { Dock = DockStyle.Fill };
+		var sidebar = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
+		sidebar.Panel1.Controls.Add(Titled("Graph", _graphPanel));
+		sidebar.Panel2.Controls.Add(Titled("Variables", _variablesPanel));
+		Load += (_, _) => sidebar.SplitterDistance = (int)(sidebar.Height * 0.6);
 		_split.Panel1.Controls.Add(sidebar);
 		_split.Panel2.Controls.Add(_column);
 
@@ -110,15 +116,25 @@ internal sealed class MainForm : Form
 		Load += (_, _) => _split.SplitterDistance = 300;
 	}
 
-	private static GroupBox Placeholder(string title)
+	private static GroupBox Titled(string title, Control content)
 	{
 		var box = new GroupBox { Text = title, Dock = DockStyle.Fill };
-		box.Controls.Add(new Label
-		{
-			Text = "(coming in the next milestone)", Dock = DockStyle.Fill,
-			TextAlign = ContentAlignment.MiddleCenter, ForeColor = SystemColors.GrayText,
-		});
+		box.Controls.Add(content);
 		return box;
+	}
+
+	private void OpenGraphWindow()
+	{
+		if (_graphWindow == null || _graphWindow.IsDisposed)
+		{
+			_graphWindow = new GraphWindow(_session, _graphSettings, _commands);
+			_graphWindow.UpdateFunctions(_state.Functions);
+			_graphWindow.Show(this);
+		}
+		else
+		{
+			_graphWindow.Activate();
+		}
 	}
 
 	private void CenterKeypad()
@@ -313,6 +329,12 @@ internal sealed class MainForm : Form
 	{
 		_state = await _session.StateAsync();
 		BuildUserFunctionsMenu();
+		_graphPanel.UpdateFunctions(_state.Functions);
+		_variablesPanel.UpdateValues(_state);
+		if (_graphWindow != null && !_graphWindow.IsDisposed)
+		{
+			_graphWindow.UpdateFunctions(_state.Functions);
+		}
 	}
 
 	private async Task SubmitAsync()
@@ -367,6 +389,7 @@ internal sealed class MainForm : Form
 		await _session.ChangeSettingsAsync(new JsonObject { [key] = node });
 		ShowSettingChecks();
 		await RefreshStateAsync();    // constants and values follow precision and base
+		_graphSettings.NotifyChanged();    // the angle unit changes trig plots
 	}
 
 	private async Task ClearHistoryAsync()
