@@ -183,3 +183,19 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   The schedule rows follow the contribution frequency, or the
   compounding frequency when there is no contribution (daily for
   continuous); contributions use the effective rate per row.
+
+## E7b. Durations (added 2026-10-27, after M3)
+- Literal `h:mm[:ss[.fraction]]`; hours may exceed 24 (`36:00:00`),
+  minutes and seconds must be below 60. Shown as `h:mm:ss`, negative as
+  `-0:30:00`, fractional seconds kept (`0:00:01.5`).
+- `date +/- duration` = date, `duration + date` = date;
+  `duration +/- duration` = duration; `duration * n`, `n * duration`,
+  `duration / n` = duration; `duration / duration` = number.
+- Not allowed: `duration + number` (unit unclear), `duration * duration`,
+  functions, `!`, `%`, unit conversion tags.
+- `date - date` still gives days (decided: keep LineCalc behavior).
+- Overlaps checked (engine/tests/test_durations.py): a time after a date
+  with a space is still part of the date-time literal; `2 1:30` and
+  `1:30 2` are not joined into one duration; RPN items keep their
+  spaces. The RPN History display used to join digit runs
+  (`1 2 +` showed `12 +`), fixed with this change.
