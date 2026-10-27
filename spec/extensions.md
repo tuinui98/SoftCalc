@@ -63,3 +63,66 @@ Conflicts to settle:
 - With E2 names, a user variable named `i` or `j` would shadow the unit.
   Decide: reserve both, or let a user definition win.
 - Output keeps `i` unless a display option is added.
+
+---
+Second batch, requested 2026-10-27 after reviewing linecalc.com (a web
+line-by-line calculator; only its public feature list was read).
+Decisions on E1-E6 are settled in `SPEC.md`.
+
+## E7. Date arithmetic
+- Date literal `dd.mm.yyyy` (two dots, so no clash with decimals:
+  `1.2.3` is already an error). `/` and `-` separators are not used,
+  since they are operators.
+- `date - date` = number of days; `date + n`, `date - n` = date.
+- Result of date type prints as `dd.mm.yyyy`.
+- Open: accept Buddhist-era years (พ.ศ.)? A `today` keyword? Weekday
+  name in the result?
+
+## E8. Currency conversion
+- Same tag syntax as units: `100 [usd->thb]`, chainable, case-
+  insensitive ISO 4217 codes. Also the Conversions menu gets a
+  *Currency* category with common codes.
+- Rates come from an online daily source and are cached locally with
+  their date; offline use falls back to the cache, and the result line
+  notes the rate date when it is old.
+- This is the only network access in the program.
+- Open: which source (for example ECB daily reference rates, free, no
+  key, about 30 currencies including THB); refresh automatically once
+  a day or only on demand?
+
+## E9. Display control, copy, always on top
+- Display decimals: a setting separate from calculation precision.
+  *Increase / Decrease decimal places* and *Show all decimal places*
+  (pad with zeros). Calculation precision (32/64/128/512) unchanged.
+- History context menu: *Copy result*, *Copy expression and result*,
+  *Copy all*.
+- View > *Always on top*.
+
+## E10. History lines (owner's wording, interpreted)
+- No `#N` line references.
+- History shows each calculation with **numbers instead of variable
+  names** (values at the time of calculation), so a line reads as a
+  self-contained arithmetic record.
+- Clicking a History line puts the **original input text** (with the
+  variable names) back into the Input box for editing.
+- Past lines are never recalculated.
+- History does not persist across program restarts (as the original).
+- To confirm: the interpretation above, and whether the result line
+  shows only the number.
+
+## E11. Compound interest tool and functions
+- Tools menu > *Compound Interest*: own window with
+  - inputs: principal, annual rate %, years, compounding frequency
+    (yearly, quarterly, monthly, daily, continuous), periodic
+    contribution amount, contribution frequency, at start or end of
+    period;
+  - outputs: future value, total contributions, total interest;
+  - growth graph: balance over time split into contributions and
+    interest;
+  - period table: period, start balance, interest, contribution, end
+    balance; copy and export CSV.
+- Input-box functions for the same maths, Excel-style names:
+  `fv(rate, n, pmt, pv)`, `pv(...)`, `pmt(...)`, `nper(...)`.
+- Open: Excel sign convention (money paid out is negative) or plain
+  positive values? Rate per period or annual rate plus frequency in the
+  functions?
