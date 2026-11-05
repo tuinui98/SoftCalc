@@ -85,4 +85,6 @@ window messages and saves a screenshot to `spec/raw/` (own app only).
 ## Git
 - One branch per milestone (`m1-engine-core`, ...), merged to `main`
   when its tests pass; tag `milestone/<yyyymmdd>-<name>`.
-- Local repository only. Suggest a private GitHub remote after M2.
+- Remote: private https://github.com/tuinui98/softcalc (created 2026-11-05).
+  Push every commit to `main` and every tag; keep local and GitHub in sync.
+  Merged feature branches stay local.

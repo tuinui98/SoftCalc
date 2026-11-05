@@ -1,7 +1,8 @@
 # SoftCalc - project status (handoff)
 
 Paused by the owner on 2026-10-27 after M6 plus follow-ups. Everything
-below is committed on `main` (local git only, no remote yet).
+below is committed on `main` and pushed to the private GitHub repo
+https://github.com/tuinui98/softcalc (remote added 2026-11-05).
 
 ## Where things stand
 | milestone | state | tag |
@@ -52,9 +53,6 @@ Tests at pause: engine `pytest` 293 passed; UI `dotnet test` 67 passed.
   `spec/ideas.md`, after the clone.
 - Error lines in History are red; the owner did not ask for that and
   may want it removed.
-- Remote: still local only by the owner's choice. The global rules say
-  to suggest a private GitHub remote near milestones; ask again before
-  any push.
 
 ## How to resume
 - Read `CLAUDE.md` (commands, architecture, clean-room rule, C#
