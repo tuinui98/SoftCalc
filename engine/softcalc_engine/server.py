@@ -74,6 +74,7 @@ class Dispatcher:
             "plot": self.op_plot,
             "pcf_export": lambda request: {"text": self.engine.export_pcf()},
             "pcf_import": self.op_pcf_import,
+            "restore_results": self.op_restore_results,
             "schedule": self.op_schedule,
             "shutdown": lambda request: {},
         }
@@ -151,6 +152,12 @@ class Dispatcher:
             raise RequestError("'samples' is too large")
         points = self.engine.plot(argument(request, "function", str), mode, start, end, samples)
         return {"points": points}
+
+    def op_restore_results(self, request):
+        texts = argument(request, "texts", list)
+        if not all(isinstance(text, str) for text in texts):
+            raise RequestError("'texts' must be a list of strings")
+        return {"restored": self.engine.restore_results(texts)}
 
     def op_pcf_import(self, request):
         skipped = self.engine.import_pcf(argument(request, "text", str))

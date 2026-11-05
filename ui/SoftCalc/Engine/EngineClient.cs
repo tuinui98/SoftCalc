@@ -27,6 +27,14 @@ internal sealed class EngineLostException : EngineException
 	}
 }
 
+// A request was made before the session started; not a lost engine, so no restart
+internal sealed class EngineNotStartedException : EngineException
+{
+	public EngineNotStartedException() : base("Engine session has not started")
+	{
+	}
+}
+
 // The engine answered ok:false (a malformed request)
 internal sealed class EngineRequestException : EngineException
 {

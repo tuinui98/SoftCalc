@@ -10,8 +10,14 @@ param
 (
 	[string[]]$Lines = @("x=5", "2x+1", "1/3", "now [longdatetime]", "1 [ft->in]"),
 	[string]$Shot = "softcalc_advanced.png",
-	[switch]$OpenGraph
+	[switch]$OpenGraph,
+	[string]$DataDir = ""    # SOFTCALC_DATA_DIR for this run, so tests never touch the owner's %APPDATA%
 )
+
+if ($DataDir)
+{
+	$env:SOFTCALC_DATA_DIR = $DataDir
+}
 
 . "$PSScriptRoot\win32_probe.ps1"
 Add-Type @"
@@ -57,6 +63,11 @@ function Find-Edit([IntPtr]$hwnd)
 }
 
 $edit = Find-Edit $main
+# Wait until start-up has finished (the Input box is enabled again)
+for ($i = 0; $i -lt 80 -and -not [Win]::IsWindowEnabled($edit); $i++)
+{
+	Start-Sleep -Milliseconds 250
+}
 "main=$main edit=$edit"
 foreach ($line in $Lines)
 {

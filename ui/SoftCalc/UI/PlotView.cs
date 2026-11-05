@@ -47,6 +47,10 @@ internal sealed class PlotView : Control
 
 	private async Task RefreshPointsAsync()
 	{
+		if (!_session.IsStarted)
+		{
+			return;    // start-up refreshes the plot once the engine is ready
+		}
 		int request = ++_requestNumber;
 		string? function = _settings.Function;
 		if (string.IsNullOrEmpty(function) || Width < 4)

@@ -108,6 +108,36 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
+	public async Task RequestBeforeStartIsNotTreatedAsLostEngine()
+	{
+		using var notStarted = new EngineSession(EngineLocator.Locate());
+		bool restarted = false;
+		notStarted.Restarted += (_, _) => restarted = true;
+		await Assert.ThrowsAsync<EngineNotStartedException>(() => notStarted.EvalAsync("1"));
+		await Assert.ThrowsAsync<EngineNotStartedException>(() => notStarted.PlotAsync("g", "xy", 0, 1, 2));
+		Assert.False(restarted);
+	}
+
+	[Fact]
+	public async Task RestoreResultsFeedsAnswerAndRefs()
+	{
+		Assert.Equal(2, await Session.RestoreResultsAsync(new[] { "10", "Tuesday, 27 October 2026", "0xFF" }));
+		Assert.Equal("256", (await Session.EvalAsync("answer+1")).Text);
+		Assert.Equal("10", (await Session.EvalAsync("$3")).Text);
+	}
+
+	[Fact]
+	public async Task ImportReportsSkippedLinesAndRaisesChanged()
+	{
+		string? changed = null;
+		Session.DefinitionsChanged += (_, text) => changed = text;
+		var skipped = await Session.ImportDefinitionsAsync("zzv=\r\nk=3\r\nh(x) = x*k\r\n");
+		Assert.Single(skipped);
+		Assert.Contains("h(x) = x*k", changed);
+		Assert.Equal("6", (await Session.EvalAsync("h(2)")).Text);
+	}
+
+	[Fact]
 	public async Task CrashIsRecoveredWithDefinitionsAndSettings()
 	{
 		string? notice = null;

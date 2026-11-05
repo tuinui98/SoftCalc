@@ -39,12 +39,19 @@ internal sealed class EngineSession : IDisposable
 
 	public event EventHandler<string>? Restarted;
 
+	// Raised with the full definitions text after it changed (definition, delete, import)
+	public event EventHandler<string>? DefinitionsChanged;
+
+	public string Definitions => _definitions;
+
 	public EngineSession(ProcessStartInfo startInfo)
 	{
 		_startInfo = startInfo;
 	}
 
 	internal EngineClient? Client => _client;
+
+	public bool IsStarted => _client != null;
 
 	public async Task StartAsync()
 	{
@@ -182,7 +189,8 @@ internal sealed class EngineSession : IDisposable
 
 	private async Task<JsonObject> RequestAsync(string op, JsonObject? arguments, TimeSpan timeout)
 	{
-		var client = _client ?? throw new EngineLostException("Engine is not running");
+		// Not started yet is not a lost engine: no restart for it
+		var client = _client ?? throw new EngineNotStartedException();
 		// One request at a time keeps restarts and snapshots consistent
 		await _gate.WaitAsync();
 		try
@@ -198,6 +206,25 @@ internal sealed class EngineSession : IDisposable
 	private async Task SnapshotDefinitionsAsync()
 	{
 		_definitions = (string?)(await GuardedAsync("pcf_export", null))["text"] ?? _definitions;
+		DefinitionsChanged?.Invoke(this, _definitions);
+	}
+
+	// Replaces all user definitions; returns the skipped lines as "line N: text (reason)"
+	public async Task<IReadOnlyList<string>> ImportDefinitionsAsync(string text)
+	{
+		var reply = await GuardedAsync("pcf_import", new JsonObject { ["text"] = text });
+		await SnapshotDefinitionsAsync();
+		return reply["skipped"]?.AsArray()
+			.Select(s => $"line {(int?)s?["line"]}: {(string?)s?["text"]} ({(string?)s?["reason"]})")
+			.ToList() ?? new List<string>();
+	}
+
+	// Rebuilds answer and $n from saved History results (oldest first)
+	public async Task<int> RestoreResultsAsync(IEnumerable<string> texts)
+	{
+		var array = new JsonArray(texts.Select(t => (JsonNode?)JsonValue.Create(t)).ToArray());
+		var reply = await GuardedAsync("restore_results", new JsonObject { ["texts"] = array });
+		return (int?)reply["restored"] ?? 0;
 	}
 
 	public async Task RefreshSnapshotAsync()

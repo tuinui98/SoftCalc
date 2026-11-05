@@ -59,6 +59,8 @@ The app finds the engine via `SOFTCALC_ENGINE`, then `softcalc-engine.exe`
 next to `SoftCalc.exe`, then `engine/.venv` (development).
 `tools/drive_softcalc.ps1` types lines into a running SoftCalc through
 window messages and saves a screenshot to `spec/raw/` (own app only).
+It takes `-DataDir <folder>` so scripted runs never touch the owner's
+`%APPDATA%\SoftCalc` (the app honours `SOFTCALC_DATA_DIR`).
 
 ## Probing the original (only if behavior needs re-checking)
 - `extracted/PowerCalc.exe` runs only under an XP compat layer, and every

@@ -9,6 +9,10 @@ namespace SoftCalc.UI;
 
 internal sealed record HistoryEntry(string Kind, string Input, string DisplayInput, string Text)
 {
+	// Set for entries that are saved to history.jsonl (notices are not)
+	public string Id { get; init; } = "";
+	public DateTime Time { get; init; }
+
 	// The right-hand numeric form is shown only when it differs from the input
 	public bool HasSubstitution => Kind == "result" && DisplayInput != Input;
 }

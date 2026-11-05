@@ -98,6 +98,13 @@ without BOM (SPEC 8).
 `{"text": "<file content>"}` -> `{"skipped": [{"line": 2, "text": "zzv=",
 "reason": "..."}]}`. The UI decodes the file (UTF-16 LE or UTF-8).
 
+### `restore_results`
+`{"texts": ["5", "0xFF", "(3+4i)", ...]}` -> `{"restored": <int>}`.
+Result texts from a saved History, oldest first, are parsed back into
+values for `answer` and `$n` (M7). Text-only results (long dates) and
+lines that no longer parse are skipped. Values keep only the digits
+that were shown.
+
 ### `schedule`
 `{"principal": "1000", "annual_rate": "5", "years": "10",
 "compounding": "yearly"|"quarterly"|"monthly"|"daily"|"continuous",

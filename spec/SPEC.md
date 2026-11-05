@@ -291,6 +291,8 @@ Full original tree: `inventory/menu_tree.txt`.
   - `MR`: insert the text `memory` at the caret.
 
 ## 8. Persistence and files
+- Implemented in M7 as design/m7_plan.md describes (files in
+  `%APPDATA%\SoftCalc\`, `SOFTCALC_DATA_DIR` overrides for tests).
 - Settings (precision, base, angle, RPN, view, samples, window rect,
   graph mode, grid, XY and Polar ranges) and user variables/functions
   persist between runs. Stored in the clone's own file under
