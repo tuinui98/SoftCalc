@@ -1,6 +1,7 @@
 // Program.cs - SoftCalc entry point: locate the engine, open the main window
 
 using SoftCalc.Engine;
+using SoftCalc.Persistence;
 using SoftCalc.UI;
 
 namespace SoftCalc;
@@ -22,6 +23,6 @@ internal static class Program
 			return;
 		}
 		using var session = new EngineSession(startInfo);
-		Application.Run(new MainForm(session));
+		Application.Run(new MainForm(session, DataFolder.Default()));
 	}
 }

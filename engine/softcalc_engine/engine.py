@@ -386,6 +386,26 @@ class Engine:
                               "head": head, "source": head + fn.body_text})
         return {"constants": constants, "variables": variables, "functions": functions}
 
+    def restore_results(self, texts):
+        """Rebuild `answer` and the `$n` stack from saved History result texts.
+
+        Texts are oldest first, as shown on screen (hex, binary, dates,
+        durations and complex forms parse back). Text-only results and
+        anything that no longer parses are skipped. Returns the count kept.
+        """
+        restored = 0
+        for text in texts:
+            try:
+                value = self.value_of(text)
+            except CalcError:
+                continue
+            if isinstance(value, TextValue):
+                continue
+            self.results.append(value)
+            self.answer = value
+            restored += 1
+        return restored
+
     def delete(self, name):
         """Remove a user variable or function; returns which one it was."""
         key = name.lower()

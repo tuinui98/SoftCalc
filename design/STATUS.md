@@ -1,8 +1,7 @@
 # SoftCalc - project status (handoff)
 
-Paused by the owner on 2026-10-27 after M6 plus follow-ups. Everything
-below is committed on `main` and pushed to the private GitHub repo
-https://github.com/tuinui98/softcalc (remote added 2026-11-05).
+Updated 2026-11-05 after M7. Everything below is committed on `main` and
+pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 ## Where things stand
 | milestone | state | tag |
@@ -14,8 +13,8 @@ https://github.com/tuinui98/softcalc (remote added 2026-11-05).
 | M4 protocol server + engine exe | done | milestone/20261027-m4-protocol |
 | M5 UI shell | done | milestone/20261027-m5-ui-shell |
 | M6 sidebar graph, variables, dialogs, Graph window | done | milestone/20261027-m6-sidebar-graph |
-| **M7 persistence and files** | **next** | |
-| M8 tools (compound interest window, ECB currency, copy menu, always on top) | todo | |
+| M7 persistence and files | done | milestone/20261105-m7-persistence |
+| **M8 tools (compound interest window, ECB currency, copy menu, always on top)** | **next** | |
 | M9 packaging (single folder or installer, icon, about) | todo | |
 
 Done after milestones, on `main` (no tag): durations `h:mm:ss`;
@@ -27,25 +26,18 @@ golden `U_repeat`); History layout with the input on the left and the
 substituted numeric form right-aligned and faint; History View and a
 400x651 window as defaults.
 
-Tests at pause: engine `pytest` 293 passed; UI `dotnet test` 67 passed.
+Tests after M7: engine `pytest` 302 passed; UI `dotnet test` 88 passed.
 
-## M7 scope (agreed plan, design/phase4_plan.md and spec/extensions.md E12)
-- Settings file `%APPDATA%\SoftCalc\settings.json`: precision, angle,
-  base, RPN, decimals, view, Show Samples, window rect and maximized,
-  graph mode, grid, XY and Polar ranges, selected graph function.
-  First run uses defaults, never the registry (SPEC 8).
-- User variables and functions persist across runs (engine
-  `pcf_export` / `pcf_import`).
-- History file `%APPDATA%\SoftCalc\history.jsonl`: loaded at start,
-  written at close, rolling cap (setting), merged on close when several
-  windows ran: entry IDs = process start time + PID + sequence, short
-  exclusive lock, union by ID, sort by time, keep newest N, atomic
-  replace; Clear History writes a "cleared at" mark so cleared entries
-  do not come back from another window.
-- File menu: Save History (UTF-8 text as shown), Save / Load Functions
-  & Variables (`.pcf`, UTF-16 LE no BOM on save; load accepts UTF-16 LE
-  or UTF-8; skipped lines reported).
-- UI tests for the history merge.
+## M7 result (design/m7_plan.md)
+- `%APPDATA%\SoftCalc\` (override: `SOFTCALC_DATA_DIR`): settings.json,
+  definitions.pcf, history.jsonl; window, view, graph and calculation
+  settings restored; answer/$n restored from History (`restore_results`).
+- File menu: Save History, Save/Load Functions & Variables work.
+- Checked end to end: two runs keep history and $1; two windows at once
+  merge their History on close.
+- Fixed on the way: input or a plot refresh before the engine finished
+  starting used to trigger a needless restart (and, briefly, an
+  unhandled exception that blocked closing).
 
 ## Open items to raise with the owner
 - Graph interface improvements: noted in `spec/ideas.md`, to discuss.

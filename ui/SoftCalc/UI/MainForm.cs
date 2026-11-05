@@ -2,11 +2,12 @@
 //
 // Standard WinForms controls (owner's choice: the original's UX, not its
 // look). Behavior follows spec/SPEC.md sections 2-7 and the engine
-// protocol in design/protocol.md. Files and persistence arrive in M7.
+// protocol in design/protocol.md. Files and persistence: MainForm.Persistence.cs.
 
 using System.Text.Json.Nodes;
 using SoftCalc.Engine;
 using SoftCalc.Logic;
+using SoftCalc.Persistence;
 
 namespace SoftCalc.UI;
 
@@ -17,7 +18,7 @@ internal enum CalcView
 	Advanced,
 }
 
-internal sealed class MainForm : Form
+internal sealed partial class MainForm : Form
 {
 	private const string OperatorSymbols = "+-*/^!%";
 
@@ -54,17 +55,18 @@ internal sealed class MainForm : Form
 	private VariablesPanel _variablesPanel = null!;
 	private GraphWindow? _graphWindow;
 
-	public MainForm(EngineSession session)
+	public MainForm(EngineSession session, DataFolder folder)
 	{
 		_session = session;
+		_folder = folder;
+		(_prefs, _settingsWarning) = SettingsStore.Load(folder.SettingsPath);
 		_recall = new InputRecall(() => _history.Entries
 			.Where(entry => entry.Kind != "notice")
 			.Select(entry => entry.Input)
 			.ToList());
-		_session.Restarted += (_, reason) => _history.Append(
-			new HistoryEntry("notice", "", "(engine restarted)", reason));
+		_session.Restarted += (_, reason) => AddNotice("(engine restarted)", reason);
+		_session.DefinitionsChanged += (_, text) => OnDefinitionsChanged(text);
 		Text = "SoftCalc";
-		Size = new Size(400, 651);    // owner's portrait default; M7 remembers the user's size
 		StartPosition = FormStartPosition.CenterScreen;
 		KeyPreview = true;
 		BuildLayout();
@@ -73,8 +75,10 @@ internal sealed class MainForm : Form
 		_input.KeyDown += OnInputKeyDown;
 		_input.KeyPress += OnInputKeyPress;
 		_keypad.KeyPressedLabel += async (_, label) => await OnKeypad(label);
-		ApplyView(CalcView.History);
+		ApplySavedWindow();
+		ApplyView(Enum.TryParse<CalcView>(_prefs.View, out var view) ? view : CalcView.History);
 		Shown += async (_, _) => await StartEngineAsync();
+		FormClosing += (_, _) => SaveOnClose();
 		FormClosed += (_, _) => _session.Dispose();
 	}
 
@@ -168,10 +172,11 @@ internal sealed class MainForm : Form
 		var file = new ToolStripMenuItem("&File");
 		file.DropDownItems.Add(new ToolStripMenuItem("&Help") { Enabled = false });
 		file.DropDownItems.Add(new ToolStripSeparator());
-		file.DropDownItems.Add(new ToolStripMenuItem("S&ave History") { Enabled = false });
+		file.DropDownItems.Add(new ToolStripMenuItem("S&ave History...", null, (_, _) => SaveHistoryAs()));
 		file.DropDownItems.Add(new ToolStripSeparator());
-		file.DropDownItems.Add(new ToolStripMenuItem("&Save Functions && Variables") { Enabled = false });
-		file.DropDownItems.Add(new ToolStripMenuItem("&Load Functions && Variables") { Enabled = false });
+		file.DropDownItems.Add(new ToolStripMenuItem("&Save Functions && Variables...", null, (_, _) => SaveDefinitionsAs()));
+		file.DropDownItems.Add(new ToolStripMenuItem("&Load Functions && Variables...", null,
+			async (_, _) => await LoadDefinitionsAsync()));
 		file.DropDownItems.Add(new ToolStripSeparator());
 		file.DropDownItems.Add(new ToolStripMenuItem("E&xit", null, (_, _) => Close()));
 
@@ -312,6 +317,7 @@ internal sealed class MainForm : Form
 		try
 		{
 			await _session.StartAsync();
+			await RestoreSessionAsync();
 			BuildCatalogMenus(await _session.CatalogAsync());
 			await RefreshStateAsync();
 			ShowSettingChecks();
@@ -339,9 +345,9 @@ internal sealed class MainForm : Form
 
 	private async Task SubmitAsync()
 	{
-		if (_busy)
+		if (_busy || !_engineReady)
 		{
-			return;
+			return;    // before start-up finishes, Enter waits; the typed text stays
 		}
 		_busy = true;
 		_input.ReadOnly = true;
@@ -358,7 +364,7 @@ internal sealed class MainForm : Form
 			{
 				return;
 			}
-			_history.Append(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
+			_history.Append(Stamp(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text)));
 			_recall.Reset();
 			_lastWasResult = reply.Kind == "result";
 			if (reply.Kind != "error")
@@ -380,6 +386,10 @@ internal sealed class MainForm : Form
 
 	private async Task ChangeSettingAsync(string key, object value)
 	{
+		if (!_engineReady)
+		{
+			return;
+		}
 		JsonNode? node = value switch
 		{
 			bool flag => JsonValue.Create(key == "rpn" ? !((bool?)_session.Settings["rpn"] == true) : flag),
@@ -394,7 +404,12 @@ internal sealed class MainForm : Form
 
 	private async Task ClearHistoryAsync()
 	{
+		if (!_engineReady)
+		{
+			return;
+		}
 		_history.ClearEntries();
+		_clearedAt = DateTime.UtcNow;    // merged at close so other windows' older entries go too
 		await _session.ClearHistoryAsync();
 	}
 

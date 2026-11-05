@@ -229,3 +229,31 @@ def test_format_insert_and_catalog(dispatcher):
     response = ask(dispatcher, "menu_insert", kind="format", name="longdatetime", text="now")
     assert response["text"] == "now [longdatetime]"
     assert "longdatetime" in ask(dispatcher, "catalog")["formats"]
+
+
+RESTORE_TEXTS = ["5", "0xFF", "Tuesday, 27 October 2026", "(3+4i)", "1:30:00", "27.10.2026", "ERROR:x", "1b*10b^101000b"]
+
+
+def test_restore_results_counts_parsable_values(dispatcher):
+    # the long date and the error line are skipped
+    assert ask(dispatcher, "restore_results", texts=RESTORE_TEXTS)["restored"] == 6
+
+
+@pytest.mark.parametrize("line, want", [
+    ("answer", "1099511627776"),      # 2^40, parsed back from the binary form
+    ("$1", "1099511627776"),
+    ("$2", "27.10.2026"),
+    ("$3", "1:30:00"),
+    ("$4+1", "(4+4i)"),
+    ("$5", "255"),
+    ("$6", "5"),
+])
+def test_restore_results_rebuilds_answer_and_refs(line, want):
+    fresh = Dispatcher()
+    ask(fresh, "restore_results", texts=RESTORE_TEXTS)
+    assert ask(fresh, "eval", input=line)["text"] == want
+
+
+def test_restore_results_rejects_bad_payload(dispatcher):
+    assert ask(dispatcher, "restore_results", texts="5")["ok"] is False
+    assert ask(dispatcher, "restore_results", texts=[5])["ok"] is False
