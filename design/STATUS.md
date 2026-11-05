@@ -3,6 +3,8 @@
 Updated 2026-11-06 after M8. Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
+Open work is listed in `design/TODO.md`.
+
 ## Where things stand
 | milestone | state | tag |
 |---|---|---|
