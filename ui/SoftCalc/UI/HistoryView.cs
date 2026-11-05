@@ -4,8 +4,10 @@
 // for variables, answer or $n, the numeric form right-aligned in a
 // fainter colour (extensions.md E10). Line 2: the result, indented.
 // A currency line shows its rate date faint at the right of line 2 (M8).
-// Clicking an entry raises EntryClicked; Ctrl+C copies the selected one;
-// the context menu copies the result, the entry, or everything (E9).
+// Click raises EntryClicked (recall the expression), Shift+click raises
+// ResultClicked (insert the result); a balloon tip over the list says so.
+// Ctrl+C copies the selected entry; the context menu also recalls,
+// inserts, and copies the result, the entry, or everything (E9).
 
 using System.Text;
 
@@ -31,7 +33,12 @@ internal sealed class HistoryView : ListBox
 
 	private readonly List<HistoryEntry> _entries = new();
 
+	public const string HoverHint = "Click: use the expression\r\nShift+Click: insert the result\r\nRight-click: more";
+
+	private readonly ToolTip _hint = new() { IsBalloon = true, InitialDelay = 700, AutoPopDelay = 6000, ToolTipTitle = "History" };
+
 	public event EventHandler<HistoryEntry>? EntryClicked;
+	public event EventHandler<HistoryEntry>? ResultClicked;
 
 	public IReadOnlyList<HistoryEntry> Entries => _entries;
 
@@ -43,18 +50,36 @@ internal sealed class HistoryView : ListBox
 		HorizontalScrollbar = false;
 		ItemHeight = (Font.Height + 2) * 2 + 4;
 		ContextMenuStrip = BuildContextMenu();
+		_hint.SetToolTip(this, HoverHint);
+	}
+
+	protected override void Dispose(bool disposing)
+	{
+		if (disposing)
+		{
+			_hint.Dispose();
+		}
+		base.Dispose(disposing);
 	}
 
 	private ContextMenuStrip BuildContextMenu()
 	{
 		var menu = new ContextMenuStrip();
+		var useExpression = new ToolStripMenuItem("Use E&xpression", null, (_, _) => Raise(EntryClicked));
+		var insertResult = new ToolStripMenuItem("&Insert Result", null, (_, _) => Raise(ResultClicked)) { ShortcutKeyDisplayString = "Shift+Click" };
 		var copyResult = new ToolStripMenuItem("Copy &Result", null, (_, _) => CopySelected(e => e.Text));
 		var copyEntry = new ToolStripMenuItem("Copy &Expression and Result", null, (_, _) => CopySelected(CopyText));
 		var copyAll = new ToolStripMenuItem("Copy &All", null, (_, _) => SetClipboard(AllText()));
-		menu.Items.AddRange(new ToolStripItem[] { copyResult, copyEntry, new ToolStripSeparator(), copyAll });
+		menu.Items.AddRange(new ToolStripItem[]
+		{
+			useExpression, insertResult, new ToolStripSeparator(),
+			copyResult, copyEntry, new ToolStripSeparator(), copyAll,
+		});
 		menu.Opening += (_, _) =>
 		{
 			bool entry = Selected is { Kind: not "notice" };
+			useExpression.Enabled = entry;
+			insertResult.Enabled = Selected is { Kind: "result" };
 			copyResult.Enabled = entry;
 			copyEntry.Enabled = entry;
 			copyAll.Enabled = _entries.Any(e => e.Kind != "notice");
@@ -63,6 +88,14 @@ internal sealed class HistoryView : ListBox
 	}
 
 	private HistoryEntry? Selected => SelectedIndex >= 0 && SelectedIndex < _entries.Count ? _entries[SelectedIndex] : null;
+
+	private void Raise(EventHandler<HistoryEntry>? handler)
+	{
+		if (Selected is { Kind: not "notice" } entry)
+		{
+			handler?.Invoke(this, entry);
+		}
+	}
 
 	private void CopySelected(Func<HistoryEntry, string> text)
 	{
@@ -178,7 +211,8 @@ internal sealed class HistoryView : ListBox
 		int index = IndexFromPoint(e.Location);
 		if (index >= 0 && index < _entries.Count)
 		{
-			EntryClicked?.Invoke(this, _entries[index]);
+			var handler = (ModifierKeys & Keys.Shift) != 0 ? ResultClicked : EntryClicked;
+			handler?.Invoke(this, _entries[index]);
 		}
 	}
 

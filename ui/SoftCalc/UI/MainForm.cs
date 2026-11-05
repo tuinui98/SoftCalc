@@ -77,6 +77,7 @@ internal sealed partial class MainForm : Form
 		BuildLayout();
 		BuildMenus();
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
+		_history.ResultClicked += (_, entry) => InsertResult(entry);
 		_input.KeyDown += OnInputKeyDown;
 		_input.KeyPress += OnInputKeyPress;
 		_keypad.KeyPressedLabel += async (_, label) => await OnKeypad(label);
@@ -501,6 +502,20 @@ internal sealed partial class MainForm : Form
 		arguments["text"] = _input.Text;
 		arguments["caret"] = _input.SelectionStart;
 		var (text, caret) = await _session.MenuInsertAsync(arguments);
+		_input.Text = text;
+		_input.SelectionStart = caret;
+		_input.Focus();
+	}
+
+	// Only results insert; errors and definitions have no value to use
+	private void InsertResult(HistoryEntry entry)
+	{
+		if (entry.Kind != "result")
+		{
+			return;
+		}
+		bool rpn = (bool?)_session.Settings["rpn"] == true;
+		var (text, caret) = InputRules.InsertResult(_input.Text, _input.SelectionStart, _input.SelectionLength, entry.Text, rpn);
 		_input.Text = text;
 		_input.SelectionStart = caret;
 		_input.Focus();

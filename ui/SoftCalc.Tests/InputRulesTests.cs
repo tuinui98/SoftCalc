@@ -77,4 +77,18 @@ public class InputRulesTests
 	{
 		Assert.Equal(expected, InputRules.RpnOperator(text, symbol));
 	}
+
+	[Theory]
+	[InlineData("", 0, 0, false, "42", 2)]
+	[InlineData("2*", 2, 0, false, "2*42", 4)]
+	[InlineData("sqrt()", 5, 0, false, "sqrt(42)", 7)]
+	[InlineData("1+99", 2, 2, false, "1+42", 4)]               // replaces the selection
+	[InlineData("3", 1, 0, true, "3 42", 4)]                   // RPN: own item
+	[InlineData("3 +", 1, 0, true, "3 42 +", 4)]
+	[InlineData("3 ", 2, 0, true, "3 42", 4)]
+	[InlineData("+", 0, 0, true, "42 +", 3)]
+	public void ShiftClickInsertsTheResultAtTheCaret(string text, int start, int length, bool rpn, string want, int caret)
+	{
+		Assert.Equal((want, caret), InputRules.InsertResult(text, start, length, "42", rpn));
+	}
 }

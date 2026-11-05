@@ -26,7 +26,11 @@ golden `U_repeat`); History layout with the input on the left and the
 substituted numeric form right-aligned and faint; History View and a
 400x651 window as defaults.
 
-Tests after M8: engine `pytest` 334 passed; UI `dotnet test` 135 passed.
+After M8, on `main` (no tag): Shift+click on History inserts the result
+at the caret, balloon tip over History, Use Expression / Insert Result
+in its context menu.
+
+Tests: engine `pytest` 334 passed; UI `dotnet test` 143 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

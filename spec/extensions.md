@@ -124,6 +124,10 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   colour (nothing on the right otherwise). The result stays on the
   second line, indented. Entries are selectable items; Ctrl+C copies the
   selected entry (free text selection was given up for this layout).
+- Owner 2026-11-06: click recalls the expression; Shift+click inserts the
+  result at the Input caret (replacing a selection; spaced as its own
+  item in RPN); a balloon tip over History says so; the context menu
+  has Use Expression and Insert Result too. Only results insert.
 
 ## E12. Persistent history
 - Decided 2026-10-27: History is saved to a file (differs from the

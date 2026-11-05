@@ -72,4 +72,27 @@ internal static class InputRules
 		}
 		return text + " " + symbol;
 	}
+
+	// Shift+click on a History result: the result replaces the selection at the caret.
+	// In RPN mode it is kept apart from its neighbours by spaces, since spaces separate items.
+	public static (string Text, int Caret) InsertResult(string text, int start, int length, string result, bool rpn)
+	{
+		start = Math.Clamp(start, 0, text.Length);
+		length = Math.Clamp(length, 0, text.Length - start);
+		string before = text[..start];
+		string after = text[(start + length)..];
+		string piece = result;
+		if (rpn)
+		{
+			if (before.Length > 0 && !char.IsWhiteSpace(before[^1]))
+			{
+				piece = " " + piece;
+			}
+			if (after.Length > 0 && !char.IsWhiteSpace(after[0]))
+			{
+				piece += " ";
+			}
+		}
+		return (before + piece + after, before.Length + piece.Length);
+	}
 }
