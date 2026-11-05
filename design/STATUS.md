@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-05 after M7. Everything below is committed on `main` and
+Updated 2026-11-06 after M8. Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 ## Where things stand
@@ -14,8 +14,8 @@ pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 | M5 UI shell | done | milestone/20261027-m5-ui-shell |
 | M6 sidebar graph, variables, dialogs, Graph window | done | milestone/20261027-m6-sidebar-graph |
 | M7 persistence and files | done | milestone/20261105-m7-persistence |
-| **M8 tools (compound interest window, ECB currency, copy menu, always on top)** | **next** | |
-| M9 packaging (single folder or installer, icon, about) | todo | |
+| M8 tools (compound interest window, ECB currency, copy menu, always on top) | done | milestone/20261106-m8-tools |
+| **M9 packaging (single folder or installer, icon, about)** | **next** | |
 
 Done after milestones, on `main` (no tag): durations `h:mm:ss`;
 `yr mo wk h` units (year = 365 d, month = 30 d) and `[utc->local]`;
@@ -26,7 +26,26 @@ golden `U_repeat`); History layout with the input on the left and the
 substituted numeric form right-aligned and faint; History View and a
 400x651 window as defaults.
 
-Tests after M7: engine `pytest` 302 passed; UI `dotnet test` 88 passed.
+Tests after M8: engine `pytest` 334 passed; UI `dotnet test` 135 passed.
+
+## M8 result (design/m8_plan.md)
+- Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
+  rates (`rates_needed`); the UI fetches eurofxref-daily.xml only then,
+  caches it as rates.xml and skips fetching while the cache holds the
+  latest publication (TARGET calendar, 1 h retry). Every currency line
+  shows `ECB <date>` faint on its result line (`, offline` after a
+  failed fetch); the note is saved with History.
+- Conversions > Currency: 10 common codes as pairs, then From / To
+  groups with all codes inserting ` [THB` and `->USD]`.
+- Tools > Compound Interest: auto recalculation (300 ms), errors next
+  to their field, stacked growth graph, virtual period table, Ctrl+C,
+  Copy all, Export CSV; inputs remembered.
+- History context menu: Copy Result, Copy Expression and Result, Copy
+  All. View > Always on Top (remembered).
+- Checked end to end with a scratch data folder, including one real ECB
+  fetch (2026-11-05 rates).
+- Note: `powershell -File tools\drive_softcalc.ps1 -Lines @(...)` passes
+  only the first line; run the script with `&` from PowerShell.
 
 ## M7 result (design/m7_plan.md)
 - `%APPDATA%\SoftCalc\` (override: `SOFTCALC_DATA_DIR`): settings.json,

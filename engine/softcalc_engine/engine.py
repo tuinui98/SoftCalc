@@ -22,6 +22,7 @@ from .lexer import join_digit_spaces, tokenize
 from .parser import parse_line
 from .rpn import parse_rpn
 from .units import convert
+from . import currency
 
 GUARD_DIGITS = 10
 PLOT_DIGITS = 20
@@ -53,11 +54,13 @@ class Settings:
 class EvalResult:
     """Outcome of one input line.
 
-    kind: "result", "definition", "error", or "empty" (nothing to add).
+    kind: "result", "definition", "error", "empty" (nothing to add), or
+    "rates_needed" (fetch currency rates and evaluate again; E8).
     input: the line as typed (recalled when a History line is clicked).
     display_input: the line as History shows it, with variables, answer
     and $n replaced by their values (extensions.md E10).
     text: the History result line (number, message, or error text).
+    note: the ECB rate date when a currency rate was used, else "".
     """
 
     kind: str
@@ -65,6 +68,7 @@ class EvalResult:
     text: str = ""
     display_input: str = ""
     value: object = field(default=None, repr=False)
+    note: str = ""
 
 
 @dataclass
@@ -90,6 +94,8 @@ class Engine:
         self.results = []
         self.variables = {}    # lower-case name -> (display name, value)
         self.functions = {}    # lower-case name -> UserFunction
+        self.rates = currency.Rates()
+        self.used_rates = False
         if load_defaults:
             for line in DEFAULT_FUNCTIONS:
                 self.evaluate(line)
@@ -103,6 +109,13 @@ class Engine:
     #------------------------------------------------------------------
     def evaluate(self, text):
         """Evaluate one input line and record its result."""
+        self.used_rates = False
+        result = self.evaluate_line(text)
+        if self.used_rates and result.kind in ("result", "definition"):
+            result.note = self.rates.note()
+        return result
+
+    def evaluate_line(self, text):
         if text == "":
             return EvalResult("empty", text)
         try:
@@ -118,6 +131,8 @@ class Engine:
                 value = self.eval_node(tree, builtins, {}, 0)
                 shown = self.format_value(value)
                 display = self.display_line(text, builtins)
+        except currency.RatesNeeded:
+            return EvalResult("rates_needed", text)
         except CalcError as exc:
             return EvalResult("error", text, f"ERROR:{exc}", text)
         self.answer = value
@@ -305,6 +320,10 @@ class Engine:
                 return convert_zone(value, node[1], node[2])
             if not isinstance(value, mpmath.mpf):
                 raise CalcError("Only real numbers can be converted")
+            if currency.is_currency(node[1], self.rates) or currency.is_currency(node[2], self.rates):
+                converted = currency.convert(value, node[1], node[2], self.rates)
+                self.used_rates = True
+                return converted
             return convert(value, node[1], node[2])
         if kind == "fmt":
             fn = dates.FUNCTIONS.get(node[1])

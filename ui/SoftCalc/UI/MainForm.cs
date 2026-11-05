@@ -42,6 +42,8 @@ internal sealed partial class MainForm : Form
 	private readonly ToolStripMenuItem _conversionsMenu = new("&Conversions");
 	private readonly ToolStripMenuItem _userFunctionsMenu = new("&User Functions");
 	private readonly ToolStripMenuItem _showSamplesItem = new("&Show Samples") { Checked = true };
+	private readonly ToolStripMenuItem _onTopItem = new("Always on &Top");
+	private readonly RatesSource _rates;
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
 	private readonly Dictionary<string, Dictionary<object, ToolStripMenuItem>> _settingItems = new();
 
@@ -54,6 +56,7 @@ internal sealed partial class MainForm : Form
 	private GraphPanel _graphPanel = null!;
 	private VariablesPanel _variablesPanel = null!;
 	private GraphWindow? _graphWindow;
+	private CompoundWindow? _compoundWindow;
 
 	public MainForm(EngineSession session, DataFolder folder)
 	{
@@ -66,6 +69,8 @@ internal sealed partial class MainForm : Form
 			.ToList());
 		_session.Restarted += (_, reason) => AddNotice("(engine restarted)", reason);
 		_session.DefinitionsChanged += (_, text) => OnDefinitionsChanged(text);
+		_rates = new RatesSource(folder.RatesPath);
+		_session.RatesProvider = FetchRatesAsync;
 		Text = "SoftCalc";
 		StartPosition = FormStartPosition.CenterScreen;
 		KeyPreview = true;
@@ -141,6 +146,39 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
+	private void OpenCompoundWindow()
+	{
+		if (_compoundWindow == null || _compoundWindow.IsDisposed)
+		{
+			_compoundWindow = new CompoundWindow(_session, _prefs.Compound);
+			_compoundWindow.Show(this);
+		}
+		else
+		{
+			_compoundWindow.Activate();
+		}
+	}
+
+	private void SetAlwaysOnTop(bool onTop)
+	{
+		_onTopItem.Checked = onTop;
+		TopMost = onTop;    // owned windows (Graph, Compound Interest) stay above it
+	}
+
+	// The only network access: runs when a currency conversion needs rates
+	private async Task<JsonObject> FetchRatesAsync()
+	{
+		UseWaitCursor = true;
+		try
+		{
+			return await _rates.FetchAsync();
+		}
+		finally
+		{
+			UseWaitCursor = false;
+		}
+	}
+
 	private void CenterKeypad()
 	{
 		_keypad.Location = new Point(
@@ -198,6 +236,8 @@ internal sealed partial class MainForm : Form
 			ApplyView(_view);
 		};
 		view.DropDownItems.Add(_showSamplesItem);
+		_onTopItem.Click += (_, _) => SetAlwaysOnTop(!_onTopItem.Checked);
+		view.DropDownItems.Add(_onTopItem);
 		view.DropDownItems.Add(new ToolStripSeparator());
 		var options = new ToolStripMenuItem("Advanced &Options");
 		AddSettingItem(options.DropDownItems, "angle", "deg", "&Degrees");
@@ -212,7 +252,10 @@ internal sealed partial class MainForm : Form
 		AddSettingItem(options.DropDownItems, "precision", 512, "&Extreme Precision (512) ** slow");
 		view.DropDownItems.Add(options);
 
-		_menu.Items.AddRange(new ToolStripItem[] { file, view, _functionsMenu, _conversionsMenu });
+		var tools = new ToolStripMenuItem("&Tools");
+		tools.DropDownItems.Add(new ToolStripMenuItem("&Compound Interest...", null, (_, _) => OpenCompoundWindow()));
+
+		_menu.Items.AddRange(new ToolStripItem[] { file, view, _functionsMenu, _conversionsMenu, tools });
 	}
 
 	private void AddViewItem(ToolStripMenuItem parent, string text, CalcView target)
@@ -268,6 +311,10 @@ internal sealed partial class MainForm : Form
 				}
 				categoryItem.DropDownItems.Add(sourceItem);
 			}
+			if (category == "Currency")
+			{
+				AddCurrencyHalves(categoryItem, catalog.Currencies);
+			}
 			_conversionsMenu.DropDownItems.Add(categoryItem);
 		}
 		var formats = new ToolStripMenuItem("Date Format");
@@ -278,6 +325,22 @@ internal sealed partial class MainForm : Form
 		}
 		_conversionsMenu.DropDownItems.Add(new ToolStripSeparator());
 		_conversionsMenu.DropDownItems.Add(formats);
+	}
+
+	// Below the common pairs: From inserts " [THB", To inserts "->USD]" (owner 2026-11-06)
+	private void AddCurrencyHalves(ToolStripMenuItem category, IReadOnlyList<string> codes)
+	{
+		category.DropDownItems.Add(new ToolStripSeparator());
+		foreach (var (label, kind) in new[] { ("&From", "currency_from"), ("&To", "currency_to") })
+		{
+			var group = new ToolStripMenuItem(label);
+			foreach (string code in codes)
+			{
+				group.DropDownItems.Add(new ToolStripMenuItem(code, null, async (_, _) =>
+					await InsertFromMenuAsync(new JsonObject { ["kind"] = kind, ["code"] = code })));
+			}
+			category.DropDownItems.Add(group);
+		}
 	}
 
 	private void BuildUserFunctionsMenu()
@@ -364,7 +427,7 @@ internal sealed partial class MainForm : Form
 			{
 				return;
 			}
-			_history.Append(Stamp(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text)));
+			_history.Append(Stamp(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text) { Note = reply.Note }));
 			_recall.Reset();
 			_lastWasResult = reply.Kind == "result";
 			if (reply.Kind != "error")
@@ -400,6 +463,10 @@ internal sealed partial class MainForm : Form
 		ShowSettingChecks();
 		await RefreshStateAsync();    // constants and values follow precision and base
 		_graphSettings.NotifyChanged();    // the angle unit changes trig plots
+		if (_compoundWindow != null && !_compoundWindow.IsDisposed)
+		{
+			_compoundWindow.SettingsChanged();    // amounts follow precision and base
+		}
 	}
 
 	private async Task ClearHistoryAsync()

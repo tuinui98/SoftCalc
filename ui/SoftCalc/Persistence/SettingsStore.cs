@@ -56,6 +56,18 @@ internal sealed class GraphPrefs
 	public double GridR { get; set; } = 1;
 }
 
+// Last inputs of the Compound Interest window (M8)
+internal sealed class CompoundPrefs
+{
+	public string Principal { get; set; } = "10000";
+	public string Rate { get; set; } = "5";
+	public string Years { get; set; } = "10";
+	public string Compounding { get; set; } = "monthly";
+	public string Contribution { get; set; } = "0";
+	public string ContributionFreq { get; set; } = "monthly";
+	public bool AtStart { get; set; }
+}
+
 internal sealed class AppSettings
 {
 	public int Precision { get; set; } = 32;
@@ -69,6 +81,8 @@ internal sealed class AppSettings
 	public int HistoryCap { get; set; } = 1000;
 	public WindowPlacement Window { get; set; } = new();
 	public GraphPrefs Graph { get; set; } = new();
+	public bool AlwaysOnTop { get; set; }
+	public CompoundPrefs Compound { get; set; } = new();
 }
 
 internal static class SettingsStore
@@ -138,5 +152,19 @@ internal static class SettingsStore
 		}
 		s.Window ??= new WindowPlacement();
 		s.Graph ??= new GraphPrefs();
+		s.Compound ??= new CompoundPrefs();
+		var c = s.Compound;
+		c.Principal ??= "";
+		c.Rate ??= "";
+		c.Years ??= "";
+		c.Contribution ??= "";
+		if (c.Compounding is not ("yearly" or "quarterly" or "monthly" or "daily" or "continuous"))
+		{
+			c.Compounding = "monthly";
+		}
+		if (c.ContributionFreq is not ("yearly" or "quarterly" or "monthly" or "daily"))
+		{
+			c.ContributionFreq = "monthly";
+		}
 	}
 }

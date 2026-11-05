@@ -154,4 +154,80 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		Assert.Equal(64, (int?)Session.Settings["precision"]);
 		Assert.Equal(64 + 2, (await Session.EvalAsync("1/3")).Text.Length);
 	}
+
+	//==================================================================
+	//  M8: currency rates on demand, Compound Interest schedule
+	//==================================================================
+	private static JsonObject Rates(bool stale = false)
+	{
+		var later = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds();
+		return new JsonObject
+		{
+			["date"] = "2026-11-05", ["rates"] = new JsonObject { ["USD"] = "1.25", ["THB"] = "40" },
+			["stale"] = stale, ["next_check"] = later,
+		};
+	}
+
+	[Fact]
+	public async Task CurrencyFetchesOnceThenEvaluatesAgain()
+	{
+		int calls = 0;
+		Session.RatesProvider = () =>
+		{
+			calls++;
+			return Task.FromResult(Rates());
+		};
+		var reply = await Session.EvalAsync("2 [usd->thb]");
+		Assert.Equal(("result", "64", "ECB 2026-11-05"), (reply.Kind, reply.Text, reply.Note));
+		await Session.EvalAsync("3 [usd->thb]");
+		Assert.Equal(1, calls);
+		Assert.Equal("", (await Session.EvalAsync("1+1")).Note);
+	}
+
+	[Fact]
+	public async Task NoRatesAvailableIsAnError()
+	{
+		var none = new JsonObject
+		{
+			["date"] = null, ["rates"] = new JsonObject(), ["stale"] = true,
+			["next_check"] = DateTimeOffset.UtcNow.AddHours(1).ToUnixTimeSeconds(),
+		};
+		Session.RatesProvider = () => Task.FromResult(none);
+		var reply = await Session.EvalAsync("2 [usd->thb]");
+		Assert.Equal(("error", "ERROR:Currency rates unavailable"), (reply.Kind, reply.Text));
+	}
+
+	[Fact]
+	public async Task RatesSurviveARestart()
+	{
+		await Session.SetRatesAsync(Rates(stale: true));
+		Session.Client!.KillForTest();
+		await Session.EvalAsync("1");
+		Session.RatesProvider = () => throw new InvalidOperationException("should not fetch");
+		var reply = await Session.EvalAsync("1 [usd->thb]");
+		Assert.Equal(("32", "ECB 2026-11-05, offline"), (reply.Text, reply.Note));
+	}
+
+	[Fact]
+	public async Task ScheduleGivesTotalsRowsAndSeries()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["principal"] = "1000", ["annual_rate"] = "12", ["years"] = "1", ["compounding"] = "quarterly",
+		});
+		Assert.Equal(4, reply.Rows.Count);
+		Assert.Equal((4, 1000.0), (reply.PeriodsPerYear, reply.Principal));
+		Assert.Equal(reply.FutureValue, reply.Rows[^1].End);
+		Assert.Equal(4, reply.Interest.Count);
+	}
+
+	[Fact]
+	public async Task ScheduleErrorsNameTheField()
+	{
+		var error = await Assert.ThrowsAsync<EngineRequestException>(() => Session.ScheduleAsync(new JsonObject
+		{
+			["principal"] = "1000", ["annual_rate"] = "5", ["years"] = "-1",
+		}));
+		Assert.StartsWith("years:", error.Message);
+	}
 }

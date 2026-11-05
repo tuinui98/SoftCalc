@@ -233,3 +233,14 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   as Unix seconds, as in the functions.
 - Menu: protocol `catalog.formats` lists them; `menu_insert` kind
   `format` appends ` [name]`.
+
+## Implementation notes (M8, 2026-11-06)
+- E8: owner chose full precision for currency results and a rate note
+  on every currency line (`ECB 2026-11-05`, `, offline` after a failed
+  fetch). A tag is a currency conversion when either side is a known
+  ECB code; a code the ECB does not publish (BGN since the euro, 2026)
+  gives `No ECB rate for BGN`; `[usd->kg]` gives `Cannot convert`.
+  Menu: 10 common codes as pairs, then From / To halves (owner).
+- E9: History context menu and View > Always on Top as planned.
+- E11: the window recalculates 300 ms after a change (owner); amounts
+  follow the main window's precision, base and decimals.

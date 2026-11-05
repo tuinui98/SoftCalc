@@ -29,9 +29,15 @@ by the engine. Only `plot` and the `schedule` graph series send floats.
 
 ### `eval`
 `{"input": "2x+1"}` ->
-`{"kind": "result"|"definition"|"error"|"empty", "input": "2x+1",
-"display_input": "2*5+1", "text": "11"}`
+`{"kind": "result"|"definition"|"error"|"empty"|"rates_needed", "input": "2x+1",
+"display_input": "2*5+1", "text": "11", "note": ""}`
 - `kind: "empty"`: add nothing to History.
+- `kind: "rates_needed"`: the line converts a currency and the engine
+  has no rates, or they are due (`set_rates`). Nothing was recorded;
+  the UI fetches the rates, sends `set_rates` and evaluates the line
+  again (M8).
+- `note`: the rate date (`ECB 2026-11-05`, plus `, offline` when the
+  last fetch failed) when a currency rate was used, else `""`.
 - `display_input` is the History expression line (extensions.md E10);
   `input` is what to put back in the Input box when the line is
   clicked; `text` is the result line (`ERROR:...` for errors).
@@ -69,7 +75,9 @@ deleted).
                "Trig Functions": [...], "Log Functions": [...],
                "Date Functions": [...], "Finance Functions": [...]},
  "conversions": {"Length": ["in", "ft", ...], "Time": [...], ...,
-                 "Time zone": ["utc", "local"]},
+                 "Time zone": ["utc", "local"],
+                 "Currency": ["THB", "USD", ...]},
+ "currencies": ["AUD", "BRL", ...],
  "formats": ["longdatetime", "longdate", "longtime", "epoch", "fromepoch"]}
 ```
 
@@ -78,6 +86,8 @@ deleted).
 `{"kind": "function", "name": "sqrt", "text": "1", "caret": 1}`
 `{"kind": "conversion", "source": "in", "target": "cm", "text": "1", "caret": 1}`
 `{"kind": "format", "name": "longdatetime", "text": "now", "caret": 3}`
+`{"kind": "currency_from", "code": "THB", "text": "100"}` (appends ` [THB`)
+`{"kind": "currency_to", "code": "USD", "text": "100 [THB"}` (appends `->USD]`)
 -> `{"text": "...", "caret": <int>}` (SPEC 3 insertion rules).
 
 ### `plot`
@@ -114,12 +124,25 @@ that were shown.
 {"future_value": "...", "total_contributions": "...", "total_interest": "...",
  "rows": [{"period": 1, "start": "...", "interest": "...",
            "contribution": "...", "end": "..."}, ...],
- "series": {"contributions": [float, ...], "interest": [float, ...]}}
+ "periods_per_year": 12,
+ "series": {"principal": float, "contributions": [float, ...], "interest": [float, ...]}}
 ```
 Inputs are text (any engine expression, e.g. `"5"` or `"10000/12"`);
 `annual_rate` is in percent. Amounts are display text at the current
 settings; `series` holds cumulative contributions (principal included)
-and cumulative interest per row, for the growth graph.
+and cumulative interest per row, for the growth graph. An input that
+fails answers `ok: false` with an error starting with the field name
+(`"years: must be positive"`); at most 100000 rows.
+
+### `set_rates`
+`{"date": "2026-11-05", "rates": {"USD": "1.0812", "THB": "37.95", ...},
+"stale": false, "next_check": 1762444800}` -> `{}`.
+ECB reference rates, units per 1 EUR (EUR itself is implied). The
+engine does no network I/O; the UI fetches and caches the rates (M8).
+`next_check` is Unix seconds: a conversion after it answers
+`rates_needed`. `stale: true` marks rates kept after a failed fetch.
+`rates: {}` with a future `next_check` means none are available yet
+(conversions then fail with `Currency rates unavailable`).
 
 ### `shutdown`
 `{}` -> `{}`, then the process exits.

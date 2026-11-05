@@ -10,7 +10,7 @@ import sys
 
 import mpmath
 
-from . import __version__, finance, menu, units
+from . import __version__, currency, finance, menu, units
 from .dates import ZONES
 from .engine import Engine, Settings
 from .errors import CalcError
@@ -34,7 +34,8 @@ CATALOG = {
         "Date Functions": ["epoch", "fromepoch", "longdate", "longtime", "longdatetime"],
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
     },
-    "conversions": {**units.MENU, "Time zone": list(ZONES)},
+    "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
+    "currencies": currency.CODES,
     "formats": ["longdatetime", "longdate", "longtime", "epoch", "fromepoch"],
 }
 
@@ -76,6 +77,7 @@ class Dispatcher:
             "pcf_import": self.op_pcf_import,
             "restore_results": self.op_restore_results,
             "schedule": self.op_schedule,
+            "set_rates": self.op_set_rates,
             "shutdown": lambda request: {},
         }
 
@@ -100,7 +102,7 @@ class Dispatcher:
     def op_eval(self, request):
         result = self.engine.evaluate(argument(request, "input", str))
         return {"kind": result.kind, "input": result.input,
-                "display_input": result.display_input, "text": result.text}
+                "display_input": result.display_input, "text": result.text, "note": result.note}
 
     def op_clear_history(self, request):
         self.engine.clear_history()
@@ -134,6 +136,10 @@ class Dispatcher:
             new_text, new_caret = menu.insert_function(text, argument(request, "name", str))
         elif kind == "format":
             new_text, new_caret = menu.insert_format(text, argument(request, "name", str))
+        elif kind == "currency_from":
+            new_text, new_caret = menu.insert_currency_from(text, argument(request, "code", str))
+        elif kind == "currency_to":
+            new_text, new_caret = menu.insert_currency_to(text, argument(request, "code", str))
         elif kind == "conversion":
             new_text, new_caret = menu.insert_conversion(
                 text, argument(request, "source", str), argument(request, "target", str))
@@ -159,6 +165,25 @@ class Dispatcher:
             raise RequestError("'texts' must be a list of strings")
         return {"restored": self.engine.restore_results(texts)}
 
+    def op_set_rates(self, request):
+        date = argument(request, "date", (str, type(None)), None, required=False)
+        rates = argument(request, "rates", dict, {}, required=False)
+        for code, rate in rates.items():
+            if not isinstance(rate, (int, float, str)) or isinstance(rate, bool) or len(code) != 3:
+                raise RequestError("'rates' must map 3-letter codes to numbers")
+            try:
+                positive = mpmath.mpf(rate) > 0
+            except ValueError:
+                positive = False
+            if not positive:
+                raise RequestError(f"rate for '{code}' must be a positive number")
+        if rates and date is None:
+            raise RequestError("'date' is needed with 'rates'")
+        stale = argument(request, "stale", bool, False, required=False)
+        next_check = argument(request, "next_check", (int, float))
+        self.engine.rates.load(date, rates, stale, float(next_check))
+        return {}
+
     def op_pcf_import(self, request):
         skipped = self.engine.import_pcf(argument(request, "text", str))
         return {"skipped": [{"line": n, "text": line, "reason": reason} for n, line, reason in skipped]}
@@ -167,10 +192,14 @@ class Dispatcher:
         engine = self.engine
 
         def number(name, default=None):
+            # Errors start with the field name so the UI can mark that field (M8)
             text = argument(request, name, str, default, required=default is None)
-            value = engine.value_of(text)
+            try:
+                value = engine.value_of(text)
+            except CalcError as exc:
+                raise CalcError(f"{name}: {exc}") from exc
             if not isinstance(value, mpmath.mpf):
-                raise CalcError(f"{name} must be a real number")
+                raise CalcError(f"{name}: must be a real number")
             return value
 
         compounding = argument(request, "compounding", str, "yearly", required=False)
@@ -198,8 +227,9 @@ class Dispatcher:
             return {"future_value": show(plan.future_value),
                     "total_contributions": show(plan.total_contributions),
                     "total_interest": show(plan.total_interest),
-                    "rows": rows,
-                    "series": {"contributions": contributions, "interest": interest}}
+                    "rows": rows, "periods_per_year": plan.periods_per_year,
+                    "series": {"principal": float(principal), "contributions": contributions,
+                               "interest": interest}}
 
 
 #----------------------------------------------------------------------
