@@ -3,16 +3,24 @@
 // Wraps EngineClient with the operations the UI needs. If the engine
 // dies or stops answering, the session starts a new one and restores
 // the settings and user definitions (from the last pcf_export), then
-// raises Restarted. `answer` and $n do not survive a restart.
+// raises Restarted. `answer` and $n do not survive a restart. Currency
+// rates come from RatesProvider when the engine asks for them (M8).
 
 using System.Diagnostics;
 using System.Text.Json.Nodes;
 
 namespace SoftCalc.Engine;
 
-internal sealed record EvalReply(string Kind, string Input, string DisplayInput, string Text);
+internal sealed record EvalReply(string Kind, string Input, string DisplayInput, string Text, string Note = "");
 
 internal sealed record NamedValue(string Name, string Value);
+
+internal sealed record ScheduleRow(int Period, string Start, string Interest, string Contribution, string End);
+
+internal sealed record ScheduleReply(
+	string FutureValue, string TotalContributions, string TotalInterest,
+	IReadOnlyList<ScheduleRow> Rows, double Principal, IReadOnlyList<double> Contributions,
+	IReadOnlyList<double> Interest, int PeriodsPerYear);
 
 internal sealed record UserFunction(string Name, IReadOnlyList<string> Parameters, string Head, string Body);
 
@@ -24,7 +32,8 @@ internal sealed record EngineState(
 internal sealed record Catalog(
 	IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>> FunctionGroups,
 	IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>> ConversionGroups,
-	IReadOnlyList<string> Formats);
+	IReadOnlyList<string> Formats,
+	IReadOnlyList<string> Currencies);
 
 internal sealed class EngineSession : IDisposable
 {
@@ -36,6 +45,7 @@ internal sealed class EngineSession : IDisposable
 	private EngineClient? _client;
 	private JsonObject _settings = new();
 	private string _definitions = "";
+	private JsonObject? _rates;
 
 	public event EventHandler<string>? Restarted;
 
@@ -43,6 +53,9 @@ internal sealed class EngineSession : IDisposable
 	public event EventHandler<string>? DefinitionsChanged;
 
 	public string Definitions => _definitions;
+
+	// Fetches currency rates (a set_rates payload) when an eval needs them
+	public Func<Task<JsonObject>>? RatesProvider { get; set; }
 
 	public EngineSession(ProcessStartInfo startInfo)
 	{
@@ -77,14 +90,40 @@ internal sealed class EngineSession : IDisposable
 			await RestartAsync(ex.Message);
 			return new EvalReply("error", input, input, "ERROR:The engine stopped and was restarted; try again");
 		}
+		if ((string?)reply["kind"] == "rates_needed")
+		{
+			reply = await EvalWithRatesAsync(input);
+		}
 		var result = new EvalReply(
 			(string?)reply["kind"] ?? "error", (string?)reply["input"] ?? input,
-			(string?)reply["display_input"] ?? input, (string?)reply["text"] ?? "");
+			(string?)reply["display_input"] ?? input, (string?)reply["text"] ?? "", (string?)reply["note"] ?? "");
 		if (result.Kind == "definition")
 		{
 			await SnapshotDefinitionsAsync();
 		}
 		return result;
+	}
+
+	// Fetch once, hand the rates over, evaluate again; never loops
+	private async Task<JsonObject> EvalWithRatesAsync(string input)
+	{
+		if (RatesProvider == null)
+		{
+			return new JsonObject { ["kind"] = "error", ["input"] = input, ["text"] = "ERROR:Currency rates unavailable" };
+		}
+		await SetRatesAsync(await RatesProvider());
+		var reply = await RequestAsync("eval", new JsonObject { ["input"] = input }, EvalTimeout);
+		if ((string?)reply["kind"] == "rates_needed")
+		{
+			return new JsonObject { ["kind"] = "error", ["input"] = input, ["text"] = "ERROR:Currency rates unavailable" };
+		}
+		return reply;
+	}
+
+	public async Task SetRatesAsync(JsonObject payload)
+	{
+		_rates = payload.DeepClone().AsObject();
+		await GuardedAsync("set_rates", payload);
 	}
 
 	public async Task<JsonObject> ChangeSettingsAsync(JsonObject changes)
@@ -124,13 +163,34 @@ internal sealed class EngineSession : IDisposable
 	{
 		var reply = await GuardedAsync("catalog", null);
 		return new Catalog(Groups(reply["functions"]), Groups(reply["conversions"]),
-			reply["formats"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>());
+			reply["formats"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>(),
+			reply["currencies"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>());
 	}
 
 	public async Task<(string Text, int Caret)> MenuInsertAsync(JsonObject arguments)
 	{
 		var reply = await GuardedAsync("menu_insert", arguments);
 		return ((string?)reply["text"] ?? "", (int?)reply["caret"] ?? 0);
+	}
+
+	// Compound Interest table; an input error comes back as EngineRequestException
+	// whose message starts with the field name ("years: must be positive")
+	public async Task<ScheduleReply> ScheduleAsync(JsonObject arguments)
+	{
+		var reply = await GuardedAsync("schedule", arguments);
+		var rows = reply["rows"]?.AsArray().Select(r => new ScheduleRow(
+			(int?)r?["period"] ?? 0, (string?)r?["start"] ?? "", (string?)r?["interest"] ?? "",
+			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "")).ToList() ?? new List<ScheduleRow>();
+		var series = reply["series"];
+		return new ScheduleReply(
+			(string?)reply["future_value"] ?? "", (string?)reply["total_contributions"] ?? "",
+			(string?)reply["total_interest"] ?? "", rows, (double?)series?["principal"] ?? 0,
+			Numbers(series?["contributions"]), Numbers(series?["interest"]), (int?)reply["periods_per_year"] ?? 1);
+	}
+
+	private static List<double> Numbers(JsonNode? node)
+	{
+		return node?.AsArray().Select(n => (double?)n ?? 0).ToList() ?? new List<double>();
 	}
 
 	// Removes a user variable or function; returns false if there was none
@@ -239,6 +299,10 @@ internal sealed class EngineSession : IDisposable
 		var restore = _settings.DeepClone().AsObject();
 		await RequestAsync("settings", restore, QuickTimeout);
 		await RequestAsync("pcf_import", new JsonObject { ["text"] = _definitions }, QuickTimeout);
+		if (_rates != null)
+		{
+			await RequestAsync("set_rates", _rates.DeepClone().AsObject(), QuickTimeout);
+		}
 		Restarted?.Invoke(this, reason);
 	}
 

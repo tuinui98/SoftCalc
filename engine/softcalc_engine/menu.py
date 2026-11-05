@@ -27,3 +27,15 @@ def insert_format(text, name):
 def insert_conversion(text, source, target):
     new_text = f"{text} [{source}->{target}]"
     return new_text, len(new_text)
+
+
+def insert_currency_from(text, code):
+    """First half of a currency tag, e.g. `100` becomes `100 [THB` [EXT]."""
+    new_text = f"{text} [{code}"
+    return new_text, len(new_text)
+
+
+def insert_currency_to(text, code):
+    """Second half: `100 [THB` becomes `100 [THB->USD]` [EXT]."""
+    new_text = f"{text}->{code}]"
+    return new_text, len(new_text)

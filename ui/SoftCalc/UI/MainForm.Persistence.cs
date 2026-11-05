@@ -5,7 +5,6 @@
 // are also written after every change. Plan: design/m7_plan.md.
 
 using System.Diagnostics;
-using System.Text;
 using System.Text.Json.Nodes;
 using SoftCalc.Engine;
 using SoftCalc.Logic;
@@ -42,11 +41,13 @@ internal sealed partial class MainForm
 			WindowState = FormWindowState.Maximized;
 		}
 		_showSamplesItem.Checked = _prefs.ShowSamples;
+		SetAlwaysOnTop(_prefs.AlwaysOnTop);
 		ApplyGraphPrefs(_prefs.Graph);
 	}
 
 	private async Task RestoreSessionAsync()
 	{
+		await _session.SetRatesAsync(_rates.LoadCached());    // cached rates; fetched only when a conversion needs them
 		await _session.ChangeSettingsAsync(new JsonObject
 		{
 			["precision"] = _prefs.Precision, ["angle"] = _prefs.Angle, ["base"] = _prefs.Base,
@@ -65,7 +66,7 @@ internal sealed partial class MainForm
 		{
 			_history.Append(new HistoryEntry(stored.Kind, stored.Input, stored.DisplayInput, stored.Text)
 			{
-				Id = stored.Id, Time = stored.Time,
+				Id = stored.Id, Time = stored.Time, Note = stored.Note ?? "",
 			});
 		}
 		_lastWasResult = saved.Count > 0 && saved[^1].Kind == "result";
@@ -134,7 +135,7 @@ internal sealed partial class MainForm
 
 	private static StoredEntry ToStored(HistoryEntry entry)
 	{
-		return new StoredEntry(entry.Id, entry.Time, entry.Kind, entry.Input, entry.DisplayInput, entry.Text);
+		return new StoredEntry(entry.Id, entry.Time, entry.Kind, entry.Input, entry.DisplayInput, entry.Text, entry.Note);
 	}
 
 	private void CaptureSettings()
@@ -148,6 +149,7 @@ internal sealed partial class MainForm
 		_prefs.PadZeros = (bool?)settings["pad_zeros"] ?? _prefs.PadZeros;
 		_prefs.View = _view.ToString();
 		_prefs.ShowSamples = _showSamplesItem.Checked;
+		_prefs.AlwaysOnTop = _onTopItem.Checked;
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		_prefs.Window = new WindowPlacement
 		{
@@ -188,12 +190,7 @@ internal sealed partial class MainForm
 		{
 			return;
 		}
-		var text = new StringBuilder();
-		foreach (var entry in _history.Entries.Where(e => e.Kind != "notice"))
-		{
-			text.Append(HistoryView.CopyText(entry)).Append("\r\n");
-		}
-		DataFolder.WriteAtomic(dialog.FileName, text.ToString());
+		DataFolder.WriteAtomic(dialog.FileName, _history.AllText());
 	}
 
 	private void SaveDefinitionsAs()

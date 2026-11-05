@@ -18,6 +18,7 @@ import mpmath
 from .errors import CalcError
 
 COMPOUNDING = {"yearly": 1, "quarterly": 4, "monthly": 12, "daily": 365}
+MAX_PERIODS = 100000    # table rows; 270 years of daily periods
 
 
 def real_args(name, args):
@@ -106,6 +107,7 @@ class Schedule:
     total_contributions: object
     total_interest: object
     rows: list
+    periods_per_year: int = 1
 
 
 def period_rate(annual_rate, compounding, periods_per_year):
@@ -128,13 +130,15 @@ def schedule(principal, annual_rate, years, compounding="yearly",
     follow the compounding frequency (daily for continuous).
     """
     if years <= 0:
-        raise CalcError("years must be positive")
+        raise CalcError("years: must be positive")
     if contribution == 0:
         freq_key = "daily" if compounding == "continuous" else compounding
     else:
         freq_key = contribution_freq
     per_year = COMPOUNDING[freq_key]
     count = int(mpmath.nint(years * per_year))
+    if count > MAX_PERIODS:
+        raise CalcError(f"years: too many periods (at most {MAX_PERIODS})")
     rate = period_rate(mpmath.mpf(annual_rate), compounding, per_year)
     balance = mpmath.mpf(principal)
     rows = []
@@ -145,4 +149,4 @@ def schedule(principal, annual_rate, years, compounding="yearly",
         balance = start + added_first + interest + (0 if at_start else contribution)
         rows.append(Period(index, start, interest, mpmath.mpf(contribution), balance))
     total_contrib = mpmath.mpf(contribution) * count
-    return Schedule(balance, total_contrib, balance - principal - total_contrib, rows)
+    return Schedule(balance, total_contrib, balance - principal - total_contrib, rows, per_year)

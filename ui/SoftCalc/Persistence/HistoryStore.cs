@@ -9,7 +9,9 @@ using System.Text.Json;
 
 namespace SoftCalc.Persistence;
 
-internal sealed record StoredEntry(string Id, DateTime Time, string Kind, string Input, string DisplayInput, string Text);
+// Note: the ECB rate date of a currency line (M8); absent in older files
+internal sealed record StoredEntry(string Id, DateTime Time, string Kind, string Input, string DisplayInput, string Text,
+	string Note = "");
 
 internal sealed record HistoryFile(IReadOnlyList<StoredEntry> Entries, DateTime? ClearedAt);
 

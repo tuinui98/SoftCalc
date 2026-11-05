@@ -11,6 +11,7 @@ param
 	[string[]]$Lines = @("x=5", "2x+1", "1/3", "now [longdatetime]", "1 [ft->in]"),
 	[string]$Shot = "softcalc_advanced.png",
 	[switch]$OpenGraph,
+	[switch]$OpenCompound,    # Tools > Compound Interest, screenshot of that window
 	[string]$DataDir = ""    # SOFTCALC_DATA_DIR for this run, so tests never touch the owner's %APPDATA%
 )
 
@@ -73,7 +74,14 @@ foreach ($line in $Lines)
 {
 	[void][Drive]::SendMessageW($edit, 0x000C, [IntPtr]::Zero, $line)
 	[void][Win]::PostMessageW($edit, 0x0100, [IntPtr]0x0D, [IntPtr]0x001C0001)
-	Start-Sleep -Milliseconds 900
+	# Wait until the line is done: Input is read-only (ES_READONLY 0x800) while
+	# it is evaluated, which may include an ECB rates fetch
+	Start-Sleep -Milliseconds 300
+	for ($i = 0; $i -lt 60 -and ([Win]::GetWindowLongW($edit, -16) -band 0x800) -ne 0; $i++)
+	{
+		Start-Sleep -Milliseconds 250
+	}
+	Start-Sleep -Milliseconds 300
 }
 Start-Sleep -Milliseconds 500
 Save-WindowShot $main (Join-Path $root "spec\raw\$Shot")
@@ -100,6 +108,37 @@ if ($OpenGraph)
 	else
 	{
 		"Window button not found"
+	}
+}
+if ($OpenCompound)
+{
+	# Open the Tools menu, then invoke its item, through UI Automation
+	Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+	$auto = [Windows.Automation.AutomationElement]
+	$scope = [Windows.Automation.TreeScope]::Descendants
+	$tools = $auto::FromHandle($main).FindFirst($scope, (New-Object Windows.Automation.PropertyCondition($auto::NameProperty, "Tools")))
+	if ($tools)
+	{
+		$tools.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()
+		Start-Sleep -Milliseconds 700
+		$byPid = New-Object Windows.Automation.PropertyCondition($auto::ProcessIdProperty, [int]$proc.Id)
+		$byName = New-Object Windows.Automation.PropertyCondition($auto::NameProperty, "Compound Interest...")
+		$item = $auto::RootElement.FindFirst($scope, (New-Object Windows.Automation.AndCondition($byPid, $byName)))
+		if ($item)
+		{
+			$item.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+			Start-Sleep -Seconds 3
+			$window = [Win]::TopWindowsOf([uint32]$proc.Id) | Where-Object { [Win]::Text($_) -eq "Compound Interest" } | Select-Object -First 1
+			if ($window)
+			{
+				Save-WindowShot $window (Join-Path $root "spec\raw\softcalc_compound.png")
+				"saved softcalc_compound.png"
+			}
+		}
+		else
+		{
+			"Compound Interest item not found"
+		}
 	}
 }
 $proc.CloseMainWindow() | Out-Null

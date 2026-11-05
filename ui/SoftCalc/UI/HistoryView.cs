@@ -3,7 +3,11 @@
 // Line 1: the input as typed on the left; when values were substituted
 // for variables, answer or $n, the numeric form right-aligned in a
 // fainter colour (extensions.md E10). Line 2: the result, indented.
-// Clicking an entry raises EntryClicked; Ctrl+C copies the selected one.
+// A currency line shows its rate date faint at the right of line 2 (M8).
+// Clicking an entry raises EntryClicked; Ctrl+C copies the selected one;
+// the context menu copies the result, the entry, or everything (E9).
+
+using System.Text;
 
 namespace SoftCalc.UI;
 
@@ -12,6 +16,9 @@ internal sealed record HistoryEntry(string Kind, string Input, string DisplayInp
 	// Set for entries that are saved to history.jsonl (notices are not)
 	public string Id { get; init; } = "";
 	public DateTime Time { get; init; }
+
+	// ECB rate date of a currency line, else empty
+	public string Note { get; init; } = "";
 
 	// The right-hand numeric form is shown only when it differs from the input
 	public bool HasSubstitution => Kind == "result" && DisplayInput != Input;
@@ -35,6 +42,42 @@ internal sealed class HistoryView : ListBox
 		IntegralHeight = false;
 		HorizontalScrollbar = false;
 		ItemHeight = (Font.Height + 2) * 2 + 4;
+		ContextMenuStrip = BuildContextMenu();
+	}
+
+	private ContextMenuStrip BuildContextMenu()
+	{
+		var menu = new ContextMenuStrip();
+		var copyResult = new ToolStripMenuItem("Copy &Result", null, (_, _) => CopySelected(e => e.Text));
+		var copyEntry = new ToolStripMenuItem("Copy &Expression and Result", null, (_, _) => CopySelected(CopyText));
+		var copyAll = new ToolStripMenuItem("Copy &All", null, (_, _) => SetClipboard(AllText()));
+		menu.Items.AddRange(new ToolStripItem[] { copyResult, copyEntry, new ToolStripSeparator(), copyAll });
+		menu.Opening += (_, _) =>
+		{
+			bool entry = Selected is { Kind: not "notice" };
+			copyResult.Enabled = entry;
+			copyEntry.Enabled = entry;
+			copyAll.Enabled = _entries.Any(e => e.Kind != "notice");
+		};
+		return menu;
+	}
+
+	private HistoryEntry? Selected => SelectedIndex >= 0 && SelectedIndex < _entries.Count ? _entries[SelectedIndex] : null;
+
+	private void CopySelected(Func<HistoryEntry, string> text)
+	{
+		if (Selected is { } entry)
+		{
+			SetClipboard(text(entry));
+		}
+	}
+
+	private static void SetClipboard(string text)
+	{
+		if (text.Length > 0)
+		{
+			Clipboard.SetText(text);
+		}
 	}
 
 	public void Append(HistoryEntry entry)
@@ -102,7 +145,31 @@ internal sealed class HistoryView : ListBox
 			}
 		}
 		Color resultColor = entry.Kind == "error" && !selected ? Color.Firebrick : main;
+		int resultWidth = TextRenderer.MeasureText(e.Graphics, entry.Text, Font, Size.Empty, flags).Width;
 		TextRenderer.DrawText(e.Graphics, entry.Text, Font, line2, resultColor, flags | TextFormatFlags.EndEllipsis);
+		if (entry.Note.Length > 0)
+		{
+			var note = Rectangle.FromLTRB(line2.Left + resultWidth + Gap, line2.Top, line1.Right, line2.Bottom);
+			if (note.Width > 20)
+			{
+				TextRenderer.DrawText(e.Graphics, entry.Note, Font, note, faint,
+					flags | TextFormatFlags.Right | TextFormatFlags.EndEllipsis);
+			}
+		}
+	}
+
+	// Right-click selects the entry under the mouse before the menu opens
+	protected override void OnMouseDown(MouseEventArgs e)
+	{
+		if (e.Button == MouseButtons.Right)
+		{
+			int index = IndexFromPoint(e.Location);
+			if (index >= 0 && index < _entries.Count)
+			{
+				SelectedIndex = index;
+			}
+		}
+		base.OnMouseDown(e);
 	}
 
 	protected override void OnMouseClick(MouseEventArgs e)
@@ -118,15 +185,27 @@ internal sealed class HistoryView : ListBox
 	protected override void OnKeyDown(KeyEventArgs e)
 	{
 		base.OnKeyDown(e);
-		if (e.Control && e.KeyCode == Keys.C && SelectedIndex >= 0 && SelectedIndex < _entries.Count)
+		if (e.Control && e.KeyCode == Keys.C && Selected is { } entry)
 		{
-			Clipboard.SetText(CopyText(_entries[SelectedIndex]));
+			Clipboard.SetText(CopyText(entry));
 			e.Handled = true;
 		}
 	}
 
 	internal static string CopyText(HistoryEntry entry)
 	{
-		return entry.Input + "\r\n\t" + entry.Text;
+		string note = entry.Note.Length > 0 ? "\t(" + entry.Note + ")" : "";
+		return entry.Input + "\r\n\t" + entry.Text + note;
+	}
+
+	// Every calculation, as Save History writes it (notices left out)
+	public string AllText()
+	{
+		var text = new StringBuilder();
+		foreach (var entry in _entries.Where(e => e.Kind != "notice"))
+		{
+			text.Append(CopyText(entry)).Append("\r\n");
+		}
+		return text.ToString();
 	}
 }

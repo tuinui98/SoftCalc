@@ -32,6 +32,7 @@ internal sealed class DataFolder
 	public string SettingsPath => Path.Combine(Root, "settings.json");
 	public string DefinitionsPath => Path.Combine(Root, "definitions.pcf");
 	public string HistoryPath => Path.Combine(Root, "history.jsonl");
+	public string RatesPath => Path.Combine(Root, "rates.xml");
 	private string LockPath => Path.Combine(Root, "softcalc.lock");
 
 	// Runs action while holding the folder lock; other windows wait briefly

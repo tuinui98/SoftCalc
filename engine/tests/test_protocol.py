@@ -257,3 +257,18 @@ def test_restore_results_rebuilds_answer_and_refs(line, want):
 def test_restore_results_rejects_bad_payload(dispatcher):
     assert ask(dispatcher, "restore_results", texts="5")["ok"] is False
     assert ask(dispatcher, "restore_results", texts=[5])["ok"] is False
+
+
+#----------------------------------------------------------------------
+#  schedule errors name their field (Compound Interest window, M8)
+#----------------------------------------------------------------------
+@pytest.mark.parametrize("fields, prefix", [
+    ({"principal": "1000+", "annual_rate": "5", "years": "10"}, "principal:"),
+    ({"principal": "1000", "annual_rate": "nope", "years": "10"}, "annual_rate:"),
+    ({"principal": "1000", "annual_rate": "5", "years": "0"}, "years:"),
+    ({"principal": "1000", "annual_rate": "5", "years": "1000", "compounding": "daily"}, "years:"),
+    ({"principal": "1000", "annual_rate": "5", "years": "1", "contribution": "i"}, "contribution:"),
+])
+def test_schedule_errors_name_the_field(dispatcher, fields, prefix):
+    response = ask(dispatcher, "schedule", **fields)
+    assert response["ok"] is False and response["error"].startswith(prefix)
