@@ -80,6 +80,7 @@ internal sealed partial class MainForm : Form
 		_history.ResultClicked += (_, entry) => InsertResult(entry);
 		_input.KeyDown += OnInputKeyDown;
 		_input.KeyPress += OnInputKeyPress;
+		_input.ContextMenuStrip = BuildInputMenu();
 		_keypad.KeyPressedLabel += async (_, label) => await OnKeypad(label);
 		ApplySavedWindow();
 		ApplyView(Enum.TryParse<CalcView>(_prefs.View, out var view) ? view : CalcView.History);
@@ -505,6 +506,41 @@ internal sealed partial class MainForm : Form
 		_input.Text = text;
 		_input.SelectionStart = caret;
 		_input.Focus();
+	}
+
+	// The standard edit commands (a custom menu replaces the system one) plus Clear Input
+	private ContextMenuStrip BuildInputMenu()
+	{
+		var menu = new ContextMenuStrip();
+		var undo = new ToolStripMenuItem("&Undo", null, (_, _) => _input.Undo());
+		var cut = new ToolStripMenuItem("Cu&t", null, (_, _) => _input.Cut());
+		var copy = new ToolStripMenuItem("&Copy", null, (_, _) => _input.Copy());
+		var paste = new ToolStripMenuItem("&Paste", null, (_, _) => _input.Paste());
+		var delete = new ToolStripMenuItem("&Delete", null, (_, _) => _input.SelectedText = "");
+		var selectAll = new ToolStripMenuItem("Select &All", null, (_, _) => _input.SelectAll());
+		var clear = new ToolStripMenuItem("C&lear Input", null, (_, _) =>
+		{
+			_input.Clear();
+			_input.Focus();
+		});
+		menu.Items.AddRange(new ToolStripItem[]
+		{
+			undo, new ToolStripSeparator(), cut, copy, paste, delete, new ToolStripSeparator(),
+			selectAll, clear,
+		});
+		menu.Opening += (_, _) =>
+		{
+			bool editable = !_input.ReadOnly;
+			bool selection = _input.SelectionLength > 0;
+			undo.Enabled = editable && _input.CanUndo;
+			cut.Enabled = editable && selection;
+			copy.Enabled = selection;
+			paste.Enabled = editable && Clipboard.ContainsText();
+			delete.Enabled = editable && selection;
+			selectAll.Enabled = _input.TextLength > 0;
+			clear.Enabled = editable && _input.TextLength > 0;
+		};
+		return menu;
 	}
 
 	// Only results insert; errors and definitions have no value to use

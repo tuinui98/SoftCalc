@@ -15,7 +15,7 @@ pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 | M6 sidebar graph, variables, dialogs, Graph window | done | milestone/20261027-m6-sidebar-graph |
 | M7 persistence and files | done | milestone/20261105-m7-persistence |
 | M8 tools (compound interest window, ECB currency, copy menu, always on top) | done | milestone/20261106-m8-tools |
-| **M9 packaging (single folder or installer, icon, about)** | **next** | |
+| **M9 packaging (single portable exe, icon, about)** | **next**, see M9 notes | |
 
 Done after milestones, on `main` (no tag): durations `h:mm:ss`;
 `yr mo wk h` units (year = 365 d, month = 30 d) and `[utc->local]`;
@@ -27,8 +27,8 @@ substituted numeric form right-aligned and faint; History View and a
 400x651 window as defaults.
 
 After M8, on `main` (no tag): Shift+click on History inserts the result
-at the caret, balloon tip over History, Use Expression / Insert Result
-in its context menu.
+at the caret, Use Expression / Insert Result in its context menu; Input
+context menu with Clear Input.
 
 Tests: engine `pytest` 334 passed; UI `dotnet test` 143 passed.
 
@@ -61,6 +61,21 @@ Tests: engine `pytest` 334 passed; UI `dotnet test` 143 passed.
 - Fixed on the way: input or a plot refresh before the engine finished
   starting used to trigger a needless restart (and, briefly, an
   unhandled exception that blocked closing).
+
+## M9 notes (owner 2026-11-06, not started)
+- Owner wants one portable `.exe`, with settings, history, definitions
+  and rates in a subfolder created next to it.
+- Proposal discussed (to confirm when M9 starts): UI published as .NET
+  single-file self-contained (no .NET install needed; est. 60-80 MB);
+  engine built with PyInstaller onedir, embedded in the exe and
+  extracted once to `SoftCalc-data\engine\<version>\`; data in
+  `SoftCalc-data\` beside the exe, falling back to `%APPDATA%\SoftCalc`
+  when that folder is not writable. Risks: antivirus false positives,
+  slower first start. Fallback plan: portable folder (exe + engine\).
+- Today a deploy is: the UI build output (SoftCalc.exe/.dll/
+  .runtimeconfig.json/.deps.json) plus a rebuilt softcalc-engine.exe
+  beside it, and the .NET 10 Desktop Runtime installed. The engine exe in
+  engine/dist is from 2026-10-27 and lacks everything after M4.
 
 ## Open items to raise with the owner
 - Graph interface improvements: noted in `spec/ideas.md`, to discuss.

@@ -5,7 +5,7 @@
 // fainter colour (extensions.md E10). Line 2: the result, indented.
 // A currency line shows its rate date faint at the right of line 2 (M8).
 // Click raises EntryClicked (recall the expression), Shift+click raises
-// ResultClicked (insert the result); a balloon tip over the list says so.
+// ResultClicked (insert the result).
 // Ctrl+C copies the selected entry; the context menu also recalls,
 // inserts, and copies the result, the entry, or everything (E9).
 
@@ -33,10 +33,6 @@ internal sealed class HistoryView : ListBox
 
 	private readonly List<HistoryEntry> _entries = new();
 
-	public const string HoverHint = "Click: use the expression\r\nShift+Click: insert the result\r\nRight-click: more";
-
-	private readonly ToolTip _hint = new() { IsBalloon = true, InitialDelay = 700, AutoPopDelay = 6000, ToolTipTitle = "History" };
-
 	public event EventHandler<HistoryEntry>? EntryClicked;
 	public event EventHandler<HistoryEntry>? ResultClicked;
 
@@ -50,16 +46,6 @@ internal sealed class HistoryView : ListBox
 		HorizontalScrollbar = false;
 		ItemHeight = (Font.Height + 2) * 2 + 4;
 		ContextMenuStrip = BuildContextMenu();
-		_hint.SetToolTip(this, HoverHint);
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		if (disposing)
-		{
-			_hint.Dispose();
-		}
-		base.Dispose(disposing);
 	}
 
 	private ContextMenuStrip BuildContextMenu()
