@@ -144,6 +144,10 @@ Decisions on E1-E6 are settled in `SPEC.md`.
   - Clear History records a "cleared at" timestamp in the file; the
     merge drops every entry older than the newest such mark, so cleared
     entries do not come back from another instance.
+- Settings and definitions with several windows: last writer wins
+  (owner, 2026-11-05); only History merges. Definitions are also saved
+  after every definition or delete. History cap 1000. `answer` and `$n`
+  are restored from the loaded History. Details: design/m7_plan.md.
 - History file format: UTF-8, one entry per record holding the
   original input, the numeric display form, the result, and a
   timestamp (needed for E10 click-to-recall and for merging).
