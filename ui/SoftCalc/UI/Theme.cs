@@ -28,6 +28,18 @@ internal static class Theme
 	// Error text: Firebrick on light, a lighter red on dark
 	public static Color Error => IsDark ? Color.FromArgb(255, 120, 110) : Color.Firebrick;
 
+	// Graph line colours, readable on light and dark; the first is the system highlight
+	private static readonly Color[] SeriesColours =
+	{
+		Color.FromArgb(230, 120, 30), Color.FromArgb(40, 160, 70), Color.FromArgb(200, 60, 140),
+		Color.FromArgb(130, 100, 210), Color.FromArgb(20, 160, 175), Color.FromArgb(180, 150, 20),
+	};
+
+	public static Color Series(int index)
+	{
+		return index <= 0 ? SystemColors.Highlight : SeriesColours[(index - 1) % SeriesColours.Length];
+	}
+
 	// Faint chart grid lines
 	public static Color Grid => IsDark ? Color.FromArgb(70, 70, 70) : Color.FromArgb(225, 225, 225);
 }

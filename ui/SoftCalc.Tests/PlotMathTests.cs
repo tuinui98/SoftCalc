@@ -128,6 +128,21 @@ public class PlotMathTests
 	}
 
 	[Fact]
+	public void ShownFunctionsAndColours()
+	{
+		var s = new GraphSettings { Graphable = new[] { "f", "g", "h" } };
+		s.SetShown("G", true);
+		s.SetShown("h", true);
+		s.SetShown("g", true);    // no duplicates, any case
+		Assert.Equal(new[] { "h", "g" }, s.Shown);
+		Assert.True(s.IsShown("H"));
+		s.SetShown("h", false);
+		Assert.Equal(new[] { "g" }, s.Shown);
+		Assert.Equal(1, s.ColourIndex("G"));    // colour follows the definition order
+		Assert.Equal(-1, s.ColourIndex("two_args"));
+	}
+
+	[Fact]
 	public void ResetRangeOnlyTouchesTheCurrentMode()
 	{
 		var s = new GraphSettings { MinX = 1, MaxX = 2, MaxR = 3, Mode = GraphMode.XY };

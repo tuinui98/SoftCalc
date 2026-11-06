@@ -135,7 +135,7 @@ internal sealed partial class PlotView
 	// Y Min/Max (polar: R Max) from the plotted points
 	public void FitY()
 	{
-		var points = _points.Where(p => p != null).Select(p => p!.Value).ToList();
+		var points = AllPoints().ToList();    // every shown line
 		if (_settings.Mode == GraphMode.Polar)
 		{
 			if (PlotMath.FitRange(points.Select(p => Math.Sqrt(p.X * p.X + p.Y * p.Y))) is { } r && r.Max > 0)

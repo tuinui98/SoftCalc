@@ -23,7 +23,38 @@ internal sealed class GraphSettings
 {
 	public GraphMode Mode { get; set; } = GraphMode.XY;
 	public bool ShowGrid { get; set; } = true;
+	// Selected function (Edit, Delete, trace); Shown: every function drawn (G3)
 	public string? Function { get; set; }
+	public List<string> Shown { get; } = new();
+
+	// One-parameter functions in definition order; a function's colour is its place here
+	public IReadOnlyList<string> Graphable { get; set; } = Array.Empty<string>();
+
+	public int ColourIndex(string name)
+	{
+		for (int i = 0; i < Graphable.Count; i++)
+		{
+			if (string.Equals(Graphable[i], name, StringComparison.OrdinalIgnoreCase))
+			{
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public bool IsShown(string name)
+	{
+		return Shown.Any(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
+	}
+
+	public void SetShown(string name, bool shown)
+	{
+		Shown.RemoveAll(n => string.Equals(n, name, StringComparison.OrdinalIgnoreCase));
+		if (shown)
+		{
+			Shown.Add(name);
+		}
+	}
 
 	// XY range
 	public double MinX { get; set; } = -10;

@@ -19,7 +19,9 @@ internal sealed partial class PlotView : Control
 	private readonly EngineSession _session;
 	private readonly GraphSettings _settings;
 	private readonly System.Windows.Forms.Timer _debounce = new() { Interval = 120 };
-	private IReadOnlyList<(double X, double Y)?> _points = Array.Empty<(double X, double Y)?>();
+	// One run of points per shown function, in GraphSettings.Shown order (G3)
+	private IReadOnlyList<(string Name, IReadOnlyList<(double X, double Y)?> Points)> _series =
+		Array.Empty<(string, IReadOnlyList<(double X, double Y)?>)>();
 	private string? _message;
 	private int _requestNumber;
 
@@ -43,7 +45,9 @@ internal sealed partial class PlotView : Control
 			_debounce.Stop();
 			await RefreshPointsAsync();
 		};
-		_settings.Changed += (_, _) => RequestRefresh();
+		EventHandler onChanged = (_, _) => RequestRefresh();
+		_settings.Changed += onChanged;
+		Disposed += (_, _) => _settings.Changed -= onChanged;    // the settings outlive a closed Graph window
 		Resize += (_, _) => RequestRefresh();
 		Disposed += (_, _) => _debounce.Dispose();
 	}
@@ -62,33 +66,60 @@ internal sealed partial class PlotView : Control
 			return;    // start-up refreshes the plot once the engine is ready
 		}
 		int request = ++_requestNumber;
-		string? function = _settings.Function;
-		if (string.IsNullOrEmpty(function) || Width < 4)
+		var names = _settings.Shown.ToList();
+		if (names.Count == 0 || Width < 4)
 		{
-			_points = Array.Empty<(double X, double Y)?>();
-			_message = string.IsNullOrEmpty(function) ? "No function selected" : null;
+			_series = Array.Empty<(string, IReadOnlyList<(double X, double Y)?>)>();
+			_message = names.Count == 0 ? "No function selected" : null;
 			Invalidate();
 			return;
 		}
 		bool polar = _settings.Mode == GraphMode.Polar;
 		int samples = polar ? PolarSamples : Math.Clamp(Width, 2, MaxSamples);
-		try
+		var series = new List<(string, IReadOnlyList<(double X, double Y)?>)>();
+		string? error = null;
+		foreach (string name in names)
 		{
-			var points = await _session.PlotAsync(function, polar ? "polar" : "xy",
-				polar ? _settings.MinT : _settings.MinX, polar ? _settings.MaxT : _settings.MaxX, samples);
+			try
+			{
+				series.Add((name, await _session.PlotAsync(name, polar ? "polar" : "xy",
+					polar ? _settings.MinT : _settings.MinX, polar ? _settings.MaxT : _settings.MaxX, samples)));
+			}
+			catch (EngineException ex)
+			{
+				error ??= ex.Message;
+			}
 			if (request != _requestNumber)
 			{
 				return;    // a newer request is on its way
 			}
-			_points = points;
-			_message = null;
 		}
-		catch (EngineException ex)
-		{
-			_points = Array.Empty<(double X, double Y)?>();
-			_message = ex.Message;
-		}
+		_series = series;
+		_message = series.Count == 0 ? error : null;
 		Invalidate();
+	}
+
+	private IEnumerable<(double X, double Y)> AllPoints()
+	{
+		return _series.SelectMany(s => s.Points).Where(p => p != null).Select(p => p!.Value);
+	}
+
+	// Sidebar (owner, G3): the X range as set, Y fitted to the lines so their
+	// shape shows (polar: R fitted); the Graph window shows the set range
+	private WorldRect DrawnView()
+	{
+		var world = _settings.View;
+		if (_interactive)
+		{
+			return world;
+		}
+		if (_settings.Mode == GraphMode.Polar)
+		{
+			var r = PlotMath.FitRange(AllPoints().Select(p => Math.Sqrt(p.X * p.X + p.Y * p.Y)));
+			return r is { Max: > 0 } fit ? new WorldRect(-fit.Max, fit.Max, -fit.Max, fit.Max) : world;
+		}
+		var y = PlotMath.FitRange(AllPoints().Select(p => p.Y));
+		return y is { } fy ? world with { MinY = fy.Min, MaxY = fy.Max } : world;
 	}
 
 	public void SaveImage(string path)
@@ -107,7 +138,7 @@ internal sealed partial class PlotView : Control
 		var g = e.Graphics;
 		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 		var screen = PlotArea();
-		var world = _settings.View;
+		var world = DrawnView();
 		if (_settings.ShowGrid)
 		{
 			if (_settings.Mode == GraphMode.XY)
@@ -124,19 +155,23 @@ internal sealed partial class PlotView : Control
 		{
 			DrawTicks(g, world, screen);
 		}
-		using (var pen = new Pen(SystemColors.Highlight, 1.6f))
+		g.SetClip(screen);
+		foreach (var (name, points) in _series)
 		{
-			foreach (var segment in PlotMath.Segments(_points, world))
+			bool selected = string.Equals(name, _settings.Function, StringComparison.OrdinalIgnoreCase);
+			using var pen = new Pen(Theme.Series(_settings.ColourIndex(name)), selected && _series.Count > 1 ? 2.4f : 1.6f);
+			foreach (var segment in PlotMath.Segments(points, world))
 			{
-				if (segment.Count < 2)
+				if (segment.Count >= 2)
 				{
-					continue;
+					g.DrawLines(pen, segment.Select(p => PlotMath.Clamp(PlotMath.ToScreen(p.X, p.Y, world, screen), screen)).ToArray());
 				}
-				var line = segment.Select(p => PlotMath.Clamp(PlotMath.ToScreen(p.X, p.Y, world, screen), screen)).ToArray();
-				g.SetClip(screen);
-				g.DrawLines(pen, line);
-				g.ResetClip();
 			}
+		}
+		g.ResetClip();
+		if (_interactive && _series.Count > 1)
+		{
+			DrawLegend(g, screen);
 		}
 		if (_message != null)
 		{
@@ -150,6 +185,28 @@ internal sealed partial class PlotView : Control
 		if (_interactive && Focused)
 		{
 			ControlPaint.DrawFocusRectangle(g, ClientRectangle);    // keys go to the plot
+		}
+	}
+
+	// Graph window with several lines: colour and name of each, top left
+	private void DrawLegend(Graphics g, RectangleF screen)
+	{
+		int row = Font.Height + 2;
+		int width = _series.Max(s => TextRenderer.MeasureText(s.Name, Font).Width) + 30;
+		var box = new Rectangle((int)screen.Left + 6, (int)screen.Top + 6, width, _series.Count * row + 6);
+		using (var back = new SolidBrush(SystemColors.Window))
+		using (var border = new Pen(SystemColors.ControlDark))
+		{
+			g.FillRectangle(back, box);
+			g.DrawRectangle(border, box);
+		}
+		for (int i = 0; i < _series.Count; i++)
+		{
+			string name = _series[i].Name;
+			int y = box.Top + 3 + i * row;
+			using var pen = new Pen(Theme.Series(_settings.ColourIndex(name)), 2.4f);
+			g.DrawLine(pen, box.Left + 6, y + row / 2, box.Left + 22, y + row / 2);
+			TextRenderer.DrawText(g, name, Font, new Point(box.Left + 26, y), SystemColors.WindowText);
 		}
 	}
 
@@ -180,7 +237,8 @@ internal sealed partial class PlotView : Control
 			float sx = PlotMath.ToScreen(x, 0, world, screen).X;
 			g.DrawLine(pen, sx, screen.Top, sx, screen.Bottom);
 		}
-		foreach (double y in PlotMath.GridLines(world.MinY, world.MaxY, _settings.GridY))
+		double gridY = _interactive ? _settings.GridY : PlotMath.NiceStep(world.Height, 10);    // fitted sidebar Y
+		foreach (double y in PlotMath.GridLines(world.MinY, world.MaxY, gridY))
 		{
 			float sy = PlotMath.ToScreen(0, y, world, screen).Y;
 			g.DrawLine(pen, screen.Left, sy, screen.Right, sy);
@@ -192,12 +250,14 @@ internal sealed partial class PlotView : Control
 		using var pen = new Pen(SystemColors.ControlLight);
 		var center = PlotMath.ToScreen(0, 0, world, screen);
 		float scale = screen.Width / (float)world.Width;
-		foreach (double r in PlotMath.GridLines(0, _settings.MaxR, _settings.GridR).Where(r => r > 0))
+		double maxR = world.MaxX;    // the set R Max, or the fitted one in the sidebar
+		double gridR = _interactive ? _settings.GridR : PlotMath.NiceStep(maxR, 5);
+		foreach (double r in PlotMath.GridLines(0, maxR, gridR).Where(r => r > 0))
 		{
 			float radius = (float)r * scale;
 			g.DrawEllipse(pen, center.X - radius, center.Y - radius, radius * 2, radius * 2);
 		}
-		float outer = (float)_settings.MaxR * scale;
+		float outer = (float)maxR * scale;
 		for (double degrees = 0; degrees < 360; degrees += PlotMath.PolarSpokeDegrees)
 		{
 			double rad = degrees * Math.PI / 180;

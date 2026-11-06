@@ -306,3 +306,11 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   `value_at` computes the value there (does not touch answer/$n).
   Click copies the full value; right-click: Copy Value, Insert Value in
   Input. View > Trace turns it off.
+- Several functions (G3): the function drop-down is a checklist in the
+  sidebar and the Graph window (shared). Ticked functions are drawn, each
+  in its colour (swatch in the list, legend in the Graph window when more
+  than one); the selected one is drawn thicker and is what Edit, Delete
+  and the trace use. Functions without exactly one parameter are listed
+  greyed out. The sidebar keeps the X range and fits Y to the lines
+  (polar: R) so their shape shows (owner). Saved as graph.shown; older
+  files show their one saved function.
