@@ -148,7 +148,33 @@ internal sealed partial class MainForm : Form
 		Controls.Add(_ribbon);    // docks under the menu bar
 		Controls.Add(_menu);
 		MainMenuStrip = _menu;
-		Load += (_, _) => _split.SplitterDistance = 300;
+		Load += (_, _) => _split.SplitterDistance = SidebarStart;
+	}
+
+	private const int SidebarStart = 300;
+
+	// Graph + Variables column width the window grows by in Advanced View
+	private int SidebarWidth => (IsHandleCreated ? _split.SplitterDistance : SidebarStart) + _split.SplitterWidth;
+
+	// History and Numeric views share one window size; Advanced adds the
+	// sidebar on the left, so History and Input stay where they are on
+	// screen (owner 2026-11-07). A maximized window only swaps the panels.
+	private void ResizeForSidebar(bool show)
+	{
+		if (WindowState != FormWindowState.Normal)
+		{
+			return;
+		}
+		int w = SidebarWidth;
+		var bounds = show
+			? new Rectangle(Left - w, Top, Width + w, Height)
+			: new Rectangle(Left + w, Top, Math.Max(MinimumSize.Width, Width - w), Height);
+		var area = Screen.FromRectangle(Bounds).WorkingArea;
+		if (bounds.Left < area.Left && StartPosition == FormStartPosition.Manual)
+		{
+			bounds.X = area.Left;    // no room on the left: the window moves right
+		}
+		Bounds = bounds;
 	}
 
 	private static GroupBox Titled(string title, Control content)
@@ -301,7 +327,12 @@ internal sealed partial class MainForm : Form
 
 	private void ApplyView(CalcView view)
 	{
+		bool wasAdvanced = _view == CalcView.Advanced;
 		_view = view;
+		if (wasAdvanced != (view == CalcView.Advanced))
+		{
+			ResizeForSidebar(view == CalcView.Advanced);
+		}
 		bool samples = _showSamplesItem.Checked && view != CalcView.Numeric;    // Numeric never shows Samples [KEEP]
 		_column.RowStyles[1].Height = samples ? 110 : 0;
 		_samplesBox.Visible = samples;

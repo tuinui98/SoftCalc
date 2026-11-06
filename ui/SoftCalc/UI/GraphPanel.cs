@@ -26,6 +26,7 @@ internal sealed class GraphPanel : Panel
 	private readonly ToolStripButton _delete = new("Delete");
 	private IReadOnlyList<UserFunction> _list = Array.Empty<UserFunction>();
 	private bool _filling;
+	private (int Index, long Ticks) _lastToggle = (-1, 0);
 	private bool _ready;    // list handle created and refilled; before that its check events are replays
 
 	public PlotView Plot { get; }
@@ -64,9 +65,17 @@ internal sealed class GraphPanel : Panel
 		_functions.Resize += (_, _) => FitColumn();
 		_functions.ItemCheck += (_, e) =>
 		{
-			if (!_filling && !Graphable(e.Index))
+			if (_filling)
+			{
+				return;
+			}
+			if (!Graphable(e.Index))
 			{
 				e.NewValue = CheckState.Unchecked;    // only one-parameter functions can be drawn
+			}
+			else
+			{
+				_lastToggle = (e.Index, Environment.TickCount64);
 			}
 		};
 		_functions.ItemChecked += (_, e) =>
@@ -106,6 +115,14 @@ internal sealed class GraphPanel : Panel
 		};
 		_functions.DoubleClick += async (_, _) =>
 		{
+			// The native list toggles an item on double-click; here a double-click
+			// means Edit, so put the tick back (the owner lost lines this way)
+			int index = _functions.SelectedIndices.Count > 0 ? _functions.SelectedIndices[0] : -1;
+			if (index >= 0 && index == _lastToggle.Index
+				&& Environment.TickCount64 - _lastToggle.Ticks <= SystemInformation.DoubleClickTime)
+			{
+				_functions.Items[index].Checked = !_functions.Items[index].Checked;
+			}
 			if (Selected() is { } fn)
 			{
 				await _commands.EditFunctionAsync(fn);

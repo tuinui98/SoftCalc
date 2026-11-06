@@ -156,6 +156,10 @@ internal sealed partial class MainForm
 		_prefs.ShowRibbon = _showRibbonItem.Checked;
 		_prefs.ShowHints = _showHintsItem.Checked;
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
+		if (_view == CalcView.Advanced)
+		{
+			bounds = new Rectangle(bounds.Left + SidebarWidth, bounds.Top, bounds.Width - SidebarWidth, bounds.Height);    // save the History size
+		}
 		_prefs.Window = new WindowPlacement
 		{
 			X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height,

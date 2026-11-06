@@ -1,7 +1,9 @@
 // VariablesPanel.cs - Variables list: Constants and user variables (SPEC 2, 4)
 //
 // Edit and Delete apply to user variables only; constants are listed for
-// reference at the current precision. Double-click edits.
+// reference at the current precision. Double-click edits. In dark mode
+// the native group headers are dark blue on grey and unreadable, so the
+// sections get plain bold heading rows instead (owner 2026-11-07).
 
 using SoftCalc.Engine;
 
@@ -13,7 +15,7 @@ internal sealed class VariablesPanel : Panel
 	private readonly ListView _list = new()
 	{
 		Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, MultiSelect = false,
-		ShowGroups = true, HeaderStyle = ColumnHeaderStyle.Nonclickable, HideSelection = false,
+		ShowGroups = !Theme.IsDark, HeaderStyle = ColumnHeaderStyle.Nonclickable, HideSelection = false,
 	};
 	private readonly ListViewGroup _constants = new("Constants");
 	private readonly ListViewGroup _user = new("User Defined");
@@ -54,16 +56,28 @@ internal sealed class VariablesPanel : Panel
 	{
 		_list.BeginUpdate();
 		_list.Items.Clear();
+		AddHeading(_constants.Header, state.Constants.Count);
 		foreach (var constant in state.Constants)
 		{
 			_list.Items.Add(new ListViewItem(new[] { constant.Name, constant.Value }, _constants));
 		}
+		AddHeading(_user.Header, state.Variables.Count);
 		foreach (var variable in state.Variables)
 		{
 			_list.Items.Add(new ListViewItem(new[] { variable.Name, variable.Value }, _user) { Tag = variable });
 		}
 		_list.EndUpdate();
 		UpdateButtons();
+	}
+
+	// Dark mode only: a section heading row (no Tag, so Edit and Delete ignore it)
+	private void AddHeading(string text, int count)
+	{
+		if (_list.ShowGroups || count == 0)
+		{
+			return;
+		}
+		_list.Items.Add(new ListViewItem(text) { Font = new Font(_list.Font, FontStyle.Bold), ForeColor = SystemColors.ControlText });
 	}
 
 	private async Task EditSelectedAsync()

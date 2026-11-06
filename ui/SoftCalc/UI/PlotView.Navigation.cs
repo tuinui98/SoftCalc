@@ -54,7 +54,7 @@ internal sealed partial class PlotView
 			}
 			return;
 		}
-		using var pen = new Pen(SystemColors.ControlDark);
+		using var pen = new Pen(Theme.PlotAxis);
 		double xStep = PlotMath.NiceStep(world.Width, Math.Max(1, (int)(screen.Width / TickSpacingX)));
 		foreach (double x in PlotMath.GridLines(world.MinX, world.MaxX, xStep))
 		{

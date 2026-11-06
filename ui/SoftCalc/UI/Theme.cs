@@ -40,6 +40,10 @@ internal static class Theme
 		return index <= 0 ? SystemColors.Highlight : SeriesColours[(index - 1) % SeriesColours.Length];
 	}
 
+	// Graph grid and axes, a step stronger than the system's light/dark greys (owner 2026-11-07)
+	public static Color PlotGrid => IsDark ? Color.FromArgb(82, 82, 82) : Color.FromArgb(208, 208, 208);
+	public static Color PlotAxis => IsDark ? Color.FromArgb(150, 150, 150) : Color.FromArgb(120, 120, 120);
+
 	// Faint chart grid lines
 	public static Color Grid => IsDark ? Color.FromArgb(70, 70, 70) : Color.FromArgb(225, 225, 225);
 }

@@ -231,7 +231,7 @@ internal sealed partial class PlotView : Control
 
 	private void DrawXyGrid(Graphics g, WorldRect world, RectangleF screen)
 	{
-		using var pen = new Pen(SystemColors.ControlLight);
+		using var pen = new Pen(Theme.PlotGrid);
 		foreach (double x in PlotMath.GridLines(world.MinX, world.MaxX, _settings.GridX))
 		{
 			float sx = PlotMath.ToScreen(x, 0, world, screen).X;
@@ -247,7 +247,7 @@ internal sealed partial class PlotView : Control
 
 	private void DrawPolarGrid(Graphics g, WorldRect world, RectangleF screen)
 	{
-		using var pen = new Pen(SystemColors.ControlLight);
+		using var pen = new Pen(Theme.PlotGrid);
 		var center = PlotMath.ToScreen(0, 0, world, screen);
 		float scale = screen.Width / (float)world.Width;
 		double maxR = world.MaxX;    // the set R Max, or the fitted one in the sidebar
@@ -268,7 +268,7 @@ internal sealed partial class PlotView : Control
 
 	private static void DrawAxes(Graphics g, WorldRect world, RectangleF screen)
 	{
-		using var pen = new Pen(SystemColors.ControlDark);
+		using var pen = new Pen(Theme.PlotAxis);
 		if (world.MinX <= 0 && world.MaxX >= 0)
 		{
 			float sx = PlotMath.ToScreen(0, 0, world, screen).X;
