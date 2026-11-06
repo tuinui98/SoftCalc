@@ -28,7 +28,7 @@ internal sealed class GraphWindow : Form
 	private readonly Label _status = new()
 	{
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
-		ForeColor = SystemColors.GrayText, Padding = new Padding(4, 0, 0, 0),
+		ForeColor = SystemColors.GrayText, Padding = new Padding(4, 0, 0, 0), UseMnemonic = false,
 	};
 	private const string NavigationHelp = "Wheel: zoom (Shift: X, Ctrl: Y)   Drag: move   Click: copy value   Home: reset   F: fit Y";
 	private (double X, double Y)? _lastPointer;
@@ -52,7 +52,14 @@ internal sealed class GraphWindow : Form
 		_graph.Plot.PointerMoved += (_, point) => ShowPointer(point);
 		_graph.Plot.TraceChanged += (_, _) => ShowPointer(_lastPointer);
 		_graph.Plot.InsertValue = insertValue;
-		_graph.Plot.Notice += (_, text) => _status.Text = text;
+		_graph.Plot.Notice += (_, text) => SetStatus(text);
+		split.Panel2.SizeChanged += (_, _) =>
+		{
+			if (IsHandleCreated)
+			{
+				BeginInvoke(() => SetStatus(_statusText));    // after the layout
+			}
+		};
 		ShowPointer(null);
 		Controls.Add(split);
 		Controls.Add(BuildToolbar());
@@ -216,6 +223,36 @@ internal sealed class GraphWindow : Form
 		_settings.NotifyChanged();
 	}
 
+	private string _statusText = "";
+
+	// One line that fits: a full-precision value can be hundreds of digits,
+	// and the label would wrap it out of sight; the end is cut with "..."
+	private void SetStatus(string text)
+	{
+		_statusText = text;
+		const TextFormatFlags flags = TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
+		int room = (_status.Parent?.ClientSize.Width ?? _status.Width) - _status.Padding.Horizontal - 4;
+		string shown = text;
+		if (room > 0 && TextRenderer.MeasureText(text, _status.Font, Size.Empty, flags).Width > room)
+		{
+			int low = 0, high = text.Length;
+			while (low < high)
+			{
+				int mid = (low + high + 1) / 2;
+				if (TextRenderer.MeasureText(text[..mid] + "...", _status.Font, Size.Empty, flags).Width <= room)
+				{
+					low = mid;
+				}
+				else
+				{
+					high = mid - 1;
+				}
+			}
+			shown = text[..low] + "...";
+		}
+		_status.Text = shown;
+	}
+
 	// Coordinates under the mouse, rounded to the pixel size; help text otherwise
 	private void ShowPointer((double X, double Y)? point)
 	{
@@ -224,12 +261,12 @@ internal sealed class GraphWindow : Form
 		{
 			// the traced value, full precision: g(2.35) = 0.9977...
 			string at = PlotMath.FormatTick(trace.T, trace.Step);
-			_status.Text = $"{_settings.Function}({at}) = {trace.Text ?? "undefined"}";
+			SetStatus($"{_settings.Function}({at}) = {trace.Text ?? "undefined"}");
 			return;
 		}
 		if (point is not { } p)
 		{
-			_status.Text = _settings.Mode == GraphMode.Polar ? PolarHelp : NavigationHelp;
+			SetStatus(_settings.Mode == GraphMode.Polar ? PolarHelp : NavigationHelp);
 			return;
 		}
 		double pixel = _graph.Plot.PixelSize();
@@ -238,10 +275,10 @@ internal sealed class GraphWindow : Form
 		{
 			string r = PlotMath.FormatTick(Math.Sqrt(p.X * p.X + p.Y * p.Y), pixel);
 			string theta = Math.Atan2(p.Y, p.X).ToString("F3", CultureInfo.InvariantCulture);
-			_status.Text = $"x = {x}   y = {y}   r = {r}   theta = {theta} rad";
+			SetStatus($"x = {x}   y = {y}   r = {r}   theta = {theta} rad");
 			return;
 		}
-		_status.Text = $"x = {x}   y = {y}";
+		SetStatus($"x = {x}   y = {y}");
 	}
 
 	private void SaveBitmap()
