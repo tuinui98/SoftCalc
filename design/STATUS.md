@@ -42,7 +42,10 @@ several functions with colours and legend, sidebar Y fitted; Graph
 toolbar, narrower Range panel, stronger grid; Advanced View grows the
 window to the left; Functions / Variables editor (list + Name /
 Parameters / Definition fields, Apply, rename) replacing the one-line
-Add/Edit dialogs; Trace setting saved.
+Add/Edit dialogs; Trace setting saved; Graph status line fitted to one
+row (a long full-precision value is cut with "...", Copy keeps all
+digits). The owner checked drag repaint, rename, trace and the status
+line with a real mouse (2026-11-07).
 
 Tests: engine `pytest` 335 passed; UI `dotnet test` 196 passed.
 
