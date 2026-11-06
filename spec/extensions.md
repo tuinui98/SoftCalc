@@ -259,8 +259,10 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   (Clear without confirmation, Save), Tools (Graph, Interest, On top,
   Conversions drop-down with the same items as the menu).
 - All group frames have the same height (owner).
-- View > Text Size (100-200%, default 150% = 13.5 pt, owner) and Font...
-  set the History and Input font; remembered in settings.json.
+- History and Input font (owner 2026-11-06): Font... sets the family and
+  the base size, which becomes 100%; View > Text Size (100-200%) scales
+  that base. Default 9 pt at 150% (13.5 pt). Saved as text_font_base and
+  text_scale; an older text_font_size is read as base at 100%.
 - Input hint line (owner 2026-11-06): a second line in the Input box,
   italic and faint, same size as the Input font. It describes the
   function whose call is open at the caret (`fv(0.05/12, 120, ` shows

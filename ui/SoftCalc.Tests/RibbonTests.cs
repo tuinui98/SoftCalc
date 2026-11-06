@@ -84,6 +84,29 @@ public sealed class RibbonTests
 	}
 
 	[Fact]
+	public void TextSizeIsBaseTimesScale()
+	{
+		string path = Path.Combine(Path.GetTempPath(), "softcalc-text-" + Guid.NewGuid().ToString("N") + ".json");
+		try
+		{
+			File.WriteAllText(path, "{}");
+			var fresh = SettingsStore.Load(path).Settings;
+			Assert.Equal((9f, 150), (fresh.TextFontBase, fresh.TextScale));    // 13.5 pt as before
+			File.WriteAllText(path, "{\"text_font_size\":14}");
+			var legacy = SettingsStore.Load(path).Settings;
+			Assert.Equal((14f, 100), (legacy.TextFontBase, legacy.TextScale));    // old absolute size kept as 100%
+			SettingsStore.Save(path, legacy);
+			Assert.DoesNotContain("text_font_size", File.ReadAllText(path));
+			File.WriteAllText(path, "{\"text_font_base\":12,\"text_scale\":130}");
+			Assert.Equal(150, SettingsStore.Load(path).Settings.TextScale);    // only the menu's steps
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
 	public void ThemeRoundTripsAndFallsBack()
 	{
 		string path = Path.Combine(Path.GetTempPath(), "softcalc-theme-" + Guid.NewGuid().ToString("N") + ".json");

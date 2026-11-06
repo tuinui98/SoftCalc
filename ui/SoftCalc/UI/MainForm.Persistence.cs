@@ -44,7 +44,7 @@ internal sealed partial class MainForm
 		SetAlwaysOnTop(_prefs.AlwaysOnTop);
 		_showRibbonItem.Checked = _prefs.ShowRibbon;
 		_showHintsItem.Checked = _prefs.ShowHints;
-		SetTextFont(_prefs.TextFontFamily, _prefs.TextFontSize);
+		SetTextFont(_prefs.TextFontFamily, _prefs.TextFontBase, _prefs.TextScale);
 		ApplyGraphPrefs(_prefs.Graph);
 	}
 
