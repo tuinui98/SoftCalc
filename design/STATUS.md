@@ -30,9 +30,10 @@ substituted numeric form right-aligned and faint; History View and a
 
 After M8, on `main` (no tag): Shift+click on History inserts the result
 at the caret, Use Expression / Insert Result in its context menu; Input
-context menu with Clear Input.
+context menu with Clear Input; ribbon (B3) with decimals, Clear History
+and a Conversions drop-down; program icon.
 
-Tests: engine `pytest` 334 passed; UI `dotnet test` 143 passed.
+Tests: engine `pytest` 334 passed; UI `dotnet test` 165 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

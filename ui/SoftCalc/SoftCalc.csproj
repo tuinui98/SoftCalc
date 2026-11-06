@@ -11,10 +11,18 @@
 		<RootNamespace>SoftCalc</RootNamespace>
 		<AssemblyName>SoftCalc</AssemblyName>
 		<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+		<ApplicationIcon>softcalc.ico</ApplicationIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="SoftCalc.Tests" />
+	</ItemGroup>
+
+	<!-- Toolbar icons (IconMCP, MIT: Icons/LICENSE.txt) and the window icon -->
+	<ItemGroup>
+		<EmbeddedResource Include="Icons\*.svg" LogicalName="icons/%(Filename)%(Extension)" />
+		<EmbeddedResource Include="softcalc.ico" LogicalName="softcalc.ico" />
+		<None Include="Icons\LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
 	</ItemGroup>
 
 </Project>

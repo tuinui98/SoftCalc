@@ -3,18 +3,16 @@
 Recorded at the owner's request after M8. Nothing here is started.
 
 ## 1. In the spec, not built yet
-- [ ] E9 display decimals menu: View > Increase / Decrease decimal places,
-      Show all decimal places (pad zeros). Engine `decimals` / `pad_zeros`
-      and settings.json already support it; only the UI menu (and tests)
-      is missing. Note: the M8 report wrongly said it could already be
-      set from the UI.
+- [x] E9 display decimals menu: done 2026-11-06 with the ribbon
+      (View > Decimal Places and the ribbon's Decimals group).
 
 ## 2. M9 packaging (details in STATUS.md, "M9 notes")
 - [ ] Single portable `.exe`, data in `SoftCalc-data\` beside it
       (fallback `%APPDATA%\SoftCalc` when not writable).
 - [ ] Rebuild the engine exe (engine/dist is from 2026-10-27, before
       M5-M8 engine changes); PyInstaller onedir embedded in the exe.
-- [ ] Icon and About box.
+- [x] Program icon (2026-11-06, tools/IconMaker, owner's draft 2).
+- [ ] About box (show the IconMCP licence there too).
 
 ## 3. Out of scope for v1
 - [ ] File > Help (disabled): new help text later; the original's help

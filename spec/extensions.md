@@ -249,5 +249,20 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   gives `No ECB rate for BGN`; `[usd->kg]` gives `Cannot convert`.
   Menu: 10 common codes as pairs, then From / To halves (owner).
 - E9: History context menu and View > Always on Top as planned.
+- E9 decimals (2026-11-06): View > Decimal Places (More, Fewer, All
+  Digits, Pad with Zeros) and the ribbon's Decimals group. From all
+  digits, More or Fewer starts at 2 places [DEF]; range 0-30.
+
+## Ribbon (owner 2026-11-06, layout B3)
+- Groups under the menu bar: Angle, Output, Decimals (caption shows a
+  sample such as `0.00` or `all`), Mode (RPN, precision), History
+  (Clear without confirmation, Save), Tools (Graph, Interest, On top,
+  Conversions drop-down with the same items as the menu).
+- The menu bar stays complete; View > Show Ribbon hides it; the Numeric
+  view never shows it. Icons from IconMCP (MIT, ui/SoftCalc/Icons/
+  LICENSE.txt), drawn from SVG by our own small renderer.
+- Program icon: IconMCP "Calculator" with a filled display, owner's
+  draft 2 (dark body, teal screen, orange key); tools/IconMaker writes
+  ui/SoftCalc/softcalc.ico.
 - E11: the window recalculates 300 ms after a change (owner); amounts
   follow the main window's precision, base and decimals.

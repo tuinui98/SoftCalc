@@ -42,6 +42,7 @@ internal sealed partial class MainForm
 		}
 		_showSamplesItem.Checked = _prefs.ShowSamples;
 		SetAlwaysOnTop(_prefs.AlwaysOnTop);
+		_showRibbonItem.Checked = _prefs.ShowRibbon;
 		ApplyGraphPrefs(_prefs.Graph);
 	}
 
@@ -150,6 +151,7 @@ internal sealed partial class MainForm
 		_prefs.View = _view.ToString();
 		_prefs.ShowSamples = _showSamplesItem.Checked;
 		_prefs.AlwaysOnTop = _onTopItem.Checked;
+		_prefs.ShowRibbon = _showRibbonItem.Checked;
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		_prefs.Window = new WindowPlacement
 		{

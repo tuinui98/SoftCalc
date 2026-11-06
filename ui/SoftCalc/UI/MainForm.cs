@@ -43,6 +43,10 @@ internal sealed partial class MainForm : Form
 	private readonly ToolStripMenuItem _userFunctionsMenu = new("&User Functions");
 	private readonly ToolStripMenuItem _showSamplesItem = new("&Show Samples") { Checked = true };
 	private readonly ToolStripMenuItem _onTopItem = new("Always on &Top");
+	private readonly ToolStripMenuItem _showRibbonItem = new("Show &Ribbon") { Checked = true };
+	private readonly ToolStripMenuItem _padZerosItem = new("&Pad with Zeros");
+	private readonly ToolStripMenuItem _allDigitsItem = new("&All Digits");
+	private Ribbon _ribbon = null!;
 	private readonly RatesSource _rates;
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
 	private readonly Dictionary<string, Dictionary<object, ToolStripMenuItem>> _settingItems = new();
@@ -72,6 +76,7 @@ internal sealed partial class MainForm : Form
 		_rates = new RatesSource(folder.RatesPath);
 		_session.RatesProvider = FetchRatesAsync;
 		Text = "SoftCalc";
+		Icon = SvgIcon.ProgramIcon();
 		StartPosition = FormStartPosition.CenterScreen;
 		KeyPreview = true;
 		BuildLayout();
@@ -121,7 +126,11 @@ internal sealed partial class MainForm : Form
 		_split.Panel1.Controls.Add(sidebar);
 		_split.Panel2.Controls.Add(_column);
 
+		_ribbon = new Ribbon(new RibbonActions(
+			ChangeSettingAsync, StepDecimalsAsync, () => ChangeDecimalsAsync(null), ClearHistoryAsync,
+			SaveHistoryAs, OpenGraphWindow, OpenCompoundWindow, () => SetAlwaysOnTop(!_onTopItem.Checked)));
 		Controls.Add(_split);
+		Controls.Add(_ribbon);    // docks under the menu bar
 		Controls.Add(_menu);
 		MainMenuStrip = _menu;
 		Load += (_, _) => _split.SplitterDistance = 300;
@@ -164,6 +173,7 @@ internal sealed partial class MainForm : Form
 	private void SetAlwaysOnTop(bool onTop)
 	{
 		_onTopItem.Checked = onTop;
+		_ribbon.ShowOnTop(onTop);
 		TopMost = onTop;    // owned windows (Graph, Compound Interest) stay above it
 	}
 
@@ -196,6 +206,7 @@ internal sealed partial class MainForm : Form
 		_samplesBox.Visible = samples;
 		_column.RowStyles[3].Height = view == CalcView.Numeric ? 150 : 0;
 		_keypadHost.Visible = view == CalcView.Numeric;
+		_ribbon.Visible = _showRibbonItem.Checked && view != CalcView.Numeric;    // Numeric stays plain
 		_split.Panel1Collapsed = view != CalcView.Advanced;
 		foreach (var (name, item) in _viewItems)
 		{
@@ -240,6 +251,21 @@ internal sealed partial class MainForm : Form
 		view.DropDownItems.Add(_showSamplesItem);
 		_onTopItem.Click += (_, _) => SetAlwaysOnTop(!_onTopItem.Checked);
 		view.DropDownItems.Add(_onTopItem);
+		_showRibbonItem.Click += (_, _) =>
+		{
+			_showRibbonItem.Checked = !_showRibbonItem.Checked;
+			ApplyView(_view);
+		};
+		view.DropDownItems.Add(_showRibbonItem);
+		var decimals = new ToolStripMenuItem("Deci&mal Places");
+		decimals.DropDownItems.Add(new ToolStripMenuItem("&More", null, async (_, _) => await StepDecimalsAsync(+1)));
+		decimals.DropDownItems.Add(new ToolStripMenuItem("&Fewer", null, async (_, _) => await StepDecimalsAsync(-1)));
+		_allDigitsItem.Click += async (_, _) => await ChangeDecimalsAsync(null);
+		decimals.DropDownItems.Add(_allDigitsItem);
+		decimals.DropDownItems.Add(new ToolStripSeparator());
+		_padZerosItem.Click += async (_, _) => await ChangeSettingAsync("pad_zeros", !_padZerosItem.Checked);
+		decimals.DropDownItems.Add(_padZerosItem);
+		view.DropDownItems.Add(decimals);
 		view.DropDownItems.Add(new ToolStripSeparator());
 		var options = new ToolStripMenuItem("Advanced &Options");
 		AddSettingItem(options.DropDownItems, "angle", "deg", "&Degrees");
@@ -296,7 +322,13 @@ internal sealed partial class MainForm : Form
 		_functionsMenu.DropDownItems.Add(new ToolStripSeparator());
 		_functionsMenu.DropDownItems.Add(_userFunctionsMenu);
 
-		_conversionsMenu.DropDownItems.Clear();
+		FillConversions(_conversionsMenu.DropDownItems, catalog);
+		FillConversions(_ribbon.Conversions.DropDownItems, catalog);    // same items, own copies
+	}
+
+	private void FillConversions(ToolStripItemCollection items, Catalog catalog)
+	{
+		items.Clear();
 		foreach (var (category, units) in catalog.ConversionGroups)
 		{
 			var categoryItem = new ToolStripMenuItem(category);
@@ -317,7 +349,7 @@ internal sealed partial class MainForm : Form
 			{
 				AddCurrencyHalves(categoryItem, catalog.Currencies);
 			}
-			_conversionsMenu.DropDownItems.Add(categoryItem);
+			items.Add(categoryItem);
 		}
 		var formats = new ToolStripMenuItem("Date Format");
 		foreach (string name in catalog.Formats)
@@ -325,8 +357,8 @@ internal sealed partial class MainForm : Form
 			formats.DropDownItems.Add(new ToolStripMenuItem(name, null, async (_, _) =>
 				await InsertFromMenuAsync(new JsonObject { ["kind"] = "format", ["name"] = name })));
 		}
-		_conversionsMenu.DropDownItems.Add(new ToolStripSeparator());
-		_conversionsMenu.DropDownItems.Add(formats);
+		items.Add(new ToolStripSeparator());
+		items.Add(formats);
 	}
 
 	// Below the common pairs: From inserts " [THB", To inserts "->USD]" (owner 2026-11-06)
@@ -368,6 +400,9 @@ internal sealed partial class MainForm : Form
 				item.Checked = current != null && current.ToJsonString() == JsonValue.Create(value)?.ToJsonString();
 			}
 		}
+		_ribbon.ShowSettings(settings);
+		_padZerosItem.Checked = (bool?)settings["pad_zeros"] == true;
+		_allDigitsItem.Checked = settings["decimals"] == null;
 		bool rpn = (bool?)settings["rpn"] == true;
 		_samples.Text = rpn ? Samples.Rpn : Samples.Infix;
 		_inputBox.Text = rpn ? "Input  -  RPN mode" : "Input";    // visible in every view
@@ -465,10 +500,33 @@ internal sealed partial class MainForm : Form
 		ShowSettingChecks();
 		await RefreshStateAsync();    // constants and values follow precision and base
 		_graphSettings.NotifyChanged();    // the angle unit changes trig plots
+		NotifyToolWindows();
+	}
+
+	private void NotifyToolWindows()
+	{
 		if (_compoundWindow != null && !_compoundWindow.IsDisposed)
 		{
-			_compoundWindow.SettingsChanged();    // amounts follow precision and base
+			_compoundWindow.SettingsChanged();    // amounts follow precision, base and decimals
 		}
+	}
+
+	// E9 display decimals: More/Fewer step from the current setting (DecimalSteps)
+	private async Task StepDecimalsAsync(int delta)
+	{
+		await ChangeDecimalsAsync(DecimalSteps.Next((int?)_session.Settings["decimals"], delta));
+	}
+
+	private async Task ChangeDecimalsAsync(int? decimals)
+	{
+		if (!_engineReady)
+		{
+			return;
+		}
+		await _session.ChangeSettingsAsync(new JsonObject { ["decimals"] = decimals });
+		ShowSettingChecks();
+		await RefreshStateAsync();
+		NotifyToolWindows();
 	}
 
 	private async Task ClearHistoryAsync()
