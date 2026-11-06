@@ -258,6 +258,9 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   sample such as `0.00` or `all`), Mode (RPN, precision), History
   (Clear without confirmation, Save), Tools (Graph, Interest, On top,
   Conversions drop-down with the same items as the menu).
+- All group frames have the same height (owner).
+- View > Text Size (100-200%, default 150% = 13.5 pt, owner) and Font...
+  set the History and Input font; remembered in settings.json.
 - The menu bar stays complete; View > Show Ribbon hides it; the Numeric
   view never shows it. Icons from IconMCP (MIT, ui/SoftCalc/Icons/
   LICENSE.txt), drawn from SVG by our own small renderer.

@@ -43,6 +43,7 @@ internal sealed partial class MainForm
 		_showSamplesItem.Checked = _prefs.ShowSamples;
 		SetAlwaysOnTop(_prefs.AlwaysOnTop);
 		_showRibbonItem.Checked = _prefs.ShowRibbon;
+		SetTextFont(_prefs.TextFontFamily, _prefs.TextFontSize);
 		ApplyGraphPrefs(_prefs.Graph);
 	}
 
