@@ -261,6 +261,13 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
 - All group frames have the same height (owner).
 - View > Text Size (100-200%, default 150% = 13.5 pt, owner) and Font...
   set the History and Input font; remembered in settings.json.
+- Input hint line (owner 2026-11-06): a second line in the Input box,
+  italic and faint, same size as the Input font. It describes the
+  function whose call is open at the caret (`fv(0.05/12, 120, ` shows
+  `fv(rate, nper, pmt, [pv], [type]) - ...`), the word being typed (or
+  the names it can become, from 2 letters), tag examples inside `[`,
+  `$n` after `$`, and user functions (definition) and variables
+  (value). View > Show Input Hints turns it off. SoftCalc's own text.
 - The menu bar stays complete; View > Show Ribbon hides it; the Numeric
   view never shows it. Icons from IconMCP (MIT, ui/SoftCalc/Icons/
   LICENSE.txt), drawn from SVG by our own small renderer.

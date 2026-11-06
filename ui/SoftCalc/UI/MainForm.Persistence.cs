@@ -43,6 +43,7 @@ internal sealed partial class MainForm
 		_showSamplesItem.Checked = _prefs.ShowSamples;
 		SetAlwaysOnTop(_prefs.AlwaysOnTop);
 		_showRibbonItem.Checked = _prefs.ShowRibbon;
+		_showHintsItem.Checked = _prefs.ShowHints;
 		SetTextFont(_prefs.TextFontFamily, _prefs.TextFontSize);
 		ApplyGraphPrefs(_prefs.Graph);
 	}
@@ -153,6 +154,7 @@ internal sealed partial class MainForm
 		_prefs.ShowSamples = _showSamplesItem.Checked;
 		_prefs.AlwaysOnTop = _onTopItem.Checked;
 		_prefs.ShowRibbon = _showRibbonItem.Checked;
+		_prefs.ShowHints = _showHintsItem.Checked;
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		_prefs.Window = new WindowPlacement
 		{

@@ -24,7 +24,14 @@ internal sealed partial class MainForm : Form
 
 	private readonly EngineSession _session;
 	private readonly HistoryView _history = new() { Dock = DockStyle.Fill };
-	private readonly TextBox _input = new() { Dock = DockStyle.Fill };
+	private readonly TextBox _input = new() { Dock = DockStyle.Top };
+	// Second Input line: help for what is being typed, italic and faint (owner 2026-11-06)
+	private readonly Label _hint = new()
+	{
+		Dock = DockStyle.Top, AutoSize = false, AutoEllipsis = true, ForeColor = SystemColors.GrayText,
+		UseMnemonic = false, Padding = new Padding(2, 2, 0, 0),
+	};
+	private readonly ToolStripMenuItem _showHintsItem = new("Show Input &Hints") { Checked = true };
 	private readonly TextBox _samples = new()
 	{
 		Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, BorderStyle = BorderStyle.None,
@@ -86,6 +93,9 @@ internal sealed partial class MainForm : Form
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
 		_history.ResultClicked += (_, entry) => InsertResult(entry);
 		_input.KeyDown += OnInputKeyDown;
+		_input.TextChanged += (_, _) => UpdateHint();
+		_input.KeyUp += (_, _) => UpdateHint();    // caret moves
+		_input.MouseUp += (_, _) => UpdateHint();
 		_input.KeyPress += OnInputKeyPress;
 		_input.ContextMenuStrip = BuildInputMenu();
 		_keypad.KeyPressedLabel += async (_, label) => await OnKeypad(label);
@@ -104,7 +114,8 @@ internal sealed partial class MainForm : Form
 		var historyBox = new GroupBox { Text = "History", Dock = DockStyle.Fill };
 		historyBox.Controls.Add(_history);
 		_samplesBox.Controls.Add(_samples);
-		_inputBox.Controls.Add(_input);
+		_inputBox.Controls.Add(_hint);
+		_inputBox.Controls.Add(_input);    // added last: docks first, above the hint
 		_keypadHost.Controls.Add(_keypad);
 		_keypadHost.Resize += (_, _) => CenterKeypad();
 
@@ -180,12 +191,41 @@ internal sealed partial class MainForm : Form
 		var font = new Font(family, size);
 		_history.Font = font;
 		_input.Font = font;
-		int frame = Math.Max(29, _inputBox.Height - _inputBox.DisplayRectangle.Height);
-		_column.RowStyles[2].Height = _input.PreferredHeight + frame + 2;
+		_hint.Font = new Font(font, FontStyle.Italic);
+		LayoutInputRow();
 		foreach (var (percent, item) in _textSizeItems)
 		{
 			item.Checked = Math.Abs(BaseTextSize * percent / 100f - size) < 0.05f;
 		}
+	}
+
+	private void LayoutInputRow()
+	{
+		int frame = Math.Max(29, _inputBox.Height - _inputBox.DisplayRectangle.Height);
+		_hint.Visible = _showHintsItem.Checked;
+		_hint.Height = _showHintsItem.Checked ? _hint.Font.Height + 4 : 0;    // Visible reads false before Show
+		_column.RowStyles[2].Height = _input.PreferredHeight + _hint.Height + frame + 2;
+	}
+
+	private void UpdateHint()
+	{
+		if (!_showHintsItem.Checked)
+		{
+			return;
+		}
+		_hint.Text = InputHelp.For(_input.Text, _input.SelectionStart, DescribeUserName) ?? "";
+	}
+
+	// User functions show their definition, variables their value
+	private string? DescribeUserName(string name)
+	{
+		var fn = _state.Functions.FirstOrDefault(f => string.Equals(f.Name, name, StringComparison.OrdinalIgnoreCase));
+		if (fn != null)
+		{
+			return $"{fn.Head}{fn.Body} - your function";
+		}
+		var variable = _state.Variables.FirstOrDefault(v => string.Equals(v.Name, name, StringComparison.OrdinalIgnoreCase));
+		return variable == null ? null : $"{variable.Name} = {variable.Value} - your variable";
 	}
 
 	private void ChooseTextFont()
@@ -307,6 +347,13 @@ internal sealed partial class MainForm : Form
 		textSize.DropDownItems.Add(new ToolStripSeparator());
 		textSize.DropDownItems.Add(new ToolStripMenuItem("&Font...", null, (_, _) => ChooseTextFont()));
 		view.DropDownItems.Add(textSize);
+		_showHintsItem.Click += (_, _) =>
+		{
+			_showHintsItem.Checked = !_showHintsItem.Checked;
+			LayoutInputRow();
+			UpdateHint();
+		};
+		view.DropDownItems.Add(_showHintsItem);
 		view.DropDownItems.Add(new ToolStripSeparator());
 		var options = new ToolStripMenuItem("Advanced &Options");
 		AddSettingItem(options.DropDownItems, "angle", "deg", "&Degrees");

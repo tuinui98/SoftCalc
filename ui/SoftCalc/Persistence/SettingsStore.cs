@@ -83,6 +83,7 @@ internal sealed class AppSettings
 	public GraphPrefs Graph { get; set; } = new();
 	public bool AlwaysOnTop { get; set; }
 	public bool ShowRibbon { get; set; } = true;
+	public bool ShowHints { get; set; } = true;
 
 	// History and Input text; 13.5 pt = 150% of the 9 pt window font (owner 2026-11-06)
 	public string TextFontFamily { get; set; } = "Segoe UI";
