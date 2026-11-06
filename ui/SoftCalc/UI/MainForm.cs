@@ -71,6 +71,9 @@ internal sealed partial class MainForm : Form
 	private GraphWindow? _graphWindow;
 	private CompoundWindow? _compoundWindow;
 
+	// Set when the window closes to come back with a new theme (Program restarts)
+	public bool RestartRequested { get; private set; }
+
 	public MainForm(EngineSession session, DataFolder folder)
 	{
 		_session = session;
@@ -241,6 +244,28 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
+	// View > Theme: System / Light / Dark; choosing another restarts SoftCalc
+	private ToolStripMenuItem BuildThemeMenu()
+	{
+		var menu = new ToolStripMenuItem("&Theme");
+		foreach (var (name, label) in new[] { ("system", "&System"), ("light", "&Light"), ("dark", "&Dark") })
+		{
+			var item = new ToolStripMenuItem(label) { Checked = _prefs.Theme == name };
+			item.Click += (_, _) =>
+			{
+				if (_prefs.Theme == name)
+				{
+					return;
+				}
+				_prefs.Theme = name;
+				RestartRequested = true;
+				Close();    // saves settings and History, then Program starts a new SoftCalc
+			};
+			menu.DropDownItems.Add(item);
+		}
+		return menu;
+	}
+
 	private void SetAlwaysOnTop(bool onTop)
 	{
 		_onTopItem.Checked = onTop;
@@ -354,6 +379,7 @@ internal sealed partial class MainForm : Form
 			UpdateHint();
 		};
 		view.DropDownItems.Add(_showHintsItem);
+		view.DropDownItems.Add(BuildThemeMenu());
 		view.DropDownItems.Add(new ToolStripSeparator());
 		var options = new ToolStripMenuItem("Advanced &Options");
 		AddSettingItem(options.DropDownItems, "angle", "deg", "&Degrees");

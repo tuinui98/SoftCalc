@@ -12,6 +12,8 @@ internal static class Program
 	private static void Main()
 	{
 		ApplicationConfiguration.Initialize();
+		var folder = DataFolder.Default();
+		Theme.Apply(SettingsStore.Load(folder.SettingsPath).Settings.Theme);
 		System.Diagnostics.ProcessStartInfo startInfo;
 		try
 		{
@@ -22,7 +24,16 @@ internal static class Program
 			MessageBox.Show(ex.Message, "SoftCalc", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			return;
 		}
-		using var session = new EngineSession(startInfo);
-		Application.Run(new MainForm(session, DataFolder.Default()));
+		bool restart;
+		using (var session = new EngineSession(startInfo))
+		{
+			var form = new MainForm(session, folder);
+			Application.Run(form);
+			restart = form.RestartRequested;
+		}
+		if (restart && Environment.ProcessPath is { } exe)
+		{
+			System.Diagnostics.Process.Start(exe);    // a new theme takes effect in a fresh process
+		}
 	}
 }

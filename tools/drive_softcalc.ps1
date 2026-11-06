@@ -12,7 +12,8 @@ param
 	[string]$Shot = "softcalc_advanced.png",
 	[switch]$OpenGraph,
 	[switch]$OpenCompound,    # Tools > Compound Interest, screenshot of that window
-	[string]$DataDir = ""    # SOFTCALC_DATA_DIR for this run, so tests never touch the owner's %APPDATA%
+	[string]$DataDir = "",    # SOFTCALC_DATA_DIR for this run, so tests never touch the owner's %APPDATA%
+	[string]$Pending = ""    # left in the Input box without Enter, caret at the end (hint line shots)
 )
 
 if ($DataDir)
@@ -83,6 +84,12 @@ foreach ($line in $Lines)
 	}
 	Start-Sleep -Milliseconds 300
 }
+if ($Pending)
+{
+	[void][Drive]::SendMessageW($edit, 0x000C, [IntPtr]::Zero, $Pending)
+	[void][Win]::PostMessageW($edit, 0x0100, [IntPtr]0x23, [IntPtr]0x014F0001)    # WM_KEYDOWN End
+	[void][Win]::PostMessageW($edit, 0x0101, [IntPtr]0x23, [IntPtr]0xC14F0001)    # WM_KEYUP End: hint follows the caret
+}
 Start-Sleep -Milliseconds 500
 Save-WindowShot $main (Join-Path $root "spec\raw\$Shot")
 "saved $Shot"
@@ -116,7 +123,10 @@ if ($OpenCompound)
 	Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
 	$auto = [Windows.Automation.AutomationElement]
 	$scope = [Windows.Automation.TreeScope]::Descendants
-	$tools = $auto::FromHandle($main).FindFirst($scope, (New-Object Windows.Automation.PropertyCondition($auto::NameProperty, "Tools")))
+	# the menu bar item, not the ribbon group of the same name
+	$isMenu = New-Object Windows.Automation.PropertyCondition($auto::ControlTypeProperty, [Windows.Automation.ControlType]::MenuItem)
+	$named = New-Object Windows.Automation.PropertyCondition($auto::NameProperty, "Tools")
+	$tools = $auto::FromHandle($main).FindFirst($scope, (New-Object Windows.Automation.AndCondition($isMenu, $named)))
 	if ($tools)
 	{
 		$tools.GetCurrentPattern([Windows.Automation.ExpandCollapsePattern]::Pattern).Expand()

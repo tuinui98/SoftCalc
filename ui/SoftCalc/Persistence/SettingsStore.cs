@@ -84,6 +84,7 @@ internal sealed class AppSettings
 	public bool AlwaysOnTop { get; set; }
 	public bool ShowRibbon { get; set; } = true;
 	public bool ShowHints { get; set; } = true;
+	public string Theme { get; set; } = "system";    // system, light or dark; applied at start
 
 	// History and Input text; 13.5 pt = 150% of the 9 pt window font (owner 2026-11-06)
 	public string TextFontFamily { get; set; } = "Segoe UI";
@@ -155,6 +156,10 @@ internal static class SettingsStore
 		if (s.HistoryCap < 1)
 		{
 			s.HistoryCap = defaults.HistoryCap;
+		}
+		if (s.Theme is not ("system" or "light" or "dark"))
+		{
+			s.Theme = defaults.Theme;
 		}
 		s.Window ??= new WindowPlacement();
 		s.Graph ??= new GraphPrefs();

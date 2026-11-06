@@ -85,7 +85,7 @@ internal sealed class CompoundChart : Control
 		//==================================================================
 		//  Grid and axes
 		//==================================================================
-		using var gridPen = new Pen(Color.FromArgb(225, 225, 225));
+		using var gridPen = new Pen(Theme.Grid);
 		using var axisPen = new Pen(SystemColors.GrayText);
 		const TextFormatFlags right = TextFormatFlags.Right | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix;
 		const TextFormatFlags center = TextFormatFlags.HorizontalCenter | TextFormatFlags.Top | TextFormatFlags.NoPrefix;
