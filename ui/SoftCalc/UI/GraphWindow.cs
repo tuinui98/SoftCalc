@@ -20,6 +20,13 @@ internal sealed class GraphWindow : Form
 	private readonly ToolStripMenuItem _xyItem = new("&XY Graph");
 	private readonly ToolStripMenuItem _polarItem = new("&Polar Graph");
 	private readonly ToolStripMenuItem _gridItem = new("&Show Grid");
+	private readonly Label _status = new()
+	{
+		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
+		ForeColor = SystemColors.GrayText, Padding = new Padding(4, 0, 0, 0),
+	};
+	private const string NavigationHelp = "Wheel: zoom (Shift: X, Ctrl: Y)   Drag: move   Home: reset   F: fit Y";
+	private const string PolarHelp = "Wheel or + -: zoom R Max   Home: reset   F: fit R";
 
 	public GraphWindow(EngineSession session, GraphSettings settings, DefinitionCommands commands)
 	{
@@ -29,11 +36,14 @@ internal sealed class GraphWindow : Form
 		StartPosition = FormStartPosition.CenterParent;
 		ShowInTaskbar = false;
 		Icon = SvgIcon.ProgramIcon();
-		_graph = new GraphPanel(session, settings, commands, openWindow: null) { Dock = DockStyle.Fill };
+		_graph = new GraphPanel(session, settings, commands, openWindow: null, interactive: true) { Dock = DockStyle.Fill };
 
 		var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };
 		split.Panel1.Controls.Add(BuildRangePanel());
 		split.Panel2.Controls.Add(_graph);
+		split.Panel2.Controls.Add(_status);    // docks first, at the bottom
+		_graph.Plot.PointerMoved += (_, point) => ShowPointer(point);
+		ShowPointer(null);
 		Controls.Add(split);
 		Controls.Add(BuildMenu());
 		Load += (_, _) => split.SplitterDistance = 230;
@@ -60,7 +70,15 @@ internal sealed class GraphWindow : Form
 			_settings.ShowGrid = !_settings.ShowGrid;
 			_settings.NotifyChanged();
 		};
-		view.DropDownItems.AddRange(new ToolStripItem[] { _xyItem, _polarItem, new ToolStripSeparator(), _gridItem });
+		var fit = new ToolStripMenuItem("&Fit Y", null, (_, _) => _graph.Plot.FitY()) { ShortcutKeys = Keys.Control | Keys.F };
+		// Home is handled by the plot; a menu shortcut would take it from the range boxes
+		var reset = new ToolStripMenuItem("&Reset Range", null, (_, _) => _graph.Plot.ResetRange()) { ShortcutKeyDisplayString = "Home" };
+		var zoomIn = new ToolStripMenuItem("Zoom &In", null, (_, _) => _graph.Plot.ZoomCenter(0.8)) { ShortcutKeyDisplayString = "+" };
+		var zoomOut = new ToolStripMenuItem("Zoom &Out", null, (_, _) => _graph.Plot.ZoomCenter(1 / 0.8)) { ShortcutKeyDisplayString = "-" };
+		view.DropDownItems.AddRange(new ToolStripItem[]
+		{
+			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, new ToolStripSeparator(), zoomIn, zoomOut, fit, reset,
+		});
 		menu.Items.AddRange(new ToolStripItem[] { file, view });
 		MainMenuStrip = menu;
 		return menu;
@@ -94,6 +112,7 @@ internal sealed class GraphWindow : Form
 	private void OnSettingsChanged(object? sender, EventArgs e)
 	{
 		ShowRange();
+		ShowPointer(null);    // mode may have changed; the next mouse move shows coordinates again
 	}
 
 	// Shows the active mode's range with 6 decimals, as the original did
@@ -150,6 +169,26 @@ internal sealed class GraphWindow : Form
 			(_settings.MinY, _settings.MaxY, _settings.GridY) = (values[3], values[4], values[5]);
 		}
 		_settings.NotifyChanged();
+	}
+
+	// Coordinates under the mouse, rounded to the pixel size; help text otherwise
+	private void ShowPointer((double X, double Y)? point)
+	{
+		if (point is not { } p)
+		{
+			_status.Text = _settings.Mode == GraphMode.Polar ? PolarHelp : NavigationHelp;
+			return;
+		}
+		double pixel = _graph.Plot.PixelSize();
+		string x = PlotMath.FormatTick(p.X, pixel), y = PlotMath.FormatTick(p.Y, pixel);
+		if (_settings.Mode == GraphMode.Polar)
+		{
+			string r = PlotMath.FormatTick(Math.Sqrt(p.X * p.X + p.Y * p.Y), pixel);
+			string theta = Math.Atan2(p.Y, p.X).ToString("F3", CultureInfo.InvariantCulture);
+			_status.Text = $"x = {x}   y = {y}   r = {r}   theta = {theta} rad";
+			return;
+		}
+		_status.Text = $"x = {x}   y = {y}";
 	}
 
 	private void SaveBitmap()

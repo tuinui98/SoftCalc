@@ -20,11 +20,11 @@ internal sealed class GraphPanel : Panel
 
 	public PlotView Plot { get; }
 
-	public GraphPanel(EngineSession session, GraphSettings settings, DefinitionCommands commands, Action? openWindow)
+	public GraphPanel(EngineSession session, GraphSettings settings, DefinitionCommands commands, Action? openWindow, bool interactive = false)
 	{
 		_settings = settings;
 		_commands = commands;
-		Plot = new PlotView(session, settings) { Dock = DockStyle.Fill };
+		Plot = new PlotView(session, settings, interactive) { Dock = DockStyle.Fill };
 
 		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
 		toolbar.Items.Add(new ToolStripButton("Add", null, async (_, _) => await _commands.AddFunctionAsync()));

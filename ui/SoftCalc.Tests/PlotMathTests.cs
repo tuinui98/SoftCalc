@@ -74,4 +74,58 @@ public class PlotMathTests
 	{
 		Assert.Equal(expected, DefinitionCommands.CheckShape(definition, isFunction));
 	}
+
+	[Theory]
+	[InlineData(20, 10, 2)]
+	[InlineData(20, 20, 1)]
+	[InlineData(1, 4, 0.5)]
+	[InlineData(0.003, 3, 0.001)]
+	[InlineData(7000, 7, 1000)]
+	public void NiceStepIsOneTwoOrFive(double span, int count, double expected)
+	{
+		Assert.Equal(expected, PlotMath.NiceStep(span, count), 9);
+	}
+
+	[Theory]
+	[InlineData(2, 1, "2")]
+	[InlineData(-0.5, 0.5, "-0.5")]
+	[InlineData(1e-12, 0.1, "0.0")]
+	[InlineData(0.126, 0.01, "0.13")]
+	[InlineData(3e8, 1e8, "3E+8")]
+	public void TickLabelsUseTheStepsDecimals(double value, double step, string expected)
+	{
+		Assert.Equal(expected, PlotMath.FormatTick(value, step));
+	}
+
+	[Fact]
+	public void ZoomKeepsThePointUnderTheCursor()
+	{
+		var zoomed = PlotMath.Zoom(-10, 10, 5, 0.5)!.Value;
+		Assert.Equal((-2.5, 7.5), zoomed);
+		Assert.Null(PlotMath.Zoom(0, 1e-9, 0, 0.5));    // too small
+		Assert.Null(PlotMath.Zoom(-1e12, 1e12, 0, 2));    // too large
+	}
+
+	[Fact]
+	public void FitCutsPolesAndAddsMargin()
+	{
+		var values = Enumerable.Range(0, 100).Select(i => (double)i % 10).ToList();
+		values[50] = 1e15;    // a pole
+		var fit = PlotMath.FitRange(values)!.Value;
+		Assert.Equal(-0.45, fit.Min, 9);
+		Assert.Equal(9.45, fit.Max, 9);
+		Assert.Equal((4.0, 6.0), PlotMath.FitRange(new[] { 5.0, 5.0 }));    // flat line
+		Assert.Null(PlotMath.FitRange(new[] { double.NaN }));
+	}
+
+	[Fact]
+	public void ResetRangeOnlyTouchesTheCurrentMode()
+	{
+		var s = new GraphSettings { MinX = 1, MaxX = 2, MaxR = 3, Mode = GraphMode.XY };
+		s.ResetRange();
+		Assert.Equal((-10.0, 10.0, 3.0), (s.MinX, s.MaxX, s.MaxR));
+		s.Mode = GraphMode.Polar;
+		s.ResetRange();
+		Assert.Equal(10, s.MaxR);
+	}
 }
