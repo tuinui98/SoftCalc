@@ -145,7 +145,16 @@ internal sealed class GraphPanel : Panel
 	public void UpdateFunctions(IReadOnlyList<UserFunction> functions)
 	{
 		_list = functions;
+		var before = _settings.Graphable;
 		_settings.Graphable = functions.Where(f => f.Parameters.Count == 1).Select(f => f.Name).ToList();
+		if (before.Count > 0)
+		{
+			// a function added after start-up is drawn at once (Add from the graph)
+			foreach (string name in _settings.Graphable.Where(n => !before.Any(b => Same(b, n))))
+			{
+				_settings.SetShown(name, true);
+			}
+		}
 		// Forget deleted functions; with nothing shown, draw the first graphable one
 		_settings.Shown.RemoveAll(name => !_settings.Graphable.Any(g => Same(g, name)));
 		if (_settings.Shown.Count == 0 && _settings.Graphable.Count > 0)
@@ -206,7 +215,7 @@ internal sealed class GraphPanel : Panel
 	{
 		if (_functions.Columns.Count > 0)
 		{
-			_functions.Columns[0].Width = Math.Max(20, _functions.ClientSize.Width - 2);
+			_functions.Columns[0].Width = -2;    // LVSCW_AUTOSIZE_USEHEADER: fill the width left beside the scroll bar
 		}
 	}
 

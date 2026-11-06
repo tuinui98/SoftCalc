@@ -43,6 +43,7 @@ internal sealed class GraphPrefs
 {
 	public string Mode { get; set; } = "xy";
 	public bool ShowGrid { get; set; } = true;
+	public bool Trace { get; set; } = true;
 	public string? Function { get; set; }
 	public List<string>? Shown { get; set; }    // null in files from before G3: show Function
 	public double MinX { get; set; } = -10;

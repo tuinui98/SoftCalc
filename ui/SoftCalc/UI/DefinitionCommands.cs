@@ -1,8 +1,9 @@
 // DefinitionCommands.cs - Add / Edit / Delete for user functions and variables
 //
 // Shared by the Graph and Variables toolbars in the sidebar and in the
-// Graph window. Dialog definitions go straight to the engine and do not
-// add History lines [DEF]; Delete needs no confirmation [DEF].
+// Graph window; Add and Edit open the DefinitionEditor. Definitions go
+// straight to the engine and do not add History lines [DEF]; Delete
+// needs no confirmation [DEF].
 
 using System.Text.RegularExpressions;
 using SoftCalc.Engine;
@@ -21,36 +22,72 @@ internal sealed partial class DefinitionCommands
 	[GeneratedRegex(@"^\s*[A-Za-z_][A-Za-z0-9_]*\s*=")]
 	private static partial Regex VariableHead();
 
-	public DefinitionCommands(EngineSession session, IWin32Window owner, Func<Task> refresh)
+	private readonly Func<EngineState> _state;
+
+	public DefinitionCommands(EngineSession session, IWin32Window owner, Func<Task> refresh, Func<EngineState> state)
 	{
 		_session = session;
 		_owner = owner;
 		_refresh = refresh;
+		_state = state;
+	}
+
+	public EngineState State()
+	{
+		return _state();
+	}
+
+	public Task RefreshAsync()
+	{
+		return _refresh();
 	}
 
 	public Task AddFunctionAsync()
 	{
-		return ShowAsync("Add Function", "", "", isFunction: true);
+		return OpenAsync(isFunction: true, select: null);
 	}
 
 	public Task EditFunctionAsync(UserFunction function)
 	{
-		return ShowAsync("Edit Function", function.Head, function.Body, isFunction: true);
+		return OpenAsync(isFunction: true, function.Name);
 	}
 
 	public Task AddVariableAsync()
 	{
-		return ShowAsync("Add Variable", "", "", isFunction: false);
+		return OpenAsync(isFunction: false, select: null);
 	}
 
 	public Task EditVariableAsync(NamedValue variable)
 	{
-		return ShowAsync("Edit Variable", variable.Name + "=", variable.Value, isFunction: false);
+		return OpenAsync(isFunction: false, variable.Name);
 	}
 
 	public async Task DeleteAsync(string name)
 	{
 		await _session.DeleteAsync(name);
+		await _refresh();
+	}
+
+	// Defines one line; returns the error to show, or null
+	public async Task<string?> DefineAsync(string definition, bool isFunction)
+	{
+		string? shapeError = CheckShape(definition, isFunction);
+		if (shapeError != null)
+		{
+			return shapeError;
+		}
+		var reply = await _session.EvalAsync(definition);
+		if (reply.Kind == "definition")
+		{
+			return null;
+		}
+		return reply.Text.StartsWith("ERROR:") ? reply.Text["ERROR:".Length..] : reply.Text;
+	}
+
+	private async Task OpenAsync(bool isFunction, string? select)
+	{
+		using var editor = new DefinitionEditor(isFunction, this, select);
+		editor.ShowDialog(_owner);
 		await _refresh();
 	}
 
@@ -66,27 +103,5 @@ internal sealed partial class DefinitionCommands
 			return "Enter a variable such as a=5";
 		}
 		return null;
-	}
-
-	private async Task ShowAsync(string title, string head, string body, bool isFunction)
-	{
-		using var dialog = new DefinitionDialog(title, head, body, async definition =>
-		{
-			string? shapeError = CheckShape(definition, isFunction);
-			if (shapeError != null)
-			{
-				return shapeError;
-			}
-			var reply = await _session.EvalAsync(definition);
-			if (reply.Kind == "definition")
-			{
-				return null;
-			}
-			return reply.Text.StartsWith("ERROR:") ? reply.Text["ERROR:".Length..] : reply.Text;
-		});
-		if (dialog.ShowDialog(_owner) == DialogResult.OK)
-		{
-			await _refresh();
-		}
 	}
 }

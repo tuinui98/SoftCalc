@@ -131,7 +131,7 @@ internal sealed partial class MainForm : Form
 		_column.Controls.Add(_keypadHost, 0, 3);
 
 		// Sidebar: Graph above Variables, each in its own titled box
-		_commands = new DefinitionCommands(_session, this, RefreshStateAsync);
+		_commands = new DefinitionCommands(_session, this, RefreshStateAsync, () => _state);
 		_graphPanel = new GraphPanel(_session, _graphSettings, _commands, OpenGraphWindow) { Dock = DockStyle.Fill };
 		_variablesPanel = new VariablesPanel(_commands) { Dock = DockStyle.Fill };
 		var sidebar = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };

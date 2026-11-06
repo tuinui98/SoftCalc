@@ -327,3 +327,15 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   History-view size.
 - Double-click on a graph function edits it and no longer also toggles
   its tick (the native list toggles on double-click).
+- Functions / Variables editor (owner 2026-11-07): Add and Edit in the
+  Graph and Variables toolbars (sidebar and Graph window) open one
+  window per kind: the definitions listed on the left, Name, Parameters
+  (functions) and Definition / Value fields on the right, the composed
+  line as a preview, a note when the name replaces or renames, the
+  field at fault marked on error. Apply defines without closing (an
+  open graph redraws); renaming defines the new name and deletes the
+  old one; leaving unsaved changes asks first. A function added after
+  start-up is ticked in the graph at once. Replaces the original's
+  one-line dialogs (SPEC 4) on purpose.
+- Trace on/off is saved (graph.trace). Dragging the graph repaints at
+  once and fetches new points at most every 120 ms during the drag.

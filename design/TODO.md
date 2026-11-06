@@ -22,7 +22,5 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [x] Graph interface: done 2026-11-06 (design/graph_plan.md G1-G3).
 - [x] Dark theme (View > Theme), Text Size scaling the Font size:
       done 2026-11-06.
-- [ ] Add/Edit dialogs (spec/ideas.md): separate name / parameters /
-      body fields, list of definitions inside the dialog (after the clone).
-- [ ] Red error lines in History: added without being asked; keep or
-      remove.
+- [x] Add/Edit dialogs: Functions / Variables editor, done 2026-11-07.
+- [x] Red error lines in History: owner keeps them (2026-11-07).
