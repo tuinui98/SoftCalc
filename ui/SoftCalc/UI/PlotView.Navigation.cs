@@ -187,6 +187,7 @@ internal sealed partial class PlotView
 			return;
 		}
 		Focus();
+		TraceMouseDown(e);
 		if (e.Button == MouseButtons.Left && _settings.Mode == GraphMode.XY)
 		{
 			_dragFrom = e.Location;
@@ -218,6 +219,7 @@ internal sealed partial class PlotView
 		{
 			PointerMoved?.Invoke(this, null);
 		}
+		UpdateTrace(e.Location);
 	}
 
 	protected override void OnMouseUp(MouseEventArgs e)
@@ -228,6 +230,10 @@ internal sealed partial class PlotView
 			_dragFrom = null;
 			Cursor = Cursors.Cross;
 		}
+		if (_interactive)
+		{
+			TraceMouseUp(e);
+		}
 	}
 
 	protected override void OnMouseLeave(EventArgs e)
@@ -235,6 +241,7 @@ internal sealed partial class PlotView
 		base.OnMouseLeave(e);
 		if (_interactive)
 		{
+			ClearTrace();
 			PointerMoved?.Invoke(this, null);
 		}
 	}

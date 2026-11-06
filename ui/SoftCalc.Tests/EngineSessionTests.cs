@@ -98,6 +98,16 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
+	public async Task ValueAtGivesFullPrecisionOrNothing()
+	{
+		await Session.EvalAsync("r(x)=sqrt(x)");
+		var (text, value) = await Session.ValueAtAsync("r", 2);
+		Assert.StartsWith("1.41421356237309504880", text);
+		Assert.Equal(Math.Sqrt(2), value!.Value, 9);
+		Assert.Equal((null, null), await Session.ValueAtAsync("r", -1));
+	}
+
+	[Fact]
 	public async Task DeletedDefinitionStaysDeletedAfterRestart()
 	{
 		await Session.EvalAsync("temp=7");

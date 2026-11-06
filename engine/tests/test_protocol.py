@@ -126,6 +126,16 @@ def test_plot_polar(dispatcher):
     assert points[1] == pytest.approx([0.0, 1.0], abs=1e-12)
 
 
+def test_value_at_full_precision(dispatcher):
+    ask(dispatcher, "eval", input="r(x)=sqrt(x)")
+    reply = ask(dispatcher, "value_at", function="r", x=2)
+    assert reply["text"] == "1.4142135623730950488016887242097"    # 32 digits, like a result
+    assert reply["value"] == pytest.approx(1.41421356)
+    undefined = ask(dispatcher, "value_at", function="r", x=-1)
+    assert (undefined["text"], undefined["value"]) == (None, None)
+    assert ask(dispatcher, "eval", input="answer")["kind"] == "error"    # tracing is not a calculation
+
+
 def test_pcf_round_trip(dispatcher):
     ask(dispatcher, "eval", input="k=3")
     text = ask(dispatcher, "pcf_export")["text"]

@@ -215,6 +215,14 @@ internal static class PlotMath
 		return (low - margin, high + margin);
 	}
 
+	// An angle moved by whole turns into [min, max], or null when no turn fits (polar trace)
+	public static double? AngleInRange(double angle, double min, double max)
+	{
+		double turn = 2 * Math.PI;
+		double shifted = angle + Math.Ceiling((min - angle) / turn) * turn;
+		return shifted <= max ? shifted : null;
+	}
+
 	// Screen coordinates are floats; keep far-off points from overflowing GDI+
 	public static PointF Clamp(PointF point, RectangleF screen)
 	{

@@ -119,6 +119,15 @@ public class PlotMathTests
 	}
 
 	[Fact]
+	public void AngleMovesByWholeTurnsIntoTheRange()
+	{
+		Assert.Equal(1.0, PlotMath.AngleInRange(1, -Math.PI, Math.PI)!.Value, 12);
+		Assert.Equal(-1 + 2 * Math.PI, PlotMath.AngleInRange(-1, 0, 2 * Math.PI)!.Value, 12);
+		Assert.Equal(1 + 4 * Math.PI, PlotMath.AngleInRange(1, 4 * Math.PI, 6 * Math.PI)!.Value, 12);
+		Assert.Null(PlotMath.AngleInRange(-1, 0, 1));    // range shorter than a turn
+	}
+
+	[Fact]
 	public void ResetRangeOnlyTouchesTheCurrentMode()
 	{
 		var s = new GraphSettings { MinX = 1, MaxX = 2, MaxR = 3, Mode = GraphMode.XY };

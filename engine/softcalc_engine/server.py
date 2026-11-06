@@ -73,6 +73,7 @@ class Dispatcher:
             "catalog": lambda request: CATALOG,
             "menu_insert": self.op_menu_insert,
             "plot": self.op_plot,
+            "value_at": self.op_value_at,
             "pcf_export": lambda request: {"text": self.engine.export_pcf()},
             "pcf_import": self.op_pcf_import,
             "restore_results": self.op_restore_results,
@@ -158,6 +159,11 @@ class Dispatcher:
             raise RequestError("'samples' is too large")
         points = self.engine.plot(argument(request, "function", str), mode, start, end, samples)
         return {"points": points}
+
+    def op_value_at(self, request):
+        t = argument(request, "x", (int, float))
+        text, value = self.engine.value_at(argument(request, "function", str), t)
+        return {"text": text, "value": value}
 
     def op_restore_results(self, request):
         texts = argument(request, "texts", list)
