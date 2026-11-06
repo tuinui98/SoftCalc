@@ -210,7 +210,7 @@ class TestProcess:
         assert proc.wait(timeout=10) == 0
 
 
-FROZEN_EXE = ENGINE_DIR / "dist" / "softcalc-engine.exe"
+FROZEN_EXE = ENGINE_DIR / "dist" / "softcalc-engine" / "softcalc-engine.exe"    # onedir build (M9)
 
 
 @pytest.mark.skipif(not FROZEN_EXE.exists(), reason="run build/build_engine.ps1 first")

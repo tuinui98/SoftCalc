@@ -17,11 +17,13 @@ internal static class Program
 		System.Diagnostics.ProcessStartInfo startInfo;
 		try
 		{
-			startInfo = EngineLocator.Locate();
+			startInfo = EngineLocator.Locate(folder.EngineRoot);
 		}
-		catch (FileNotFoundException ex)
+		catch (Exception ex) when (ex is FileNotFoundException or IOException or UnauthorizedAccessException
+			or InvalidDataException)
 		{
-			MessageBox.Show(ex.Message, "SoftCalc", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			MessageBox.Show("SoftCalc could not start its engine." + Environment.NewLine + Environment.NewLine + ex.Message, "SoftCalc",
+				MessageBoxButtons.OK, MessageBoxIcon.Error);
 			return;
 		}
 		bool restart;

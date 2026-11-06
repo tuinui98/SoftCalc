@@ -354,6 +354,11 @@ internal sealed partial class MainForm : Form
 	{
 		var file = new ToolStripMenuItem("&File");
 		file.DropDownItems.Add(new ToolStripMenuItem("&Help") { Enabled = false });
+		file.DropDownItems.Add(new ToolStripMenuItem("A&bout SoftCalc...", null, (_, _) =>
+		{
+			using var about = new AboutDialog(_folder.Root);
+			about.ShowDialog(this);
+		}));
 		file.DropDownItems.Add(new ToolStripSeparator());
 		file.DropDownItems.Add(new ToolStripMenuItem("S&ave History...", null, (_, _) => SaveHistoryAs()));
 		file.DropDownItems.Add(new ToolStripSeparator());

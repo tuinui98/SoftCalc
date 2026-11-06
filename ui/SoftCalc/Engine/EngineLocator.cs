@@ -1,8 +1,9 @@
 // EngineLocator.cs - Finds the engine to start: packaged exe or development venv
 //
-// Order: SOFTCALC_ENGINE environment variable (path to an exe), then
-// softcalc-engine.exe next to SoftCalc.exe, then the repository's
-// engine/.venv Python running `-m softcalc_engine`.
+// Order: SOFTCALC_ENGINE environment variable (path to an exe), then the
+// engine embedded in the published exe (unpacked under the data folder,
+// M9), then softcalc-engine.exe next to SoftCalc.exe, then the
+// repository's engine/.venv Python running `-m softcalc_engine`.
 
 using System.Diagnostics;
 
@@ -12,12 +13,19 @@ internal static class EngineLocator
 {
 	public const string ExeName = "softcalc-engine.exe";
 
-	public static ProcessStartInfo Locate()
+	public static ProcessStartInfo Locate(string engineRoot)
 	{
 		string? overridePath = Environment.GetEnvironmentVariable("SOFTCALC_ENGINE");
 		if (!string.IsNullOrEmpty(overridePath))
 		{
 			return ForExe(overridePath);
+		}
+		using (var embedded = EngineUnpacker.Embedded())
+		{
+			if (embedded != null)
+			{
+				return ForExe(EngineUnpacker.Unpack(embedded, engineRoot));
+			}
 		}
 		string besideApp = Path.Combine(AppContext.BaseDirectory, ExeName);
 		if (File.Exists(besideApp))

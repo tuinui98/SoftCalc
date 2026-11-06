@@ -5,4 +5,4 @@ precision, and formats results as specified in spec/SPEC.md. The UI
 talks to it through the JSON-lines protocol (design/protocol.md).
 """
 
-__version__ = "0.0.1"
+__version__ = "1.0.0"

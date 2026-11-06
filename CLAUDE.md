@@ -30,8 +30,8 @@ stdin/stdout:
   digits, variables/functions/answer/`$n` state, number formatting
   (SPEC 6.2), units, dates, finance. No file or network I/O of its own.
 - `ui/` (C# WinForms, .NET 10, standard controls: the owner wants the
-  original's UX, not its look): windows, settings and history files in
-  `%APPDATA%\SoftCalc\`, graph drawing, ECB rate fetch, engine
+  original's UX, not its look): windows, settings and history files
+  (portable `SoftCalc-data\` or `%APPDATA%\SoftCalc\`), graph drawing, ECB rate fetch, engine
   watchdog/restart.
 Golden tests drive the engine directly, without the UI.
 Toolbar icons are IconMCP SVGs (MIT) in `ui/SoftCalc/Icons/` with their
@@ -48,8 +48,13 @@ python -m venv .venv                      # once
 .venv/Scripts/python -m softcalc_engine   # protocol server on stdin/stdout (design/protocol.md)
 ```
 Frozen engine: `powershell -ExecutionPolicy Bypass -File build\build_engine.ps1`
-writes `engine\dist\softcalc-engine.exe`; `test_frozen_exe_answers` runs
-against it when it exists.
+writes the one-folder build `engine\dist\softcalc-engine\` (exe +
+`_internal\`); `test_frozen_exe_answers` runs against it when it exists.
+Release: `powershell -ExecutionPolicy Bypass -File build\publish.ps1` builds
+and tests the engine, zips it, refreshes `ui/SoftCalc/THIRD-PARTY-NOTICES.txt`
+(`tools/make_notices.py`), publishes the self-contained single file
+`dist\SoftCalc.exe` with the engine zip embedded, and smoke-runs it from an
+empty folder (design/m9_plan.md).
 UI (run from `ui/`; .NET SDK at `C:\Program Files\dotnet\dotnet.exe`, 10.0.x,
 may not be on the PATH of an already-open shell):
 ```
@@ -58,8 +63,11 @@ dotnet test                      # unit tests + engine session tests over real p
 dotnet test --filter "FullyQualifiedName~InputRulesTests"   # one class
 dotnet run --project SoftCalc    # start the app
 ```
-The app finds the engine via `SOFTCALC_ENGINE`, then `softcalc-engine.exe`
-next to `SoftCalc.exe`, then `engine/.venv` (development).
+The app finds the engine via `SOFTCALC_ENGINE`, then the zip embedded in the
+published exe (unpacked to `<data>\engine\<hash>\`), then
+`softcalc-engine.exe` next to `SoftCalc.exe`, then `engine/.venv`
+(development). Data: `SOFTCALC_DATA_DIR`, else `SoftCalc-data\` beside the
+published exe when writable, else `%APPDATA%\SoftCalc` (also for dev builds).
 `tools/drive_softcalc.ps1` types lines into a running SoftCalc through
 window messages and saves a screenshot to `spec/raw/` (own app only).
 It takes `-DataDir <folder>` so scripted runs never touch the owner's
