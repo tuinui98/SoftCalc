@@ -314,3 +314,16 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   greyed out. The sidebar keeps the X range and fits Y to the lines
   (polar: R) so their shape shows (owner). Saved as graph.shown; older
   files show their one saved function.
+
+## Owner tweaks 2026-11-07
+- Graph window toolbar under the menu: XY, Polar, Grid, Trace, Zoom +,
+  Zoom -, Fit, Reset (same commands as View). Range panel 150 px wide.
+- Graph grid and axes a step stronger in both themes (Theme.PlotGrid /
+  PlotAxis). Variables in dark mode: bold heading rows instead of the
+  native group headers (dark blue on grey).
+- History and Numeric views share one window size; Advanced View grows
+  the window to the left by the sidebar width, so History and Input
+  stay put on screen; leaving it shrinks back. settings.json keeps the
+  History-view size.
+- Double-click on a graph function edits it and no longer also toggles
+  its tick (the native list toggles on double-click).

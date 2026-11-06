@@ -20,6 +20,11 @@ internal sealed class GraphWindow : Form
 	private readonly ToolStripMenuItem _xyItem = new("&XY Graph");
 	private readonly ToolStripMenuItem _polarItem = new("&Polar Graph");
 	private readonly ToolStripMenuItem _gridItem = new("&Show Grid");
+	private readonly ToolStripMenuItem _traceItem = new("&Trace") { Checked = true };
+	private readonly ToolStripButton _xyButton = new("XY") { ToolTipText = "XY graph" };
+	private readonly ToolStripButton _polarButton = new("Polar") { ToolTipText = "Polar graph" };
+	private readonly ToolStripButton _gridButton = new("Grid") { ToolTipText = "Show grid" };
+	private readonly ToolStripButton _traceButton = new("Trace") { Checked = true, ToolTipText = "Dot and value on the selected line" };
 	private readonly Label _status = new()
 	{
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
@@ -27,6 +32,7 @@ internal sealed class GraphWindow : Form
 	};
 	private const string NavigationHelp = "Wheel: zoom (Shift: X, Ctrl: Y)   Drag: move   Click: copy value   Home: reset   F: fit Y";
 	private (double X, double Y)? _lastPointer;
+	private const int RangeWidth = 150;    // owner 2026-11-07: narrower than the original's panel
 	private const string PolarHelp ="Wheel or + -: zoom R Max   Home: reset   F: fit R";
 
 	public GraphWindow(EngineSession session, GraphSettings settings, DefinitionCommands commands, Action<string> insertValue)
@@ -49,8 +55,9 @@ internal sealed class GraphWindow : Form
 		_graph.Plot.Notice += (_, text) => _status.Text = text;
 		ShowPointer(null);
 		Controls.Add(split);
+		Controls.Add(BuildToolbar());
 		Controls.Add(BuildMenu());
-		Load += (_, _) => split.SplitterDistance = 230;
+		Load += (_, _) => split.SplitterDistance = RangeWidth;
 		_settings.Changed += OnSettingsChanged;
 		FormClosed += (_, _) => _settings.Changed -= OnSettingsChanged;
 		ShowRange();
@@ -79,19 +86,43 @@ internal sealed class GraphWindow : Form
 		var reset = new ToolStripMenuItem("&Reset Range", null, (_, _) => _graph.Plot.ResetRange()) { ShortcutKeyDisplayString = "Home" };
 		var zoomIn = new ToolStripMenuItem("Zoom &In", null, (_, _) => _graph.Plot.ZoomCenter(0.8)) { ShortcutKeyDisplayString = "+" };
 		var zoomOut = new ToolStripMenuItem("Zoom &Out", null, (_, _) => _graph.Plot.ZoomCenter(1 / 0.8)) { ShortcutKeyDisplayString = "-" };
-		var trace = new ToolStripMenuItem("&Trace") { Checked = true };
-		trace.Click += (_, _) =>
-		{
-			trace.Checked = !trace.Checked;
-			_graph.Plot.TraceEnabled = trace.Checked;
-		};
+		_traceItem.Click += (_, _) => SetTrace(!_traceItem.Checked);
 		view.DropDownItems.AddRange(new ToolStripItem[]
 		{
-			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, trace, new ToolStripSeparator(), zoomIn, zoomOut, fit, reset,
+			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, _traceItem, new ToolStripSeparator(), zoomIn, zoomOut, fit, reset,
 		});
 		menu.Items.AddRange(new ToolStripItem[] { file, view });
 		MainMenuStrip = menu;
 		return menu;
+	}
+
+	// Buttons for the View menu's commands (owner 2026-11-07)
+	private ToolStrip BuildToolbar()
+	{
+		var bar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Padding = new Padding(4, 2, 4, 2) };
+		_xyButton.Click += (_, _) => SetMode(GraphMode.XY);
+		_polarButton.Click += (_, _) => SetMode(GraphMode.Polar);
+		_gridButton.Click += (_, _) =>
+		{
+			_settings.ShowGrid = !_settings.ShowGrid;
+			_settings.NotifyChanged();
+		};
+		_traceButton.Click += (_, _) => SetTrace(!_traceButton.Checked);
+		bar.Items.AddRange(new ToolStripItem[]
+		{
+			_xyButton, _polarButton, new ToolStripSeparator(), _gridButton, _traceButton, new ToolStripSeparator(),
+			new ToolStripButton("Zoom +", null, (_, _) => _graph.Plot.ZoomCenter(0.8)) { ToolTipText = "Zoom in (+, mouse wheel)" },
+			new ToolStripButton("Zoom -", null, (_, _) => _graph.Plot.ZoomCenter(1 / 0.8)) { ToolTipText = "Zoom out (-)" },
+			new ToolStripButton("Fit", null, (_, _) => _graph.Plot.FitY()) { ToolTipText = "Fit Y to the lines (F, Ctrl+F); polar: R Max" },
+			new ToolStripButton("Reset", null, (_, _) => _graph.Plot.ResetRange()) { ToolTipText = "Start-up range (Home)" },
+		});
+		return bar;
+	}
+
+	private void SetTrace(bool on)
+	{
+		_traceItem.Checked = _traceButton.Checked = on;
+		_graph.Plot.TraceEnabled = on;
 	}
 
 	private Control BuildRangePanel()
@@ -144,6 +175,9 @@ internal sealed class GraphWindow : Form
 		_xyItem.Checked = !polar;
 		_polarItem.Checked = polar;
 		_gridItem.Checked = _settings.ShowGrid;
+		_xyButton.Checked = !polar;
+		_polarButton.Checked = polar;
+		_gridButton.Checked = _settings.ShowGrid;
 		_rangeError.Text = "";
 	}
 
