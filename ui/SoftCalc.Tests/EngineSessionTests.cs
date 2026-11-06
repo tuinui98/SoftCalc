@@ -15,7 +15,7 @@ public sealed class EngineSessionTests : IAsyncLifetime
 
 	public async Task InitializeAsync()
 	{
-		_session = new EngineSession(EngineLocator.Locate());
+		_session = new EngineSession(EngineLocator.Locate(Path.Combine(Path.GetTempPath(), "softcalc-test-engine")));
 		await _session.StartAsync();
 	}
 
@@ -120,7 +120,7 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	[Fact]
 	public async Task RequestBeforeStartIsNotTreatedAsLostEngine()
 	{
-		using var notStarted = new EngineSession(EngineLocator.Locate());
+		using var notStarted = new EngineSession(EngineLocator.Locate(Path.Combine(Path.GetTempPath(), "softcalc-test-engine")));
 		bool restarted = false;
 		notStarted.Restarted += (_, _) => restarted = true;
 		await Assert.ThrowsAsync<EngineNotStartedException>(() => notStarted.EvalAsync("1"));

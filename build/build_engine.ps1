@@ -1,9 +1,10 @@
 #==================================================================
 #  build_engine.ps1 - Freeze the Python engine into softcalc-engine.exe
 #==================================================================
-# Builds engine\dist\softcalc-engine.exe with PyInstaller (one file,
-# console subsystem: the UI talks to it over stdin/stdout and hides
-# the window). Run from any folder:
+# Builds engine\dist\softcalc-engine\ (softcalc-engine.exe plus
+# _internal\) with PyInstaller, one folder (M9: a one-file build unpacks
+# itself to %TEMP% on every start). Console subsystem: the UI talks to it
+# over stdin/stdout and hides the window. Run from any folder:
 #   powershell -ExecutionPolicy Bypass -File build\build_engine.ps1
 
 $ErrorActionPreference = "Stop"
@@ -17,7 +18,7 @@ if (-not (Test-Path $python))
 Push-Location $engine
 try
 {
-	& $python -m PyInstaller --noconfirm --clean --onefile --console `
+	& $python -m PyInstaller --noconfirm --clean --onedir --console `
 		--name softcalc-engine `
 		--distpath dist --workpath build --specpath build `
 		--log-level WARN `
@@ -26,8 +27,9 @@ try
 	{
 		throw "PyInstaller failed with exit code $LASTEXITCODE"
 	}
-	$exe = Join-Path $engine "dist\softcalc-engine.exe"
-	"built $exe ($([math]::Round((Get-Item $exe).Length / 1MB, 1)) MB)"
+	$folder = Join-Path $engine "dist\softcalc-engine"
+	$size = (Get-ChildItem $folder -Recurse -File | Measure-Object Length -Sum).Sum
+	"built $folder ($([math]::Round($size / 1MB, 1)) MB)"
 }
 finally
 {

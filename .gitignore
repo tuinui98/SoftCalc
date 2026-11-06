@@ -28,3 +28,6 @@ tools/**/obj/
 .vs/
 *.user
 *.egg-info/
+
+# M9 published exe (build/publish.ps1)
+/dist/

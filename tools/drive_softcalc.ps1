@@ -13,7 +13,8 @@ param
 	[switch]$OpenGraph,
 	[switch]$OpenCompound,    # Tools > Compound Interest, screenshot of that window
 	[string]$DataDir = "",    # SOFTCALC_DATA_DIR for this run, so tests never touch the owner's %APPDATA%
-	[string]$Pending = ""    # left in the Input box without Enter, caret at the end (hint line shots)
+	[string]$Pending = "",    # left in the Input box without Enter, caret at the end (hint line shots)
+	[string]$Exe = ""    # another SoftCalc.exe, e.g. the published one (build/publish.ps1); default: Debug build
 )
 
 if ($DataDir)
@@ -33,7 +34,7 @@ public static class Drive
 "@
 
 $root = Split-Path -Parent $PSScriptRoot
-$exe = Join-Path $root "ui\SoftCalc\bin\Debug\net10.0-windows\SoftCalc.exe"
+$exe = if ($Exe) { $Exe } else { Join-Path $root "ui\SoftCalc\bin\Debug\net10.0-windows\SoftCalc.exe" }
 $proc = Start-Process $exe -PassThru
 $main = [IntPtr]::Zero
 for ($i = 0; $i -lt 60 -and $main -eq [IntPtr]::Zero; $i++)
