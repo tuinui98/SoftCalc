@@ -285,3 +285,18 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   ui/SoftCalc/softcalc.ico.
 - E11: the window recalculates 300 ms after a change (owner); amounts
   follow the main window's precision, base and decimals.
+
+## E14. Graph window navigation (owner 2026-11-06, design/graph_plan.md G1)
+- Graph window only; the sidebar graph is unchanged.
+- Numbers on the axes at round steps (1, 2, 5 x 10^n) from the pixel
+  space; polar labels the rings along the positive x axis.
+- Status line: coordinates under the mouse (polar adds r and theta),
+  otherwise a short key help.
+- Wheel zooms around the cursor (Shift: X only, Ctrl: Y only); drag
+  pans; plot keys: arrows pan 10%, + / - zoom, Home resets the range,
+  F fits Y. View menu: Zoom In / Out, Fit Y (Ctrl+F), Reset Range.
+  The Range panel follows every change; a zoom resets the grid
+  increments to round steps.
+- Fit Y: 2nd-98th percentile of the plotted values plus 5% margin, so
+  poles (tan) do not flatten the view. Polar: no panning; zoom and fit
+  change R Max only (owner).

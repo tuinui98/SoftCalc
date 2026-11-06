@@ -3,13 +3,15 @@
 // Asks the engine for points (one per pixel column, polar: per sample),
 // caches them, and repaints from the cache. A new request is made when
 // the function, the graph settings, the size, or the angle unit change.
+// In the Graph window (interactive) it also draws axis numbers and
+// handles zoom, pan and keys: PlotView.Navigation.cs.
 
 using SoftCalc.Engine;
 using SoftCalc.Logic;
 
 namespace SoftCalc.UI;
 
-internal sealed class PlotView : Control
+internal sealed partial class PlotView : Control
 {
 	private const int PolarSamples = 720;
 	private const int MaxSamples = 2000;
@@ -21,10 +23,17 @@ internal sealed class PlotView : Control
 	private string? _message;
 	private int _requestNumber;
 
-	public PlotView(EngineSession session, GraphSettings settings)
+	public PlotView(EngineSession session, GraphSettings settings, bool interactive = false)
 	{
 		_session = session;
 		_settings = settings;
+		_interactive = interactive;
+		if (interactive)
+		{
+			SetStyle(ControlStyles.Selectable, true);
+			TabStop = true;
+			Cursor = Cursors.Cross;
+		}
 		DoubleBuffered = true;
 		ResizeRedraw = true;
 		BackColor = SystemColors.Window;
@@ -110,6 +119,10 @@ internal sealed class PlotView : Control
 			}
 		}
 		DrawAxes(g, world, screen);
+		if (_interactive)
+		{
+			DrawTicks(g, world, screen);
+		}
 		using (var pen = new Pen(SystemColors.Highlight, 1.6f))
 		{
 			foreach (var segment in PlotMath.Segments(_points, world))
@@ -129,12 +142,23 @@ internal sealed class PlotView : Control
 			TextRenderer.DrawText(g, _message, Font, ClientRectangle, SystemColors.GrayText,
 				TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
 		}
+		if (_interactive && Focused)
+		{
+			ControlPaint.DrawFocusRectangle(g, ClientRectangle);    // keys go to the plot
+		}
 	}
 
-	// Polar views keep a square drawing area so circles stay round
+	// Polar views keep a square drawing area so circles stay round; the
+	// interactive XY view leaves room for the axis numbers
 	private RectangleF PlotArea()
 	{
 		var area = new RectangleF(4, 4, Math.Max(1, Width - 8), Math.Max(1, Height - 8));
+		if (_interactive && _settings.Mode == GraphMode.XY)
+		{
+			float left = TickLabelWidth() + 8;
+			float bottom = Font.Height + 6;
+			area = new RectangleF(left, 6, Math.Max(1, Width - left - 10), Math.Max(1, Height - bottom - 8));
+		}
 		if (_settings.Mode == GraphMode.Polar)
 		{
 			float side = Math.Min(area.Width, area.Height);

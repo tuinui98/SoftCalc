@@ -48,6 +48,20 @@ internal sealed class GraphSettings
 		Changed?.Invoke(this, EventArgs.Empty);
 	}
 
+	// Home: the start-up range of the current mode
+	public void ResetRange()
+	{
+		var d = new GraphSettings();
+		if (Mode == GraphMode.XY)
+		{
+			(MinX, MaxX, GridX, MinY, MaxY, GridY) = (d.MinX, d.MaxX, d.GridX, d.MinY, d.MaxY, d.GridY);
+		}
+		else
+		{
+			(MinT, MaxT, MaxR, GridR) = (d.MinT, d.MaxT, d.MaxR, d.GridR);
+		}
+	}
+
 	// The world rectangle shown: XY range, or a square around the pole for polar
 	public WorldRect View => Mode == GraphMode.XY
 		? new WorldRect(MinX, MaxX, MinY, MaxY)
@@ -126,6 +140,79 @@ internal static class PlotMath
 			segments.Add(current);
 		}
 		return segments;
+	}
+
+	//==================================================================
+	//  Graph window navigation (design/graph_plan.md, G1)
+	//==================================================================
+	public const double MinSpan = 1e-9;
+	public const double MaxSpan = 1e12;
+
+	// A round step (1, 2 or 5 x 10^n) giving at most `count` intervals over span
+	public static double NiceStep(double span, int count)
+	{
+		if (!(span > 0) || count < 1)
+		{
+			return 1;
+		}
+		double raw = span / count;
+		double power = Math.Pow(10, Math.Floor(Math.Log10(raw)));
+		foreach (double m in new[] { 1.0, 2, 5, 10 })
+		{
+			if (m * power >= raw)
+			{
+				return m * power;
+			}
+		}
+		return 10 * power;
+	}
+
+	// Tick label text with just enough decimals for the step; no "-0"
+	public static string FormatTick(double value, double step)
+	{
+		int decimals = Math.Clamp((int)Math.Ceiling(-Math.Log10(step) - 1e-9), 0, 12);
+		if (Math.Abs(value) < step * 1e-6)
+		{
+			value = 0;
+		}
+		double size = Math.Max(Math.Abs(value), step);
+		if (size >= 1e7 || size < 1e-5)
+		{
+			return value.ToString("0.###E+0", System.Globalization.CultureInfo.InvariantCulture);
+		}
+		return value.ToString("F" + decimals, System.Globalization.CultureInfo.InvariantCulture);
+	}
+
+	// Scales [min, max] by factor around `at`; null when the span would leave limits
+	public static (double Min, double Max)? Zoom(double min, double max, double at, double factor)
+	{
+		double span = (max - min) * factor;
+		if (!(span >= MinSpan && span <= MaxSpan))
+		{
+			return null;
+		}
+		double newMin = at - (at - min) * factor;
+		return (newMin, newMin + span);
+	}
+
+	// Y range that shows the points: 2nd-98th percentile (cuts poles), 5% margin
+	public static (double Min, double Max)? FitRange(IEnumerable<double> values)
+	{
+		var finite = values.Where(v => !double.IsNaN(v) && !double.IsInfinity(v)).Order().ToList();
+		if (finite.Count == 0)
+		{
+			return null;
+		}
+		int cut = finite.Count >= 50 ? finite.Count / 50 : 0;
+		double low = finite[cut];
+		double high = finite[finite.Count - 1 - cut];
+		if (high - low < MinSpan * 10)
+		{
+			double pad = Math.Max(1, Math.Abs(low) * 0.1);
+			return (low - pad, high + pad);
+		}
+		double margin = (high - low) * 0.05;
+		return (low - margin, high + margin);
 	}
 
 	// Screen coordinates are floats; keep far-off points from overflowing GDI+
