@@ -47,6 +47,8 @@ internal sealed partial class MainForm : Form
 	private readonly ToolStripMenuItem _padZerosItem = new("&Pad with Zeros");
 	private readonly ToolStripMenuItem _allDigitsItem = new("&All Digits");
 	private Ribbon _ribbon = null!;
+	private readonly Dictionary<int, ToolStripMenuItem> _textSizeItems = new();
+	private const float BaseTextSize = 9f;    // the window font; Text Size percentages scale it
 	private readonly RatesSource _rates;
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
 	private readonly Dictionary<string, Dictionary<object, ToolStripMenuItem>> _settingItems = new();
@@ -170,6 +172,35 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
+	// History and Input font (owner 2026-11-06); the Input row grows with it
+	private void SetTextFont(string family, float size)
+	{
+		_prefs.TextFontFamily = family;
+		_prefs.TextFontSize = size;
+		var font = new Font(family, size);
+		_history.Font = font;
+		_input.Font = font;
+		int frame = Math.Max(29, _inputBox.Height - _inputBox.DisplayRectangle.Height);
+		_column.RowStyles[2].Height = _input.PreferredHeight + frame + 2;
+		foreach (var (percent, item) in _textSizeItems)
+		{
+			item.Checked = Math.Abs(BaseTextSize * percent / 100f - size) < 0.05f;
+		}
+	}
+
+	private void ChooseTextFont()
+	{
+		using var dialog = new FontDialog
+		{
+			Font = _input.Font, ShowEffects = false, AllowVerticalFonts = false, FontMustExist = true,
+			MinSize = 6, MaxSize = 48,
+		};
+		if (dialog.ShowDialog(this) == DialogResult.OK)
+		{
+			SetTextFont(dialog.Font.FontFamily.Name, dialog.Font.SizeInPoints);
+		}
+	}
+
 	private void SetAlwaysOnTop(bool onTop)
 	{
 		_onTopItem.Checked = onTop;
@@ -266,6 +297,16 @@ internal sealed partial class MainForm : Form
 		_padZerosItem.Click += async (_, _) => await ChangeSettingAsync("pad_zeros", !_padZerosItem.Checked);
 		decimals.DropDownItems.Add(_padZerosItem);
 		view.DropDownItems.Add(decimals);
+		var textSize = new ToolStripMenuItem("Te&xt Size");
+		foreach (int percent in new[] { 100, 125, 150, 175, 200 })
+		{
+			var item = new ToolStripMenuItem($"{percent}%", null, (_, _) => SetTextFont(_prefs.TextFontFamily, BaseTextSize * percent / 100f));
+			_textSizeItems[percent] = item;
+			textSize.DropDownItems.Add(item);
+		}
+		textSize.DropDownItems.Add(new ToolStripSeparator());
+		textSize.DropDownItems.Add(new ToolStripMenuItem("&Font...", null, (_, _) => ChooseTextFont()));
+		view.DropDownItems.Add(textSize);
 		view.DropDownItems.Add(new ToolStripSeparator());
 		var options = new ToolStripMenuItem("Advanced &Options");
 		AddSettingItem(options.DropDownItems, "angle", "deg", "&Degrees");

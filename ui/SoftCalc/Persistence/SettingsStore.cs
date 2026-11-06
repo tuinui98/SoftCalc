@@ -83,6 +83,10 @@ internal sealed class AppSettings
 	public GraphPrefs Graph { get; set; } = new();
 	public bool AlwaysOnTop { get; set; }
 	public bool ShowRibbon { get; set; } = true;
+
+	// History and Input text; 13.5 pt = 150% of the 9 pt window font (owner 2026-11-06)
+	public string TextFontFamily { get; set; } = "Segoe UI";
+	public float TextFontSize { get; set; } = 13.5f;
 	public CompoundPrefs Compound { get; set; } = new();
 }
 
@@ -154,6 +158,14 @@ internal static class SettingsStore
 		s.Window ??= new WindowPlacement();
 		s.Graph ??= new GraphPrefs();
 		s.Compound ??= new CompoundPrefs();
+		if (string.IsNullOrWhiteSpace(s.TextFontFamily))
+		{
+			s.TextFontFamily = defaults.TextFontFamily;
+		}
+		if (s.TextFontSize is < 6 or > 48 || float.IsNaN(s.TextFontSize))
+		{
+			s.TextFontSize = defaults.TextFontSize;
+		}
 		var c = s.Compound;
 		c.Principal ??= "";
 		c.Rate ??= "";

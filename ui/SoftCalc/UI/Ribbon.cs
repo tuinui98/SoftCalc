@@ -89,6 +89,34 @@ internal sealed class Ribbon : FlowLayoutPanel
 			}),
 			_onTop, Conversions));
 		ShowDecimals(null);
+		EqualizeHeights();
+	}
+
+	// Every group frame as tall as the tallest one (owner 2026-11-06)
+	private void EqualizeHeights()
+	{
+		var groups = Controls.OfType<TableLayoutPanel>().ToList();
+		foreach (var group in groups)
+		{
+			group.MinimumSize = Size.Empty;
+		}
+		int height = groups.Max(g => g.GetPreferredSize(Size.Empty).Height);
+		foreach (var group in groups)
+		{
+			group.MinimumSize = new Size(0, height);
+		}
+	}
+
+	protected override void OnHandleCreated(EventArgs e)
+	{
+		base.OnHandleCreated(e);
+		EqualizeHeights();    // sizes are final once the handles exist
+	}
+
+	protected override void OnDpiChangedAfterParent(EventArgs e)
+	{
+		base.OnDpiChangedAfterParent(e);
+		EqualizeHeights();
 	}
 
 	//==================================================================
@@ -185,8 +213,9 @@ internal sealed class Ribbon : FlowLayoutPanel
 			AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 1, RowCount = 2,
 			Margin = new Padding(2), BorderStyle = BorderStyle.FixedSingle, BackColor = SystemColors.Control,
 		};
-		box.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		box.RowStyles.Add(new RowStyle(SizeType.Percent, 100));    // spare height goes around the buttons
 		box.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));
+		strip.Anchor = AnchorStyles.Left;    // buttons centred vertically, captions on one line
 		box.Controls.Add(strip, 0, 0);
 		box.Controls.Add(label, 0, 1);
 		return box;
