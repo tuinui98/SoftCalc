@@ -82,6 +82,7 @@ internal sealed class AppSettings
 	public WindowPlacement Window { get; set; } = new();
 	public GraphPrefs Graph { get; set; } = new();
 	public bool AlwaysOnTop { get; set; }
+	public bool ShowRibbon { get; set; } = true;
 	public CompoundPrefs Compound { get; set; } = new();
 }
 

@@ -1,0 +1,31 @@
+Icons in this folder (and the program icon drawn from calculator.svg by
+tools/IconMaker) come from IconMCP, https://iconmcp.com/ , downloaded
+2026-11-06. Licence page: https://iconmcp.com/licence
+
+IconMCP licence: MIT
+
+Copyright (c) 2026 UI8
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Note from the IconMCP licence page: a few icons follow shapes from the
+open-source libraries Phosphor and Tabler (MIT) and Lucide (ISC); for those
+shapes their licences apply too. The page does not say which icons these
+are; if one of the icons here turns out to be one of them, add that
+library's licence text to this file.

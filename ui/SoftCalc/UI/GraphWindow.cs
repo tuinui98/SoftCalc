@@ -28,6 +28,7 @@ internal sealed class GraphWindow : Form
 		Size = new Size(760, 560);
 		StartPosition = FormStartPosition.CenterParent;
 		ShowInTaskbar = false;
+		Icon = SvgIcon.ProgramIcon();
 		_graph = new GraphPanel(session, settings, commands, openWindow: null) { Dock = DockStyle.Fill };
 
 		var split = new SplitContainer { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };

@@ -34,6 +34,9 @@ stdin/stdout:
   `%APPDATA%\SoftCalc\`, graph drawing, ECB rate fetch, engine
   watchdog/restart.
 Golden tests drive the engine directly, without the UI.
+Toolbar icons are IconMCP SVGs (MIT) in `ui/SoftCalc/Icons/` with their
+licence; `tools/IconMaker` regenerates `ui/SoftCalc/softcalc.ico`
+(`dotnet run --project tools/IconMaker -- ui/SoftCalc/softcalc.ico`).
 
 ## Commands
 Engine (run from `engine/`):

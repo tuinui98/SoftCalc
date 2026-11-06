@@ -52,6 +52,7 @@ internal sealed class CompoundWindow : Form
 		MinimumSize = new Size(560, 460);
 		StartPosition = FormStartPosition.CenterParent;
 		ShowInTaskbar = false;
+		Icon = SvgIcon.ProgramIcon();
 
 		var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
 		split.Panel1.Controls.Add(_chart);

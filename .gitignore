@@ -23,6 +23,8 @@ engine/dist/
 # .NET UI
 ui/**/bin/
 ui/**/obj/
+tools/**/bin/
+tools/**/obj/
 .vs/
 *.user
 *.egg-info/
