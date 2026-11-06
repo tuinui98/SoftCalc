@@ -55,7 +55,6 @@ internal sealed partial class MainForm : Form
 	private readonly ToolStripMenuItem _allDigitsItem = new("&All Digits");
 	private Ribbon _ribbon = null!;
 	private readonly Dictionary<int, ToolStripMenuItem> _textSizeItems = new();
-	private const float BaseTextSize = 9f;    // the window font; Text Size percentages scale it
 	private readonly RatesSource _rates;
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
 	private readonly Dictionary<string, Dictionary<object, ToolStripMenuItem>> _settingItems = new();
@@ -187,18 +186,20 @@ internal sealed partial class MainForm : Form
 	}
 
 	// History and Input font (owner 2026-11-06); the Input row grows with it
-	private void SetTextFont(string family, float size)
+	// History and Input font: base size from the Font dialog times the Text Size percentage
+	private void SetTextFont(string family, float baseSize, int percent)
 	{
 		_prefs.TextFontFamily = family;
-		_prefs.TextFontSize = size;
-		var font = new Font(family, size);
+		_prefs.TextFontBase = baseSize;
+		_prefs.TextScale = percent;
+		var font = new Font(family, baseSize * percent / 100f);
 		_history.Font = font;
 		_input.Font = font;
 		_hint.Font = new Font(font, FontStyle.Italic);
 		LayoutInputRow();
-		foreach (var (percent, item) in _textSizeItems)
+		foreach (var (step, item) in _textSizeItems)
 		{
-			item.Checked = Math.Abs(BaseTextSize * percent / 100f - size) < 0.05f;
+			item.Checked = step == percent;
 		}
 	}
 
@@ -235,12 +236,12 @@ internal sealed partial class MainForm : Form
 	{
 		using var dialog = new FontDialog
 		{
-			Font = _input.Font, ShowEffects = false, AllowVerticalFonts = false, FontMustExist = true,
+			Font = new Font(_input.Font.FontFamily, _prefs.TextFontBase), ShowEffects = false, AllowVerticalFonts = false, FontMustExist = true,
 			MinSize = 6, MaxSize = 48,
 		};
 		if (dialog.ShowDialog(this) == DialogResult.OK)
 		{
-			SetTextFont(dialog.Font.FontFamily.Name, dialog.Font.SizeInPoints);
+			SetTextFont(dialog.Font.FontFamily.Name, dialog.Font.SizeInPoints, 100);    // a chosen size is the new 100%
 		}
 	}
 
@@ -365,7 +366,7 @@ internal sealed partial class MainForm : Form
 		var textSize = new ToolStripMenuItem("Te&xt Size");
 		foreach (int percent in new[] { 100, 125, 150, 175, 200 })
 		{
-			var item = new ToolStripMenuItem($"{percent}%", null, (_, _) => SetTextFont(_prefs.TextFontFamily, BaseTextSize * percent / 100f));
+			var item = new ToolStripMenuItem($"{percent}%", null, (_, _) => SetTextFont(_prefs.TextFontFamily, _prefs.TextFontBase, percent));
 			_textSizeItems[percent] = item;
 			textSize.DropDownItems.Add(item);
 		}

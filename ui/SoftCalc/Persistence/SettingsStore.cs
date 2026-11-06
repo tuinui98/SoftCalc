@@ -86,9 +86,15 @@ internal sealed class AppSettings
 	public bool ShowHints { get; set; } = true;
 	public string Theme { get; set; } = "system";    // system, light or dark; applied at start
 
-	// History and Input text; 13.5 pt = 150% of the 9 pt window font (owner 2026-11-06)
+	// History and Input text: the Font dialog sets family and base size
+	// (= 100%), View > Text Size scales it (owner 2026-11-06)
 	public string TextFontFamily { get; set; } = "Segoe UI";
-	public float TextFontSize { get; set; } = 13.5f;
+	public float TextFontBase { get; set; } = 9f;
+	public int TextScale { get; set; } = 150;
+
+	// Before text_scale: one absolute size; read as base at 100%
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public float? TextFontSize { get; set; }
 	public CompoundPrefs Compound { get; set; } = new();
 }
 
@@ -168,9 +174,17 @@ internal static class SettingsStore
 		{
 			s.TextFontFamily = defaults.TextFontFamily;
 		}
-		if (s.TextFontSize is < 6 or > 48 || float.IsNaN(s.TextFontSize))
+		if (s.TextFontSize is { } legacy)
 		{
-			s.TextFontSize = defaults.TextFontSize;
+			(s.TextFontBase, s.TextScale, s.TextFontSize) = (legacy, 100, null);
+		}
+		if (s.TextFontBase is < 6 or > 48 || float.IsNaN(s.TextFontBase))
+		{
+			s.TextFontBase = defaults.TextFontBase;
+		}
+		if (s.TextScale is not (100 or 125 or 150 or 175 or 200))
+		{
+			s.TextScale = defaults.TextScale;
 		}
 		var c = s.Compound;
 		c.Principal ??= "";
