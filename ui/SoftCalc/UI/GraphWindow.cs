@@ -16,7 +16,7 @@ internal sealed class GraphWindow : Form
 	private readonly GraphPanel _graph;
 	private readonly Label[] _labels = new Label[6];
 	private readonly TextBox[] _boxes = new TextBox[6];
-	private readonly Label _rangeError = new() { Dock = DockStyle.Fill, ForeColor = Color.Firebrick, AutoSize = false, Height = 40 };
+	private readonly Label _rangeError = new() { Dock = DockStyle.Fill, ForeColor = Theme.Error, AutoSize = false, Height = 40 };
 	private readonly ToolStripMenuItem _xyItem = new("&XY Graph");
 	private readonly ToolStripMenuItem _polarItem = new("&Polar Graph");
 	private readonly ToolStripMenuItem _gridItem = new("&Show Grid");

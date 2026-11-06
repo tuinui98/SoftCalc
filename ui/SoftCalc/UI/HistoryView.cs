@@ -163,7 +163,7 @@ internal sealed class HistoryView : ListBox
 					flags | TextFormatFlags.Right | TextFormatFlags.EndEllipsis);
 			}
 		}
-		Color resultColor = entry.Kind == "error" && !selected ? Color.Firebrick : main;
+		Color resultColor = entry.Kind == "error" && !selected ? Theme.Error : main;
 		int resultWidth = TextRenderer.MeasureText(e.Graphics, entry.Text, Font, Size.Empty, flags).Width;
 		TextRenderer.DrawText(e.Graphics, entry.Text, Font, line2, resultColor, flags | TextFormatFlags.EndEllipsis);
 		if (entry.Note.Length > 0)

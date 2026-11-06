@@ -28,7 +28,7 @@ internal sealed class CompoundWindow : Form
 	private readonly TextBox _futureValue = Output();
 	private readonly TextBox _totalContributions = Output();
 	private readonly TextBox _totalInterest = Output();
-	private readonly Label _generalError = new() { AutoSize = true, ForeColor = Color.Firebrick };
+	private readonly Label _generalError = new() { AutoSize = true, ForeColor = Theme.Error };
 	private readonly CompoundChart _chart = new() { Dock = DockStyle.Fill };
 	private readonly DataGridView _table = new()
 	{
@@ -76,6 +76,14 @@ internal sealed class CompoundWindow : Form
 			});
 		}
 		_table.Columns[0].FillWeight = 40;
+		if (Theme.IsDark)
+		{
+			// visual-style headers stay white in dark mode; draw them flat in theme colours
+			_table.EnableHeadersVisualStyles = false;
+			_table.ColumnHeadersDefaultCellStyle.BackColor = SystemColors.Control;
+			_table.ColumnHeadersDefaultCellStyle.ForeColor = SystemColors.ControlText;
+			_table.ColumnHeadersDefaultCellStyle.SelectionBackColor = SystemColors.Control;
+		}
 		_table.CellValueNeeded += OnCellValueNeeded;
 
 		LoadPrefs();
@@ -130,7 +138,7 @@ internal sealed class CompoundWindow : Form
 	private void AddField(TableLayoutPanel grid, int row, string field, string label)
 	{
 		var box = new TextBox { Dock = DockStyle.Fill };
-		var error = new Label { AutoSize = true, ForeColor = Color.Firebrick, Anchor = AnchorStyles.Left };
+		var error = new Label { AutoSize = true, ForeColor = Theme.Error, Anchor = AnchorStyles.Left };
 		box.TextChanged += (_, _) => Changed();
 		_boxes[field] = box;
 		_errors[field] = error;

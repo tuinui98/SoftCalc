@@ -11,7 +11,7 @@ internal sealed class DefinitionDialog : Form
 	private readonly TextBox _body = new() { Dock = DockStyle.Fill };
 	private readonly Label _error = new()
 	{
-		Dock = DockStyle.Fill, ForeColor = Color.Firebrick, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft,
+		Dock = DockStyle.Fill, ForeColor = Theme.Error, AutoEllipsis = true, TextAlign = ContentAlignment.MiddleLeft,
 	};
 	private readonly Func<string, Task<string?>> _submit;
 	private readonly string _head;

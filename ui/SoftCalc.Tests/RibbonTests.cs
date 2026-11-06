@@ -82,4 +82,23 @@ public sealed class RibbonTests
 			File.Delete(path);
 		}
 	}
+
+	[Fact]
+	public void ThemeRoundTripsAndFallsBack()
+	{
+		string path = Path.Combine(Path.GetTempPath(), "softcalc-theme-" + Guid.NewGuid().ToString("N") + ".json");
+		try
+		{
+			SettingsStore.Save(path, new AppSettings { Theme = "dark" });
+			Assert.Equal("dark", SettingsStore.Load(path).Settings.Theme);
+			File.WriteAllText(path, "{}");
+			Assert.Equal("system", SettingsStore.Load(path).Settings.Theme);    // older files: follow Windows
+			File.WriteAllText(path, "{\"theme\":\"purple\"}");
+			Assert.Equal("system", SettingsStore.Load(path).Settings.Theme);
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
 }
