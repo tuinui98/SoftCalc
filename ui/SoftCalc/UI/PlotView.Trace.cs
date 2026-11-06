@@ -63,7 +63,7 @@ internal sealed partial class PlotView
 	{
 		string? function = _settings.Function;
 		var screen = PlotArea();
-		if (function == null || !screen.Contains(at))
+		if (function == null || !_settings.IsShown(function) || !screen.Contains(at))    // trace the selected line
 		{
 			return null;
 		}
@@ -159,7 +159,7 @@ internal sealed partial class PlotView
 				g.DrawLine(guide, point.X, screen.Top, point.X, screen.Bottom);
 			}
 		}
-		using (var fill = new SolidBrush(SystemColors.Highlight))
+		using (var fill = new SolidBrush(Theme.Series(_settings.ColourIndex(trace.Function))))
 		using (var ring = new Pen(SystemColors.Window, 1.5f))
 		{
 			g.FillEllipse(fill, point.X - 4, point.Y - 4, 8, 8);

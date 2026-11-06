@@ -170,6 +170,8 @@ internal sealed partial class MainForm
 		s.Mode = g.Mode == "polar" ? GraphMode.Polar : GraphMode.XY;
 		s.ShowGrid = g.ShowGrid;
 		s.Function = g.Function;
+		s.Shown.Clear();
+		s.Shown.AddRange(g.Shown ?? (g.Function != null ? new List<string> { g.Function } : new List<string>()));
 		(s.MinX, s.MaxX, s.GridX, s.MinY, s.MaxY, s.GridY) = (g.MinX, g.MaxX, g.GridX, g.MinY, g.MaxY, g.GridY);
 		(s.MinT, s.MaxT, s.MaxR, s.GridR) = (g.MinT, g.MaxT, g.MaxR, g.GridR);
 	}
@@ -179,7 +181,7 @@ internal sealed partial class MainForm
 		var s = _graphSettings;
 		return new GraphPrefs
 		{
-			Mode = s.Mode == GraphMode.Polar ? "polar" : "xy", ShowGrid = s.ShowGrid, Function = s.Function,
+			Mode = s.Mode == GraphMode.Polar ? "polar" : "xy", ShowGrid = s.ShowGrid, Function = s.Function, Shown = s.Shown.ToList(),
 			MinX = s.MinX, MaxX = s.MaxX, GridX = s.GridX, MinY = s.MinY, MaxY = s.MaxY, GridY = s.GridY,
 			MinT = s.MinT, MaxT = s.MaxT, MaxR = s.MaxR, GridR = s.GridR,
 		};
