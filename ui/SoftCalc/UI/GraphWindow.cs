@@ -20,11 +20,11 @@ internal sealed class GraphWindow : Form
 	private readonly ToolStripMenuItem _xyItem = new("&XY Graph");
 	private readonly ToolStripMenuItem _polarItem = new("&Polar Graph");
 	private readonly ToolStripMenuItem _gridItem = new("&Show Grid");
-	private readonly ToolStripMenuItem _traceItem = new("&Trace") { Checked = true };
+	private readonly ToolStripMenuItem _traceItem = new("&Trace");
 	private readonly ToolStripButton _xyButton = new("XY") { ToolTipText = "XY graph" };
 	private readonly ToolStripButton _polarButton = new("Polar") { ToolTipText = "Polar graph" };
 	private readonly ToolStripButton _gridButton = new("Grid") { ToolTipText = "Show grid" };
-	private readonly ToolStripButton _traceButton = new("Trace") { Checked = true, ToolTipText = "Dot and value on the selected line" };
+	private readonly ToolStripButton _traceButton = new("Trace") { ToolTipText = "Dot and value on the selected line" };
 	private readonly Label _status = new()
 	{
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
@@ -121,8 +121,8 @@ internal sealed class GraphWindow : Form
 
 	private void SetTrace(bool on)
 	{
-		_traceItem.Checked = _traceButton.Checked = on;
-		_graph.Plot.TraceEnabled = on;
+		_settings.Trace = on;
+		_settings.NotifyChanged();    // ShowRange updates the menu item and button
 	}
 
 	private Control BuildRangePanel()
@@ -178,6 +178,7 @@ internal sealed class GraphWindow : Form
 		_xyButton.Checked = !polar;
 		_polarButton.Checked = polar;
 		_gridButton.Checked = _settings.ShowGrid;
+		_traceItem.Checked = _traceButton.Checked = _settings.Trace;
 		_rangeError.Text = "";
 	}
 

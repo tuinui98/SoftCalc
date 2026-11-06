@@ -45,18 +45,25 @@ internal sealed partial class PlotView : Control
 			_debounce.Stop();
 			await RefreshPointsAsync();
 		};
-		EventHandler onChanged = (_, _) => RequestRefresh();
+		EventHandler onChanged = (_, _) =>
+		{
+			Invalidate();    // redraw the cached lines in the new range at once (drag, zoom)
+			RequestRefresh();
+		};
 		_settings.Changed += onChanged;
 		Disposed += (_, _) => _settings.Changed -= onChanged;    // the settings outlive a closed Graph window
 		Resize += (_, _) => RequestRefresh();
 		Disposed += (_, _) => _debounce.Dispose();
 	}
 
-	// Coalesces bursts (resizing, typing a range) into one engine request
+	// At most one engine request per interval during a burst (resizing,
+	// dragging), so a drag keeps fetching the newly shown part
 	public void RequestRefresh()
 	{
-		_debounce.Stop();
-		_debounce.Start();
+		if (!_debounce.Enabled)
+		{
+			_debounce.Start();
+		}
 	}
 
 	private async Task RefreshPointsAsync()

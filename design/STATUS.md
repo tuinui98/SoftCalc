@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-06 after M8. Everything below is committed on `main` and
+Updated 2026-11-07 (after M8, graph work and owner tweaks). Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 Open work is listed in `design/TODO.md`.
@@ -33,7 +33,18 @@ at the caret, Use Expression / Insert Result in its context menu; Input
 context menu with Clear Input; ribbon (B3) with decimals, Clear History
 and a Conversions drop-down; program icon.
 
-Tests: engine `pytest` 334 passed; UI `dotnet test` 165 passed.
+2026-11-06/07, on `main` (no tag), details in `spec/extensions.md`:
+Input hint line; View > Theme System/Light/Dark (WinForms colour mode,
+restart on change); Text Size scales the Font dialog's size; Graph
+window G1-G3 (`design/graph_plan.md`): axis numbers, coordinates, wheel
+zoom, drag pan, keys, Fit, trace with full-precision `value_at`,
+several functions with colours and legend, sidebar Y fitted; Graph
+toolbar, narrower Range panel, stronger grid; Advanced View grows the
+window to the left; Functions / Variables editor (list + Name /
+Parameters / Definition fields, Apply, rename) replacing the one-line
+Add/Edit dialogs; Trace setting saved.
+
+Tests: engine `pytest` 335 passed; UI `dotnet test` 196 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
@@ -80,12 +91,19 @@ Tests: engine `pytest` 334 passed; UI `dotnet test` 165 passed.
   beside it, and the .NET 10 Desktop Runtime installed. The engine exe in
   engine/dist is from 2026-10-27 and lacks everything after M4.
 
-## Open items to raise with the owner
-- Graph interface improvements: noted in `spec/ideas.md`, to discuss.
-- Dialog ideas (separate name/params fields, list in dialog):
-  `spec/ideas.md`, after the clone.
-- Error lines in History are red; the owner did not ask for that and
-  may want it removed.
+## Open items
+- M9 packaging when the owner deploys (M9 notes above; four questions
+  to confirm then: self-contained, copying %APPDATA% data, version
+  1.0.0, About under File).
+- Owner decisions 2026-11-07: red error lines stay; the sidebar graph
+  always fits Y; Samples box colour and the light Font dialog in dark
+  mode are fine.
+- One report (2026-11-07) of graph lines vanishing on view switches
+  could not be reproduced; the owner said to skip it. A double-click
+  toggle in the list was fixed as a likely cause.
+- UI automation note: UIA calls into a SoftCalc modal dialog can hang;
+  drive dialogs with window messages (see the editor check pattern:
+  WM_SETTEXT on EDIT children, BM_CLICK on buttons).
 
 ## How to resume
 - Read `CLAUDE.md` (commands, architecture, clean-room rule, C#

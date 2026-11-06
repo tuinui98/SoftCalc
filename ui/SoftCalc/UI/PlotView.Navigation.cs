@@ -206,6 +206,7 @@ internal sealed partial class PlotView
 		if (_dragFrom is { } from)
 		{
 			PanFrom(_dragWorld, e.X - from.X, e.Y - from.Y);
+			Update();    // paint now: a stream of mouse moves would hold back WM_PAINT
 		}
 		var world = _settings.View;
 		var screen = PlotArea();

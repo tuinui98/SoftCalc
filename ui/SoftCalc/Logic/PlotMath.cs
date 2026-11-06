@@ -23,6 +23,7 @@ internal sealed class GraphSettings
 {
 	public GraphMode Mode { get; set; } = GraphMode.XY;
 	public bool ShowGrid { get; set; } = true;
+	public bool Trace { get; set; } = true;    // Graph window trace (G2), saved (owner 2026-11-07)
 	// Selected function (Edit, Delete, trace); Shown: every function drawn (G3)
 	public string? Function { get; set; }
 	public List<string> Shown { get; } = new();

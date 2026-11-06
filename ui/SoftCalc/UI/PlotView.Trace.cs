@@ -28,8 +28,7 @@ internal sealed partial class PlotView
 	private Point _downAt;
 	private TracePoint? _menuTrace;
 
-	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-	public bool TraceEnabled { get; set; } = true;
+	private bool TraceEnabled => _settings.Trace;
 
 	public TracePoint? Trace { get; private set; }
 
@@ -141,7 +140,7 @@ internal sealed partial class PlotView
 
 	private void DrawTrace(Graphics g, WorldRect world, RectangleF screen)
 	{
-		if (Trace is not { Value: { } v } trace || trace.Function != _settings.Function)
+		if (!TraceEnabled || Trace is not { Value: { } v } trace || trace.Function != _settings.Function)
 		{
 			return;
 		}
