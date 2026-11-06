@@ -467,6 +467,29 @@ class Engine:
             return [float(value * mpmath.cos(t)), float(value * mpmath.sin(t))]
         return [float(t), float(value)]
 
+    def value_at(self, name, t):
+        """Full-precision value of a one-parameter function at t (graph trace, G2).
+
+        Returns (text, float) formatted like a result, or (None, None)
+        where the function is undefined or not real.
+        """
+        fn = self.functions.get(name.lower())
+        if fn is None or len(fn.params) != 1:
+            raise CalcError(f"'{name}' is not a one-parameter function")
+        with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
+            builtins = Functions(self.settings.angle)
+            try:
+                value = self.call(fn.name, [mpmath.mpf(t)], builtins, 0)
+            except CalcError:
+                return None, None
+            if isinstance(value, mpmath.mpc):
+                if abs(value.imag) > abs(value) * mpmath.mpf(10) ** -10:
+                    return None, None
+                value = value.real
+            if not isinstance(value, mpmath.mpf) or mpmath.isinf(value) or mpmath.isnan(value):
+                return None, None
+            return self.format_value(value), float(value)
+
     #------------------------------------------------------------------
     #  .pcf definitions text (SPEC 8)
     #------------------------------------------------------------------

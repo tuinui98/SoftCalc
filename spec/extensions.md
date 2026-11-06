@@ -300,3 +300,9 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
 - Fit Y: 2nd-98th percentile of the plotted values plus 5% margin, so
   poles (tan) do not flatten the view. Polar: no panning; zoom and fit
   change R Max only (owner).
+- Trace (G2): a dot on the curve at the mouse's x (polar: its angle)
+  with a short value label; the status line shows `g(2.35) = <full
+  precision>`. The x is rounded to what is shown, and the engine's
+  `value_at` computes the value there (does not touch answer/$n).
+  Click copies the full value; right-click: Copy Value, Insert Value in
+  Input. View > Trace turns it off.

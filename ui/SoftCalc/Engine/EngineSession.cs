@@ -231,6 +231,13 @@ internal sealed class EngineSession : IDisposable
 		return points;
 	}
 
+	// Graph trace: full-precision text and a float; nulls where undefined (G2)
+	public async Task<(string? Text, double? Value)> ValueAtAsync(string function, double x)
+	{
+		var reply = await GuardedAsync("value_at", new JsonObject { ["function"] = function, ["x"] = x });
+		return ((string?)reply["text"], (double?)reply["value"]);
+	}
+
 	//==================================================================
 	//  Plumbing
 	//==================================================================

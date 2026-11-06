@@ -100,6 +100,13 @@ function is undefined or complex (the UI breaks the line there).
   point = (r cos theta, r sin theta), theta in radians.
 - Only one-parameter user functions; computed at low precision.
 
+### `value_at`
+`{"function": "g", "x": 1.5}` -> `{"text": "...", "value": 1.23}`:
+the function's value at x (polar: at theta) at full precision,
+formatted like a result, plus a float for drawing; both `null` where
+it is undefined or not real. Graph trace (G2); does not change
+`answer` or `$n`.
+
 ### `pcf_export`
 `{}` -> `{"text": "<file content>"}`. The UI writes it as UTF-16 LE
 without BOM (SPEC 8).

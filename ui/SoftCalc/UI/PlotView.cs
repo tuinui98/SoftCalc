@@ -33,6 +33,7 @@ internal sealed partial class PlotView : Control
 			SetStyle(ControlStyles.Selectable, true);
 			TabStop = true;
 			Cursor = Cursors.Cross;
+			ContextMenuStrip = BuildTraceMenu();
 		}
 		DoubleBuffered = true;
 		ResizeRedraw = true;
@@ -141,6 +142,10 @@ internal sealed partial class PlotView : Control
 		{
 			TextRenderer.DrawText(g, _message, Font, ClientRectangle, SystemColors.GrayText,
 				TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak);
+		}
+		if (_interactive)
+		{
+			DrawTrace(g, world, screen);
 		}
 		if (_interactive && Focused)
 		{

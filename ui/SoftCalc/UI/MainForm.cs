@@ -162,7 +162,11 @@ internal sealed partial class MainForm : Form
 	{
 		if (_graphWindow == null || _graphWindow.IsDisposed)
 		{
-			_graphWindow = new GraphWindow(_session, _graphSettings, _commands);
+			_graphWindow = new GraphWindow(_session, _graphSettings, _commands, value =>
+			{
+				Activate();
+				InsertValue(value);
+			});
 			_graphWindow.UpdateFunctions(_state.Functions);
 			_graphWindow.Show(this);
 		}
@@ -723,8 +727,14 @@ internal sealed partial class MainForm : Form
 		{
 			return;
 		}
+		InsertValue(entry.Text);
+	}
+
+	// A result text into the Input at the caret (History Shift+click, Graph trace)
+	private void InsertValue(string value)
+	{
 		bool rpn = (bool?)_session.Settings["rpn"] == true;
-		var (text, caret) = InputRules.InsertResult(_input.Text, _input.SelectionStart, _input.SelectionLength, entry.Text, rpn);
+		var (text, caret) = InputRules.InsertResult(_input.Text, _input.SelectionStart, _input.SelectionLength, value, rpn);
 		_input.Text = text;
 		_input.SelectionStart = caret;
 		_input.Focus();

@@ -25,10 +25,11 @@ internal sealed class GraphWindow : Form
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
 		ForeColor = SystemColors.GrayText, Padding = new Padding(4, 0, 0, 0),
 	};
-	private const string NavigationHelp = "Wheel: zoom (Shift: X, Ctrl: Y)   Drag: move   Home: reset   F: fit Y";
-	private const string PolarHelp = "Wheel or + -: zoom R Max   Home: reset   F: fit R";
+	private const string NavigationHelp = "Wheel: zoom (Shift: X, Ctrl: Y)   Drag: move   Click: copy value   Home: reset   F: fit Y";
+	private (double X, double Y)? _lastPointer;
+	private const string PolarHelp ="Wheel or + -: zoom R Max   Home: reset   F: fit R";
 
-	public GraphWindow(EngineSession session, GraphSettings settings, DefinitionCommands commands)
+	public GraphWindow(EngineSession session, GraphSettings settings, DefinitionCommands commands, Action<string> insertValue)
 	{
 		_settings = settings;
 		Text = "Graph";
@@ -43,6 +44,9 @@ internal sealed class GraphWindow : Form
 		split.Panel2.Controls.Add(_graph);
 		split.Panel2.Controls.Add(_status);    // docks first, at the bottom
 		_graph.Plot.PointerMoved += (_, point) => ShowPointer(point);
+		_graph.Plot.TraceChanged += (_, _) => ShowPointer(_lastPointer);
+		_graph.Plot.InsertValue = insertValue;
+		_graph.Plot.Notice += (_, text) => _status.Text = text;
 		ShowPointer(null);
 		Controls.Add(split);
 		Controls.Add(BuildMenu());
@@ -75,9 +79,15 @@ internal sealed class GraphWindow : Form
 		var reset = new ToolStripMenuItem("&Reset Range", null, (_, _) => _graph.Plot.ResetRange()) { ShortcutKeyDisplayString = "Home" };
 		var zoomIn = new ToolStripMenuItem("Zoom &In", null, (_, _) => _graph.Plot.ZoomCenter(0.8)) { ShortcutKeyDisplayString = "+" };
 		var zoomOut = new ToolStripMenuItem("Zoom &Out", null, (_, _) => _graph.Plot.ZoomCenter(1 / 0.8)) { ShortcutKeyDisplayString = "-" };
+		var trace = new ToolStripMenuItem("&Trace") { Checked = true };
+		trace.Click += (_, _) =>
+		{
+			trace.Checked = !trace.Checked;
+			_graph.Plot.TraceEnabled = trace.Checked;
+		};
 		view.DropDownItems.AddRange(new ToolStripItem[]
 		{
-			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, new ToolStripSeparator(), zoomIn, zoomOut, fit, reset,
+			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, trace, new ToolStripSeparator(), zoomIn, zoomOut, fit, reset,
 		});
 		menu.Items.AddRange(new ToolStripItem[] { file, view });
 		MainMenuStrip = menu;
@@ -174,6 +184,14 @@ internal sealed class GraphWindow : Form
 	// Coordinates under the mouse, rounded to the pixel size; help text otherwise
 	private void ShowPointer((double X, double Y)? point)
 	{
+		_lastPointer = point;
+		if (point != null && _graph.Plot.Trace is { } trace)
+		{
+			// the traced value, full precision: g(2.35) = 0.9977...
+			string at = PlotMath.FormatTick(trace.T, trace.Step);
+			_status.Text = $"{_settings.Function}({at}) = {trace.Text ?? "undefined"}";
+			return;
+		}
 		if (point is not { } p)
 		{
 			_status.Text = _settings.Mode == GraphMode.Polar ? PolarHelp : NavigationHelp;
