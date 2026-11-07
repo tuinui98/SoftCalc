@@ -1,8 +1,11 @@
 // HistoryStore.cs - history.jsonl: load at start, merge and write at close (E12)
 //
-// One JSON object per line: an entry, or a {"cleared_at": ...} mark.
-// Merge keeps every window's entries: union by id, drop entries older
-// than the newest cleared mark, sort by time, keep the newest `cap`.
+// One JSON object per line: an entry, a {"cleared_at": ...} mark, or a
+// {"deleted": id, "time": ...} mark for one entry deleted from History.
+// Merge keeps every window's entries: union by id, drop deleted ids and
+// entries older than the newest cleared mark, sort by time, keep the
+// newest `cap`. A deleted mark stays until a clear covers its entry, so
+// another window that still shows the entry cannot bring it back.
 
 using System.Text;
 using System.Text.Json;
@@ -13,7 +16,12 @@ namespace SoftCalc.Persistence;
 internal sealed record StoredEntry(string Id, DateTime Time, string Kind, string Input, string DisplayInput, string Text,
 	string Note = "");
 
-internal sealed record HistoryFile(IReadOnlyList<StoredEntry> Entries, DateTime? ClearedAt);
+// Deleted: entry id -> entry time, for the deleted marks
+internal sealed record HistoryFile(IReadOnlyList<StoredEntry> Entries, DateTime? ClearedAt,
+	IReadOnlyDictionary<string, DateTime>? Deleted = null)
+{
+	public IReadOnlyDictionary<string, DateTime> DeletedIds => Deleted ?? new Dictionary<string, DateTime>();
+}
 
 internal static class HistoryStore
 {
@@ -28,6 +36,7 @@ internal static class HistoryStore
 	public static HistoryFile Parse(IEnumerable<string> lines)
 	{
 		var entries = new List<StoredEntry>();
+		var deleted = new Dictionary<string, DateTime>();
 		DateTime? clearedAt = null;
 		foreach (string line in lines)
 		{
@@ -44,6 +53,11 @@ internal static class HistoryStore
 					clearedAt = clearedAt == null || time > clearedAt ? time : clearedAt;
 					continue;
 				}
+				if (doc.RootElement.TryGetProperty("deleted", out var gone))
+				{
+					deleted[gone.GetString() ?? ""] = doc.RootElement.GetProperty("time").GetDateTime();
+					continue;
+				}
 				var entry = doc.RootElement.Deserialize<StoredEntry>(Options);
 				if (entry != null && !string.IsNullOrEmpty(entry.Id))
 				{
@@ -55,7 +69,7 @@ internal static class HistoryStore
 				// a damaged line is skipped; the rest still loads
 			}
 		}
-		return new HistoryFile(entries, clearedAt);
+		return new HistoryFile(entries, clearedAt, deleted);
 	}
 
 	public static HistoryFile Load(string path)
@@ -69,9 +83,18 @@ internal static class HistoryStore
 		return Merge(file, Array.Empty<StoredEntry>(), null, cap).Entries;
 	}
 
-	public static HistoryFile Merge(HistoryFile onDisk, IEnumerable<StoredEntry> mine, DateTime? myClearedAt, int cap)
+	public static HistoryFile Merge(HistoryFile onDisk, IEnumerable<StoredEntry> mine, DateTime? myClearedAt, int cap,
+		IReadOnlyDictionary<string, DateTime>? myDeleted = null)
 	{
 		DateTime? cleared = Max(onDisk.ClearedAt, myClearedAt);
+		var deleted = new Dictionary<string, DateTime>();
+		foreach (var (id, time) in onDisk.DeletedIds.Concat(myDeleted ?? new Dictionary<string, DateTime>()))
+		{
+			if (cleared == null || time > cleared)    // a clear already drops older entries
+			{
+				deleted[id] = time;
+			}
+		}
 		var byId = new Dictionary<string, StoredEntry>();
 		foreach (var entry in onDisk.Entries.Concat(mine))
 		{
@@ -79,6 +102,7 @@ internal static class HistoryStore
 		}
 		var kept = byId.Values
 			.Where(e => cleared == null || e.Time > cleared)
+			.Where(e => !deleted.ContainsKey(e.Id))
 			.OrderBy(e => e.Time)
 			.ThenBy(e => e.Id, StringComparer.Ordinal)
 			.ToList();
@@ -86,7 +110,7 @@ internal static class HistoryStore
 		{
 			kept = kept.Skip(kept.Count - cap).ToList();
 		}
-		return new HistoryFile(kept, cleared);
+		return new HistoryFile(kept, cleared, deleted);
 	}
 
 	public static string Serialize(HistoryFile file)
@@ -96,6 +120,10 @@ internal static class HistoryStore
 		{
 			text.Append(JsonSerializer.Serialize(new { cleared_at = file.ClearedAt })).Append('\n');
 		}
+		foreach (var (id, time) in file.DeletedIds.OrderBy(d => d.Value))
+		{
+			text.Append(JsonSerializer.Serialize(new { deleted = id, time })).Append('\n');
+		}
 		foreach (var entry in file.Entries)
 		{
 			text.Append(JsonSerializer.Serialize(entry, Options)).Append('\n');
@@ -104,11 +132,12 @@ internal static class HistoryStore
 	}
 
 	// Close-time write: re-read under the lock so other windows' entries survive
-	public static void MergeAndSave(DataFolder folder, IEnumerable<StoredEntry> mine, DateTime? myClearedAt, int cap)
+	public static void MergeAndSave(DataFolder folder, IEnumerable<StoredEntry> mine, DateTime? myClearedAt, int cap,
+		IReadOnlyDictionary<string, DateTime>? myDeleted = null)
 	{
 		folder.WithLock(() =>
 		{
-			var merged = Merge(Load(folder.HistoryPath), mine, myClearedAt, cap);
+			var merged = Merge(Load(folder.HistoryPath), mine, myClearedAt, cap, myDeleted);
 			DataFolder.WriteAtomic(folder.HistoryPath, Serialize(merged));
 		});
 	}

@@ -47,7 +47,7 @@ Recorded at the owner's request after M8. Nothing here is started.
     number converts (`-0x1F` shows `-31`, `2*-0x1F` shows `2*-31`, no
     parentheses); an RPN negative literal converts as one token.
     Output stays sign and magnitude (`-0xFF`).
-- [ ] History context menu (owner 2026-11-07): add Clear History and
+- [x] History context menu (owner 2026-11-07, done): add Clear History and
       Delete (removes the selected entry). No confirmation for either;
       Delete removes one line at a time; `$n` numbering follows the
       deletion (delete the `$2` line and the old `$3` becomes `$2`).
@@ -70,7 +70,7 @@ Recorded at the owner's request after M8. Nothing here is started.
     - Existing mismatch: a text-only result (e.g. a long date text)
       counts in `$n` while running but is skipped by
       `restore_results` after a restart, so numbers can shift then.
-      Fix together.
+      Fixed together (restore keeps them as text).
 - [ ] Release both builds: the self-contained exe (58 MB) and a
       framework-dependent one (9.3 MB, needs the .NET 10 Desktop
       Runtime x64) as `SoftCalc-net10.exe`. `build/publish.ps1` builds

@@ -352,3 +352,11 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   sign. Imaginary literals (`2i`) are decimal only and stay. The
   Input hint line shows the literal at the caret the same way
   (`255 = 0xFF`), through the engine's `literal` op.
+- History context menu: Delete (the selected line) and Clear History,
+  both without asking. Deleting a result line removes its `$n` and
+  later references renumber; `answer` stays `$1`, and keeps its value
+  when the last result goes (as Clear History does). history.jsonl
+  keeps a `{"deleted": id, "time": ...}` mark so the line does not
+  come back from the file or another window; a later clear drops the
+  marks it covers. After a restart, text-only results (long dates)
+  keep their `$n` place, so numbering matches the running session.

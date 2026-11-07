@@ -75,6 +75,7 @@ class Dispatcher:
             "plot": self.op_plot,
             "value_at": self.op_value_at,
             "literal": self.op_literal,
+            "delete_result": self.op_delete_result,
             "pcf_export": lambda request: {"text": self.engine.export_pcf()},
             "pcf_import": self.op_pcf_import,
             "restore_results": self.op_restore_results,
@@ -168,6 +169,10 @@ class Dispatcher:
 
     def op_literal(self, request):
         return {"text": self.engine.literal_hint(argument(request, "text", str))}
+
+    def op_delete_result(self, request):
+        self.engine.delete_result(argument(request, "n", int))
+        return {}
 
     def op_restore_results(self, request):
         texts = argument(request, "texts", list)

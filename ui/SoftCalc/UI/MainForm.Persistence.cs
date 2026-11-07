@@ -20,6 +20,7 @@ internal sealed partial class MainForm
 	private readonly List<HistoryEntry> _sessionEntries = new();
 	private readonly DateTime _processStart = Process.GetCurrentProcess().StartTime;
 	private DateTime? _clearedAt;
+	private readonly Dictionary<string, DateTime> _deletedIds = new();    // History lines deleted here
 	private int _sequence;
 	private bool _engineReady;
 
@@ -123,7 +124,7 @@ internal sealed partial class MainForm
 		{
 			CaptureSettings();
 			_folder.WithLock(() => SettingsStore.Save(_folder.SettingsPath, _prefs));
-			HistoryStore.MergeAndSave(_folder, _sessionEntries.Select(ToStored), _clearedAt, _prefs.HistoryCap);
+			HistoryStore.MergeAndSave(_folder, _sessionEntries.Select(ToStored), _clearedAt, _prefs.HistoryCap, _deletedIds);
 			if (_engineReady)
 			{
 				_folder.WithLock(() => PcfFile.Write(_folder.DefinitionsPath, _session.Definitions));

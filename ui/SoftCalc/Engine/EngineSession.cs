@@ -238,6 +238,12 @@ internal sealed class EngineSession : IDisposable
 		return ((string?)reply["text"], (double?)reply["value"]);
 	}
 
+	// Deleting a History result line removes `$n` (1 = newest) from the engine too
+	public async Task DeleteResultAsync(int n)
+	{
+		await GuardedAsync("delete_result", new JsonObject { ["n"] = n });
+	}
+
 	// One number literal in the output base for the hint line, or null (protocol `literal`)
 	public async Task<string?> LiteralAsync(string text)
 	{

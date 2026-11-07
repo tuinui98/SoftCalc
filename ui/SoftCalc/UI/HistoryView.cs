@@ -7,7 +7,8 @@
 // Click raises EntryClicked (recall the expression), Shift+click raises
 // ResultClicked (insert the result).
 // Ctrl+C copies the selected entry; the context menu also recalls,
-// inserts, and copies the result, the entry, or everything (E9).
+// inserts, and copies the result, the entry, or everything (E9), and
+// deletes the entry or clears History, without asking (owner 2026-11-07).
 
 using System.Text;
 
@@ -35,6 +36,8 @@ internal sealed class HistoryView : ListBox
 
 	public event EventHandler<HistoryEntry>? EntryClicked;
 	public event EventHandler<HistoryEntry>? ResultClicked;
+	public event EventHandler<HistoryEntry>? DeleteClicked;
+	public event EventHandler? ClearClicked;
 
 	public IReadOnlyList<HistoryEntry> Entries => _entries;
 
@@ -56,10 +59,19 @@ internal sealed class HistoryView : ListBox
 		var copyResult = new ToolStripMenuItem("Copy &Result", null, (_, _) => CopySelected(e => e.Text));
 		var copyEntry = new ToolStripMenuItem("Copy &Expression and Result", null, (_, _) => CopySelected(CopyText));
 		var copyAll = new ToolStripMenuItem("Copy &All", null, (_, _) => SetClipboard(AllText()));
+		var delete = new ToolStripMenuItem("&Delete", null, (_, _) =>
+		{
+			if (Selected is { } entry)
+			{
+				DeleteClicked?.Invoke(this, entry);
+			}
+		});
+		var clear = new ToolStripMenuItem("C&lear History", null, (_, _) => ClearClicked?.Invoke(this, EventArgs.Empty));
 		menu.Items.AddRange(new ToolStripItem[]
 		{
 			useExpression, insertResult, new ToolStripSeparator(),
 			copyResult, copyEntry, new ToolStripSeparator(), copyAll,
+			new ToolStripSeparator(), delete, clear,
 		});
 		menu.Opening += (_, _) =>
 		{
@@ -69,6 +81,8 @@ internal sealed class HistoryView : ListBox
 			copyResult.Enabled = entry;
 			copyEntry.Enabled = entry;
 			copyAll.Enabled = _entries.Any(e => e.Kind != "notice");
+			delete.Enabled = Selected != null;
+			clear.Enabled = _entries.Count > 0;
 		};
 		return menu;
 	}
@@ -104,6 +118,28 @@ internal sealed class HistoryView : ListBox
 		_entries.Add(entry);
 		Items.Add(entry);
 		TopIndex = Math.Max(0, Items.Count - 1);
+	}
+
+	// `$n` of a result entry: 1 for the newest result line, counting result lines only
+	public int ResultNumber(HistoryEntry entry)
+	{
+		int index = _entries.IndexOf(entry);
+		return index < 0 || entry.Kind != "result" ? 0 : _entries.Skip(index).Count(e => e.Kind == "result");
+	}
+
+	public void RemoveEntry(HistoryEntry entry)
+	{
+		int index = _entries.IndexOf(entry);
+		if (index < 0)
+		{
+			return;
+		}
+		_entries.RemoveAt(index);
+		Items.RemoveAt(index);
+		if (Items.Count > 0)
+		{
+			SelectedIndex = Math.Min(index, Items.Count - 1);
+		}
 	}
 
 	public void ClearEntries()
