@@ -18,10 +18,11 @@ from .errors import CalcError
 PROTOCOL_VERSION = 1
 SETTING_TYPES = {
     "precision": int, "angle": str, "base": str, "rpn": bool,
-    "decimals": (int, type(None)), "pad_zeros": bool,
+    "decimals": (int, type(None)), "pad_zeros": bool, "word_size": int,
 }
 SETTING_CHOICES = {
     "precision": (32, 64, 128, 512),
+    "word_size": (8, 16, 32, 64),
     "angle": ("rad", "deg", "grad"),
     "base": ("dec", "hex", "bin", "oct"),
 }
@@ -33,6 +34,7 @@ CATALOG = {
         "Log Functions": ["exp", "log10", "ln"],
         "Date Functions": ["epoch", "fromepoch", "longdate", "longtime", "longdatetime"],
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
+        "Two's Complement": ["twos", "signed"],
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
     "currencies": currency.CODES,

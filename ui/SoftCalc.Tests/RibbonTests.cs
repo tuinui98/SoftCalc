@@ -84,6 +84,25 @@ public sealed class RibbonTests
 	}
 
 	[Fact]
+	public void WordSizeRoundTripsAndFallsBack()
+	{
+		string path = Path.Combine(Path.GetTempPath(), "softcalc-word-" + Guid.NewGuid().ToString("N") + ".json");
+		try
+		{
+			SettingsStore.Save(path, new AppSettings { WordSize = 16 });
+			Assert.Equal(16, SettingsStore.Load(path).Settings.WordSize);
+			File.WriteAllText(path, "{\"word_size\": 12}");
+			Assert.Equal(32, SettingsStore.Load(path).Settings.WordSize);    // the menu offers 8/16/32/64
+			File.WriteAllText(path, "{}");
+			Assert.Equal(32, SettingsStore.Load(path).Settings.WordSize);    // older files
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
+
+	[Fact]
 	public void TextSizeIsBaseTimesScale()
 	{
 		string path = Path.Combine(Path.GetTempPath(), "softcalc-text-" + Guid.NewGuid().ToString("N") + ".json");
