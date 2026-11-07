@@ -58,8 +58,9 @@ Recorded at the owner's request after M8. Nothing here is started.
       would round them).
     - Only result lines are in the stack; deleting an error,
       assignment or definition line leaves `$n` as is.
-    - `answer` = `$1` today; to settle whether deleting the newest
-      result also moves `answer` back (Clear History keeps `answer`).
+    - Owner 2026-11-07: `answer` stays equal to `$1`; deleting the
+      newest result moves `answer` back to the one before. (Clear
+      History still keeps `answer`, SPEC 5.3.)
     - history.jsonl merges every window's entries by id at close, so
       a deleted entry needs a "deleted" mark or it comes back from the
       file or another window.
