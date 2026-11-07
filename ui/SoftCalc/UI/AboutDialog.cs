@@ -1,5 +1,8 @@
 // AboutDialog.cs - File > About SoftCalc: version, data folder, third-party notices (M9)
 //
+// A short note first; the notices box stays hidden until the link under
+// the data folder opens it (owner 2026-11-07).
+//
 // The notices (THIRD-PARTY-NOTICES.txt, written by tools/make_notices.py)
 // are embedded because the published exe carries .NET, Python, mpmath,
 // the PyInstaller bootloader and IconMCP icons, whose licences ask for
@@ -20,8 +23,7 @@ internal sealed class AboutDialog : Form
 		MinimizeBox = false;
 		MaximizeBox = false;
 		StartPosition = FormStartPosition.CenterParent;
-		ClientSize = new Size(560, 440);
-		MinimumSize = new Size(420, 320);
+		FormBorderStyle = FormBorderStyle.FixedDialog;
 
 		string version = Assembly.GetExecutingAssembly()
 			.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "?";
@@ -62,8 +64,12 @@ internal sealed class AboutDialog : Form
 		};
 		var noticeBox = new GroupBox { Text = "Third-party software", Dock = DockStyle.Fill, Padding = new Padding(8) };
 		noticeBox.Controls.Add(notices);
-		var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(12, 0, 12, 0) };
+		var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(12, 0, 12, 0), Visible = false };
 		body.Controls.Add(noticeBox);
+		var link = new LinkLabel { Text = "Show third-party licences", AutoSize = true, Location = new Point(12, 2) };
+		var linkRow = new Panel { Dock = DockStyle.Top, Height = link.PreferredHeight + 8 };
+		linkRow.Controls.Add(link);
+		link.LinkClicked += (_, _) => ShowNotices(body, linkRow);
 
 		var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, AutoSize = true, MinimumSize = new Size(80, 0) };
 		var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, FlowDirection = FlowDirection.RightToLeft, AutoSize = true, Padding = new Padding(8) };
@@ -78,8 +84,22 @@ internal sealed class AboutDialog : Form
 
 		Controls.Add(body);
 		Controls.Add(buttons);
+		Controls.Add(linkRow);
 		Controls.Add(data);
 		Controls.Add(heading);
+		ClientSize = new Size(480, heading.PreferredSize.Height + data.PreferredSize.Height
+			+ linkRow.Height + buttons.PreferredSize.Height);
+	}
+
+	// Opens the notices box once: the dialog grows and becomes resizable
+	private void ShowNotices(Panel body, Panel linkRow)
+	{
+		int height = ClientSize.Height - linkRow.Height;
+		linkRow.Visible = false;
+		FormBorderStyle = FormBorderStyle.Sizable;
+		MinimumSize = new Size(420, 320);
+		body.Visible = true;
+		ClientSize = new Size(Math.Max(ClientSize.Width, 560), height + 300);
 	}
 
 	internal static string Notices()
