@@ -71,7 +71,7 @@ Recorded at the owner's request after M8. Nothing here is started.
       counts in `$n` while running but is skipped by
       `restore_results` after a restart, so numbers can shift then.
       Fixed together (restore keeps them as text).
-- [ ] Release both builds: the self-contained exe (58 MB) and a
+- [x] Release both builds (publish done 2026-11-07, GitHub release waits): the self-contained exe (58 MB) and a
       framework-dependent one (9.3 MB, needs the .NET 10 Desktop
       Runtime x64) as `SoftCalc-net10.exe`. `build/publish.ps1` builds
       and smoke-runs both.

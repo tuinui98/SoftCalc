@@ -1,10 +1,12 @@
 #==================================================================
-#  publish.ps1 - Build the portable single-file dist\SoftCalc.exe (M9)
+#  publish.ps1 - Build the portable single-file exes in dist\ (M9)
 #==================================================================
 # 1. freezes the engine (build_engine.ps1, one folder) and runs the
 #    frozen-exe test; 2. zips it; 3. refreshes THIRD-PARTY-NOTICES.txt;
-# 4. publishes the UI self-contained, single file, compressed, with the
-#    engine zip embedded; 5. smoke-runs the exe from an empty folder.
+# 4. publishes the UI as single files with the engine zip embedded:
+#    SoftCalc.exe self-contained and compressed, SoftCalc-net10.exe
+#    needing the .NET 10 Desktop Runtime; 5. smoke-runs each exe from
+#    an empty folder.
 # Plan: design/m9_plan.md. Run from any folder:
 #   powershell -ExecutionPolicy Bypass -File build\publish.ps1
 
@@ -49,41 +51,63 @@ if ($LASTEXITCODE -ne 0) { throw "notices failed" }
 #  BLOCK 3 - Publish the UI
 #==================================================================
 if (Test-Path $dist) { Remove-Item -Recurse -Force $dist }
-& $dotnet publish (Join-Path $root "ui\SoftCalc\SoftCalc.csproj") -c Release -r win-x64 --self-contained true `
+$project = Join-Path $root "ui\SoftCalc\SoftCalc.csproj"
+# SoftCalc.exe carries the .NET runtime; SoftCalc-net10.exe needs the
+# .NET 10 Desktop Runtime (x64) installed and is about 9 MB (owner 2026-11-07)
+& $dotnet publish $project -c Release -r win-x64 --self-contained true `
 	-p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
 	-p:DebugType=none "-p:EngineZip=$zip" -o $dist --nologo -v quiet
-if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed" }
-$exe = Join-Path $dist "SoftCalc.exe"
-$extra = Get-ChildItem $dist | Where-Object { $_.Name -ne "SoftCalc.exe" }
-if ($extra) { throw "publish left more than SoftCalc.exe: $($extra.Name -join ', ')" }
-"published $exe ($([math]::Round((Get-Item $exe).Length / 1MB, 1)) MB)"
+if ($LASTEXITCODE -ne 0) { throw "dotnet publish (self-contained) failed" }
+$shared = Join-Path ([IO.Path]::GetTempPath()) ("softcalc-fd-" + [guid]::NewGuid().ToString("N"))
+& $dotnet publish $project -c Release -r win-x64 --self-contained false `
+	-p:PublishSingleFile=true -p:DebugType=none "-p:EngineZip=$zip" -o $shared --nologo -v quiet
+if ($LASTEXITCODE -ne 0) { throw "dotnet publish (framework-dependent) failed" }
+Move-Item (Join-Path $shared "SoftCalc.exe") (Join-Path $dist "SoftCalc-net10.exe")
+Remove-Item -Recurse -Force $shared
+$exes = @("SoftCalc.exe", "SoftCalc-net10.exe")
+$extra = Get-ChildItem $dist | Where-Object { $exes -notcontains $_.Name }
+if ($extra) { throw "publish left more than the two exes: $($extra.Name -join ', ')" }
+foreach ($name in $exes)
+{
+	"published $name ($([math]::Round((Get-Item (Join-Path $dist $name)).Length / 1MB, 1)) MB)"
+}
 # end BLOCK 3
 
 #==================================================================
 #  BLOCK 4 - Smoke run from an empty folder
 #==================================================================
-# Not SOFTCALC_DATA_DIR: the point is that the exe makes SoftCalc-data\ itself
-$smoke = Join-Path ([IO.Path]::GetTempPath()) ("softcalc-smoke-" + [guid]::NewGuid().ToString("N"))
-New-Item -ItemType Directory $smoke | Out-Null
-Copy-Item $exe $smoke
+# Not SOFTCALC_DATA_DIR: the point is that each exe makes SoftCalc-data\ itself
 $saved = $env:SOFTCALC_DATA_DIR
 Remove-Item Env:SOFTCALC_DATA_DIR -ErrorAction SilentlyContinue
 try
 {
-	& (Join-Path $root "tools\drive_softcalc.ps1") -Exe (Join-Path $smoke "SoftCalc.exe") -Lines @("1/3", "2^10") -Shot "softcalc_published.png" | Out-Host
-	$data = Join-Path $smoke "SoftCalc-data"
-	$engineExe = Get-ChildItem (Join-Path $data "engine") -Recurse -Filter "softcalc-engine.exe" | Select-Object -First 1
-	if (-not $engineExe) { throw "smoke: engine was not unpacked under $data" }
-	if (-not (Test-Path (Join-Path $data "settings.json"))) { throw "smoke: settings.json not written in $data" }
-	$history = Get-Content (Join-Path $data "history.jsonl") -Raw
-	if ($history -notmatch '"text":"1024"') { throw "smoke: 2^10 not answered" }
-	"smoke ok: $data"
+	foreach ($name in $exes)
+	{
+		$smoke = Join-Path ([IO.Path]::GetTempPath()) ("softcalc-smoke-" + [guid]::NewGuid().ToString("N"))
+		New-Item -ItemType Directory $smoke | Out-Null
+		Copy-Item (Join-Path $dist $name) $smoke
+		try
+		{
+			$shot = "softcalc_published_" + [IO.Path]::GetFileNameWithoutExtension($name) + ".png"
+			& (Join-Path $root "tools\drive_softcalc.ps1") -Exe (Join-Path $smoke $name) -Lines @("1/3", "2^10") -Shot $shot | Out-Host
+			$data = Join-Path $smoke "SoftCalc-data"
+			$engineExe = Get-ChildItem (Join-Path $data "engine") -Recurse -Filter "softcalc-engine.exe" | Select-Object -First 1
+			if (-not $engineExe) { throw "smoke ${name}: engine was not unpacked under $data" }
+			if (-not (Test-Path (Join-Path $data "settings.json"))) { throw "smoke ${name}: settings.json not written in $data" }
+			$history = Get-Content (Join-Path $data "history.jsonl") -Raw
+			if ($history -notmatch '"text":"1024"') { throw "smoke ${name}: 2^10 not answered" }
+			"smoke ok: $name"
+		}
+		finally
+		{
+			Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$smoke*" } | Stop-Process -Force
+			Start-Sleep -Seconds 1
+			Remove-Item -Recurse -Force $smoke -ErrorAction SilentlyContinue
+		}
+	}
 }
 finally
 {
 	if ($saved) { $env:SOFTCALC_DATA_DIR = $saved }
-	Get-Process SoftCalc -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$smoke*" } | Stop-Process -Force
-	Start-Sleep -Seconds 1
-	Remove-Item -Recurse -Force $smoke -ErrorAction SilentlyContinue
 }
 # end BLOCK 4

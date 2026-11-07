@@ -52,9 +52,10 @@ writes the one-folder build `engine\dist\softcalc-engine\` (exe +
 `_internal\`); `test_frozen_exe_answers` runs against it when it exists.
 Release: `powershell -ExecutionPolicy Bypass -File build\publish.ps1` builds
 and tests the engine, zips it, refreshes `ui/SoftCalc/THIRD-PARTY-NOTICES.txt`
-(`tools/make_notices.py`), publishes the self-contained single file
-`dist\SoftCalc.exe` with the engine zip embedded, and smoke-runs it from an
-empty folder (design/m9_plan.md).
+(`tools/make_notices.py`), publishes two single files with the engine zip
+embedded, `dist\SoftCalc.exe` (self-contained) and `dist\SoftCalc-net10.exe`
+(needs the .NET 10 Desktop Runtime), and smoke-runs each from an empty
+folder (design/m9_plan.md).
 UI (run from `ui/`; .NET SDK at `C:\Program Files\dotnet\dotnet.exe`, 10.0.x,
 may not be on the PATH of an already-open shell):
 ```
