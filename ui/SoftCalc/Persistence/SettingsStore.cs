@@ -78,6 +78,7 @@ internal sealed class AppSettings
 	public bool Rpn { get; set; }
 	public int? Decimals { get; set; }
 	public bool PadZeros { get; set; }
+	public int WordSize { get; set; } = 32;    // bits for twos(x) / signed(x) (owner 2026-11-07)
 	public string View { get; set; } = "History";
 	public bool ShowSamples { get; set; } = true;
 	public int HistoryCap { get; set; } = 1000;
@@ -144,6 +145,10 @@ internal static class SettingsStore
 		if (s.Precision is not (32 or 64 or 128 or 512))
 		{
 			s.Precision = defaults.Precision;
+		}
+		if (s.WordSize is not (8 or 16 or 32 or 64))
+		{
+			s.WordSize = defaults.WordSize;
 		}
 		if (s.Angle is not ("rad" or "deg" or "grad"))
 		{

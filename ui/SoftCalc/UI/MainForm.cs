@@ -405,6 +405,12 @@ internal sealed partial class MainForm : Form
 		AddSettingItem(view.DropDownItems, "base", "dec", "&Decimal Output");
 		AddSettingItem(view.DropDownItems, "base", "oct", "&Octal Output");
 		AddSettingItem(view.DropDownItems, "base", "bin", "&Binary Output");
+		var wordSize = new ToolStripMenuItem("&Word Size");    // bits for twos(x) / signed(x)
+		foreach (int bits in new[] { 8, 16, 32, 64 })
+		{
+			AddSettingItem(wordSize.DropDownItems, "word_size", bits, $"{bits} bits");
+		}
+		view.DropDownItems.Add(wordSize);
 		view.DropDownItems.Add(new ToolStripSeparator());
 		_showSamplesItem.Click += (_, _) =>
 		{

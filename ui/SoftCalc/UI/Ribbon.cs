@@ -28,6 +28,7 @@ internal sealed class Ribbon : FlowLayoutPanel
 	private readonly RibbonActions _actions;
 	private readonly Dictionary<(string Key, string Value), ToolStripItem> _choices = new();
 	private readonly ToolStripDropDownButton _precision = new("Prec 32") { DisplayStyle = ToolStripItemDisplayStyle.Text };
+	private readonly ToolStripDropDownButton _wordSize = new("Word 32") { DisplayStyle = ToolStripItemDisplayStyle.Text, ToolTipText = "Word size: bits for twos(x) and signed(x)" };
 	private readonly ToolStripButton _all;
 	private readonly ToolStripButton _onTop;
 	private readonly Label _decimalsCaption = new();
@@ -60,10 +61,16 @@ internal sealed class Ribbon : FlowLayoutPanel
 			_choices[("precision", precision.ToString())] = item;
 			_precision.DropDownItems.Add(item);
 		}
+		foreach (int bits in new[] { 8, 16, 32, 64 })
+		{
+			var item = new ToolStripMenuItem($"{bits} bits", null, async (_, _) => await _actions.ChangeSetting("word_size", bits));
+			_choices[("word_size", bits.ToString())] = item;
+			_wordSize.DropDownItems.Add(item);
+		}
 
 		Controls.Add(Group("Angle", 3, null, Choice("angle", "deg", "Deg"), Choice("angle", "rad", "Rad"), Choice("angle", "grad", "Grad")));
-		Controls.Add(Group("Output", 4, null, Choice("base", "dec", "Dec"), Choice("base", "hex", "Hex"),
-			Choice("base", "bin", "Bin"), Choice("base", "oct", "Oct")));
+		Controls.Add(Group("Output", 5, null, Choice("base", "dec", "Dec"), Choice("base", "hex", "Hex"),
+			Choice("base", "bin", "Bin"), Choice("base", "oct", "Oct"), _wordSize));
 		Controls.Add(Group("Decimals", 3, _decimalsCaption,
 			Command("More decimal places", "decimal-increase", async () => await _actions.StepDecimals(+1), iconOnly: true),
 			Command("Fewer decimal places", "decimal-decrease", async () => await _actions.StepDecimals(-1), iconOnly: true),
@@ -138,6 +145,7 @@ internal sealed class Ribbon : FlowLayoutPanel
 			}
 		}
 		_precision.Text = $"Prec {(int?)settings["precision"] ?? 32}";
+		_wordSize.Text = $"Word {(int?)settings["word_size"] ?? 32}";
 		ShowDecimals((int?)settings["decimals"]);
 	}
 

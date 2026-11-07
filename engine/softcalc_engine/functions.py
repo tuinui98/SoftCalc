@@ -12,6 +12,8 @@ from . import dates, finance
 from .errors import CalcError
 
 ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
+WORD_FUNCTIONS = ("twos", "signed")    # two's complement (owner 2026-11-07)
+MAX_BITS = 1024
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
 NUMBER_TYPES = (mpmath.mpf, mpmath.mpc)
 TIME_TYPES = (dates.DateValue, dates.DurationValue)
@@ -45,11 +47,19 @@ def snap_zero(value, scale):
     return value
 
 
-class Functions:
-    """Function table bound to one angle unit."""
+def whole(value, key):
+    """An integer argument; fractions and complex values are errors."""
+    if not is_real(value) or value != mpmath.floor(value):
+        raise CalcError(f"{key} needs a whole number")
+    return int(value)
 
-    def __init__(self, angle):
+
+class Functions:
+    """Function table bound to one angle unit and one word size."""
+
+    def __init__(self, angle, word_size=32):
         self.angle = angle
+        self.word_size = word_size
         self.table = {
             "sqrt": mpmath.sqrt, "abs": abs, "exp": mpmath.exp,
             "ln": mpmath.ln, "log10": mpmath.log10,
@@ -61,7 +71,7 @@ class Functions:
         }
 
     def names(self):
-        return set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS)
+        return set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS) | set(WORD_FUNCTIONS)
 
     def min_arity(self, name):
         """Argument count used in RPN, where optional arguments cannot be told apart."""
@@ -77,6 +87,9 @@ class Functions:
             fn, low, high = finance.FUNCTIONS[key]
             self.check_count(key, args, low, high)
             return check_finite(fn(*args), key)
+        if key in WORD_FUNCTIONS:
+            self.check_count(key, args, 1, 2)
+            return self.word(key, args)
         fn = self.table.get(key)
         if fn is None:
             raise CalcError(f"Unknown function '{name}'")
@@ -87,6 +100,25 @@ class Functions:
         except (ValueError, ZeroDivisionError) as exc:
             raise CalcError(f"{key} is undefined here") from exc
         return check_finite(result, key)
+
+    def word(self, key, args):
+        """twos(x, [bits]) and signed(x, [bits]): two's complement in a word.
+
+        twos gives the unsigned bit pattern of a signed value (twos(-1, 8)
+        = 255); signed reads a pattern back (signed(0xFF, 8) = -1). Values
+        outside the word wrap like hardware (twos(300, 8) = 44). Without
+        bits the word size setting applies.
+        """
+        require_numbers(key, *args)
+        x = whole(args[0], key)
+        bits = whole(args[1], key) if len(args) > 1 else self.word_size
+        if not 1 <= bits <= MAX_BITS:
+            raise CalcError(f"{key}: bits must be 1 to {MAX_BITS}")
+        size = 1 << bits
+        pattern = x % size    # Python's modulo is never negative here
+        if key == "signed" and pattern >= size >> 1:
+            pattern -= size
+        return mpmath.mpf(pattern)
 
     def check_count(self, key, args, low, high):
         if not low <= len(args) <= high:

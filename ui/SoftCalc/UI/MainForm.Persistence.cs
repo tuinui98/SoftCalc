@@ -56,6 +56,7 @@ internal sealed partial class MainForm
 		{
 			["precision"] = _prefs.Precision, ["angle"] = _prefs.Angle, ["base"] = _prefs.Base,
 			["rpn"] = _prefs.Rpn, ["decimals"] = _prefs.Decimals, ["pad_zeros"] = _prefs.PadZeros,
+			["word_size"] = _prefs.WordSize,
 		});
 		if (File.Exists(_folder.DefinitionsPath))
 		{
@@ -151,6 +152,7 @@ internal sealed partial class MainForm
 		_prefs.Rpn = (bool?)settings["rpn"] ?? _prefs.Rpn;
 		_prefs.Decimals = (int?)settings["decimals"];
 		_prefs.PadZeros = (bool?)settings["pad_zeros"] ?? _prefs.PadZeros;
+		_prefs.WordSize = (int?)settings["word_size"] ?? _prefs.WordSize;
 		_prefs.View = _view.ToString();
 		_prefs.ShowSamples = _showSamplesItem.Checked;
 		_prefs.AlwaysOnTop = _onTopItem.Checked;

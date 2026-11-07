@@ -18,7 +18,7 @@ from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationVa
 from . import dates
 from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
-from .functions import Functions, binary, negate, postfix
+from .functions import WORD_FUNCTIONS, Functions, binary, negate, postfix
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse_line
 from .rpn import parse_rpn
@@ -41,6 +41,7 @@ class Settings:
     decimals: fixed number of decimal places to show, or None for all
     significant digits; pad_zeros shows trailing zeros up to decimals
     (extensions.md E9). Neither changes the calculation precision.
+    word_size: bits for twos() and signed() called without them.
     """
 
     precision: int = 32
@@ -49,6 +50,7 @@ class Settings:
     rpn: bool = False
     decimals: int = None
     pad_zeros: bool = False
+    word_size: int = 32
 
 
 @dataclass
@@ -123,7 +125,7 @@ class Engine:
             with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
                 if text.strip() == "":
                     raise CalcError("Empty expression")
-                builtins = Functions(self.settings.angle)
+                builtins = Functions(self.settings.angle, self.settings.word_size)
                 tree = self.parse(text, builtins)
                 if tree[0] == "assign":
                     return self.assign(text, tree, builtins)
@@ -131,7 +133,7 @@ class Engine:
                     return self.define(text, tree, builtins)
                 value = self.eval_node(tree, builtins, {}, 0)
                 shown = self.format_value(value)
-                display = self.display_line(text, builtins)
+                display = self.display_line(text, builtins) + self.word_suffix(text, value)
         except currency.RatesNeeded:
             return EvalResult("rates_needed", text)
         except CalcError as exc:
@@ -180,7 +182,7 @@ class Engine:
         """
         if self.settings.rpn:
             return re.sub(r"\S+", lambda m: self.display_rpn_item(m.group(), builtins), text)
-        source = join_digit_spaces(text)
+        source = self.fill_word_size(join_digit_spaces(text))
         tokens = tokenize(source)
         out = []
         cursor = 0
@@ -200,6 +202,49 @@ class Engine:
             cursor = end
         out.append(source[cursor:])
         return "".join(out)
+
+    def fill_word_size(self, source):
+        """`twos(-1)` -> `twos(-1, 32)`: the bits used, so the line still
+        reads right after the word size setting changes (owner 2026-11-07).
+        """
+        tokens = tokenize(source)
+        inserts = []
+        for index, token in enumerate(tokens[:-1]):
+            opens = tokens[index + 1]
+            if token.kind != "name" or token.text.lower() not in WORD_FUNCTIONS or opens.text != "(":
+                continue
+            depth = commas = 0
+            for later in tokens[index + 1:]:
+                if later.kind != "op":
+                    continue
+                if later.text == "(":
+                    depth += 1
+                elif later.text == ")":
+                    depth -= 1
+                    if depth == 0:
+                        if commas == 0:
+                            inserts.append(later.pos)
+                        break
+                elif later.text == "," and depth == 1:
+                    commas += 1
+        for pos in reversed(inserts):
+            source = f"{source[:pos]}, {self.settings.word_size}{source[pos:]}"
+        return source
+
+    def word_suffix(self, text, value):
+        """` = 0xFF` after a line that uses twos() or signed(): the whole
+        line's result in hex, the base those are read in (owner 2026-11-07).
+        Nothing when the output is hex already or the result is not real.
+        """
+        if self.settings.base == "hex" or not isinstance(value, mpmath.mpf):
+            return ""
+        try:
+            names = {token.text.lower() for token in tokenize(text) if token.kind == "name"}
+        except CalcError:
+            return ""
+        if not names & set(WORD_FUNCTIONS):
+            return ""
+        return " = " + format_real(value, self.settings.precision, "hex")
 
     def display_rpn_item(self, word, builtins):
         tokens = tokenize(word)
@@ -429,7 +474,7 @@ class Engine:
     def value_of(self, text):
         """Evaluate an expression without touching History, answer or $n."""
         with self.working_context():
-            builtins = Functions(self.settings.angle)
+            builtins = Functions(self.settings.angle, self.settings.word_size)
             tree = parse_line(text, is_function=lambda name: self.is_function(name, builtins))
             if tree[0] in ("assign", "define"):
                 raise CalcError("A value is needed here, not a definition")
@@ -504,7 +549,7 @@ class Engine:
             raise CalcError("samples must be at least 2")
         points = []
         with mpmath.workdps(PLOT_DIGITS):
-            builtins = Functions(self.settings.angle)
+            builtins = Functions(self.settings.angle, self.settings.word_size)
             step = (mpmath.mpf(end) - start) / (samples - 1)
             for index in range(samples):
                 t = mpmath.mpf(start) + step * index
@@ -536,7 +581,7 @@ class Engine:
         if fn is None or len(fn.params) != 1:
             raise CalcError(f"'{name}' is not a one-parameter function")
         with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
-            builtins = Functions(self.settings.angle)
+            builtins = Functions(self.settings.angle, self.settings.word_size)
             try:
                 value = self.call(fn.name, [mpmath.mpf(t)], builtins, 0)
             except CalcError:

@@ -44,6 +44,8 @@ internal static partial class InputHelp
 		["longtime"] = "longtime(date) - e.g. 14:05:09",
 		["longdatetime"] = "longdatetime(date) - long date and time",
 		["mod"] = "a mod b - remainder of a / b",
+		["twos"] = "twos(x, [bits]) - two's complement bit pattern: twos(-1, 8) = 255; bits default to View > Word Size",
+		["signed"] = "signed(x, [bits]) - read a bit pattern as signed: signed(0xFF, 8) = -1; bits default to View > Word Size",
 		["pi"] = "pi - 3.14159...",
 		["e"] = "e - 2.71828...",
 		["i"] = "i (or j) - imaginary unit, e.g. 2+3i",

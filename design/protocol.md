@@ -48,8 +48,9 @@ by the engine. Only `plot` and the `schedule` graph series send floats.
 ### `settings`
 Any subset of `{"precision": 32|64|128|512, "angle": "rad"|"deg"|"grad",
 "base": "dec"|"hex"|"bin"|"oct", "rpn": bool, "decimals": int|null,
-"pad_zeros": bool}` -> the full settings object after the change.
-`{}` just reads them.
+"pad_zeros": bool, "word_size": 8|16|32|64}` -> the full settings
+object after the change. `{}` just reads them. `word_size` is the bits
+`twos(x)` and `signed(x)` use without a second argument.
 
 ### `state`
 `{}` ->

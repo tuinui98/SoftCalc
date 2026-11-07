@@ -360,3 +360,16 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   come back from the file or another window; a later clear drops the
   marks it covers. After a restart, text-only results (long dates)
   keep their `$n` place, so numbering matches the running session.
+- Two's complement: `twos(x, [bits])` gives the unsigned bit pattern of
+  a signed value (`twos(-1, 8)` = 255), `signed(x, [bits])` reads one
+  back (`signed(0xFF, 8)` = -1). Outside the word they wrap like
+  hardware (`twos(300, 8)` = 44); a fraction or complex x is an error;
+  bits 1-1024. Without bits, View > Word Size (8/16/32/64, also on the
+  ribbon's Output group, saved as `word_size`, default 32) applies at
+  calculation time. History's right-hand form fills the bits in and
+  adds the whole line's result in hex: `twos(-1)` shows
+  `twos(-1, 32) = 0xFFFFFFFF` (nothing added when the output is hex).
+  Functions menu: Two's Complement. In RPN only the one-argument form
+  works (RPN takes each function's fixed argument count).
+  Results are exact while they fit the precision (about 128 bits at
+  32 digits); wider words need a higher precision.

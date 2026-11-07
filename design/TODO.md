@@ -75,7 +75,7 @@ Recorded at the owner's request after M8. Nothing here is started.
       framework-dependent one (9.3 MB, needs the .NET 10 Desktop
       Runtime x64) as `SoftCalc-net10.exe`. `build/publish.ps1` builds
       and smoke-runs both.
-- [ ] Two's complement (owner uses it often), owner 2026-11-07:
+- [x] Two's complement (owner uses it often), owner 2026-11-07, done:
   - Functions `twos(x, [bits])` (signed value to its unsigned bit
     pattern: `twos(-1, 8)` = 255) and `signed(x, [bits])` (back:
     `signed(0xFF, 8)` = -1). No global word mode.
