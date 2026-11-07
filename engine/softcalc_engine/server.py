@@ -74,6 +74,7 @@ class Dispatcher:
             "menu_insert": self.op_menu_insert,
             "plot": self.op_plot,
             "value_at": self.op_value_at,
+            "literal": self.op_literal,
             "pcf_export": lambda request: {"text": self.engine.export_pcf()},
             "pcf_import": self.op_pcf_import,
             "restore_results": self.op_restore_results,
@@ -164,6 +165,9 @@ class Dispatcher:
         t = argument(request, "x", (int, float))
         text, value = self.engine.value_at(argument(request, "function", str), t)
         return {"text": text, "value": value}
+
+    def op_literal(self, request):
+        return {"text": self.engine.literal_hint(argument(request, "text", str))}
 
     def op_restore_results(self, request):
         texts = argument(request, "texts", list)

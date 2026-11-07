@@ -339,3 +339,16 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   one-line dialogs (SPEC 4) on purpose.
 - Trace on/off is saved (graph.trace). Dragging the graph repaints at
   once and fetches new points at most every 120 ms during the drag.
+
+## After v1.0.0 (owner 2026-11-07)
+- About box: a short note (version, data folder); the third-party
+  licences open from a link under it.
+- Literals in another base than the output (E10 extended): History's
+  faint right-hand form shows them in the output base at calculation
+  time, also on lines without variables, and in RPN. Only when the
+  output base shows the literal exactly (`0x1F+1` shows `31+1`;
+  in hex `0.5` shows `0x0.8`, `0.1` stays `0.1`). A `-` stays an
+  operator (`-0x1F` shows `-31`); an RPN negative literal keeps its
+  sign. Imaginary literals (`2i`) are decimal only and stay. The
+  Input hint line shows the literal at the caret the same way
+  (`255 = 0xFF`), through the engine's `literal` op.

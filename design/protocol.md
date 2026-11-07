@@ -107,6 +107,13 @@ formatted like a result, plus a float for drawing; both `null` where
 it is undefined or not real. Graph trace (G2); does not change
 `answer` or `$n`.
 
+### `literal`
+`{"text": "0x1F"}` -> `{"text": "31"}`: one number literal shown in
+the output base for the Input hint line; `null` when the text is not a
+single literal, is already in the output base, or the output base
+cannot show it exactly (`0.1` in hex). History lines use the same rule
+in `display_input`.
+
 ### `pcf_export`
 `{}` -> `{"text": "<file content>"}`. The UI writes it as UTF-16 LE
 without BOM (SPEC 8).

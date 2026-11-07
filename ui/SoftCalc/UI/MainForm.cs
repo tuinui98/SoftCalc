@@ -23,6 +23,7 @@ internal sealed partial class MainForm : Form
 	private const string OperatorSymbols = "+-*/^!%";
 
 	private readonly EngineSession _session;
+	private int _hintRequest;    // newest hint update; older literal replies are dropped
 	private readonly HistoryView _history = new() { Dock = DockStyle.Fill };
 	private readonly TextBox _input = new() { Dock = DockStyle.Top };
 	// Second Input line: help for what is being typed, italic and faint (owner 2026-11-06)
@@ -248,6 +249,29 @@ internal sealed partial class MainForm : Form
 			return;
 		}
 		_hint.Text = InputHelp.For(_input.Text, _input.SelectionStart, DescribeUserName) ?? "";
+		int request = ++_hintRequest;
+		string? literal = InputHelp.LiteralAt(_input.Text, _input.SelectionStart);
+		if (literal != null)
+		{
+			_ = ShowLiteralHintAsync(literal, request);
+		}
+	}
+
+	// `0x1F = 31`: replaces the hint when the reply is still for the current text
+	private async Task ShowLiteralHintAsync(string literal, int request)
+	{
+		try
+		{
+			string? converted = await _session.LiteralAsync(literal);
+			if (converted != null && request == _hintRequest && _showHintsItem.Checked)
+			{
+				_hint.Text = $"{literal} = {converted}";
+			}
+		}
+		catch (EngineException)
+		{
+			// engine not ready or restarting: keep the plain hint
+		}
 	}
 
 	// User functions show their definition, variables their value

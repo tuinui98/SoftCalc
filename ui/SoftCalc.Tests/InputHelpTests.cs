@@ -67,4 +67,20 @@ public sealed class InputHelpTests
 		Assert.Null(Hint("1+2", 3));
 		Assert.Null(Hint(""));
 	}
+
+	[Theory]
+	[InlineData("0x1F", "0x1F")]
+	[InlineData("2*101b", "101b")]
+	[InlineData("sqrt(0.5", "0.5")]
+	[InlineData("1e3", "1e3")]
+	[InlineData("0o17", "0o17")]
+	[InlineData("x12", null)]             // a name
+	[InlineData("$12", null)]             // a result reference
+	[InlineData("27.10.2026", null)]      // a date
+	[InlineData("1:30", null)]            // a duration
+	[InlineData("2+", null)]
+	public void LiteralAtCaret(string text, string? want)
+	{
+		Assert.Equal(want, InputHelp.LiteralAt(text, text.Length));
+	}
 }

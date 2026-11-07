@@ -15,6 +15,9 @@ Per base:   decimal  1.5e32         -0.25        (3+4i)    0.5i
             octal    0o7*0o10^0o3   [EXT, same pattern as hex]
 """
 
+import math
+from fractions import Fraction
+
 import mpmath
 from mpmath.libmp import to_str
 
@@ -168,6 +171,24 @@ def format_number(value, digits, base="dec", decimals=None, pad_zeros=False):
     re_text = format_real(re_part, digits, base, decimals, pad_zeros)
     joiner = "" if im_text.startswith("-") else "+"
     return f"({re_text}{joiner}{im_text})"
+
+
+def is_exact(value, digits, base):
+    """True when the Fraction `value` has at most `digits` significant
+    digits in the output base, so format_real shows it without rounding
+    (`0.5` in hex is `0x0.8`; `0.1` never ends in hex).
+    """
+    if value == 0:
+        return True
+    radix = RADIX[base]
+    size = abs(value)
+    exp_r = int(math.log(size.numerator, radix) - math.log(size.denominator, radix))
+    # the float estimate can be off by one either way
+    while Fraction(radix) ** exp_r > size:
+        exp_r -= 1
+    while Fraction(radix) ** (exp_r + 1) <= size:
+        exp_r += 1
+    return (size * Fraction(radix) ** (digits - 1 - exp_r)).denominator == 1
 
 
 def working_digits(digits, base):
