@@ -47,6 +47,9 @@ Recorded at the owner's request after M8. Nothing here is started.
     number converts (`-0x1F` shows `-31`, `2*-0x1F` shows `2*-31`, no
     parentheses); an RPN negative literal converts as one token.
     Output stays sign and magnitude (`-0xFF`).
+- [ ] History context menu (owner 2026-11-07): add Clear History and
+      Delete (removes the selected entry). To settle: confirmation,
+      multi-select, and whether `$n` numbering follows the deletion.
 - [ ] Two's complement (owner uses it often), owner 2026-11-07:
   - Functions `twos(x, [bits])` (signed value to its unsigned bit
     pattern: `twos(-1, 8)` = 255) and `signed(x, [bits])` (back:
