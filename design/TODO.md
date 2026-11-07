@@ -47,9 +47,19 @@ Recorded at the owner's request after M8. Nothing here is started.
     number converts (`-0x1F` shows `-31`, `2*-0x1F` shows `2*-31`, no
     parentheses); an RPN negative literal converts as one token.
     Output stays sign and magnitude (`-0xFF`).
-- [ ] Two's complement (owner uses it often): to design. Proposal:
-      functions with the bit width as an argument rather than a global
-      word size; see the discussion of 2026-11-07.
+- [ ] Two's complement (owner uses it often), owner 2026-11-07:
+  - Functions `twos(x, [bits])` (signed value to its unsigned bit
+    pattern: `twos(-1, 8)` = 255) and `signed(x, [bits])` (back:
+    `signed(0xFF, 8)` = -1). No global word mode.
+  - Out of range wraps like hardware (`twos(300, 8)` = 44,
+    `signed(0x1FF, 8)` = -1); a non-integer x is an error.
+  - One argument uses the word size from settings (default 32 bits),
+    taken at calculation time; two arguments use the given bits.
+  - The result is shown in the current output base; the faint
+    right-hand side of its History line shows it in hex (used often).
+  - To settle: where the word-size setting lives (menu/ribbon) and
+    its choices; the exact right-hand text (hex result only, or with
+    the E10 form); allowed bit widths.
 
 ## 6. Still open from v1.0.0
 - [ ] Try the release exe on another PC (no .NET/Python) and with its
