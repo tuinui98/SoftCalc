@@ -25,7 +25,7 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [x] Add/Edit dialogs: Functions / Variables editor, done 2026-11-07.
 - [x] Red error lines in History: owner keeps them (2026-11-07).
 
-## 5. Owner requests after v1.0.0 (2026-11-07, not started; discuss first)
+## 5. Owner requests after v1.0.0 (2026-11-07, decided, not started; owner collects more before building)
 - [ ] About box: a short note only (name, version, data folder). The
       third-party licence box is hidden at first; a link (e.g. "Show
       third-party licences") opens it.
@@ -57,9 +57,15 @@ Recorded at the owner's request after M8. Nothing here is started.
     taken at calculation time; two arguments use the given bits.
   - The result is shown in the current output base; the faint
     right-hand side of its History line shows it in hex (used often).
-  - To settle: where the word-size setting lives (menu/ribbon) and
-    its choices; the exact right-hand text (hex result only, or with
-    the E10 form); allowed bit widths.
+  - Right-hand text: the E10 form in the current base, with the bits
+    filled in when one argument was used, then `= ` and the hex result
+    of the whole line: `twos(-1)` shows `twos(-1, 32) = 0xFFFFFFFF`,
+    `twos(x, 8)` with x = -1 shows `twos(-1, 8) = 0xFF`,
+    `twos(-1, 8) + 1` shows `twos(-1, 8)+1 = 0x100`.
+  - Word size: View > Word Size (8 / 16 / 32 / 64) and the same choice
+    in the ribbon's Output group; saved in settings, default 32.
+  - The bits argument takes any integer 1-1024 (`twos(x, 12)`); the
+    setting offers only the four sizes.
 
 ## 6. Still open from v1.0.0
 - [ ] Try the release exe on another PC (no .NET/Python) and with its
