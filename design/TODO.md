@@ -59,8 +59,9 @@ Recorded at the owner's request after M8. Nothing here is started.
     - Only result lines are in the stack; deleting an error,
       assignment or definition line leaves `$n` as is.
     - Owner 2026-11-07: `answer` stays equal to `$1`; deleting the
-      newest result moves `answer` back to the one before. (Clear
-      History still keeps `answer`, SPEC 5.3.)
+      newest result moves `answer` back to the one before. Deleting
+      the last remaining result keeps `answer` as it is, like Clear
+      History (SPEC 5.3).
     - history.jsonl merges every window's entries by id at close, so
       a deleted entry needs a "deleted" mark or it comes back from the
       file or another window.
@@ -72,8 +73,8 @@ Recorded at the owner's request after M8. Nothing here is started.
       Fix together.
 - [ ] Release both builds: the self-contained exe (58 MB) and a
       framework-dependent one (9.3 MB, needs the .NET 10 Desktop
-      Runtime x64). `build/publish.ps1` builds and smoke-runs both;
-      file names to settle.
+      Runtime x64) as `SoftCalc-net10.exe`. `build/publish.ps1` builds
+      and smoke-runs both.
 - [ ] Two's complement (owner uses it often), owner 2026-11-07:
   - Functions `twos(x, [bits])` (signed value to its unsigned bit
     pattern: `twos(-1, 8)` = 255) and `signed(x, [bits])` (back:
