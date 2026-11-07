@@ -26,10 +26,10 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [x] Red error lines in History: owner keeps them (2026-11-07).
 
 ## 5. Owner requests after v1.0.0 (2026-11-07, decided, not started; owner collects more before building)
-- [ ] About box: a short note only (name, version, data folder). The
+- [x] About box (done 2026-11-07): a short note only (name, version, data folder). The
       third-party licence box is hidden at first; a link (e.g. "Show
       third-party licences") opens it.
-- [ ] Number literals in another base than the current output base
+- [x] Number literals in another base than the current output base (done 2026-11-07)
       (e.g. `0x1F` or `101b` while output is Decimal, `255` while
       output is Hex):
   - Input hint line: show the literal at the caret converted to the
@@ -42,7 +42,7 @@ Recorded at the owner's request after M8. Nothing here is started.
     the right-hand form too; RPN the same.
   - Owner 2026-11-07, option B: a literal is converted only when the
     current base can show it exactly (`0.5` shows `0x0.8`); otherwise
-    it stays as typed (`0.1`, or `1e40` past the fixed-digit limit).
+    it stays as typed (`0.1`, or a hex literal past 32 digits in decimal).
   - Owner 2026-11-07, negatives: `-` stays the operator and only the
     number converts (`-0x1F` shows `-31`, `2*-0x1F` shows `2*-31`, no
     parentheses); an RPN negative literal converts as one token.

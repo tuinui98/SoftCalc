@@ -9,6 +9,7 @@ each input line into an EvalResult. It also exports and imports the
 
 import re
 from dataclasses import dataclass, field
+from fractions import Fraction
 
 import mpmath
 
@@ -16,7 +17,7 @@ from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationVa
                     convert_zone, now, parse_duration, parse_literal, today)
 from . import dates
 from .errors import CalcError
-from .formatting import format_number, working_digits
+from .formatting import RADIX, format_number, format_real, is_exact, working_digits
 from .functions import Functions, binary, negate, postfix
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse_line
@@ -172,7 +173,9 @@ class Engine:
         """Rebuild the input with values in place of variables, answer and $n.
 
         Explicit `*` is added where a value replaces a name inside an
-        implicit product, so `2x` shows as `2*5`. In RPN mode each
+        implicit product, so `2x` shows as `2*5`. Number literals typed
+        in another base than the output are shown in the output base
+        when that is exact (`literal_text`). In RPN mode each
         space-separated item is replaced on its own and spaces stay.
         """
         if self.settings.rpn:
@@ -181,13 +184,18 @@ class Engine:
         tokens = tokenize(source)
         out = []
         cursor = 0
+        starred = -1    # index of a token that already got a `*` after it
         for index, token in enumerate(tokens[:-1]):
             value = self.display_value(token, tokens[index + 1], builtins)
             if value is None:
                 continue
-            end = token.pos + len(token.text) + (1 if token.kind == "ref" else 0)
-            prefix = "*" if index > 0 and self.ends_operand(tokens[index - 1]) else ""
+            end = token.end if token.end >= 0 else token.pos + len(token.text) + (1 if token.kind == "ref" else 0)
+            # `2x` with both replaced gets one `*`, not `2**5`
+            joined = index > 0 and self.ends_operand(tokens[index - 1]) and starred != index - 1
+            prefix = "*" if joined else ""
             suffix = "*" if self.starts_operand(tokens[index + 1]) else ""
+            if suffix:
+                starred = index
             out.append(source[cursor:token.pos] + prefix + value + suffix)
             cursor = end
         out.append(source[cursor:])
@@ -195,6 +203,10 @@ class Engine:
 
     def display_rpn_item(self, word, builtins):
         tokens = tokenize(word)
+        # An RPN negative literal (`-0x1F`) is one item: keep the sign
+        if len(tokens) == 3 and tokens[0].text == "-" and tokens[1].kind == "number":
+            value = self.literal_text(tokens[1].text, tokens[1].base)
+            return word if value is None else "-" + value
         if len(tokens) != 2:
             return word
         value = self.display_value(tokens[0], tokens[1], builtins)
@@ -206,6 +218,8 @@ class Engine:
         if token.kind == "ref":
             n = int(token.text)
             return self.wrap(self.results[-n]) if 1 <= n <= len(self.results) else None
+        if token.kind == "number":
+            return self.literal_text(token.text, token.base)
         if token.kind != "name":
             return None
         is_call = following.kind == "op" and following.text == "(" and self.is_function(key, builtins)
@@ -216,6 +230,36 @@ class Engine:
         if key in self.variables:
             return self.wrap(self.variables[key][1])
         return None
+
+    def literal_text(self, literal, base):
+        """A number literal in the output base, or None to keep it as typed.
+
+        Only for literals typed in another base, and only when the output
+        base shows them exactly (owner 2026-11-07, option B): `0x1F` is
+        `31` in decimal, `0.5` is `0x0.8` in hex, `0.1` stays. A literal
+        has no sign; a `-` before it stays an operator.
+        """
+        output = self.settings.base
+        if base == RADIX[output]:
+            return None
+        exact = Fraction(literal) if base == 10 else Fraction(int(literal, base))
+        if not is_exact(exact, self.settings.precision, output):
+            return None
+        bits = exact.numerator.bit_length() + exact.denominator.bit_length() + 16
+        with mpmath.workprec(max(bits, mpmath.mp.prec)):
+            value = mpmath.mpf(exact.numerator) / exact.denominator
+            return format_real(value, self.settings.precision, output)
+
+    def literal_hint(self, text):
+        """Hint-line text for one literal (`0x1F` -> `31`), or None."""
+        try:
+            tokens = tokenize(text.strip())
+        except CalcError:
+            return None
+        if len(tokens) != 2 or tokens[0].kind != "number":
+            return None
+        with self.working_context():
+            return self.literal_text(tokens[0].text, tokens[0].base)
 
     def wrap(self, value):
         text = self.format_value(value)

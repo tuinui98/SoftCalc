@@ -238,6 +238,13 @@ internal sealed class EngineSession : IDisposable
 		return ((string?)reply["text"], (double?)reply["value"]);
 	}
 
+	// One number literal in the output base for the hint line, or null (protocol `literal`)
+	public async Task<string?> LiteralAsync(string text)
+	{
+		var reply = await GuardedAsync("literal", new JsonObject { ["text"] = text });
+		return (string?)reply["text"];
+	}
+
 	//==================================================================
 	//  Plumbing
 	//==================================================================

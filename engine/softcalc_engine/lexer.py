@@ -36,13 +36,16 @@ class Token:
     kind is one of: number, imag, date, duration, name, op, ref, tag, end. For numbers,
     text holds the literal and base its radix; value conversion happens
     later so the evaluator can pick the working precision. A ref holds
-    the digits after `$`; a tag holds `from->to` in lower case.
+    the digits after `$`; a tag holds `from->to` in lower case. end is
+    the index after a number literal, prefix or `b` suffix included
+    (-1 for other kinds).
     """
 
     kind: str
     text: str
     pos: int
     base: int = 10
+    end: int = -1
 
 
 DATE_BEFORE = re.compile(r"\d{1,2}\.\d{1,2}\.\d{4}$")
@@ -146,6 +149,7 @@ def tokenize(text):
             continue
         if ch.isdigit() or (ch == "." and i + 1 < len(text) and text[i + 1].isdigit()):
             token, i = read_number(text, i)
+            token.end = i
             # A number directly followed by i or j (not a longer name) is imaginary
             if (token.base == 10 and i < len(text) and text[i] in "ijIJ"
                     and not is_name_char(text, i + 1)):

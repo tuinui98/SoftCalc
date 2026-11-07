@@ -4,8 +4,10 @@
 // it describes that function; on a word being typed it describes the
 // name (or lists the names it could become); inside an open `[` it
 // shows tag examples; on `$` it explains result references. User
-// functions and variables come from `lookupUser`. Text is SoftCalc's
-// own wording, not the original's help.
+// functions and variables come from `lookupUser`. A number literal at
+// the caret (`LiteralAt`) is shown in the output base by the engine
+// (owner 2026-11-07). Text is SoftCalc's own wording, not the
+// original's help.
 
 using System.Text.RegularExpressions;
 
@@ -57,6 +59,17 @@ internal static partial class InputHelp
 
 	[GeneratedRegex(@"[A-Za-z_][A-Za-z0-9_]*$")]
 	private static partial Regex WordAtEnd();
+
+	// A literal ending at the caret, not part of a name, date, duration or $n
+	[GeneratedRegex(@"(?<![A-Za-z0-9_.:$])(0[xX][0-9A-Fa-f]+|0[bBoOdD][0-9]+|[01]+b|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)$")]
+	private static partial Regex LiteralAtEnd();
+
+	// The number literal left of the caret, for the engine to convert, or null
+	public static string? LiteralAt(string text, int caret)
+	{
+		var match = LiteralAtEnd().Match(text[..Math.Clamp(caret, 0, text.Length)]);
+		return match.Success ? match.Value : null;
+	}
 
 	public static string? For(string text, int caret, Func<string, string?> lookupUser)
 	{

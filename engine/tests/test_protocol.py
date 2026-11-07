@@ -136,6 +136,11 @@ def test_value_at_full_precision(dispatcher):
     assert ask(dispatcher, "eval", input="answer")["kind"] == "error"    # tracing is not a calculation
 
 
+def test_literal_op(dispatcher):
+    assert ask(dispatcher, "literal", text="0x1F")["text"] == "31"
+    assert ask(dispatcher, "literal", text="12")["text"] is None
+
+
 def test_pcf_round_trip(dispatcher):
     ask(dispatcher, "eval", input="k=3")
     text = ask(dispatcher, "pcf_export")["text"]

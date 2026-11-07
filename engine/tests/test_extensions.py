@@ -91,6 +91,57 @@ def test_definitions_and_errors_display_as_typed():
 
 
 #----------------------------------------------------------------------
+#  Literals in another base than the output (owner 2026-11-07)
+#----------------------------------------------------------------------
+@pytest.mark.parametrize("line, base, want", [
+    ("0x1F+1", "dec", "31+1"),
+    ("101b*2", "dec", "5*2"),
+    ("0o17", "dec", "15"),
+    ("-0x1F", "dec", "-31"),            # the minus stays an operator
+    ("2*-0x1F", "dec", "2*-31"),
+    ("0x" + "F" * 34, "dec", "0x" + "F" * 34),    # past 32 digits: rounded, so kept
+    ("255+1", "hex", "0xFF+0x1"),
+    ("0.5", "hex", "0x0.8"),
+    ("0.1+1", "hex", "0.1+0x1"),         # 0.1 never ends in hex: kept
+    ("1.5", "hex", "0x1.8"),
+    ("0d12", "hex", "0xC"),
+    ("2pi", "hex", "0x2*pi"),           # implicit product made explicit
+    ("2i", "hex", "2i"),                # imaginary literals are decimal only
+    ("5+0.25", "bin", "101b+0.01b"),
+    ("0x10+3", "hex", "0x10+0x3"),
+    ("2(3)", "hex", "0x2*(0x3)"),
+])
+def test_other_base_literals(line, base, want):
+    assert run(line, base=base).display_input == want
+
+
+def test_same_base_literals_stay():
+    result = run("3+4")
+    assert result.display_input == result.input
+
+
+def test_other_base_literal_next_to_variable():
+    assert run("x=10", "2x+0x10", base="hex").display_input == "0x2*0xA+0x10"    # one `*`
+    assert run("x=10", "x2", base="hex").display_input == "x2"    # x2 is a name, not x*2
+
+
+def test_other_base_literals_rpn():
+    assert run("255 1 +", base="hex", rpn=True).display_input == "0xFF 0x1 +"
+    assert run("-255 2 *", base="hex", rpn=True).display_input == "-0xFF 0x2 *"
+
+
+def test_literal_hint():
+    engine = Engine()
+    assert engine.literal_hint("0x1F") == "31"
+    assert engine.literal_hint("255") is None          # already the output base
+    assert engine.literal_hint("1+2") is None
+    engine.settings.base = "hex"
+    assert engine.literal_hint("255") == "0xFF"
+    assert engine.literal_hint("0.1") is None
+    assert engine.literal_hint("0x") is None             # unfinished literal
+
+
+#----------------------------------------------------------------------
 #  E9 display decimals
 #----------------------------------------------------------------------
 @pytest.mark.parametrize("line, decimals, pad, want", [
