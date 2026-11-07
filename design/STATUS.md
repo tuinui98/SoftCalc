@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-07 after M9. Everything below is committed on `main` and
+Updated 2026-11-07 after v1.0.0 and the owner's first requests (1.1.0 built, not released). Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 Open work is listed in `design/TODO.md`.
@@ -47,7 +47,19 @@ row (a long full-precision value is cut with "...", Copy keeps all
 digits). The owner checked drag repaint, rename, trace and the status
 line with a real mouse (2026-11-07).
 
-Tests: engine `pytest` 335 passed (frozen-exe test included); UI `dotnet test` 201 passed.
+After the v1.0.0 release (2026-11-07, design/TODO.md section 5, details
+in `spec/extensions.md` "After v1.0.0"): short About with the licences
+behind a link; literals typed in another base shown in the output base
+in History and the hint line (only when exact); History context menu
+Delete / Clear History with `$n` renumbering and deleted marks in
+history.jsonl (restore now keeps text results' `$n` places);
+`twos()` / `signed()` with View > Word Size; `publish.ps1` builds
+`SoftCalc.exe` (58.4 MB) and `SoftCalc-net10.exe` (9.3 MB, needs the
+.NET 10 Desktop Runtime) and smoke-runs both. Version 1.1.0; GitHub
+release v1.1.0 waits for the owner's try-out (rebuild from the final
+`main` first so the exe carries its commit hash).
+
+Tests: engine `pytest` 389 passed (frozen-exe test included); UI `dotnet test` 216 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
