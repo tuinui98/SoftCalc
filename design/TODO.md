@@ -48,8 +48,31 @@ Recorded at the owner's request after M8. Nothing here is started.
     parentheses); an RPN negative literal converts as one token.
     Output stays sign and magnitude (`-0xFF`).
 - [ ] History context menu (owner 2026-11-07): add Clear History and
-      Delete (removes the selected entry). To settle: confirmation,
-      multi-select, and whether `$n` numbering follows the deletion.
+      Delete (removes the selected entry). No confirmation for either;
+      Delete removes one line at a time; `$n` numbering follows the
+      deletion (delete the `$2` line and the old `$3` becomes `$2`).
+  - Impact found 2026-11-07:
+    - The engine needs a new op to drop one value from its result
+      stack by position. Rebuilding through `restore_results` would
+      reparse the shown texts and lose precision (and E9 decimals
+      would round them).
+    - Only result lines are in the stack; deleting an error,
+      assignment or definition line leaves `$n` as is.
+    - `answer` = `$1` today; to settle whether deleting the newest
+      result also moves `answer` back (Clear History keeps `answer`).
+    - history.jsonl merges every window's entries by id at close, so
+      a deleted entry needs a "deleted" mark or it comes back from the
+      file or another window.
+    - Older lines that typed `$n` keep their text and their faint E10
+      values; recalling one now means the renumbered `$n`.
+    - Existing mismatch: a text-only result (e.g. a long date text)
+      counts in `$n` while running but is skipped by
+      `restore_results` after a restart, so numbers can shift then.
+      Fix together.
+- [ ] Release both builds: the self-contained exe (58 MB) and a
+      framework-dependent one (9.3 MB, needs the .NET 10 Desktop
+      Runtime x64). `build/publish.ps1` builds and smoke-runs both;
+      file names to settle.
 - [ ] Two's complement (owner uses it often), owner 2026-11-07:
   - Functions `twos(x, [bits])` (signed value to its unsigned bit
     pattern: `twos(-1, 8)` = 255) and `signed(x, [bits])` (back:
