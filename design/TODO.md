@@ -37,9 +37,12 @@ Recorded at the owner's request after M8. Nothing here is started.
   - History: the faint right-aligned numeric form (E10, as for
     variables, `ans`, `$n`) also shows such literals in the current
     base, so the line reads as one operation in that base.
-  - To settle: base taken at calculation time (like E10 values);
-    fractional/negative literals; whether a line with only such
-    literals (no variables) now gets the right-hand form; RPN.
+  - Owner 2026-11-07: the base at calculation time (History never
+    changes later); a line with such literals and no variables gets
+    the right-hand form too; RPN the same.
+  - To settle: fractional and very large decimal literals with a
+    hex/bin/oct output (`0.1` has no exact hex form); negatives (the
+    proposal keeps `-` as the operator: `-0x1F` shows `-31`).
 
 ## 6. Still open from v1.0.0
 - [ ] Try the release exe on another PC (no .NET/Python) and with its
