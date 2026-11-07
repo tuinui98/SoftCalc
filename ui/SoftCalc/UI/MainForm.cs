@@ -95,6 +95,8 @@ internal sealed partial class MainForm : Form
 		BuildMenus();
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
 		_history.ResultClicked += (_, entry) => InsertResult(entry);
+		_history.DeleteClicked += async (_, entry) => await DeleteHistoryEntryAsync(entry);
+		_history.ClearClicked += async (_, _) => await ClearHistoryAsync();
 		_input.KeyDown += OnInputKeyDown;
 		_input.TextChanged += (_, _) => UpdateHint();
 		_input.KeyUp += (_, _) => UpdateHint();    // caret moves
@@ -706,6 +708,35 @@ internal sealed partial class MainForm : Form
 		ShowSettingChecks();
 		await RefreshStateAsync();
 		NotifyToolWindows();
+	}
+
+	// One History line goes; a result line also leaves `$n`, so later ones renumber
+	private async Task DeleteHistoryEntryAsync(HistoryEntry entry)
+	{
+		if (!_engineReady)
+		{
+			return;
+		}
+		int n = _history.ResultNumber(entry);
+		if (n > 0)
+		{
+			try
+			{
+				await _session.DeleteResultAsync(n);
+			}
+			catch (EngineException ex)
+			{
+				AddNotice("(entry not deleted)", ex.Message);
+				return;
+			}
+		}
+		_history.RemoveEntry(entry);
+		if (entry.Id.Length > 0)
+		{
+			_deletedIds[entry.Id] = entry.Time;    // merged at close so the file and other windows drop it too
+			_sessionEntries.RemoveAll(e => e.Id == entry.Id);
+		}
+		_lastWasResult = _history.Entries.Count > 0 && _history.Entries[^1].Kind == "result";
 	}
 
 	private async Task ClearHistoryAsync()

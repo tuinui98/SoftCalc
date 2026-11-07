@@ -133,7 +133,18 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	{
 		Assert.Equal(2, await Session.RestoreResultsAsync(new[] { "10", "Tuesday, 27 October 2026", "0xFF" }));
 		Assert.Equal("256", (await Session.EvalAsync("answer+1")).Text);
-		Assert.Equal("10", (await Session.EvalAsync("$3")).Text);
+		Assert.Equal("10", (await Session.EvalAsync("$4")).Text);    // the long date keeps its place
+	}
+
+	[Fact]
+	public async Task DeleteResultRenumbersAndLiteralConverts()
+	{
+		await Session.EvalAsync("10");
+		await Session.EvalAsync("20");
+		await Session.DeleteResultAsync(1);
+		Assert.Equal("10", (await Session.EvalAsync("answer")).Text);    // answer follows $1
+		Assert.Equal("31", await Session.LiteralAsync("0x1F"));
+		Assert.Null(await Session.LiteralAsync("31"));
 	}
 
 	[Fact]

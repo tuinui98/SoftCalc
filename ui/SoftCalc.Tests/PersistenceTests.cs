@@ -66,6 +66,28 @@ public sealed class PersistenceTests : IDisposable
 	}
 
 	[Fact]
+	public void DeletedEntryStaysGoneFromFileAndOtherWindows()
+	{
+		var folder = new DataFolder(_dir);
+		HistoryStore.MergeAndSave(folder, new[] { Entry("a-1", 1), Entry("a-2", 2) }, null, 1000);
+		var deleted = new Dictionary<string, DateTime> { ["a-1"] = Entry("a-1", 1).Time };
+		HistoryStore.MergeAndSave(folder, Array.Empty<StoredEntry>(), null, 1000, deleted);    // this window deleted a loaded line
+		HistoryStore.MergeAndSave(folder, new[] { Entry("a-1", 1), Entry("b-1", 3) }, null, 1000);    // another window still had it
+		var file = HistoryStore.Load(folder.HistoryPath);
+		Assert.Equal(new[] { "a-2", "b-1" }, file.Entries.Select(e => e.Id));
+		Assert.True(file.DeletedIds.ContainsKey("a-1"));
+	}
+
+	[Fact]
+	public void ClearDropsDeletedMarksItCovers()
+	{
+		var onDisk = new HistoryFile(new[] { Entry("a-2", 5) }, null,
+			new Dictionary<string, DateTime> { ["a-1"] = Entry("a-1", 1).Time, ["a-3"] = Entry("a-3", 6).Time });
+		var merged = HistoryStore.Merge(onDisk, Array.Empty<StoredEntry>(), Entry("x", 3).Time, 1000);
+		Assert.Equal(new[] { "a-3" }, merged.DeletedIds.Keys);
+	}
+
+	[Fact]
 	public void MergeAndSaveRereadsTheFile()
 	{
 		var folder = new DataFolder(_dir);

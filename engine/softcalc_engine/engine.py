@@ -453,21 +453,36 @@ class Engine:
         """Rebuild `answer` and the `$n` stack from saved History result texts.
 
         Texts are oldest first, as shown on screen (hex, binary, dates,
-        durations and complex forms parse back). Text-only results and
-        anything that no longer parses are skipped. Returns the count kept.
+        durations and complex forms parse back). A text-only result, or
+        one that no longer parses, comes back as text, so `$n` counts
+        the same lines as before the restart and as History shows them.
+        Returns the count that parsed back as values.
         """
         restored = 0
         for text in texts:
             try:
                 value = self.value_of(text)
             except CalcError:
-                continue
+                value = TextValue(text)
             if isinstance(value, TextValue):
-                continue
+                value = TextValue(text)
+            else:
+                restored += 1
             self.results.append(value)
             self.answer = value
-            restored += 1
         return restored
+
+    def delete_result(self, n):
+        """Remove `$n` (1 = newest) when its History line is deleted.
+
+        Later references renumber; `answer` stays `$1`, and keeps its
+        value when the last result goes (as Clear History does).
+        """
+        if not 1 <= n <= len(self.results):
+            raise CalcError(f"${n} does not exist")
+        del self.results[-n]
+        if self.results:
+            self.answer = self.results[-1]
 
     def delete(self, name):
         """Remove a user variable or function; returns which one it was."""

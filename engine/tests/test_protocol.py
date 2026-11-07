@@ -246,11 +246,11 @@ def test_format_insert_and_catalog(dispatcher):
     assert "longdatetime" in ask(dispatcher, "catalog")["formats"]
 
 
-RESTORE_TEXTS = ["5", "0xFF", "Tuesday, 27 October 2026", "(3+4i)", "1:30:00", "27.10.2026", "ERROR:x", "1b*10b^101000b"]
+RESTORE_TEXTS = ["5", "0xFF", "Tuesday, 27 October 2026", "(3+4i)", "1:30:00", "27.10.2026", "1b*10b^101000b"]
 
 
 def test_restore_results_counts_parsable_values(dispatcher):
-    # the long date and the error line are skipped
+    # the long date comes back as text: it keeps its `$n` place but is no value
     assert ask(dispatcher, "restore_results", texts=RESTORE_TEXTS)["restored"] == 6
 
 
@@ -260,13 +260,39 @@ def test_restore_results_counts_parsable_values(dispatcher):
     ("$2", "27.10.2026"),
     ("$3", "1:30:00"),
     ("$4+1", "(4+4i)"),
-    ("$5", "255"),
-    ("$6", "5"),
+    ("$5", "Tuesday, 27 October 2026"),    # text results count, as before the restart
+    ("$6", "255"),
+    ("$7", "5"),
 ])
 def test_restore_results_rebuilds_answer_and_refs(line, want):
     fresh = Dispatcher()
     ask(fresh, "restore_results", texts=RESTORE_TEXTS)
     assert ask(fresh, "eval", input=line)["text"] == want
+
+
+def test_restore_counts_like_the_live_session():
+    live = Dispatcher()
+    texts = [ask(live, "eval", input=line)["text"] for line in ["1", "27.10.2026 [longdate]", "2"]]
+    fresh = Dispatcher()
+    ask(fresh, "restore_results", texts=texts)
+    assert ask(live, "eval", input="$3")["text"] == ask(fresh, "eval", input="$3")["text"] == "1"
+
+
+def test_delete_result_renumbers(dispatcher):
+    for line in ["10", "20", "30"]:
+        ask(dispatcher, "eval", input=line)
+    ask(dispatcher, "delete_result", n=2)    # the 20; now 10, 30
+    assert ask(dispatcher, "eval", input="$2")["text"] == "10"    # adds 10 again
+    ask(dispatcher, "delete_result", n=1)    # the newest; now 10, 30
+    assert ask(dispatcher, "eval", input="answer")["text"] == "30"    # answer stays $1
+    assert ask(dispatcher, "delete_result", n=9)["ok"] is False
+
+
+def test_delete_last_result_keeps_answer(dispatcher):
+    ask(dispatcher, "eval", input="7")
+    ask(dispatcher, "delete_result", n=1)
+    assert ask(dispatcher, "eval", input="$1")["kind"] == "error"
+    assert ask(dispatcher, "eval", input="answer")["text"] == "7"
 
 
 def test_restore_results_rejects_bad_payload(dispatcher):

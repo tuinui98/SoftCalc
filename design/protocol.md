@@ -126,8 +126,15 @@ without BOM (SPEC 8).
 `{"texts": ["5", "0xFF", "(3+4i)", ...]}` -> `{"restored": <int>}`.
 Result texts from a saved History, oldest first, are parsed back into
 values for `answer` and `$n` (M7). Text-only results (long dates) and
-lines that no longer parse are skipped. Values keep only the digits
-that were shown.
+lines that no longer parse come back as text, so `$n` numbers the same
+lines as before the restart; `restored` counts the ones that parsed
+back as values. Values keep only the digits that were shown.
+
+### `delete_result`
+`{"n": 2}` -> `{}`: removes `$n` (1 = newest) when its History line is
+deleted; later references renumber. `answer` stays `$1`; when the last
+result goes it keeps its value, as after `clear_history`. An `n`
+outside the stack is an error.
 
 ### `schedule`
 `{"principal": "1000", "annual_rate": "5", "years": "10",
