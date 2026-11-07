@@ -1,4 +1,4 @@
-# SoftCalc - to do (2026-11-06)
+# SoftCalc - to do (2026-11-06, updated 2026-11-07)
 
 Recorded at the owner's request after M8. Nothing here is started.
 
@@ -24,3 +24,28 @@ Recorded at the owner's request after M8. Nothing here is started.
       done 2026-11-06.
 - [x] Add/Edit dialogs: Functions / Variables editor, done 2026-11-07.
 - [x] Red error lines in History: owner keeps them (2026-11-07).
+
+## 5. Owner requests after v1.0.0 (2026-11-07, not started; discuss first)
+- [ ] About box: a short note only (name, version, data folder). The
+      third-party licence box is hidden at first; a link (e.g. "Show
+      third-party licences") opens it.
+- [ ] Number literals in another base than the current output base
+      (e.g. `0x1F` or `101b` while output is Decimal, `255` while
+      output is Hex):
+  - Input hint line: show the literal at the caret converted to the
+    current output base.
+  - History: the faint right-aligned numeric form (E10, as for
+    variables, `ans`, `$n`) also shows such literals in the current
+    base, so the line reads as one operation in that base.
+  - To settle: base taken at calculation time (like E10 values);
+    fractional/negative literals; whether a line with only such
+    literals (no variables) now gets the right-hand form; RPN.
+
+## 6. Still open from v1.0.0
+- [ ] Try the release exe on another PC (no .NET/Python) and with its
+      antivirus; the exe is unsigned (SmartScreen warning expected).
+- [ ] Live check of the read-only fallback (exe in Program Files, data
+      to `%APPDATA%\SoftCalc`); unit-tested only.
+- [ ] Graph lines vanishing on view switches: reported once, not
+      reproduced, skipped by the owner (STATUS.md "Open items").
+- [ ] File > Help (section 3).
