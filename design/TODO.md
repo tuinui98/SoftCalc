@@ -40,9 +40,16 @@ Recorded at the owner's request after M8. Nothing here is started.
   - Owner 2026-11-07: the base at calculation time (History never
     changes later); a line with such literals and no variables gets
     the right-hand form too; RPN the same.
-  - To settle: fractional and very large decimal literals with a
-    hex/bin/oct output (`0.1` has no exact hex form); negatives (the
-    proposal keeps `-` as the operator: `-0x1F` shows `-31`).
+  - Owner 2026-11-07, option B: a literal is converted only when the
+    current base can show it exactly (`0.5` shows `0x0.8`); otherwise
+    it stays as typed (`0.1`, or `1e40` past the fixed-digit limit).
+  - Owner 2026-11-07, negatives: `-` stays the operator and only the
+    number converts (`-0x1F` shows `-31`, `2*-0x1F` shows `2*-31`, no
+    parentheses); an RPN negative literal converts as one token.
+    Output stays sign and magnitude (`-0xFF`).
+- [ ] Two's complement (owner uses it often): to design. Proposal:
+      functions with the bit width as an argument rather than a global
+      word size; see the discussion of 2026-11-07.
 
 ## 6. Still open from v1.0.0
 - [ ] Try the release exe on another PC (no .NET/Python) and with its
