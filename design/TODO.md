@@ -111,7 +111,16 @@ Recorded at the owner's request after M8. Nothing here is started.
       Remove / Up / Down / Rename / New Group, Reset to default) or a
       lighter form; which commands can go on it (every menu command, or
       a set); saved in settings.json; what Reset restores.
+  - Owner 2026-11-08: (a) a Customize Ribbon window; every menu
+    command can go on the ribbon.
 - [ ] Graph line colours: let the owner change a function's colour.
       To plan: where to pick it (swatch in the function list, the
       editor, the legend), a colour dialog or a fixed palette, saved per
       function name, and how it looks in light and dark themes.
+  - Owner 2026-11-08: in the Graph window; click a colour swatch beside
+    the function in its list and pick with the Windows colour dialog.
+    The function list box may need a new layout for the swatches.
+- [ ] Question from the owner 2026-11-08: can the graph take an equation
+      that is not `f(x)=...` and convert it itself, e.g. the circle
+      `r^2=x^2+y^2`? Answered: yes, as an implicit plot (sample
+      lhs-rhs on a grid, draw where it changes sign); not decided yet.
