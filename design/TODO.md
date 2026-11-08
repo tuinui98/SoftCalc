@@ -123,4 +123,14 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [ ] Question from the owner 2026-11-08: can the graph take an equation
       that is not `f(x)=...` and convert it itself, e.g. the circle
       `r^2=x^2+y^2`? Answered: yes, as an implicit plot (sample
-      lhs-rhs on a grid, draw where it changes sign); not decided yet.
+      lhs-rhs on a grid, draw where it changes sign).
+  - Owner 2026-11-08: build it, in the same batch as line colours
+    (the function list gets a new layout for both). The equation is
+    typed in the Graph window; x and y are the axes, other names
+    (like `r`) are variables.
+  - Trace: pick x or y automatically, whichever gives one point: near
+    the mouse, fix x and solve for y where the curve is flatter, fix y
+    and solve for x where it is steeper (from the slope of lhs-rhs),
+    then mark that point on the curve.
+  - Open: what Copy sends for a traced point of an equation (both
+    values, or a choice when copying).
