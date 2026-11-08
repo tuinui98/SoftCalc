@@ -151,9 +151,13 @@ Recorded at the owner's request after M8. Nothing here is started.
     near or on top of each other).
   - No flicker between two close lines: stay on the current line until
     another is nearer by more than 4 px.
-- [ ] Conversions > Area (owner 2026-11-08). Proposed, not decided:
-      metric `mm2 cm2 m2 km2`, `a` (are) and `ha`; imperial `in2 ft2 yd2
-      acre mi2`; Thai `rai` (1600 m2), `ngan` (400 m2), `wa2` (square
-      wa, 4 m2). All exact through m2 (1 acre = 4046.8564224 m2). To
-      decide: token names and aliases (`m^2`, `sqft`, `ha`/`hectare`),
-      which units to keep, menu order.
+- [ ] Conversions > Area (owner 2026-11-08, decided as proposed):
+      metric `mm2 cm2 m2 km2 ha`; imperial `in2 ft2 yd2 acre mi2`; Thai
+      `rai` (1600 m2), `ngan` (400 m2), `wa2` (square wa, 4 m2). All
+      exact through m2 (1 acre = 4046.8564224 m2). No are (`a` is too
+      easy to misread). Aliases such as `m^2`, `sqm`, `sqft`, `hectare`,
+      `acres`, `ac`, `sqwa`. Menu order: metric, imperial, Thai, each
+      small to large, like Length.
+  - Owner wants rai-ngan-wa output too (used often), e.g. 6800 m2 as
+    `4-1-0`. Not decided: the tag name, text or number result, how to
+    type a rai-ngan-wa value in, rounding of the wa part.
