@@ -27,6 +27,9 @@ PREFIX_DIGITS = {
     10: re.compile(r"\d+"),
 }
 SUFFIX_BINARY = re.compile(r"[01]+b")
+# `4-1-50` right before an rnw tag is one rai-ngan-wa value (owner 2026-11-08)
+RNW_GROUP = re.compile(r"(\d+(?:\.\d+)?-\d+(?:\.\d+)?-\d+(?:\.\d+)?)"
+                       r"(?=\s*\[\s*(?:rnw|rai\s*-\s*ngan\s*-\s*wa)\s*(?:\]|-\s*>))", re.IGNORECASE)
 
 
 @dataclass
@@ -146,6 +149,11 @@ def tokenize(text):
                 raise CalcError(f"Malformed duration near '{text[i:duration.end() + 1]}'")
             tokens.append(Token("duration", duration.group(), i))
             i = duration.end()
+            continue
+        group = RNW_GROUP.match(text, i) if ch.isdigit() else None
+        if group:
+            tokens.append(Token("rnw", group.group(1), i))
+            i = group.end(1)
             continue
         if ch.isdigit() or (ch == "." and i + 1 < len(text) and text[i + 1].isdigit()):
             token, i = read_number(text, i)

@@ -82,7 +82,11 @@ Graph trace sends x as the shown decimal text (`g(1.43)` = 2.0449, not 2.0448999
 Customize Ribbon drag and drop (2026-11-09): move buttons and groups,
 drag commands in from the left, drag rows out to remove.
 
-Tests: engine `pytest` 492 passed (frozen-exe test included); UI `dotnet test` 250 passed.
+Area conversions and rai-ngan-wa (2026-11-09): Conversions > Area with
+Thai units, `rnw` values typed as `4-1-50 [rnw]`, History `= 4-1-0`,
+hint `4-1-50 = 4.375 rai`; History's faint text drops a repeated line.
+
+Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 258 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

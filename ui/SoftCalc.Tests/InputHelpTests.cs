@@ -79,6 +79,10 @@ public sealed class InputHelpTests
 	[InlineData("27.10.2026", null)]      // a date
 	[InlineData("1:30", null)]            // a duration
 	[InlineData("2+", null)]
+	[InlineData("4-1-50 [rnw", "4-1-50")]    // rai-ngan-wa group
+	[InlineData("2*4-1-50 [rnw->m2]", "4-1-50")]
+	[InlineData("10-4-1-50 [RNW]", "4-1-50")]    // the three before the tag, as the engine reads it
+	[InlineData("4-1-50", "50")]    // no tag: just the last number
 	public void LiteralAtCaret(string text, string? want)
 	{
 		Assert.Equal(want, InputHelp.LiteralAt(text, text.Length));

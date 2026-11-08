@@ -23,7 +23,7 @@ from .functions import WORD_FUNCTIONS, Functions, binary, negate, postfix
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
 from .rpn import parse_rpn
-from .units import convert
+from .units import RNW_NAMES, canonical, convert, rnw_text, rnw_value
 from . import currency
 from . import fastplot
 
@@ -137,7 +137,7 @@ class Engine:
                     return self.define(text, tree, builtins)
                 value = self.eval_node(tree, builtins, {}, 0)
                 shown = self.format_value(value)
-                display = self.display_line(text, builtins) + self.word_suffix(text, value)
+                display = self.display_line(text, builtins) + self.word_suffix(text, value) + self.rnw_suffix(text, value)
         except currency.RatesNeeded:
             return EvalResult("rates_needed", text)
         except CalcError as exc:
@@ -250,6 +250,22 @@ class Engine:
             return ""
         return " = " + format_real(value, self.settings.precision, "hex")
 
+    def rnw_suffix(self, text, value):
+        """` = 4-1-0` when the line's last tag converts to rai-ngan-wa
+        (`[rnw]`, `[m2->rnw]`): the result, in rai, as rai-ngan-wa
+        (owner 2026-11-08). Nothing for a result that is not real.
+        """
+        if not isinstance(value, mpmath.mpf):
+            return ""
+        try:
+            tags = [token.text for token in tokenize(text) if token.kind == "tag"]
+        except CalcError:
+            return ""
+        if not tags or canonical(tags[-1].partition("->")[2] or tags[-1]) not in RNW_NAMES:
+            return ""
+        s = self.settings
+        return " = " + rnw_text(value, s.precision, s.decimals, s.pad_zeros, format_number)
+
     def display_rpn_item(self, word, builtins):
         tokens = tokenize(word)
         # An RPN negative literal (`-0x1F`) is one item: keep the sign
@@ -305,6 +321,9 @@ class Engine:
             tokens = tokenize(text.strip())
         except CalcError:
             return None
+        if re.fullmatch(r"\d+(?:\.\d+)?-\d+(?:\.\d+)?-\d+(?:\.\d+)?", text.strip()):
+            with self.working_context():
+                return self.format_value(rnw_value(text.strip())) + " rai"    # `4-1-50 = 4.375 rai`
         if len(tokens) != 2 or tokens[0].kind != "number":
             return None
         with self.working_context():
@@ -384,6 +403,8 @@ class Engine:
             return mpmath.mpf(int(literal, base))
         if kind == "imag":
             return mpmath.mpc(0, mpmath.mpf(node[1]))
+        if kind == "rnw":
+            return rnw_value(node[1])
         if kind == "date":
             return parse_literal(DATE_LITERAL.fullmatch(node[1]))
         if kind == "duration":

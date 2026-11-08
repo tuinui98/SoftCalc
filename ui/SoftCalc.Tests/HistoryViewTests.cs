@@ -42,4 +42,14 @@ public class HistoryViewTests
 		Assert.Equal(1, view.ResultNumber(first));    // renumbered
 		Assert.Equal(3, view.Entries.Count);
 	}
+
+	[Theory]
+	[InlineData("4-1-50[rnw]+0-2-400[rnw]", "4-1-50[rnw]+0-2-400[rnw] = 5-3-50", "= 5-3-50")]
+	[InlineData("twos(-1, 8)", "twos(-1, 8) = 0xFF", "= 0xFF")]
+	[InlineData("twos(-1)", "twos(-1, 32) = 0xFFFFFFFF", "twos(-1, 32) = 0xFFFFFFFF")]    // the line itself changed: all of it
+	[InlineData("2x", "2*5", "2*5")]
+	public void RightTextDropsARepeatedLine(string input, string display, string want)
+	{
+		Assert.Equal(want, new HistoryEntry("result", input, display, "1").RightText);
+	}
 }

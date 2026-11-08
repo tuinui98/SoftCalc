@@ -25,6 +25,13 @@ internal sealed record HistoryEntry(string Kind, string Input, string DisplayInp
 
 	// The right-hand numeric form is shown only when it differs from the input
 	public bool HasSubstitution => Kind == "result" && DisplayInput != Input;
+
+	// The faint right-hand text: when it is the typed line plus an added
+	// ` = ...` (rai-ngan-wa `= 5-3-50`, twos `= 0xFF`), only that part, so
+	// a narrow window does not cut it off (owner 2026-11-09)
+	public string RightText => DisplayInput.StartsWith(Input + " = ", StringComparison.Ordinal)
+		? DisplayInput[(Input.Length + 1)..]
+		: DisplayInput;
 }
 
 internal sealed class HistoryView : ListBox
@@ -195,7 +202,7 @@ internal sealed class HistoryView : ListBox
 			var right = Rectangle.FromLTRB(line1.Left + inputWidth + Gap, line1.Top, line1.Right, line1.Bottom);
 			if (right.Width > 20)
 			{
-				TextRenderer.DrawText(e.Graphics, entry.DisplayInput, Font, right, faint,
+				TextRenderer.DrawText(e.Graphics, entry.RightText, Font, right, faint,
 					flags | TextFormatFlags.Right | TextFormatFlags.EndEllipsis);
 			}
 		}
