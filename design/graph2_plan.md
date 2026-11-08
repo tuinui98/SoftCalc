@@ -48,3 +48,20 @@ Decisions are in `design/TODO.md` section 7. Built 2026-11-09 on branch
   locked mode re-squares after zoom, pan and resize at the previous
   scale (the drawing width at the last paint), twice because the y
   numbers' width moves the left edge.
+
+## Speed (owner 2026-11-09: lines lagged while zooming and dragging)
+- Measured before: mpmath at 20 digits, ~36 us per value; one redraw
+  of g, a circle and y^2=x^3-x took ~0.8 s, rounds were started every
+  120 ms without waiting, so requests queued in the engine, and the
+  sidebar graph recomputed too.
+- UI: one round at a time, later changes folded into one more round
+  with the newest range; each line shows as it arrives; the Graph
+  window asks at most every 40 ms; the sidebar waits until changes
+  stop for 400 ms and does nothing while hidden.
+- Engine `fastplot.py`: expressions made only of numbers, real
+  variables, + - * / ^ mod, the elementary functions and user
+  functions of those compile to float closures for `plot` and
+  `plot_equation`; anything else keeps mpmath. Circle 457 -> 24 ms,
+  cubic 284 -> 19 ms, a 600-point function ~1 ms. Values for trace,
+  Copy and results stay full precision. Parity tests compare both
+  paths in rad, deg and grad.

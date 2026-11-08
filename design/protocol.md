@@ -99,7 +99,8 @@ function is undefined or complex (the UI breaks the line there).
 - xy: x runs from start to end; y = f(x).
 - polar: theta runs from start to end; r = f(theta);
   point = (r cos theta, r sin theta), theta in radians.
-- Only one-parameter user functions; computed at low precision.
+- Only one-parameter user functions; computed at low precision
+  (plain floats when the expression allows, `fastplot.py`).
 
 ### `value_at`
 `{"function": "g", "x": 1.5}` -> `{"text": "...", "value": 1.23}`:

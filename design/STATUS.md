@@ -74,7 +74,10 @@ to the nearest shown line and solves equations with `equation_at`.
 Graph window (2026-11-09): size, place and Range width remembered; 1:1
 scale button with a lock that survives zoom, pan and resize.
 
-Tests: engine `pytest` 401 passed (frozen-exe test included); UI `dotnet test` 248 passed.
+Graph speed (2026-11-09): float drawing path in the engine (10-20x),
+non-overlapping refresh rounds, sidebar waits while hidden or dragging.
+
+Tests: engine `pytest` 491 passed (frozen-exe test included); UI `dotnet test` 248 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
