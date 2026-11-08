@@ -132,5 +132,22 @@ Recorded at the owner's request after M8. Nothing here is started.
     the mouse, fix x and solve for y where the curve is flatter, fix y
     and solve for x where it is steeper (from the slope of lhs-rhs),
     then mark that point on the curve.
-  - Open: what Copy sends for a traced point of an equation (both
-    values, or a choice when copying).
+  - Copy (owner 2026-11-08): a left click copies the solved value (y
+    when x was fixed, x when y was fixed); the right-click menu has
+    Copy x, Copy y and Copy (x, y), and Insert in Input the same three.
+    `f(x)` lines keep their current Copy Value / Insert Value.
+- [ ] Trace snaps to the nearest line (owner 2026-11-08, same batch):
+  - Measure the pixel distance from the mouse to every shown line
+    (`f(x)`, polar, equations) using the points already drawn; trace
+    the nearest one within 20 px. Farther away: no dot, the status
+    line shows only the mouse coordinates.
+  - Snap to the nearest point on that line, not only the mouse's x:
+    `f(x)` uses that point's x (rounded as the status line shows it)
+    and asks the engine for the exact value as now; polar uses its
+    angle; an equation starts the fix-x-or-y solve from it.
+  - The dot takes the line's colour and the status line names the
+    function. Left click, Copy and Insert act on the snapped line.
+  - The drop-down's selected function wins only a tie (lines equally
+    near or on top of each other).
+  - No flicker between two close lines: stay on the current line until
+    another is nearer by more than 4 px.
