@@ -85,5 +85,7 @@ Goal: the same ribbon as now, but built from data.
 - Docs: `spec/extensions.md`, `design/STATUS.md`, TODO ticks.
 
 ## Later (TODO)
-- Drag and drop in the right tree.
+- Drag and drop in the right tree: done 2026-11-09 (`RibbonLayout.MoveTo`
+  / `InsertAt`, native insert mark; the rebuilt list keeps its scroll
+  position).
 - Icon picker.

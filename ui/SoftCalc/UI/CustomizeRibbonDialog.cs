@@ -118,6 +118,7 @@ internal sealed class CustomizeRibbonDialog : Form
 		_ribbon.AfterCollapse += (_, _) => PlaceRowButtons();
 		_ribbon.NodeMouseDoubleClick += (_, _) => EditSelected();
 		_ribbon.KeyDown += OnRibbonKey;
+		HookDragAndDrop();
 		// end BLOCK 3
 
 		//==================================================================
@@ -209,6 +210,9 @@ internal sealed class CustomizeRibbonDialog : Form
 	//==================================================================
 	private void FillRibbon(RibbonPos? select)
 	{
+		int topRow = RowIndex(_ribbon.TopNode);    // the rebuilt list keeps its scroll position
+		_refilling = true;    // rows and layout disagree until the end
+		_rowButtons.Visible = false;
 		_ribbon.BeginUpdate();
 		_ribbon.Nodes.Clear();
 		for (int g = 0; g < _layout.Count; g++)
@@ -224,6 +228,11 @@ internal sealed class CustomizeRibbonDialog : Form
 		}
 		_ribbon.ExpandAll();
 		_ribbon.EndUpdate();
+		if (RowAt(topRow) is { } top)
+		{
+			_ribbon.TopNode = top;
+		}
+		_refilling = false;
 		if (select is { } pos)
 		{
 			Select(pos, refill: false);
@@ -232,6 +241,52 @@ internal sealed class CustomizeRibbonDialog : Form
 		{
 			PlaceRowButtons();
 		}
+	}
+
+	// Rows counted from the top, groups and buttons alike (all expanded)
+	private int RowIndex(TreeNode? node)
+	{
+		int row = 0;
+		foreach (TreeNode group in _ribbon.Nodes)
+		{
+			if (group == node)
+			{
+				return row;
+			}
+			row++;
+			foreach (TreeNode child in group.Nodes)
+			{
+				if (child == node)
+				{
+					return row;
+				}
+				row++;
+			}
+		}
+		return -1;
+	}
+
+	private TreeNode? RowAt(int row)
+	{
+		if (row < 0)
+		{
+			return null;
+		}
+		foreach (TreeNode group in _ribbon.Nodes)
+		{
+			if (row-- == 0)
+			{
+				return group;
+			}
+			foreach (TreeNode child in group.Nodes)
+			{
+				if (row-- == 0)
+				{
+					return child;
+				}
+			}
+		}
+		return null;
 	}
 
 	private TreeNode ItemNode(RibbonItem item, RibbonPos pos)
@@ -249,7 +304,7 @@ internal sealed class CustomizeRibbonDialog : Form
 
 	private RibbonPos? Selected()
 	{
-		return _ribbon.SelectedNode?.Tag as RibbonPos?;
+		return _ribbon.SelectedNode?.Tag is RibbonPos pos && IsValid(pos) ? pos : null;
 	}
 
 	private void Select(RibbonPos pos, bool refill)
@@ -288,15 +343,17 @@ internal sealed class CustomizeRibbonDialog : Form
 		return button;
 	}
 
+	private bool _refilling;
+
 	private void PlaceRowButtons()
 	{
 		var node = _ribbon.SelectedNode;
-		if (node == null || node.Bounds.Height == 0 || node.Bounds.Bottom > _ribbon.ClientSize.Height || node.Bounds.Top < 0)
+		if (_refilling || node?.Tag is not RibbonPos pos || !IsValid(pos)
+			|| node.Bounds.Height == 0 || node.Bounds.Bottom > _ribbon.ClientSize.Height || node.Bounds.Top < 0)
 		{
 			_rowButtons.Visible = false;
 			return;
 		}
-		var pos = (RibbonPos)node.Tag!;
 		_up.Enabled = CanMove(pos, -1);
 		_down.Enabled = CanMove(pos, +1);
 		_edit.Enabled = pos.IsGroup || _commands.Find(_layout[pos.Group].Items[pos.Item].Id) != null;
@@ -306,10 +363,146 @@ internal sealed class CustomizeRibbonDialog : Form
 		_rowButtons.Visible = true;
 	}
 
+	private bool IsValid(RibbonPos pos)
+	{
+		return pos.Group >= 0 && pos.Group < _layout.Count && (pos.IsGroup || pos.Item < _layout[pos.Group].Items.Count);
+	}
+
 	private bool CanMove(RibbonPos pos, int step)
 	{
 		var copy = RibbonLayout.Clone(_layout);
 		return RibbonLayout.Move(copy, pos, step) != pos;
+	}
+
+	//==================================================================
+	//  Drag and drop (owner 2026-11-09)
+	//==================================================================
+	// Right list: move buttons and groups. Left to right: add at the drop
+	// place. Right to left: remove. The native insert mark shows where.
+	private const int EdgePixels = 16;    // near the top or bottom edge a drag scrolls the list
+	private long _lastScroll;
+
+	private void HookDragAndDrop()
+	{
+		_ribbon.AllowDrop = true;
+		_available.AllowDrop = true;
+		_ribbon.ItemDrag += (_, e) =>
+		{
+			if (e.Item is TreeNode { Tag: RibbonPos pos } node)
+			{
+				_ribbon.SelectedNode = node;
+				_rowButtons.Visible = false;
+				_ribbon.DoDragDrop(new RibbonDrag { From = pos }, DragDropEffects.Move);
+				PlaceRowButtons();
+			}
+		};
+		_available.ItemDrag += (_, e) =>
+		{
+			if (e.Item is TreeNode { Tag: RibbonCommand command })
+			{
+				_available.DoDragDrop(new RibbonDrag { Command = command }, DragDropEffects.Copy);
+			}
+		};
+		_ribbon.DragEnter += (_, e) => OnRibbonDragOver(e);
+		_ribbon.DragOver += (_, e) => OnRibbonDragOver(e);
+		_ribbon.DragLeave += (_, _) => _ribbon.SetInsertMark(null, false);
+		_ribbon.DragDrop += (_, e) => OnRibbonDrop(e);
+		_available.DragEnter += (_, e) => e.Effect = Dragged(e)?.From != null ? DragDropEffects.Move : DragDropEffects.None;
+		_available.DragOver += (_, e) => e.Effect = Dragged(e)?.From != null ? DragDropEffects.Move : DragDropEffects.None;
+		_available.DragDrop += (_, e) =>
+		{
+			if (Dragged(e)?.From is { } from)
+			{
+				FillRibbon(RibbonLayout.Remove(_layout, from));    // dragged back: removed
+			}
+		};
+	}
+
+	private static RibbonDrag? Dragged(DragEventArgs e)
+	{
+		return e.Data?.GetData(typeof(RibbonDrag)) as RibbonDrag;
+	}
+
+	private void OnRibbonDragOver(DragEventArgs e)
+	{
+		var drag = Dragged(e);
+		var at = _ribbon.PointToClient(new Point(e.X, e.Y));
+		if (drag == null || DropTarget(at, drag.From is { IsGroup: true }) is not { } target)
+		{
+			e.Effect = DragDropEffects.None;
+			_ribbon.SetInsertMark(null, false);
+			return;
+		}
+		e.Effect = drag.From != null ? DragDropEffects.Move : DragDropEffects.Copy;
+		_ribbon.SetInsertMark(target.Mark, target.After);
+		if ((at.Y < EdgePixels || at.Y > _ribbon.ClientSize.Height - EdgePixels) && Environment.TickCount64 - _lastScroll > 80)
+		{
+			_lastScroll = Environment.TickCount64;
+			_ribbon.ScrollLine(down: at.Y > EdgePixels);
+		}
+	}
+
+	private void OnRibbonDrop(DragEventArgs e)
+	{
+		_ribbon.SetInsertMark(null, false);
+		var drag = Dragged(e);
+		var at = _ribbon.PointToClient(new Point(e.X, e.Y));
+		if (drag == null || DropTarget(at, drag.From is { IsGroup: true }) is not { } target)
+		{
+			return;
+		}
+		if (drag.From is { } from)
+		{
+			Select(RibbonLayout.MoveTo(_layout, from, target.Group, target.Index), refill: true);
+		}
+		else if (drag.Command is { } command)
+		{
+			Select(RibbonLayout.InsertAt(_layout, target.Group, target.Index, command.Id), refill: true);
+		}
+	}
+
+	// Where a drop at a point goes, and where the insert mark is drawn.
+	// A button: before or after the row (by its upper or lower half); on a
+	// group's row, lower half = first in that group, upper half = last in
+	// the group above. A group: before its own row's upper half, else
+	// after the group the point is in.
+	private (int Group, int Index, TreeNode? Mark, bool After)? DropTarget(Point at, bool movingGroup)
+	{
+		if (_layout.Count == 0)
+		{
+			return movingGroup ? null : (0, 0, null, false);
+		}
+		var node = _ribbon.GetNodeAt(at);
+		if (node?.Tag is not RibbonPos pos)
+		{
+			int last = _layout.Count - 1;    // empty space below the rows: the end
+			return movingGroup ? (_layout.Count, -1, LastNodeOf(last), true) : (last, _layout[last].Items.Count, LastNodeOf(last), true);
+		}
+		bool upper = at.Y < node.Bounds.Top + node.Bounds.Height / 2;
+		if (movingGroup)
+		{
+			return pos.IsGroup && upper ? (pos.Group, -1, node, false) : (pos.Group + 1, -1, LastNodeOf(pos.Group), true);
+		}
+		if (!pos.IsGroup)
+		{
+			return upper ? (pos.Group, pos.Item, node, false) : (pos.Group, pos.Item + 1, node, true);
+		}
+		if (upper && pos.Group > 0)
+		{
+			int above = pos.Group - 1;
+			return (above, _layout[above].Items.Count, LastNodeOf(above), true);
+		}
+		return (pos.Group, 0, node, true);
+	}
+
+	private TreeNode? LastNodeOf(int group)
+	{
+		if (group < 0 || group >= _ribbon.Nodes.Count)
+		{
+			return null;
+		}
+		var node = _ribbon.Nodes[group];
+		return node.Nodes.Count > 0 ? node.Nodes[node.Nodes.Count - 1] : node;
 	}
 
 	private void OnRibbonKey(object? sender, KeyEventArgs e)
@@ -485,11 +678,22 @@ internal sealed class CustomizeRibbonDialog : Form
 	}
 }
 
-// A TreeView that tells when it scrolls, so the row buttons can follow
+// What is being dragged: a ribbon row (From) or an available command (Command)
+internal sealed class RibbonDrag
+{
+	public RibbonPos? From { get; init; }
+	public RibbonCommand? Command { get; init; }
+}
+
+// A TreeView that tells when it scrolls, so the row buttons can follow,
+// and shows the native insert mark line while dragging
 internal sealed class RowTree : TreeView
 {
 	private const int WmVScroll = 0x0115;
 	private const int WmMouseWheel = 0x020A;
+	private const int TvmSetInsertMark = 0x111A;
+	private const int ScrollLineUp = 0;
+	private const int ScrollLineDown = 1;
 
 	public event EventHandler? Scrolled;
 
@@ -501,4 +705,19 @@ internal sealed class RowTree : TreeView
 			Scrolled?.Invoke(this, EventArgs.Empty);
 		}
 	}
+
+	// A line above (after: below) the node; null clears it
+	public void SetInsertMark(TreeNode? node, bool after)
+	{
+		SendMessage(Handle, TvmSetInsertMark, after ? 1 : 0, node?.Handle ?? IntPtr.Zero);
+	}
+
+	// One line up or down while a drag is near the top or bottom edge
+	public void ScrollLine(bool down)
+	{
+		SendMessage(Handle, WmVScroll, down ? ScrollLineDown : ScrollLineUp, IntPtr.Zero);
+	}
+
+	[System.Runtime.InteropServices.DllImport("user32.dll")]
+	private static extern IntPtr SendMessage(IntPtr hwnd, int msg, int wParam, IntPtr lParam);
 }
