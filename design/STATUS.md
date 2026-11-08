@@ -159,3 +159,14 @@ Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 2
 - The engine exe `engine/dist/softcalc-engine.exe` is rebuilt with
   `build/build_engine.ps1`; it is only needed for packaging and for
   tests run from outside the repo folder.
+- Next: nothing ordered. Open in `design/TODO.md`: the other-PC test
+  (on hold) and File > Help (to discuss). The owner batches requests:
+  note them in TODO, build when told, release only when asked.
+- Driving UI handlers without the real mouse (graph trace, drops in
+  Customize Ribbon): a small reflection harness that creates MainForm
+  and calls the protected handlers. Run it from
+  `ui/SoftCalc/bin/Debug/net10.0-windows/` so it finds the dev engine;
+  its windows show on the owner's screen; restore the clipboard.
+- Shell edits: Git Bash heredocs collapse `\` and eat ``-like
+  sequences; edit files with the Edit/Write tools or Python using
+  `chr(92)` for backslashes.
