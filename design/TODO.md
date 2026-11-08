@@ -113,6 +113,36 @@ Recorded at the owner's request after M8. Nothing here is started.
       a set); saved in settings.json; what Reset restores.
   - Owner 2026-11-08: (a) a Customize Ribbon window; every menu
     command can go on the ribbon.
+  - Layout decided 2026-11-08 (owner showed ImageGlass Settings >
+    Layout > Toolbar as the model; adapted because the ribbon has
+    groups):
+    - Opened from View > Customize Ribbon... and the ribbon's
+      right-click menu (SoftCalc has no Settings window).
+    - Left: "Available commands" by menu (File, View, Functions,
+      Conversions, User Functions) with a menu filter and a search box.
+      Right: the ribbon as a tree, groups with their buttons. Between
+      them Add (also double-click) and Remove; Add appends to the
+      selected group.
+    - Toolbar on the right list: New group, Reset to default (the
+      current layout). The selected row shows Up / Down / Edit /
+      Remove like ImageGlass; buttons move across groups, groups move
+      too.
+    - Edit a group: caption and column count. Edit a button: shown
+      label and display (icon, text, both).
+    - OK / Cancel / Apply; Apply updates the real ribbon at once.
+    - Saved in settings.json as groups of stable command ids
+      (`view.base.hex`, `func.sqrt`, `conv.ft.in`); an id that no longer
+      exists (a deleted user function) is skipped.
+    - Function and conversion buttons: a function inserts like its menu
+      item (`sqrt(`); a conversion button holds one pair chosen when it
+      is added (`[ft->in]`). The whole Conversions drop-down is an item
+      too.
+    - User functions are listed and can be added.
+    - Icons: commands that have one keep it; the rest show text only
+      (no icon picker in this round).
+    - Order by Up / Down buttons in this round.
+- [ ] Later: drag and drop to reorder buttons and groups in the
+      Customize Ribbon tree (owner 2026-11-08).
 - [ ] Graph line colours: let the owner change a function's colour.
       To plan: where to pick it (swatch in the function list, the
       editor, the legend), a colour dialog or a fixed palette, saved per
