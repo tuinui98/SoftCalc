@@ -1,108 +1,134 @@
-// Ribbon.cs - Button groups under the menu bar (owner's layout B3, 2026-11-06)
+// Ribbon.cs - Button groups under the menu bar, built from a layout (Customize Ribbon)
 //
-// Angle, Output, Decimals (caption shows a sample of the format), Mode,
-// History (Clear, Save) and Tools (Graph, Interest, On top, Conversions).
-// Every button repeats a menu command; check marks follow the engine
-// settings through ShowSettings. Built from stock ToolStrips that wrap
-// onto more rows when the window is narrow.
+// The default layout is B3 (owner 2026-11-06): Angle, Output, Decimals
+// (caption shows a sample of the format), Mode, History, Tools. Each
+// button runs a menu command (RibbonCommands); check marks follow the
+// menu items. Built from stock ToolStrips that wrap onto more rows when
+// the window is narrow. Plan: design/ribbon_plan.md.
 
 using System.Text.Json.Nodes;
 using SoftCalc.Logic;
 
 namespace SoftCalc.UI;
 
-internal sealed record RibbonActions(
-	Func<string, object, Task> ChangeSetting,
-	Func<int, Task> StepDecimals,
-	Func<Task> AllDecimals,
-	Func<Task> ClearHistory,
-	Action SaveHistory,
-	Action OpenGraph,
-	Action OpenInterest,
-	Action ToggleOnTop);
-
 internal sealed class Ribbon : FlowLayoutPanel
 {
 	private const int IconSize = 20;
 
-	private readonly RibbonActions _actions;
-	private readonly Dictionary<(string Key, string Value), ToolStripItem> _choices = new();
-	private readonly ToolStripDropDownButton _precision = new("Prec 32") { DisplayStyle = ToolStripItemDisplayStyle.Text };
-	private readonly ToolStripDropDownButton _wordSize = new("Word 32") { DisplayStyle = ToolStripItemDisplayStyle.Text, ToolTipText = "Word size: bits for twos(x) and signed(x)" };
-	private readonly ToolStripButton _all;
-	private readonly ToolStripButton _onTop;
-	private readonly Label _decimalsCaption = new();
+	private readonly List<(Label Label, string Caption)> _captions = new();
+	private readonly List<(ToolStripItem Item, Func<string> Text)> _dynamic = new();
+	private readonly List<Action> _unhook = new();
+	private readonly ContextMenuStrip _menu = new();
+	private int? _decimals;
 
-	// Filled by the main window with the same items as the Conversions menu
-	public ToolStripDropDownButton Conversions { get; }
+	public event EventHandler? CustomizeRequested;
+	public event EventHandler? HideRequested;
 
-	public Ribbon(RibbonActions actions)
+	public Ribbon()
 	{
-		_actions = actions;
 		Dock = DockStyle.Top;
 		AutoSize = true;
 		WrapContents = true;
 		Padding = new Padding(2);
 		BackColor = SystemColors.ControlLight;
+		_menu.Items.Add(new ToolStripMenuItem("&Customize Ribbon...", null, (_, _) => CustomizeRequested?.Invoke(this, EventArgs.Empty)));
+		_menu.Items.Add(new ToolStripMenuItem("&Hide Ribbon", null, (_, _) => HideRequested?.Invoke(this, EventArgs.Empty)));
+		ContextMenuStrip = _menu;
+	}
 
-		_all = Command("All digits", null, async () => await _actions.AllDecimals(), text: "All");
-		_onTop = Command("On top", "pushpin", () =>
+	//==================================================================
+	//  Build from a layout
+	//==================================================================
+	// Buttons whose command is missing are left out; so are empty groups
+	public void Build(IReadOnlyList<RibbonGroup> layout, RibbonCommands commands)
+	{
+		SuspendLayout();
+		foreach (var unhook in _unhook)
 		{
-			_actions.ToggleOnTop();
-			return Task.CompletedTask;
-		});
-		Conversions = new ToolStripDropDownButton("Conversions", Icon("swap-horizontal"))
-		{
-			DisplayStyle = ToolStripItemDisplayStyle.ImageAndText, ImageScaling = ToolStripItemImageScaling.None,
-		};
-		foreach (int precision in new[] { 32, 64, 128, 512 })
-		{
-			var item = new ToolStripMenuItem(precision.ToString(), null, async (_, _) => await _actions.ChangeSetting("precision", precision));
-			_choices[("precision", precision.ToString())] = item;
-			_precision.DropDownItems.Add(item);
+			unhook();
 		}
-		foreach (int bits in new[] { 8, 16, 32, 64 })
+		_unhook.Clear();
+		_captions.Clear();
+		_dynamic.Clear();
+		var old = Controls.Cast<Control>().ToList();
+		Controls.Clear();
+		foreach (var control in old)
 		{
-			var item = new ToolStripMenuItem($"{bits} bits", null, async (_, _) => await _actions.ChangeSetting("word_size", bits));
-			_choices[("word_size", bits.ToString())] = item;
-			_wordSize.DropDownItems.Add(item);
+			control.Dispose();
 		}
-
-		Controls.Add(Group("Angle", 3, null, Choice("angle", "deg", "Deg"), Choice("angle", "rad", "Rad"), Choice("angle", "grad", "Grad")));
-		Controls.Add(Group("Output", 5, null, Choice("base", "dec", "Dec"), Choice("base", "hex", "Hex"),
-			Choice("base", "bin", "Bin"), Choice("base", "oct", "Oct"), _wordSize));
-		Controls.Add(Group("Decimals", 3, _decimalsCaption,
-			Command("More decimal places", "decimal-increase", async () => await _actions.StepDecimals(+1), iconOnly: true),
-			Command("Fewer decimal places", "decimal-decrease", async () => await _actions.StepDecimals(-1), iconOnly: true),
-			_all));
-		Controls.Add(Group("Mode", 2, null, Choice("rpn", "true", "RPN"), _precision));
-		Controls.Add(Group("History", 2, null,
-			Command("Clear", "trash", async () => await _actions.ClearHistory()),
-			Command("Save", "save", () =>
+		foreach (var group in layout)
+		{
+			var items = group.Items
+				.Select(item => (item, command: commands.Find(item.Id)))
+				.Where(pair => pair.command != null)
+				.Select(pair => MakeItem(pair.item, pair.command!))
+				.ToArray();
+			if (items.Length > 0)
 			{
-				_actions.SaveHistory();
-				return Task.CompletedTask;
-			})));
-		Controls.Add(Group("Tools", 4, null,
-			Command("Graph", "line-chart", () =>
-			{
-				_actions.OpenGraph();
-				return Task.CompletedTask;
-			}),
-			Command("Interest", "compound-interest", () =>
-			{
-				_actions.OpenInterest();
-				return Task.CompletedTask;
-			}),
-			_onTop, Conversions));
-		ShowDecimals(null);
+				Controls.Add(Group(group.Caption, group.Columns, items));
+			}
+		}
+		ShowDecimals(_decimals);
+		ResumeLayout();
 		EqualizeHeights();
+	}
+
+	private ToolStripItem MakeItem(RibbonItem item, RibbonCommand command)
+	{
+		string display = item.Display ?? (command.Icon != null ? "both" : "text");
+		bool hasIcon = command.Icon != null && display != "text";
+		ToolStripItem button;
+		if (command.IsDropDown)
+		{
+			var dropDown = new ToolStripDropDownButton();
+			dropDown.DropDownItems.Add(new ToolStripMenuItem("..."));    // placeholder so it opens
+			dropDown.DropDownOpening += (_, _) => RibbonCommands.FillCopies(dropDown.DropDownItems, command.Children!().ToList());
+			button = dropDown;
+		}
+		else
+		{
+			var plain = new ToolStripButton();
+			var source = command.Source!;
+			plain.Click += (_, _) => source.PerformClick();
+			EventHandler sync = (_, _) =>
+			{
+				plain.Checked = source.Checked;
+				plain.Enabled = source.Enabled;
+			};
+			source.CheckedChanged += sync;
+			source.EnabledChanged += sync;
+			_unhook.Add(() =>
+			{
+				source.CheckedChanged -= sync;
+				source.EnabledChanged -= sync;
+			});
+			sync(null, EventArgs.Empty);
+			button = plain;
+		}
+		button.Text = item.Label ?? command.DynamicText?.Invoke() ?? command.Text;
+		if (item.Label == null && command.DynamicText != null)
+		{
+			_dynamic.Add((button, command.DynamicText));
+		}
+		button.ToolTipText = command.Path;
+		button.ImageScaling = ToolStripItemImageScaling.None;
+		if (hasIcon)
+		{
+			button.Image = Icon(command.Icon!);
+		}
+		button.DisplayStyle = !hasIcon ? ToolStripItemDisplayStyle.Text
+			: display == "icon" ? ToolStripItemDisplayStyle.Image : ToolStripItemDisplayStyle.ImageAndText;
+		return button;
 	}
 
 	// Every group frame as tall as the tallest one (owner 2026-11-06)
 	private void EqualizeHeights()
 	{
 		var groups = Controls.OfType<TableLayoutPanel>().ToList();
+		if (groups.Count == 0)
+		{
+			return;
+		}
 		foreach (var group in groups)
 		{
 			group.MinimumSize = Size.Empty;
@@ -129,97 +155,62 @@ internal sealed class Ribbon : FlowLayoutPanel
 	//==================================================================
 	//  State from the engine settings
 	//==================================================================
+	// Check marks follow the menu items; this updates texts that show values
 	public void ShowSettings(JsonObject settings)
 	{
-		foreach (var ((key, value), item) in _choices)
+		foreach (var (item, text) in _dynamic)
 		{
-			bool on = settings[key]?.ToJsonString().Trim('"') == value;
-			switch (item)
-			{
-				case ToolStripButton button:
-					button.Checked = on;
-					break;
-				case ToolStripMenuItem menuItem:
-					menuItem.Checked = on;
-					break;
-			}
+			item.Text = text();
 		}
-		_precision.Text = $"Prec {(int?)settings["precision"] ?? 32}";
-		_wordSize.Text = $"Word {(int?)settings["word_size"] ?? 32}";
 		ShowDecimals((int?)settings["decimals"]);
-	}
-
-	public void ShowOnTop(bool onTop)
-	{
-		_onTop.Checked = onTop;
 	}
 
 	private void ShowDecimals(int? decimals)
 	{
-		_decimalsCaption.Text = "Decimals  " + DecimalSteps.Sample(decimals);
-		_all.Checked = decimals == null;
+		_decimals = decimals;
+		foreach (var (label, caption) in _captions)
+		{
+			label.Text = caption.Replace(RibbonLayout.DecimalsToken, DecimalSteps.Sample(decimals));
+		}
+		EqualizeHeights();
 	}
 
 	//==================================================================
 	//  Building blocks
 	//==================================================================
-	private ToolStripButton Choice(string key, string value, string text)
-	{
-		var button = new ToolStripButton(text) { DisplayStyle = ToolStripItemDisplayStyle.Text };
-		object setting = key switch
-		{
-			"rpn" => true,    // the handler flips RPN
-			"precision" => int.Parse(value),
-			_ => value,
-		};
-		button.Click += async (_, _) => await _actions.ChangeSetting(key, setting);
-		_choices[(key, value)] = button;
-		return button;
-	}
-
-	private ToolStripButton Command(string name, string? icon, Func<Task> run, bool iconOnly = false, string? text = null)
-	{
-		var button = new ToolStripButton(text ?? name)
-		{
-			ToolTipText = name, ImageScaling = ToolStripItemImageScaling.None,
-			DisplayStyle = icon == null ? ToolStripItemDisplayStyle.Text
-				: iconOnly ? ToolStripItemDisplayStyle.Image : ToolStripItemDisplayStyle.ImageAndText,
-		};
-		if (icon != null)
-		{
-			button.Image = Icon(icon);
-		}
-		button.Click += async (_, _) => await run();
-		return button;
-	}
-
 	private Bitmap Icon(string name)
 	{
 		int size = (int)Math.Round(IconSize * DeviceDpi / 96.0);
 		return SvgIcon.Get(name, size, SystemColors.ControlText);
 	}
 
-	private static Control Group(string caption, int columns, Label? captionLabel, params ToolStripItem[] items)
+	private Control Group(string caption, int columns, ToolStripItem[] items)
 	{
 		var strip = new ToolStrip
 		{
 			GripStyle = ToolStripGripStyle.Hidden, LayoutStyle = ToolStripLayoutStyle.Table, Dock = DockStyle.None,
 			AutoSize = true, BackColor = SystemColors.Control, RenderMode = ToolStripRenderMode.System,
+			ContextMenuStrip = _menu,
 		};
 		if (strip.LayoutSettings is TableLayoutSettings table)
 		{
 			table.ColumnCount = columns;
 		}
 		strip.Items.AddRange(items);
-		var label = captionLabel ?? new Label();
-		label.Text = captionLabel == null ? caption : label.Text;
-		label.AutoSize = true;    // a long Decimals sample widens its group
-		label.Anchor = AnchorStyles.None;
-		label.ForeColor = SystemColors.GrayText;
+		var label = new Label
+		{
+			Text = caption, AutoSize = true,    // a long Decimals sample widens its group
+			Anchor = AnchorStyles.None, ForeColor = SystemColors.GrayText, ContextMenuStrip = _menu, UseMnemonic = false,
+		};
+		if (caption.Contains(RibbonLayout.DecimalsToken))
+		{
+			_captions.Add((label, caption));
+		}
 		var box = new TableLayoutPanel
 		{
 			AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink, ColumnCount = 1, RowCount = 2,
 			Margin = new Padding(2), BorderStyle = BorderStyle.FixedSingle, BackColor = SystemColors.Control,
+			ContextMenuStrip = _menu,
 		};
 		box.RowStyles.Add(new RowStyle(SizeType.Percent, 100));    // spare height goes around the buttons
 		box.RowStyles.Add(new RowStyle(SizeType.Absolute, 18));

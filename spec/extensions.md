@@ -373,3 +373,41 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   works (RPN takes each function's fixed argument count).
   Results are exact while they fit the precision (about 128 bits at
   32 digits); wider words need a higher precision.
+
+## Customize Ribbon (owner 2026-11-08, design/ribbon_plan.md)
+- Every menu command can go on the ribbon. A menu item without a
+  submenu becomes a button that clicks it (check marks follow the menu
+  item); a submenu becomes a drop-down copied from the menu when it
+  opens (Theme, Word Size, the whole Conversions menu). Each function,
+  conversion pair and user function is its own command. One extra
+  command: Precision (`Prec 32`), because its menu items sit inside
+  Advanced Options. New menu item Tools > Graph... so Graph is a menu
+  command too.
+- A command id is its menu path without `&` and `...`
+  (`View/Hexadecimal Output`, `Conversions/Length/ft/in`); a user
+  function uses its name (`Functions/User Functions/g`), so new
+  parameters keep its button. If a menu text changes later, an alias
+  table will map the old id.
+- View > Customize Ribbon... or the ribbon's right-click menu
+  (Customize Ribbon..., Hide Ribbon). Left: Available commands in menu
+  order, a menu filter and a search box. Right: groups (caption,
+  columns) and their buttons. Add (also double-click or Enter) appends
+  after the selected button or at the end of the selected group;
+  Remove (also Delete). The selected row shows Up / Down / Edit /
+  Remove (Ctrl+Up / Ctrl+Down / F2 / Delete); a button at the edge of
+  its group moves into the next group, a group swaps with its
+  neighbour. New group; Reset to default (B3).
+- Edit group: caption and columns (1-12); `{decimals}` in a caption
+  shows the decimal places sample. Edit button: label (empty = the
+  command's name) and Show icon and text / icon only / text only
+  (commands without an icon show text). No icon picker yet.
+- OK and Apply rebuild the ribbon and write the `ribbon` key of
+  settings.json at once (null = default); Cancel after Apply goes back.
+  A closing window writes `ribbon` only if it changed it itself, so a
+  window opened earlier does not overwrite a newer layout; other open
+  windows show it the next time they open.
+- A button whose command is gone (deleted user function) is kept in
+  the layout but hidden, and comes back with the command; the window
+  shows it greyed as "(missing)". A group with no shown buttons is
+  hidden.
+- Later (TODO): drag and drop in the tree, an icon picker.

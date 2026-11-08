@@ -5,7 +5,9 @@
 // unreadable file is kept as settings.json.bak and defaults are used.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using SoftCalc.Logic;
 
 namespace SoftCalc.Persistence;
 
@@ -99,6 +101,9 @@ internal sealed class AppSettings
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public float? TextFontSize { get; set; }
 	public CompoundPrefs Compound { get; set; } = new();
+
+	// Customize Ribbon layout; null = the default (design/ribbon_plan.md)
+	public List<RibbonGroup>? Ribbon { get; set; }
 }
 
 internal static class SettingsStore
@@ -136,6 +141,64 @@ internal static class SettingsStore
 	public static void Save(string path, AppSettings settings)
 	{
 		DataFolder.WriteAtomic(path, JsonSerializer.Serialize(settings, Options));
+	}
+
+	// Close of a window: the ribbon layout another window saved since
+	// this one started stays, unless this window changed it itself
+	public static void SaveKeepingRibbon(string path, AppSettings settings, bool ownRibbon)
+	{
+		if (!ownRibbon && TryReadRibbon(path, out var ribbon))
+		{
+			settings.Ribbon = ribbon;
+		}
+		Save(path, settings);
+	}
+
+	// Customize Ribbon OK / Apply: writes only the "ribbon" key at once
+	public static void SaveRibbon(string path, List<RibbonGroup>? ribbon)
+	{
+		JsonObject? root = null;
+		if (File.Exists(path))
+		{
+			try
+			{
+				root = JsonNode.Parse(File.ReadAllText(path)) as JsonObject;
+			}
+			catch (Exception ex) when (ex is JsonException or IOException)
+			{
+			}
+			if (root == null)
+			{
+				return;    // unreadable: the window writes the whole file when it closes
+			}
+		}
+		else
+		{
+			root = JsonSerializer.SerializeToNode(new AppSettings(), Options)!.AsObject();
+		}
+		root["ribbon"] = JsonSerializer.SerializeToNode(ribbon, Options);
+		DataFolder.WriteAtomic(path, root.ToJsonString(Options));
+	}
+
+	private static bool TryReadRibbon(string path, out List<RibbonGroup>? ribbon)
+	{
+		ribbon = null;
+		try
+		{
+			if (File.Exists(path) && JsonNode.Parse(File.ReadAllText(path)) is JsonObject root)
+			{
+				ribbon = root["ribbon"]?.Deserialize<List<RibbonGroup>>(Options);
+				if (ribbon != null)
+				{
+					RibbonLayout.Sanitize(ribbon);
+				}
+				return true;
+			}
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or NotSupportedException or InvalidOperationException)
+		{
+		}
+		return false;
 	}
 
 	// Values the engine would refuse go back to defaults instead of failing later
@@ -177,6 +240,10 @@ internal static class SettingsStore
 		s.Window ??= new WindowPlacement();
 		s.Graph ??= new GraphPrefs();
 		s.Compound ??= new CompoundPrefs();
+		if (s.Ribbon != null)
+		{
+			RibbonLayout.Sanitize(s.Ribbon);
+		}
 		if (string.IsNullOrWhiteSpace(s.TextFontFamily))
 		{
 			s.TextFontFamily = defaults.TextFontFamily;
