@@ -410,7 +410,15 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   the layout but hidden, and comes back with the command; the window
   shows it greyed as "(missing)". A group with no shown buttons is
   hidden.
-- Later (TODO): drag and drop in the tree, an icon picker.
+- Drag and drop (owner 2026-11-09): in the Ribbon list a button drops
+  before or after a row (upper or lower half); on a group's row, the
+  lower half makes it the group's first button, the upper half the last
+  of the group above; below the rows, the end. A group drops between
+  groups (its buttons move along). A command dragged from Available
+  commands is added there; a row dragged to the left list is removed.
+  The Windows insert mark line shows the place; the list scrolls near
+  its edges; Esc cancels.
+- Later (TODO): an icon picker.
 
 ## Graph lines (owner 2026-11-08, design/graph2_plan.md)
 - Colours: click a line's colour square in the Graph list (sidebar or

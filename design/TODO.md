@@ -141,7 +141,7 @@ Recorded at the owner's request after M8. Nothing here is started.
     - Icons: commands that have one keep it; the rest show text only
       (no icon picker in this round).
     - Order by Up / Down buttons in this round.
-- [ ] Later: drag and drop to reorder buttons and groups in the
+- [x] Drag and drop (done 2026-11-09; also from Available commands, and back to remove) to reorder buttons and groups in the
       Customize Ribbon tree (owner 2026-11-08).
 - [x] Graph line colours (done 2026-11-09, design/graph2_plan.md G4): let the owner change a function's colour.
       To plan: where to pick it (swatch in the function list, the

@@ -79,7 +79,10 @@ non-overlapping refresh rounds, sidebar waits while hidden or dragging.
 
 Graph trace sends x as the shown decimal text (`g(1.43)` = 2.0449, not 2.0448999...).
 
-Tests: engine `pytest` 492 passed (frozen-exe test included); UI `dotnet test` 248 passed.
+Customize Ribbon drag and drop (2026-11-09): move buttons and groups,
+drag commands in from the left, drag rows out to remove.
+
+Tests: engine `pytest` 492 passed (frozen-exe test included); UI `dotnet test` 250 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

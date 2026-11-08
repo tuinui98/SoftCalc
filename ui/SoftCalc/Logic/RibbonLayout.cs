@@ -209,4 +209,42 @@ internal static class RibbonLayout
 		into.Insert(index, item);
 		return new RibbonPos(group, index);
 	}
+
+	// Drag and drop (owner 2026-11-09). A button goes to `index` of `group`
+	// (indexes as before it was taken out); a group goes before group
+	// `group` (layout.Count: last). Returns where it ended up.
+	public static RibbonPos MoveTo(List<RibbonGroup> layout, RibbonPos from, int group, int index)
+	{
+		if (from.IsGroup)
+		{
+			var moving = layout[from.Group];
+			layout.RemoveAt(from.Group);
+			int at = Math.Clamp(group > from.Group ? group - 1 : group, 0, layout.Count);
+			layout.Insert(at, moving);
+			return new RibbonPos(at, -1);
+		}
+		var item = layout[from.Group].Items[from.Item];
+		layout[from.Group].Items.RemoveAt(from.Item);
+		if (group == from.Group && index > from.Item)
+		{
+			index--;    // the gap it left
+		}
+		var into = layout[group].Items;
+		index = Math.Clamp(index, 0, into.Count);
+		into.Insert(index, item);
+		return new RibbonPos(group, index);
+	}
+
+	// A command dropped from Available commands at `index` of `group`
+	public static RibbonPos InsertAt(List<RibbonGroup> layout, int group, int index, string id)
+	{
+		if (layout.Count == 0)
+		{
+			return Add(layout, null, id);
+		}
+		var into = layout[group].Items;
+		index = Math.Clamp(index, 0, into.Count);
+		into.Insert(index, new RibbonItem { Id = id });
+		return new RibbonPos(group, index);
+	}
 }

@@ -229,4 +229,35 @@ public sealed class RibbonLayoutTests
 			File.Delete(path);
 		}
 	}
+
+	[Fact]
+	public void DragMovesButtonsWithinAndAcrossGroups()
+	{
+		var layout = Two();    // A:a1,a2 | B:b1
+		Assert.Equal(new RibbonPos(0, 1), RibbonLayout.MoveTo(layout, new RibbonPos(0, 0), 0, 2));    // a1 below a2
+		Assert.Equal("A:a2,a1 | B:b1", Ids(layout));
+		Assert.Equal(new RibbonPos(0, 1), RibbonLayout.MoveTo(layout, new RibbonPos(0, 1), 0, 1));    // dropped on itself
+		Assert.Equal("A:a2,a1 | B:b1", Ids(layout));
+		Assert.Equal(new RibbonPos(1, 1), RibbonLayout.MoveTo(layout, new RibbonPos(0, 0), 1, 1));    // a2 after b1
+		Assert.Equal("A:a1 | B:b1,a2", Ids(layout));
+		Assert.Equal(new RibbonPos(0, 0), RibbonLayout.MoveTo(layout, new RibbonPos(1, 0), 0, 0));
+		Assert.Equal("A:b1,a1 | B:a2", Ids(layout));
+	}
+
+	[Fact]
+	public void DragMovesGroupsAndInsertsCommands()
+	{
+		var layout = Two();
+		layout.Add(new RibbonGroup { Caption = "C" });
+		Assert.Equal(new RibbonPos(2, -1), RibbonLayout.MoveTo(layout, new RibbonPos(0, -1), 3, -1));    // A to the end
+		Assert.Equal("B:b1 | C: | A:a1,a2", Ids(layout));
+		Assert.Equal(new RibbonPos(0, -1), RibbonLayout.MoveTo(layout, new RibbonPos(2, -1), 0, -1));
+		Assert.Equal(new RibbonPos(1, -1), RibbonLayout.MoveTo(layout, new RibbonPos(1, -1), 2, -1));    // B before C: stays
+		Assert.Equal("A:a1,a2 | B:b1 | C:", Ids(layout));
+		Assert.Equal(new RibbonPos(2, 0), RibbonLayout.InsertAt(layout, 2, 0, "n"));
+		Assert.Equal(new RibbonPos(0, 1), RibbonLayout.InsertAt(layout, 0, 1, "m"));
+		Assert.Equal("A:a1,m,a2 | B:b1 | C:n", Ids(layout));
+		var empty = new List<RibbonGroup>();
+		Assert.Equal(new RibbonPos(0, 0), RibbonLayout.InsertAt(empty, 0, 0, "z"));    // no groups: one is made
+	}
 }
