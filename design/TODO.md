@@ -158,6 +158,23 @@ Recorded at the owner's request after M8. Nothing here is started.
       easy to misread). Aliases such as `m^2`, `sqm`, `sqft`, `hectare`,
       `acres`, `ac`, `sqwa`. Menu order: metric, imperial, Thai, each
       small to large, like Length.
-  - Owner wants rai-ngan-wa output too (used often), e.g. 6800 m2 as
-    `4-1-0`. Not decided: the tag name, text or number result, how to
-    type a rai-ngan-wa value in, rounding of the wa part.
+  - Owner wants rai-ngan-wa (used often). Decided 2026-11-08:
+    - Unit `rnw` (long form `rai-ngan-wa`). As a number it is rai:
+      `6800 [m2->rnw]` = 4.25, `4.25 [rnw->m2]` = 6800.
+    - The result stays a number (rai); the faint right-hand side of the
+      History line adds ` = 4-1-0`, like the twos hex suffix.
+    - Format `4-1-0`, negatives `-4-1-0`, always decimal digits.
+    - The wa part rounds by the Decimals setting; 100 wa carries to a
+      ngan.
+  - Proposed 2026-11-08, waiting for the owner:
+    - Typing `4-1-50` in: three plain numbers joined by `-` right before
+      a tag whose source is rnw (`[rnw]` or `[rnw->...]`) read as one
+      value, 4 rai + 1 ngan + 50 wa = 4.375 rai. Ngan and wa may exceed
+      their range (`0-2-400` = 1.5 rai).
+    - `[rnw]` alone is `[rnw->rnw]`: `4-1-50[rnw]+0-2-400[rnw]` gives
+      5.875 with ` = 5-3-50` on the right. A line shows the rnw text
+      when it has an rnw value or an `->rnw` tag.
+    - Pitfall: without the tag right after, `4-1-50` is subtraction
+      (`4-1-50 + 0-2-400 [rnw]` reads the first group as -47). The
+      Input hint line and History's right-hand side show how it was
+      read.
