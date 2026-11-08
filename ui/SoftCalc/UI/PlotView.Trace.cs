@@ -29,7 +29,9 @@ internal sealed record TracePoint(string Function, double T, double Step, string
 	public char Solved { get; init; }
 }
 
-// Where the mouse points: the line and what to ask the engine
+// Where the mouse points: the line and what to ask the engine. Fixed is
+// decimal text sent as is: a function's x (polar: angle) as shown, or
+// an equation's fixed coordinate
 internal readonly record struct TraceTarget(string Line, bool IsEquation, double T, double Step, char Axis, string Fixed, double Guess, double Window)
 {
 	public bool SameAs(TraceTarget other)
@@ -127,13 +129,10 @@ internal sealed partial class PlotView
 			return new TraceTarget(line.Name, true, 0, fixX ? pixelX : pixelY, fixX ? 'x' : 'y', text,
 				fixX ? hit.Y : hit.X, SolveWindow * (fixX ? pixelY : pixelX));
 		}
-		if (_settings.Mode == GraphMode.Polar)
-		{
-			double theta = double.Parse(PlotMath.FormatTick(hit.T, ThetaStep), CultureInfo.InvariantCulture);
-			return new TraceTarget(line.Name, false, theta, ThetaStep, ' ', "", 0, 0);
-		}
-		double x = double.Parse(PlotMath.FormatTick(hit.X, pixel), CultureInfo.InvariantCulture);    // the x the status line shows
-		return new TraceTarget(line.Name, false, x, pixel, ' ', "", 0, 0);
+		// the x (polar: angle) the status line shows; the engine gets this text, exact
+		double step = _settings.Mode == GraphMode.Polar ? ThetaStep : pixel;
+		string shown = PlotMath.FormatTick(_settings.Mode == GraphMode.Polar ? hit.T : hit.X, step);
+		return new TraceTarget(line.Name, false, double.Parse(shown, CultureInfo.InvariantCulture), step, ' ', shown, 0, 0);
 	}
 
 	// Distance in pixels, the world point, the parameter there (x or theta) and the line's screen direction
@@ -225,7 +224,7 @@ internal sealed partial class PlotView
 	{
 		if (!target.IsEquation)
 		{
-			var (text, value) = await _session.ValueAtAsync(target.Line, target.T);
+			var (text, value) = await _session.ValueAtAsync(target.Line, target.Fixed);
 			return new TracePoint(target.Line, target.T, target.Step, text, value);
 		}
 		var (x, y, xValue, yValue) = await _session.EquationAtAsync(target.Line, target.Axis.ToString(), target.Fixed, target.Guess, target.Window);

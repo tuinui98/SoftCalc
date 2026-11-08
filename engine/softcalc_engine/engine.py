@@ -756,6 +756,14 @@ class Engine:
             x, y = (fixed, root) if axis == "x" else (root, fixed)
             return self.format_value(x), self.format_value(y), float(x), float(y)
 
+    @staticmethod
+    def trace_number(t):
+        """t from the UI: decimal text ("1.43", exact as shown) or a float."""
+        try:
+            return mpmath.mpf(t)
+        except ValueError:
+            raise CalcError(f"Not a number: '{t}'") from None
+
     def value_at(self, name, t):
         """Full-precision value of a one-parameter function at t (graph trace, G2).
 
@@ -767,8 +775,9 @@ class Engine:
             raise CalcError(f"'{name}' is not a one-parameter function")
         with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
             builtins = Functions(self.settings.angle, self.settings.word_size)
+            x = self.trace_number(t)    # bad text is an error, not an undefined point
             try:
-                value = self.call(fn.name, [mpmath.mpf(t)], builtins, 0)
+                value = self.call(fn.name, [x], builtins, 0)
             except CalcError:
                 return None, None
             if isinstance(value, mpmath.mpc):

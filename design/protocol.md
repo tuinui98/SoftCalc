@@ -103,11 +103,13 @@ function is undefined or complex (the UI breaks the line there).
   (plain floats when the expression allows, `fastplot.py`).
 
 ### `value_at`
-`{"function": "g", "x": 1.5}` -> `{"text": "...", "value": 1.23}`:
+`{"function": "g", "x": "1.5"}` -> `{"text": "...", "value": 1.23}`:
 the function's value at x (polar: at theta) at full precision,
 formatted like a result, plus a float for drawing; both `null` where
 it is undefined or not real. Graph trace (G2); does not change
-`answer` or `$n`.
+`answer` or `$n`. `x` is decimal text as the status line shows it, so
+`"1.43"` is exactly 1.43 (`g(x)=x^2` gives `2.0449`); a number is still
+accepted and means its exact binary value.
 
 ### `plot_equation`
 `{"equation": "x^2+y^2=r^2", "x_min": -10, "x_max": 10, "y_min": -10,

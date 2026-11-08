@@ -77,7 +77,9 @@ scale button with a lock that survives zoom, pan and resize.
 Graph speed (2026-11-09): float drawing path in the engine (10-20x),
 non-overlapping refresh rounds, sidebar waits while hidden or dragging.
 
-Tests: engine `pytest` 491 passed (frozen-exe test included); UI `dotnet test` 248 passed.
+Graph trace sends x as the shown decimal text (`g(1.43)` = 2.0449, not 2.0448999...).
+
+Tests: engine `pytest` 492 passed (frozen-exe test included); UI `dotnet test` 248 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

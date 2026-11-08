@@ -65,3 +65,9 @@ Decisions are in `design/TODO.md` section 7. Built 2026-11-09 on branch
   cubic 284 -> 19 ms, a 600-point function ~1 ms. Values for trace,
   Copy and results stay full precision. Parity tests compare both
   paths in rad, deg and grad.
+
+## Trace x as decimal text (owner 2026-11-09)
+- A function's traced x (polar: angle) went to `value_at` as a double,
+  so x = 1.43 was 1.42999999999999993782... and `x^2` showed
+  2.0448999999999998... The UI now sends the text the status line
+  shows (`"1.43"`); the engine reads it exactly at working precision.

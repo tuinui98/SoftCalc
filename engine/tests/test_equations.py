@@ -89,3 +89,13 @@ def test_protocol_ops():
     none = dispatcher.handle({"op": "equation_at", "equation": "x^2+y^2=r^2", "axis": "x", "value": "9", "guess": 1, "window": 0.5})
     assert none["ok"] and none["x"] is None
     assert dispatcher.handle({"op": "equation_at", "equation": "x=1", "axis": "z", "value": "0", "guess": 0, "window": 1})["ok"] is False
+
+
+def test_value_at_takes_the_shown_decimal_text():
+    engine = engine_with("sq(x)=x^2")
+    assert engine.value_at("sq", "1.43")[0] == "2.0449"
+    assert engine.value_at("sq", 1.43)[0] != "2.0449"    # a float is the nearest double, as before
+    dispatcher = Dispatcher()
+    dispatcher.handle({"op": "eval", "input": "sq(x)=x^2"})
+    assert dispatcher.handle({"op": "value_at", "function": "sq", "x": "1.43"})["text"] == "2.0449"
+    assert dispatcher.handle({"op": "value_at", "function": "sq", "x": "abc"})["ok"] is False
