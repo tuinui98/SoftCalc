@@ -98,8 +98,9 @@ Recorded at the owner's request after M8. Nothing here is started.
 ## 6. Still open from v1.0.0
 - [ ] Try the release exe on another PC (no .NET/Python) and with its
       antivirus; the exe is unsigned (SmartScreen warning expected).
-- [ ] Live check of the read-only fallback (exe in Program Files, data
-      to `%APPDATA%\SoftCalc`); unit-tested only.
+      On hold (owner 2026-11-09).
+- [x] Live check of the read-only fallback (exe in Program Files, data
+      to `%APPDATA%\SoftCalc`): the owner checked 1.2.0, 2026-11-09.
 - [x] Graph lines vanishing on view switches: dropped 2026-11-09, the
       owner thinks it was an accidental double-click.
 - [ ] File > Help (section 3).
