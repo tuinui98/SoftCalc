@@ -25,7 +25,7 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [x] Add/Edit dialogs: Functions / Variables editor, done 2026-11-07.
 - [x] Red error lines in History: owner keeps them (2026-11-07).
 
-## 5. Owner requests after v1.0.0 (2026-11-07, all built; 1.1.0 not released)
+## 5. Owner requests after v1.0.0 (2026-11-07, all built; released in 1.2.0, 1.1.0 skipped)
 - [x] About box (done 2026-11-07): a short note only (name, version, data folder). The
       third-party licence box is hidden at first; a link (e.g. "Show
       third-party licences") opens it.
@@ -100,11 +100,13 @@ Recorded at the owner's request after M8. Nothing here is started.
       antivirus; the exe is unsigned (SmartScreen warning expected).
 - [ ] Live check of the read-only fallback (exe in Program Files, data
       to `%APPDATA%\SoftCalc`); unit-tested only.
-- [ ] Graph lines vanishing on view switches: reported once, not
-      reproduced, skipped by the owner (STATUS.md "Open items").
+- [x] Graph lines vanishing on view switches: dropped 2026-11-09, the
+      owner thinks it was an accidental double-click.
 - [ ] File > Help (section 3).
 
-## 7. Owner requests 2026-11-08 (not started; plan and discuss first)
+## 7. Owner requests 2026-11-08 (all built 2026-11-09, released in 1.2.0)
+Owner checked 2026-11-09: the colour dialog works, Shift/Ctrl + wheel
+ends 1:1, the drag insert line is visible enough on dark.
 - [x] Ribbon customisation (done 2026-11-08, design/ribbon_plan.md): add, remove, edit and rearrange the ribbon's
       buttons and groups. To plan: a Customize Ribbon window (available
       commands on the left, groups and their buttons on the right, Add /

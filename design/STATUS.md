@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-09: Customize Ribbon and the Graph lines batch built (TODO section 7); 1.1.0 built, not released. Everything below is committed on `main` and
+Updated 2026-11-09: version 1.2.0 released (TODO sections 5 and 7; 1.1.0 skipped). Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 Open work is listed in `design/TODO.md`.
@@ -55,9 +55,8 @@ Delete / Clear History with `$n` renumbering and deleted marks in
 history.jsonl (restore now keeps text results' `$n` places);
 `twos()` / `signed()` with View > Word Size; `publish.ps1` builds
 `SoftCalc.exe` (58.4 MB) and `SoftCalc-net10.exe` (9.3 MB, needs the
-.NET 10 Desktop Runtime) and smoke-runs both. Version 1.1.0; GitHub
-release v1.1.0 waits for the owner's try-out (rebuild from the final
-`main` first so the exe carries its commit hash).
+.NET 10 Desktop Runtime) and smoke-runs both. 1.1.0 was never released;
+its changes went out in 1.2.0.
 
 Customize Ribbon (2026-11-08, `design/ribbon_plan.md` R1-R3, details in
 `spec/extensions.md` "Customize Ribbon"): the ribbon is built from a
@@ -140,9 +139,8 @@ Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 2
 - Owner decisions 2026-11-07: red error lines stay; the sidebar graph
   always fits Y; Samples box colour and the light Font dialog in dark
   mode are fine.
-- One report (2026-11-07) of graph lines vanishing on view switches
-  could not be reproduced; the owner said to skip it. A double-click
-  toggle in the list was fixed as a likely cause.
+- The one report (2026-11-07) of graph lines vanishing on view switches
+  was dropped 2026-11-09 (owner: likely an accidental double-click).
 - UI automation note: UIA calls into a SoftCalc modal dialog can hang;
   drive dialogs with window messages (see the editor check pattern:
   WM_SETTEXT on EDIT children, BM_CLICK on buttons).

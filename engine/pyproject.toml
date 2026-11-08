@@ -2,7 +2,7 @@
 
 [project]
 name = "softcalc-engine"
-version = "1.1.0"
+version = "1.2.0"
 description = "Expression engine for SoftCalc (parsing, arbitrary precision maths, formatting)"
 requires-python = ">=3.14"
 dependencies = ["mpmath>=1.4"]
