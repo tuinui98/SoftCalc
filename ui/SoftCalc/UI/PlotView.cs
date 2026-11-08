@@ -28,7 +28,10 @@ internal sealed partial class PlotView : Control
 
 	private readonly EngineSession _session;
 	private readonly GraphSettings _settings;
-	private readonly System.Windows.Forms.Timer _debounce = new() { Interval = 120 };
+	private const int WindowInterval = 40;    // [DEF] Graph window: at most one round per 40 ms while dragging
+	private const int SidebarQuiet = 400;    // [DEF] sidebar: waits until changes stop for this long
+
+	private readonly System.Windows.Forms.Timer _debounce = new();
 	private const int EquationCell = 10;    // [DEF] pixels per coarse equation cell
 	private static readonly IReadOnlyList<(double X1, double Y1, double X2, double Y2)> NoSegments =
 		Array.Empty<(double, double, double, double)>();
@@ -38,7 +41,10 @@ internal sealed partial class PlotView : Control
 	private IReadOnlyList<PlotSeries> _series = Array.Empty<PlotSeries>();
 	private string? _message;
 	private float _drawnWidth;    // drawing area width at the last paint (1:1 keeps its scale on resize)
-	private int _requestNumber;
+	private bool _refreshing;    // one round of engine requests at a time
+	private bool _refreshAgain;    // something changed during the round: one more, with the newest state
+	private bool _seriesPolar;    // mode the cached lines were made in
+	private bool _missedWhileHidden;    // sidebar hidden: refresh when shown again
 
 	public PlotView(EngineSession session, GraphSettings settings, bool interactive = false)
 	{
@@ -55,10 +61,19 @@ internal sealed partial class PlotView : Control
 		DoubleBuffered = true;
 		ResizeRedraw = true;
 		BackColor = SystemColors.Window;
+		_debounce.Interval = interactive ? WindowInterval : SidebarQuiet;
 		_debounce.Tick += async (_, _) =>
 		{
 			_debounce.Stop();
 			await RefreshPointsAsync();
+		};
+		VisibleChanged += (_, _) =>
+		{
+			if (Visible && _missedWhileHidden)
+			{
+				_missedWhileHidden = false;
+				RequestRefresh();
+			}
 		};
 		EventHandler onChanged = (_, _) =>
 		{
@@ -79,23 +94,59 @@ internal sealed partial class PlotView : Control
 		Disposed += (_, _) => _debounce.Dispose();
 	}
 
-	// At most one engine request per interval during a burst (resizing,
-	// dragging), so a drag keeps fetching the newly shown part
+	// Graph window: at most one round per interval during a burst (resizing,
+	// dragging), so a drag keeps fetching the newly shown part. Sidebar:
+	// only once the changes stop, and not while it is hidden.
 	public void RequestRefresh()
 	{
-		if (!_debounce.Enabled)
+		if (!_interactive && !Visible)
+		{
+			_missedWhileHidden = true;
+			return;
+		}
+		if (!_interactive)
+		{
+			_debounce.Stop();    // restart: wait for quiet
+			_debounce.Start();
+		}
+		else if (!_debounce.Enabled)
 		{
 			_debounce.Start();
 		}
 	}
 
+	// Rounds never overlap: requests made during one are folded into a
+	// single next round with the newest range (before, they queued up in
+	// the engine and the lines lagged behind the mouse)
 	private async Task RefreshPointsAsync()
+	{
+		if (_refreshing)
+		{
+			_refreshAgain = true;
+			return;
+		}
+		_refreshing = true;
+		try
+		{
+			do
+			{
+				_refreshAgain = false;
+				await RefreshOnceAsync();
+			}
+			while (_refreshAgain && !IsDisposed);
+		}
+		finally
+		{
+			_refreshing = false;
+		}
+	}
+
+	private async Task RefreshOnceAsync()
 	{
 		if (!_session.IsStarted)
 		{
 			return;    // start-up refreshes the plot once the engine is ready
 		}
-		int request = ++_requestNumber;
 		var names = _settings.Shown.ToList();
 		if (names.Count == 0 || Width < 4)
 		{
@@ -107,7 +158,17 @@ internal sealed partial class PlotView : Control
 		bool polar = _settings.Mode == GraphMode.Polar;
 		int samples = polar ? PolarSamples : Math.Clamp(Width, 2, MaxSamples);
 		double start = polar ? _settings.MinT : _settings.MinX, end = polar ? _settings.MaxT : _settings.MaxX;
+		// lines still in view are kept and replaced one by one as they arrive
 		var found = new Dictionary<string, PlotSeries>(StringComparer.OrdinalIgnoreCase);
+		if (_seriesPolar == polar)
+		{
+			foreach (var old in _series.Where(s => names.Contains(s.Name, StringComparer.OrdinalIgnoreCase)))
+			{
+				found[old.Name] = old;
+			}
+		}
+		_seriesPolar = polar;
+		var fresh = new List<PlotSeries>();
 		string? error = null;
 		//==================================================================
 		//  BLOCK 1 - Functions, then the view they fit (sidebar)
@@ -116,22 +177,22 @@ internal sealed partial class PlotView : Control
 		{
 			try
 			{
-				found[name] = new PlotSeries(name, await _session.PlotAsync(name, polar ? "polar" : "xy", start, end, samples), start, end, NoSegments);
+				var line = new PlotSeries(name, await _session.PlotAsync(name, polar ? "polar" : "xy", start, end, samples), start, end, NoSegments);
+				found[name] = line;
+				fresh.Add(line);
 			}
 			catch (EngineException ex)
 			{
+				found.Remove(name);
 				error ??= ex.Message;
 			}
-			if (request != _requestNumber)
-			{
-				return;    // a newer request is on its way
-			}
+			Show(names, found, error);
 		}
 		// end BLOCK 1
 		//==================================================================
 		//  BLOCK 2 - Equations in the drawn rectangle
 		//==================================================================
-		var world = DrawnView(found.Values);
+		var world = DrawnView(fresh);
 		var area = PlotArea();
 		int cols = Math.Clamp((int)(area.Width / EquationCell), 4, 150);
 		int rows = Math.Clamp((int)(area.Height / EquationCell), 4, 150);
@@ -143,14 +204,18 @@ internal sealed partial class PlotView : Control
 			}
 			catch (EngineException ex)
 			{
+				found.Remove(name);
 				error ??= $"{name}: {ex.Message}";
 			}
-			if (request != _requestNumber)
-			{
-				return;
-			}
+			Show(names, found, error);
 		}
 		// end BLOCK 2
+		Show(names, found, error);
+	}
+
+	// Each line shows as soon as it arrives
+	private void Show(List<string> names, Dictionary<string, PlotSeries> found, string? error)
+	{
 		_series = names.Where(found.ContainsKey).Select(n => found[n]).ToList();
 		_message = _series.Count == 0 ? error : null;
 		Invalidate();

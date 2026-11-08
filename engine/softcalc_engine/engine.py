@@ -7,6 +7,7 @@ each input line into an EvalResult. It also exports and imports the
 `.pcf` definitions text (SPEC 8).
 """
 
+import math
 import re
 from dataclasses import dataclass, field
 from fractions import Fraction
@@ -24,6 +25,7 @@ from .parser import parse, parse_line
 from .rpn import parse_rpn
 from .units import convert
 from . import currency
+from . import fastplot
 
 GUARD_DIGITS = 10
 PLOT_DIGITS = 20
@@ -552,11 +554,32 @@ class Engine:
         points = []
         with mpmath.workdps(PLOT_DIGITS):
             builtins = Functions(self.settings.angle, self.settings.word_size)
+            fast = self.fast_function(fn.body, fn.params, builtins)
+            if fast is not None:
+                step = (end - start) / (samples - 1)
+                return [self.fast_point(fast, start + step * index, mode) for index in range(samples)]
             step = (mpmath.mpf(end) - start) / (samples - 1)
             for index in range(samples):
                 t = mpmath.mpf(start) + step * index
                 points.append(self.plot_point(fn, builtins, t, mode))
         return points
+
+    def fast_function(self, tree, params, builtins):
+        """The float version of a tree for drawing, or None (fastplot)."""
+        try:
+            return fastplot.compile_tree(self, tree, params, builtins)
+        except fastplot.Unsupported:
+            return None
+
+    @staticmethod
+    def fast_point(fast, t, mode):
+        try:
+            value = fast(t)
+        except fastplot.Undefined:
+            return None
+        if mode == "polar":
+            return [value * math.cos(t), value * math.sin(t)]
+        return [t, value]
 
     def plot_point(self, fn, builtins, t, mode):
         try:
@@ -644,11 +667,20 @@ class Engine:
             dx = (x_max - x_min) / (cols * refine)
             dy = (y_max - y_min) / (rows * refine)
             grid = {}
+            fast = self.fast_function(tree, ["x", "y"], builtins)
+
+            def value(x, y):
+                if fast is None:
+                    return self.equation_value(tree, builtins, mpmath.mpf(x), mpmath.mpf(y))
+                try:
+                    return fast(x, y)
+                except fastplot.Undefined:
+                    return None
 
             def at(i, j):
                 key = (i, j)
                 if key not in grid:
-                    grid[key] = self.equation_value(tree, builtins, mpmath.mpf(x_min + i * dx), mpmath.mpf(y_min + j * dy))
+                    grid[key] = value(x_min + i * dx, y_min + j * dy)
                 return grid[key]
 
             segments = []
@@ -662,10 +694,11 @@ class Engine:
                         continue
                     for i in range(ci * refine, (ci + 1) * refine):
                         for j in range(cj * refine, (cj + 1) * refine):
-                            self.trace_cell(tree, builtins, at, i, j, x_min, y_min, dx, dy, segments)
+                            self.trace_cell(value, at, i, j, x_min, y_min, dx, dy, segments)
         return segments
 
-    def trace_cell(self, tree, builtins, at, i, j, x_min, y_min, dx, dy, segments):
+    @staticmethod
+    def trace_cell(value, at, i, j, x_min, y_min, dx, dy, segments):
         """Marching squares on one fine cell; appends its segments."""
         values = [at(i, j), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)]
         if any(v is None for v in values):
@@ -680,7 +713,7 @@ class Engine:
                 share = a / (a - b)
                 (ai, aj), (bi, bj) = corners[edge], corners[(edge + 1) % 4]
                 crossings.append((x_min + (ai + (bi - ai) * share) * dx, y_min + (aj + (bj - aj) * share) * dy))
-        middle = self.equation_value(tree, builtins, mpmath.mpf(x_min + (i + 0.5) * dx), mpmath.mpf(y_min + (j + 0.5) * dy))
+        middle = value(x_min + (i + 0.5) * dx, y_min + (j + 0.5) * dy)
         if middle is None or abs(middle) > 2 * max(abs(v) for v in values):
             return    # a pole or a jump, not a crossing
         if len(crossings) == 2:
