@@ -71,7 +71,10 @@ picked from the Windows colour dialog; equations in x and y drawn by
 the engine's `plot_equation` (adaptive marching squares); trace snaps
 to the nearest shown line and solves equations with `equation_at`.
 
-Tests: engine `pytest` 401 passed (frozen-exe test included); UI `dotnet test` 246 passed.
+Graph window (2026-11-09): size, place and Range width remembered; 1:1
+scale button with a lock that survives zoom, pan and resize.
+
+Tests: engine `pytest` 401 passed (frozen-exe test included); UI `dotnet test` 248 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

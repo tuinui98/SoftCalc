@@ -2,11 +2,13 @@
 //
 // Shares GraphSettings with the sidebar graph. The Range panel edits the
 // XY or Polar range; in Polar mode Theta Increment and R Min are fixed
-// (read-only), as in the original.
+// (read-only), as in the original. Size, place and the Range panel width
+// are kept in GraphSettings and saved (owner 2026-11-09).
 
 using System.Globalization;
 using SoftCalc.Engine;
 using SoftCalc.Logic;
+using SoftCalc.Persistence;
 
 namespace SoftCalc.UI;
 
@@ -25,6 +27,8 @@ internal sealed class GraphWindow : Form
 	private readonly ToolStripButton _polarButton = new("Polar") { ToolTipText = "Polar graph" };
 	private readonly ToolStripButton _gridButton = new("Grid") { ToolTipText = "Show grid" };
 	private readonly ToolStripButton _traceButton = new("Trace") { ToolTipText = "Dot and value on the line nearest the mouse" };
+	private readonly ToolStripMenuItem _squareItem = new("&1:1 Scale");
+	private readonly ToolStripButton _squareButton = new("1:1") { ToolTipText = "Same scale on x and y, kept while zooming (click again to unlock)" };
 	private readonly Label _status = new()
 	{
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
@@ -32,7 +36,6 @@ internal sealed class GraphWindow : Form
 	};
 	private const string NavigationHelp = "Wheel: zoom (Shift: X, Ctrl: Y)   Drag: move   Click: copy value   Home: reset   F: fit Y";
 	private (double X, double Y)? _lastPointer;
-	private const int RangeWidth = 150;    // owner 2026-11-07: narrower than the original's panel
 	private const string PolarHelp ="Wheel or + -: zoom R Max   Home: reset   F: fit R";
 
 	public GraphWindow(EngineSession session, GraphSettings settings, DefinitionCommands commands, Action<string> insertValue)
@@ -41,6 +44,15 @@ internal sealed class GraphWindow : Form
 		Text = "Graph";
 		Size = new Size(760, 560);
 		StartPosition = FormStartPosition.CenterParent;
+		if (settings.WindowBounds is { } bounds)
+		{
+			StartPosition = FormStartPosition.Manual;
+			Bounds = WindowPlacement.FitOnScreen(bounds, Screen.AllScreens.Select(s => s.WorkingArea).ToList());
+		}
+		if (settings.WindowMaximized)
+		{
+			WindowState = FormWindowState.Maximized;
+		}
 		ShowInTaskbar = false;
 		Icon = SvgIcon.ProgramIcon();
 		_graph = new GraphPanel(session, settings, commands, openWindow: null, interactive: true) { Dock = DockStyle.Fill };
@@ -64,7 +76,15 @@ internal sealed class GraphWindow : Form
 		Controls.Add(split);
 		Controls.Add(BuildToolbar());
 		Controls.Add(BuildMenu());
-		Load += (_, _) => split.SplitterDistance = RangeWidth;
+		Load += (_, _) =>
+		{
+			split.SplitterDistance = _settings.RangeWidth;    // owner 2026-11-07: narrower than the original's panel
+			split.SplitterMoved += (_, _) => _settings.RangeWidth = split.SplitterDistance;
+		};
+		// kept as it changes: the main window saves settings before this window closes
+		ResizeEnd += (_, _) => KeepPlacement();
+		Move += (_, _) => KeepPlacement();
+		Resize += (_, _) => KeepPlacement();
 		_settings.Changed += OnSettingsChanged;
 		FormClosed += (_, _) => _settings.Changed -= OnSettingsChanged;
 		ShowRange();
@@ -94,9 +114,10 @@ internal sealed class GraphWindow : Form
 		var zoomIn = new ToolStripMenuItem("Zoom &In", null, (_, _) => _graph.Plot.ZoomCenter(0.8)) { ShortcutKeyDisplayString = "+" };
 		var zoomOut = new ToolStripMenuItem("Zoom &Out", null, (_, _) => _graph.Plot.ZoomCenter(1 / 0.8)) { ShortcutKeyDisplayString = "-" };
 		_traceItem.Click += (_, _) => SetTrace(!_traceItem.Checked);
+		_squareItem.Click += (_, _) => ToggleSquare();
 		view.DropDownItems.AddRange(new ToolStripItem[]
 		{
-			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, _traceItem, new ToolStripSeparator(), zoomIn, zoomOut, fit, reset,
+			_xyItem, _polarItem, new ToolStripSeparator(), _gridItem, _traceItem, new ToolStripSeparator(), zoomIn, zoomOut, fit, _squareItem, reset,
 		});
 		menu.Items.AddRange(new ToolStripItem[] { file, view });
 		MainMenuStrip = menu;
@@ -115,15 +136,42 @@ internal sealed class GraphWindow : Form
 			_settings.NotifyChanged();
 		};
 		_traceButton.Click += (_, _) => SetTrace(!_traceButton.Checked);
+		_squareButton.Click += (_, _) => ToggleSquare();
 		bar.Items.AddRange(new ToolStripItem[]
 		{
 			_xyButton, _polarButton, new ToolStripSeparator(), _gridButton, _traceButton, new ToolStripSeparator(),
 			new ToolStripButton("Zoom +", null, (_, _) => _graph.Plot.ZoomCenter(0.8)) { ToolTipText = "Zoom in (+, mouse wheel)" },
 			new ToolStripButton("Zoom -", null, (_, _) => _graph.Plot.ZoomCenter(1 / 0.8)) { ToolTipText = "Zoom out (-)" },
 			new ToolStripButton("Fit", null, (_, _) => _graph.Plot.FitY()) { ToolTipText = "Fit Y to the lines (F, Ctrl+F); polar: R Max" },
+			_squareButton,
 			new ToolStripButton("Reset", null, (_, _) => _graph.Plot.ResetRange()) { ToolTipText = "Start-up range (Home)" },
 		});
 		return bar;
+	}
+
+	private void ToggleSquare()
+	{
+		if (_settings.Square)
+		{
+			_settings.Square = false;
+			_settings.NotifyChanged();
+		}
+		else
+		{
+			_graph.Plot.MakeSquare();
+		}
+	}
+
+	private void KeepPlacement()
+	{
+		if (WindowState == FormWindowState.Normal && IsHandleCreated)
+		{
+			_settings.WindowBounds = Bounds;
+		}
+		if (WindowState != FormWindowState.Minimized)
+		{
+			_settings.WindowMaximized = WindowState == FormWindowState.Maximized;
+		}
 	}
 
 	private void SetTrace(bool on)
@@ -154,6 +202,10 @@ internal sealed class GraphWindow : Form
 	private void SetMode(GraphMode mode)
 	{
 		_settings.Mode = mode;
+		if (mode == GraphMode.XY && _settings.Square)
+		{
+			_graph.Plot.ApplySquareLock();
+		}
 		_settings.NotifyChanged();
 	}
 
@@ -186,6 +238,8 @@ internal sealed class GraphWindow : Form
 		_polarButton.Checked = polar;
 		_gridButton.Checked = _settings.ShowGrid;
 		_traceItem.Checked = _traceButton.Checked = _settings.Trace;
+		_squareItem.Checked = _squareButton.Checked = _settings.Square && !polar;
+		_squareItem.Enabled = _squareButton.Enabled = !polar;    // polar is square already
 		_rangeError.Text = "";
 	}
 
@@ -217,6 +271,7 @@ internal sealed class GraphWindow : Form
 		}
 		else
 		{
+			_settings.Square = false;    // a typed range ends 1:1
 			(_settings.MinX, _settings.MaxX, _settings.GridX) = (values[0], values[1], values[2]);
 			(_settings.MinY, _settings.MaxY, _settings.GridY) = (values[3], values[4], values[5]);
 		}

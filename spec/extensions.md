@@ -430,3 +430,17 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   steeper, and the other coordinate is solved at full precision. Click
   copies the solved value; right-click: Copy x, Copy y, Copy (x, y),
   and the same for Insert.
+
+## Graph window size and 1:1 (owner 2026-11-09)
+- The Graph window comes back at its last size and place (maximized
+  too, moved onto a screen if that one is gone) with the Range panel
+  at its last width; saved in settings.json `graph.window`,
+  `graph.range_width`.
+- View > 1:1 Scale and a 1:1 toolbar button between Fit and Reset:
+  around the centre, the axis with fewer units per pixel is widened so
+  one unit is as long on x as on y (circles are round); grid
+  increments stay. It stays locked (button pressed, saved as
+  `graph.square`): the wheel and + / - zoom both axes, a resized window
+  keeps the scale, panning keeps it. A one-axis zoom (Shift/Ctrl +
+  wheel), Fit Y, Reset, a typed range with Apply, or the button again
+  end it. Not in Polar (square already).

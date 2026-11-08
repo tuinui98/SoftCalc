@@ -39,6 +39,14 @@ internal sealed class GraphSettings
 	// Colours the owner picked, ARGB, by line name (G4); the rest use the palette
 	public Dictionary<string, int> Colours { get; } = new(StringComparer.OrdinalIgnoreCase);
 
+	// 1:1 lock (owner 2026-11-09): one unit as long on x as on y in the Graph window
+	public bool Square { get; set; }
+
+	// Graph window placement; null until it was first closed or moved
+	public Rectangle? WindowBounds { get; set; }
+	public bool WindowMaximized { get; set; }
+	public int RangeWidth { get; set; } = 150;
+
 	public static bool IsEquation(string name)
 	{
 		return name.Contains('=');
@@ -134,6 +142,17 @@ internal static class PlotMath
 {
 	public const int MaxGridLines = 200;
 	public const double PolarSpokeDegrees = 15;    // [DEF] spoke spacing; the original fixed it too
+
+	// 1:1 around the centre: the axis with fewer units per pixel is widened
+	// to the other's, so nothing in view is cut off. With unitsPerPixel the
+	// scale is given instead (window resized while locked).
+	public static WorldRect Square(WorldRect world, double width, double height, double? unitsPerPixel = null)
+	{
+		double per = unitsPerPixel ?? Math.Max(world.Width / Math.Max(1, width), world.Height / Math.Max(1, height));
+		double cx = (world.MinX + world.MaxX) / 2, cy = (world.MinY + world.MaxY) / 2;
+		double halfW = per * width / 2, halfH = per * height / 2;
+		return new WorldRect(cx - halfW, cx + halfW, cy - halfH, cy + halfH);
+	}
 
 	// "#RRGGBB" in settings.json <-> opaque ARGB
 	public static int? ParseColour(string? hex)

@@ -37,6 +37,7 @@ internal sealed partial class PlotView : Control
 	// One per shown line, in GraphSettings.Shown order (G3)
 	private IReadOnlyList<PlotSeries> _series = Array.Empty<PlotSeries>();
 	private string? _message;
+	private float _drawnWidth;    // drawing area width at the last paint (1:1 keeps its scale on resize)
 	private int _requestNumber;
 
 	public PlotView(EngineSession session, GraphSettings settings, bool interactive = false)
@@ -66,7 +67,15 @@ internal sealed partial class PlotView : Control
 		};
 		_settings.Changed += onChanged;
 		Disposed += (_, _) => _settings.Changed -= onChanged;    // the settings outlive a closed Graph window
-		Resize += (_, _) => RequestRefresh();
+		Resize += (_, _) =>
+		{
+			if (_settings.Square && _interactive && _settings.Mode == GraphMode.XY && _drawnWidth > 0)
+			{
+				KeepSquare(_settings.View.Width / _drawnWidth);    // the scale before the resize
+				_settings.NotifyChanged();
+			}
+			RequestRefresh();
+		};
 		Disposed += (_, _) => _debounce.Dispose();
 	}
 
@@ -199,6 +208,7 @@ internal sealed partial class PlotView : Control
 		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 		var screen = PlotArea();
 		var world = DrawnView();
+		_drawnWidth = screen.Width;
 		if (_settings.ShowGrid)
 		{
 			if (_settings.Mode == GraphMode.XY)

@@ -50,6 +50,9 @@ internal sealed class GraphPrefs
 	public List<string>? Shown { get; set; }    // null in files from before G3: show Function
 	public List<string>? Equations { get; set; }    // equations in x and y (G5)
 	public Dictionary<string, string>? Colours { get; set; }    // picked line colours, "#RRGGBB" by name (G4)
+	public bool Square { get; set; }    // 1:1 lock in the Graph window
+	public WindowPlacement? Window { get; set; }    // Graph window; null until it was first used
+	public int RangeWidth { get; set; } = 150;
 	public double MinX { get; set; } = -10;
 	public double MaxX { get; set; } = 10;
 	public double GridX { get; set; } = 1;
