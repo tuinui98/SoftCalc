@@ -20,6 +20,11 @@ internal sealed class Ribbon : FlowLayoutPanel
 	private readonly List<Action> _unhook = new();
 	private readonly ContextMenuStrip _menu = new();
 	private int? _decimals;
+	private List<RibbonGroup>? _builtLayout;
+	private List<object?> _builtSources = new();
+
+	// Times the controls were made again (tests: no rebuild when nothing changed)
+	public int BuildCount { get; private set; }
 
 	public event EventHandler? CustomizeRequested;
 	public event EventHandler? HideRequested;
@@ -39,9 +44,26 @@ internal sealed class Ribbon : FlowLayoutPanel
 	//==================================================================
 	//  Build from a layout
 	//==================================================================
-	// Buttons whose command is missing are left out; so are empty groups
+	// Buttons whose command is missing are left out; so are empty groups.
+	// Nothing is rebuilt when the layout and every button's menu item are
+	// the same as last time (the menus are refilled after start-up).
 	public void Build(IReadOnlyList<RibbonGroup> layout, RibbonCommands commands)
 	{
+		var sources = layout.SelectMany(g => g.Items).Select(i => commands.Find(i.Id))
+			.Select(c => c == null ? null : (object?)c.Source ?? c).ToList();
+		if (_builtLayout != null && RibbonLayout.SameAs(layout, _builtLayout)
+			&& sources.Count == _builtSources.Count && sources.Zip(_builtSources).All(p => ReferenceEquals(p.First, p.Second) || IsSameExtra(p.First, p.Second)))
+		{
+			return;
+		}
+		_builtLayout = RibbonLayout.Clone(layout);
+		_builtSources = sources;
+		BuildCount++;
+		bool drawn = IsHandleCreated;
+		if (drawn)
+		{
+			SendMessage(Handle, WmSetRedraw, IntPtr.Zero, IntPtr.Zero);    // no flicker while the groups are replaced
+		}
 		SuspendLayout();
 		foreach (var unhook in _unhook)
 		{
@@ -68,10 +90,25 @@ internal sealed class Ribbon : FlowLayoutPanel
 				Controls.Add(Group(group.Caption, group.Columns, items));
 			}
 		}
-		ShowDecimals(_decimals);
+		ShowDecimals(_decimals, force: true);
 		ResumeLayout();
-		EqualizeHeights();
+		if (drawn)
+		{
+			SendMessage(Handle, WmSetRedraw, (IntPtr)1, IntPtr.Zero);
+			Invalidate(true);
+		}
 	}
+
+	// Extra commands (Precision) are made anew each time; the same id is the same command
+	private static bool IsSameExtra(object? a, object? b)
+	{
+		return a is RibbonCommand x && b is RibbonCommand y && x.Id == y.Id;
+	}
+
+	private const int WmSetRedraw = 0x000B;
+
+	[System.Runtime.InteropServices.DllImport("user32.dll")]
+	private static extern IntPtr SendMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam);
 
 	private ToolStripItem MakeItem(RibbonItem item, RibbonCommand command)
 	{
@@ -160,19 +197,33 @@ internal sealed class Ribbon : FlowLayoutPanel
 	{
 		foreach (var (item, text) in _dynamic)
 		{
-			item.Text = text();
+			string value = text();
+			if (item.Text != value)
+			{
+				item.Text = value;
+			}
 		}
 		ShowDecimals((int?)settings["decimals"]);
 	}
 
-	private void ShowDecimals(int? decimals)
+	// Heights are equalized again only when a caption's text changes
+	private void ShowDecimals(int? decimals, bool force = false)
 	{
 		_decimals = decimals;
+		bool changed = force;
 		foreach (var (label, caption) in _captions)
 		{
-			label.Text = caption.Replace(RibbonLayout.DecimalsToken, DecimalSteps.Sample(decimals));
+			string text = caption.Replace(RibbonLayout.DecimalsToken, DecimalSteps.Sample(decimals));
+			if (label.Text != text)
+			{
+				label.Text = text;
+				changed = true;
+			}
 		}
-		EqualizeHeights();
+		if (changed)
+		{
+			EqualizeHeights();
+		}
 	}
 
 	//==================================================================

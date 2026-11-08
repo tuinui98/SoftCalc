@@ -93,6 +93,30 @@ public sealed class RibbonLayoutTests
 	}
 
 	[Fact]
+	public void RibbonRebuildsOnlyWhenSomethingItShowsChanged()
+	{
+		using var menu = new MenuStrip();
+		var view = new ToolStripMenuItem("&View");
+		view.DropDownItems.Add(new ToolStripMenuItem("&Clear History"));
+		var user = new ToolStripMenuItem("&User Functions");
+		menu.Items.AddRange(new ToolStripItem[] { view, user });
+		var subs = new HashSet<ToolStripMenuItem> { user };
+		var layout = new List<RibbonGroup> { new() { Caption = "G", Items = { new RibbonItem { Id = "View/Clear History" } } } };
+		using var ribbon = new Ribbon();
+		ribbon.Build(layout, RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), subs));
+		user.DropDownItems.Add(new ToolStripMenuItem("g(x)") { Tag = "g" });    // menus refilled, nothing shown changed
+		ribbon.Build(layout, RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), subs));
+		Assert.Equal(1, ribbon.BuildCount);
+		layout[0].Items.Add(new RibbonItem { Id = "User Functions/g" });
+		ribbon.Build(layout, RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), subs));
+		Assert.Equal(2, ribbon.BuildCount);
+		user.DropDownItems.Clear();
+		user.DropDownItems.Add(new ToolStripMenuItem("g(x, y)") { Tag = "g" });    // a new menu item: buttons must click it
+		ribbon.Build(layout, RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), subs));
+		Assert.Equal(3, ribbon.BuildCount);
+	}
+
+	[Fact]
 	public void DropDownCopiesFollowTheMenuAndClickIt()
 	{
 		int clicks = 0;
