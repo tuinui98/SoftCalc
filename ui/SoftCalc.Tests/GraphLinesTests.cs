@@ -107,4 +107,38 @@ public sealed class GraphLinesTests
 		Assert.Equal((5f, 2.0, 0.0), (hit.Distance, hit.X, hit.Y));
 		Assert.True(Math.Abs(hit.Direction.Y) > Math.Abs(hit.Direction.X));    // steep: the trace fixes y
 	}
+
+	[Fact]
+	public void SquareWidensTheNarrowerAxisAroundTheCentre()
+	{
+		var square = PlotMath.Square(new WorldRect(-10, 10, -10, 10), 600, 300);    // 1/30 per pixel on x, 1/15 on y
+		Assert.Equal((-20.0, 20.0, -10.0, 10.0), (square.MinX, square.MaxX, square.MinY, square.MaxY));
+		var tall = PlotMath.Square(new WorldRect(0, 4, 1, 3), 200, 400);    // centre (2, 2) kept
+		Assert.Equal((0.0, 4.0, -2.0, 6.0), (tall.MinX, tall.MaxX, tall.MinY, tall.MaxY));
+		var resized = PlotMath.Square(new WorldRect(-1, 1, -1, 1), 300, 100, unitsPerPixel: 0.02);    // window resized: same scale
+		Assert.Equal((-3.0, 3.0, -1.0, 1.0), (resized.MinX, resized.MaxX, resized.MinY, resized.MaxY));
+	}
+
+	[Fact]
+	public void GraphWindowPlaceAndLockAreSaved()
+	{
+		string path = Path.Combine(Path.GetTempPath(), "softcalc-graphwin-" + Guid.NewGuid().ToString("N") + ".json");
+		try
+		{
+			var prefs = new AppSettings();
+			prefs.Graph.Square = true;
+			prefs.Graph.RangeWidth = 180;
+			prefs.Graph.Window = new WindowPlacement { X = 10, Y = 20, Width = 900, Height = 600, Maximized = true };
+			SettingsStore.Save(path, prefs);
+			var g = SettingsStore.Load(path).Settings.Graph;
+			Assert.Equal((true, 180, 900, true), (g.Square, g.RangeWidth, g.Window!.Width, g.Window.Maximized));
+			File.WriteAllText(path, "{\"graph\":{}}");
+			var old = SettingsStore.Load(path).Settings.Graph;
+			Assert.Equal((false, 150, (WindowPlacement?)null), (old.Square, old.RangeWidth, old.Window));    // older files
+		}
+		finally
+		{
+			File.Delete(path);
+		}
+	}
 }

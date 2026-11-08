@@ -180,6 +180,10 @@ internal sealed partial class MainForm
 		s.Trace = g.Trace;
 		s.Shown.Clear();
 		s.Shown.AddRange(g.Shown ?? (g.Function != null ? new List<string> { g.Function } : new List<string>()));
+		s.Square = g.Square;
+		s.WindowBounds = g.Window is { HasPosition: true } w ? new Rectangle(w.X, w.Y, w.Width, w.Height) : null;
+		s.WindowMaximized = g.Window?.Maximized ?? false;
+		s.RangeWidth = Math.Clamp(g.RangeWidth, 60, 600);
 		s.Equations.Clear();
 		s.Equations.AddRange((g.Equations ?? new List<string>()).Where(e => !string.IsNullOrWhiteSpace(e) && GraphSettings.IsEquation(e)));
 		s.Colours.Clear();
@@ -201,6 +205,10 @@ internal sealed partial class MainForm
 		{
 			Mode = s.Mode == GraphMode.Polar ? "polar" : "xy", ShowGrid = s.ShowGrid, Trace = s.Trace, Function = s.Function, Shown = s.Shown.ToList(),
 			Equations = s.Equations.ToList(), Colours = s.Colours.ToDictionary(c => c.Key, c => PlotMath.FormatColour(c.Value)),
+			Square = s.Square, RangeWidth = s.RangeWidth,
+			Window = s.WindowBounds is { } b
+				? new WindowPlacement { X = b.X, Y = b.Y, Width = b.Width, Height = b.Height, Maximized = s.WindowMaximized }
+				: null,
 			MinX = s.MinX, MaxX = s.MaxX, GridX = s.GridX, MinY = s.MinY, MaxY = s.MaxY, GridY = s.GridY,
 			MinT = s.MinT, MaxT = s.MaxT, MaxR = s.MaxR, GridR = s.GridR,
 		};

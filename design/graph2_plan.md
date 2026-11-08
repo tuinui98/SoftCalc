@@ -40,3 +40,11 @@ Decisions are in `design/TODO.md` section 7. Built 2026-11-09 on branch
 - Status line: `x^2+y^2=r^2:   x = 1.5   y = 2.598...`. Left click
   copies the solved coordinate; the right-click menu has Copy x / y /
   (x, y) and Insert x / y / (x, y) for equations.
+
+## After G6 (owner 2026-11-09)
+- Graph window placement kept in GraphSettings as it changes (the main
+  window saves settings before this window closes).
+- 1:1: `PlotMath.Square` widens the narrower axis around the centre;
+  locked mode re-squares after zoom, pan and resize at the previous
+  scale (the drawing width at the last paint), twice because the y
+  numbers' width moves the left edge.

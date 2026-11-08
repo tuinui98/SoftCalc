@@ -4,7 +4,9 @@
 // (design/graph_plan.md, G1). Wheel zooms around the cursor (Shift: X
 // only, Ctrl: Y only), dragging pans, arrows pan 10%, + / - zoom, Home
 // resets the range, F fits Y. Polar views only zoom R Max (owner).
-// Every change goes to GraphSettings, so the Range panel follows.
+// 1:1 (owner 2026-11-09) locks one unit to the same length on both axes
+// until a one-axis zoom, Fit Y, Reset or a typed range. Every change
+// goes to GraphSettings, so the Range panel follows.
 
 using SoftCalc.Logic;
 
@@ -100,6 +102,10 @@ internal sealed partial class PlotView
 		var screen = PlotArea();
 		double wx = world.MinX + (at.X - screen.Left) / screen.Width * world.Width;
 		double wy = world.MinY + (screen.Bottom - at.Y) / screen.Height * world.Height;
+		if (!(xAxis && yAxis))
+		{
+			_settings.Square = false;    // one axis only: no longer 1:1
+		}
 		var x = xAxis ? PlotMath.Zoom(world.MinX, world.MaxX, wx, factor) : (world.MinX, world.MaxX);
 		var y = yAxis ? PlotMath.Zoom(world.MinY, world.MaxY, wy, factor) : (world.MinY, world.MaxY);
 		if (x is { } nx && y is { } ny)
@@ -132,9 +138,46 @@ internal sealed partial class PlotView
 		SetXy(from.MinX + mx, from.MaxX + mx, from.MinY + my, from.MaxY + my, keepGrid: true);
 	}
 
+	// 1:1 now and locked; the narrower axis widens, the grid stays
+	public void MakeSquare()
+	{
+		if (_settings.Mode != GraphMode.XY)
+		{
+			return;
+		}
+		_settings.Square = true;
+		KeepSquare(null);
+		_settings.NotifyChanged();
+	}
+
+	// Back to XY while locked: square again, without notifying (the caller does)
+	public void ApplySquareLock()
+	{
+		KeepSquare(_settings.View.Width / Math.Max(1, PlotArea().Width));
+	}
+
+	// Locked 1:1 with the given scale (units per pixel; null: widen the
+	// narrower axis), around the same centre. Twice, because the y
+	// numbers' width moves the area's left edge.
+	private void KeepSquare(double? unitsPerPixel)
+	{
+		if (!_interactive || !_settings.Square || _settings.Mode != GraphMode.XY || Width < 20 || Height < 20)
+		{
+			return;
+		}
+		for (int pass = 0; pass < 2; pass++)
+		{
+			var screen = PlotArea();
+			var square = PlotMath.Square(_settings.View, screen.Width, screen.Height, unitsPerPixel);
+			(_settings.MinX, _settings.MaxX, _settings.MinY, _settings.MaxY) = (square.MinX, square.MaxX, square.MinY, square.MaxY);
+			unitsPerPixel ??= square.Width / Math.Max(1, screen.Width);
+		}
+	}
+
 	// Y Min/Max (polar: R Max) from the plotted points
 	public void FitY()
 	{
+		_settings.Square = false;
 		var points = AllPoints().ToList();    // every shown line
 		if (_settings.Mode == GraphMode.Polar)
 		{
@@ -153,6 +196,7 @@ internal sealed partial class PlotView
 
 	public void ResetRange()
 	{
+		_settings.Square = false;
 		_settings.ResetRange();
 		_settings.NotifyChanged();
 	}
@@ -168,6 +212,7 @@ internal sealed partial class PlotView
 	private void SetXy(double minX, double maxX, double minY, double maxY, bool keepGrid = false)
 	{
 		(_settings.MinX, _settings.MaxX, _settings.MinY, _settings.MaxY) = (minX, maxX, minY, maxY);
+		KeepSquare(_settings.View.Width / Math.Max(1, PlotArea().Width));    // locked: the y numbers' width may have moved the edge
 		if (!keepGrid)
 		{
 			_settings.GridX = PlotMath.NiceStep(maxX - minX, 20);
