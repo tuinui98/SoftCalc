@@ -124,7 +124,7 @@ internal sealed partial class MainForm
 		try
 		{
 			CaptureSettings();
-			_folder.WithLock(() => SettingsStore.Save(_folder.SettingsPath, _prefs));
+			_folder.WithLock(() => SettingsStore.SaveKeepingRibbon(_folder.SettingsPath, _prefs, _ownRibbon));
 			HistoryStore.MergeAndSave(_folder, _sessionEntries.Select(ToStored), _clearedAt, _prefs.HistoryCap, _deletedIds);
 			if (_engineReady)
 			{

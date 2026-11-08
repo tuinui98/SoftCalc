@@ -1,7 +1,7 @@
 # Customize Ribbon - plan (owner 2026-11-08)
 
 Decisions are in `design/TODO.md` section 7. This file is how to build
-them. Branch `ribbon-customize`; nothing here is started.
+them. Branch `ribbon-customize`; built 2026-11-08 (R1-R3).
 
 ## Current state
 - `UI/Ribbon.cs` builds layout B3 in code: groups Angle, Output,

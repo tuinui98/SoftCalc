@@ -105,7 +105,7 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [ ] File > Help (section 3).
 
 ## 7. Owner requests 2026-11-08 (not started; plan and discuss first)
-- [ ] Ribbon customisation: add, remove, edit and rearrange the ribbon's
+- [x] Ribbon customisation (done 2026-11-08, design/ribbon_plan.md): add, remove, edit and rearrange the ribbon's
       buttons and groups. To plan: a Customize Ribbon window (available
       commands on the left, groups and their buttons on the right, Add /
       Remove / Up / Down / Rename / New Group, Reset to default) or a
@@ -134,8 +134,8 @@ Recorded at the owner's request after M8. Nothing here is started.
       (`view.base.hex`, `func.sqrt`, `conv.ft.in`); an id that no longer
       exists (a deleted user function) is skipped.
     - Function and conversion buttons: a function inserts like its menu
-      item (`sqrt(`); a conversion button holds one pair chosen when it
-      is added (`[ft->in]`). The whole Conversions drop-down is an item
+      item (`sqrt(`); a conversion button is one pair, picked from the
+      Available tree (`Conversions > Length > ft > in`), no extra picker. The whole Conversions drop-down is an item
       too.
     - User functions are listed and can be added.
     - Icons: commands that have one keep it; the rest show text only

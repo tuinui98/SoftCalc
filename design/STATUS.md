@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-07 after v1.0.0 and the owner's first requests (1.1.0 built, not released). Everything below is committed on `main` and
+Updated 2026-11-08: Customize Ribbon built (TODO section 7); 1.1.0 built, not released. Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 Open work is listed in `design/TODO.md`.
@@ -59,7 +59,14 @@ history.jsonl (restore now keeps text results' `$n` places);
 release v1.1.0 waits for the owner's try-out (rebuild from the final
 `main` first so the exe carries its commit hash).
 
-Tests: engine `pytest` 389 passed (frozen-exe test included); UI `dotnet test` 216 passed.
+Customize Ribbon (2026-11-08, `design/ribbon_plan.md` R1-R3, details in
+`spec/extensions.md` "Customize Ribbon"): the ribbon is built from a
+layout of menu command ids; View > Customize Ribbon... (also the
+ribbon's right-click menu) adds any menu command, moves, renames and
+regroups buttons; saved in settings.json `ribbon`; new Tools > Graph...
+menu item.
+
+Tests: engine `pytest` 389 passed (frozen-exe test included); UI `dotnet test` 230 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

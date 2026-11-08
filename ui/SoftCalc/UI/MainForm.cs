@@ -54,7 +54,10 @@ internal sealed partial class MainForm : Form
 	private readonly ToolStripMenuItem _showRibbonItem = new("Show &Ribbon") { Checked = true };
 	private readonly ToolStripMenuItem _padZerosItem = new("&Pad with Zeros");
 	private readonly ToolStripMenuItem _allDigitsItem = new("&All Digits");
-	private Ribbon _ribbon = null!;
+	private readonly Ribbon _ribbon = new();
+	private List<RibbonGroup> _ribbonLayout = RibbonLayout.Default();
+	private bool _ownRibbon;    // this window changed the layout (saved at close as its own)
+	private string _ribbonFunctions = "";    // user function names the ribbon was built with
 	private readonly Dictionary<int, ToolStripMenuItem> _textSizeItems = new();
 	private readonly RatesSource _rates;
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
@@ -93,6 +96,8 @@ internal sealed partial class MainForm : Form
 		KeyPreview = true;
 		BuildLayout();
 		BuildMenus();
+		_ribbonLayout = _prefs.Ribbon != null ? RibbonLayout.Clone(_prefs.Ribbon) : RibbonLayout.Default();
+		RebuildRibbon();
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
 		_history.ResultClicked += (_, entry) => InsertResult(entry);
 		_history.DeleteClicked += async (_, entry) => await DeleteHistoryEntryAsync(entry);
@@ -144,9 +149,8 @@ internal sealed partial class MainForm : Form
 		_split.Panel1.Controls.Add(sidebar);
 		_split.Panel2.Controls.Add(_column);
 
-		_ribbon = new Ribbon(new RibbonActions(
-			ChangeSettingAsync, StepDecimalsAsync, () => ChangeDecimalsAsync(null), ClearHistoryAsync,
-			SaveHistoryAs, OpenGraphWindow, OpenCompoundWindow, () => SetAlwaysOnTop(!_onTopItem.Checked)));
+		_ribbon.CustomizeRequested += (_, _) => CustomizeRibbon();
+		_ribbon.HideRequested += (_, _) => _showRibbonItem.PerformClick();
 		Controls.Add(_split);
 		Controls.Add(_ribbon);    // docks under the menu bar
 		Controls.Add(_menu);
@@ -326,7 +330,6 @@ internal sealed partial class MainForm : Form
 	private void SetAlwaysOnTop(bool onTop)
 	{
 		_onTopItem.Checked = onTop;
-		_ribbon.ShowOnTop(onTop);
 		TopMost = onTop;    // owned windows (Graph, Compound Interest) stay above it
 	}
 
@@ -426,6 +429,7 @@ internal sealed partial class MainForm : Form
 			ApplyView(_view);
 		};
 		view.DropDownItems.Add(_showRibbonItem);
+		view.DropDownItems.Add(new ToolStripMenuItem("C&ustomize Ribbon...", null, (_, _) => CustomizeRibbon()));
 		var decimals = new ToolStripMenuItem("Deci&mal Places");
 		decimals.DropDownItems.Add(new ToolStripMenuItem("&More", null, async (_, _) => await StepDecimalsAsync(+1)));
 		decimals.DropDownItems.Add(new ToolStripMenuItem("&Fewer", null, async (_, _) => await StepDecimalsAsync(-1)));
@@ -468,6 +472,7 @@ internal sealed partial class MainForm : Form
 		view.DropDownItems.Add(options);
 
 		var tools = new ToolStripMenuItem("&Tools");
+		tools.DropDownItems.Add(new ToolStripMenuItem("&Graph...", null, (_, _) => OpenGraphWindow()));
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Compound Interest...", null, (_, _) => OpenCompoundWindow()));
 
 		_menu.Items.AddRange(new ToolStripItem[] { file, view, _functionsMenu, _conversionsMenu, tools });
@@ -510,7 +515,7 @@ internal sealed partial class MainForm : Form
 		_functionsMenu.DropDownItems.Add(_userFunctionsMenu);
 
 		FillConversions(_conversionsMenu.DropDownItems, catalog);
-		FillConversions(_ribbon.Conversions.DropDownItems, catalog);    // same items, own copies
+		RebuildRibbon();    // functions and conversion pairs can now be found
 	}
 
 	private void FillConversions(ToolStripItemCollection items, Catalog catalog)
@@ -571,9 +576,18 @@ internal sealed partial class MainForm : Form
 		{
 			string label = $"{fn.Name}({string.Join(", ", fn.Parameters)})";
 			_userFunctionsMenu.DropDownItems.Add(new ToolStripMenuItem(label, null, async (_, _) =>
-				await InsertFromMenuAsync(new JsonObject { ["kind"] = "function", ["name"] = fn.Name })));
+				await InsertFromMenuAsync(new JsonObject { ["kind"] = "function", ["name"] = fn.Name }))
+			{
+				Tag = fn.Name,    // ribbon command id: the name, so new parameters keep the button
+			});
 		}
 		_userFunctionsMenu.Enabled = _state.Functions.Count > 0;
+		string names = string.Join(",", _state.Functions.Select(fn => fn.Name));
+		if (names != _ribbonFunctions)
+		{
+			_ribbonFunctions = names;
+			RebuildRibbon();
+		}
 	}
 
 	private void ShowSettingChecks()
