@@ -180,6 +180,16 @@ internal sealed partial class MainForm
 		s.Trace = g.Trace;
 		s.Shown.Clear();
 		s.Shown.AddRange(g.Shown ?? (g.Function != null ? new List<string> { g.Function } : new List<string>()));
+		s.Equations.Clear();
+		s.Equations.AddRange((g.Equations ?? new List<string>()).Where(e => !string.IsNullOrWhiteSpace(e) && GraphSettings.IsEquation(e)));
+		s.Colours.Clear();
+		foreach (var (name, hex) in g.Colours ?? new Dictionary<string, string>())
+		{
+			if (PlotMath.ParseColour(hex) is { } argb)
+			{
+				s.Colours[name] = argb;
+			}
+		}
 		(s.MinX, s.MaxX, s.GridX, s.MinY, s.MaxY, s.GridY) = (g.MinX, g.MaxX, g.GridX, g.MinY, g.MaxY, g.GridY);
 		(s.MinT, s.MaxT, s.MaxR, s.GridR) = (g.MinT, g.MaxT, g.MaxR, g.GridR);
 	}
@@ -190,6 +200,7 @@ internal sealed partial class MainForm
 		return new GraphPrefs
 		{
 			Mode = s.Mode == GraphMode.Polar ? "polar" : "xy", ShowGrid = s.ShowGrid, Trace = s.Trace, Function = s.Function, Shown = s.Shown.ToList(),
+			Equations = s.Equations.ToList(), Colours = s.Colours.ToDictionary(c => c.Key, c => PlotMath.FormatColour(c.Value)),
 			MinX = s.MinX, MaxX = s.MaxX, GridX = s.GridX, MinY = s.MinY, MaxY = s.MaxY, GridY = s.GridY,
 			MinT = s.MinT, MaxT = s.MaxT, MaxR = s.MaxR, GridR = s.GridR,
 		};

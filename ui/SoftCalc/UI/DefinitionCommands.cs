@@ -32,6 +32,14 @@ internal sealed partial class DefinitionCommands
 		_state = state;
 	}
 
+	// A function renamed in the editor (old, new): the graph keeps its colour and tick
+	public event Action<string, string>? Renamed;
+
+	public void NotifyRenamed(string oldName, string newName)
+	{
+		Renamed?.Invoke(oldName, newName);
+	}
+
 	public EngineState State()
 	{
 		return _state();

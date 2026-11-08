@@ -108,6 +108,21 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
+	public async Task EquationPlotsAndSolvesOverThePipe()
+	{
+		await Session.EvalAsync("r=2");
+		var segments = await Session.PlotEquationAsync("x^2+y^2=r^2", new SoftCalc.Logic.WorldRect(-3, 3, -3, 3), 12, 12);
+		Assert.NotEmpty(segments);
+		Assert.All(segments, s => Assert.Equal(2, Math.Sqrt(s.X1 * s.X1 + s.Y1 * s.Y1), 1));
+		var (x, y, xValue, yValue) = await Session.EquationAtAsync("x^2+y^2=r^2", "x", "1", 1.7, 0.3);
+		Assert.Equal("1", x);
+		Assert.StartsWith("1.7320508075688772935", y);
+		Assert.Equal(1.0, xValue!.Value);
+		Assert.Equal(Math.Sqrt(3), yValue!.Value, 12);
+		await Assert.ThrowsAnyAsync<EngineException>(() => Session.PlotEquationAsync("x+1", new SoftCalc.Logic.WorldRect(-1, 1, -1, 1), 2, 2));
+	}
+
+	[Fact]
 	public async Task DeletedDefinitionStaysDeletedAfterRestart()
 	{
 		await Session.EvalAsync("temp=7");

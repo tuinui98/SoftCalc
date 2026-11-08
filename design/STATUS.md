@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-08: Customize Ribbon built (TODO section 7); 1.1.0 built, not released. Everything below is committed on `main` and
+Updated 2026-11-09: Customize Ribbon and the Graph lines batch built (TODO section 7); 1.1.0 built, not released. Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 Open work is listed in `design/TODO.md`.
@@ -66,7 +66,12 @@ ribbon's right-click menu) adds any menu command, moves, renames and
 regroups buttons; saved in settings.json `ribbon`; new Tools > Graph...
 menu item.
 
-Tests: engine `pytest` 389 passed (frozen-exe test included); UI `dotnet test` 230 passed.
+Graph lines (2026-11-09, `design/graph2_plan.md` G4-G6): line colours
+picked from the Windows colour dialog; equations in x and y drawn by
+the engine's `plot_equation` (adaptive marching squares); trace snaps
+to the nearest shown line and solves equations with `equation_at`.
+
+Tests: engine `pytest` 401 passed (frozen-exe test included); UI `dotnet test` 246 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

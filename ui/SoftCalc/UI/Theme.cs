@@ -35,6 +35,12 @@ internal static class Theme
 		Color.FromArgb(130, 100, 210), Color.FromArgb(20, 160, 175), Color.FromArgb(180, 150, 20),
 	};
 
+	// A graph line's colour: the one picked for it, else its palette place
+	public static Color LineColour(Logic.GraphSettings settings, string name)
+	{
+		return settings.Colours.TryGetValue(name, out int argb) ? Color.FromArgb(argb) : Series(settings.ColourIndex(name));
+	}
+
 	public static Color Series(int index)
 	{
 		return index <= 0 ? SystemColors.Highlight : SeriesColours[(index - 1) % SeriesColours.Length];

@@ -1,9 +1,11 @@
-// GraphPanel.cs - Graph toolbar, function checklist and plot (sidebar and Graph window)
+// GraphPanel.cs - Graph toolbar, line checklist and plot (sidebar and Graph window)
 //
-// Both instances share one GraphSettings: a ticked function is drawn in
+// Both instances share one GraphSettings: a ticked line is drawn in
 // both, in its own colour (the swatch in the list); the selected one is
-// what Edit, Delete and the trace use (design/graph_plan.md, G3). Only
-// one-parameter functions can be graphed; others are listed greyed out.
+// what Edit and Delete use (design/graph_plan.md, G3). Lines are the
+// one-parameter user functions (others are listed greyed out) and the
+// equations in x and y typed here (graph2_plan G5). Clicking a swatch
+// picks the line's colour with the Windows colour dialog (G4).
 
 using SoftCalc.Engine;
 using SoftCalc.Logic;
@@ -13,7 +15,15 @@ namespace SoftCalc.UI;
 internal sealed class GraphPanel : Panel
 {
 	private const int MaxRows = 4;    // [DEF] list height before it scrolls
+	private const int SwatchSize = 14;
 
+	// One list row: a user function, or an equation (Function null)
+	private sealed record Row(string Name, string Text, UserFunction? Function)
+	{
+		public bool IsEquation => Function == null;
+	}
+
+	private readonly EngineSession _session;
 	private readonly GraphSettings _settings;
 	private readonly DefinitionCommands _commands;
 	private readonly ListView _functions = new()
@@ -21,10 +31,12 @@ internal sealed class GraphPanel : Panel
 		Dock = DockStyle.Top, View = View.Details, CheckBoxes = true, FullRowSelect = true, MultiSelect = false,
 		HeaderStyle = ColumnHeaderStyle.None, HideSelection = false, ShowItemToolTips = true,
 	};
-	private readonly ImageList _swatches = new() { ImageSize = new Size(12, 12), ColorDepth = ColorDepth.Depth32Bit };
+	private readonly ImageList _swatches = new() { ImageSize = new Size(SwatchSize, SwatchSize), ColorDepth = ColorDepth.Depth32Bit };
 	private readonly ToolStripButton _edit = new("Edit");
 	private readonly ToolStripButton _delete = new("Delete");
 	private IReadOnlyList<UserFunction> _list = Array.Empty<UserFunction>();
+	private List<Row> _rows = new();
+	private string _linesKey = "";    // equations and colours the list was filled with
 	private bool _filling;
 	private (int Index, long Ticks) _lastToggle = (-1, 0);
 	private bool _ready;    // list handle created and refilled; before that its check events are replays
@@ -33,33 +45,33 @@ internal sealed class GraphPanel : Panel
 
 	public GraphPanel(EngineSession session, GraphSettings settings, DefinitionCommands commands, Action? openWindow, bool interactive = false)
 	{
+		_session = session;
 		_settings = settings;
 		_commands = commands;
 		Plot = new PlotView(session, settings, interactive) { Dock = DockStyle.Fill };
 
+		//==================================================================
+		//  BLOCK 1 - Toolbar: Add (function or equation), Edit, Delete, Window
+		//==================================================================
 		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
-		toolbar.Items.Add(new ToolStripButton("Add", null, async (_, _) => await _commands.AddFunctionAsync()));
-		_edit.Click += async (_, _) =>
-		{
-			if (Selected() is { } fn)
-			{
-				await _commands.EditFunctionAsync(fn);
-			}
-		};
-		_delete.Click += async (_, _) =>
-		{
-			if (Selected() is { } fn)
-			{
-				await _commands.DeleteAsync(fn.Name);
-			}
-		};
+		var add = new ToolStripSplitButton("Add") { ToolTipText = "Add a function (arrow: or an equation in x and y)" };
+		add.ButtonClick += async (_, _) => await _commands.AddFunctionAsync();
+		add.DropDownItems.Add(new ToolStripMenuItem("&Function...", null, async (_, _) => await _commands.AddFunctionAsync()));
+		add.DropDownItems.Add(new ToolStripMenuItem("&Equation...", null, async (_, _) => await AddEquationAsync()));
+		toolbar.Items.Add(add);
+		_edit.Click += async (_, _) => await EditSelectedAsync();
+		_delete.Click += async (_, _) => await DeleteSelectedAsync();
 		toolbar.Items.Add(_edit);
 		toolbar.Items.Add(_delete);
 		if (openWindow != null)
 		{
 			toolbar.Items.Add(new ToolStripButton("Window", null, (_, _) => openWindow()));
 		}
+		// end BLOCK 1
 
+		//==================================================================
+		//  BLOCK 2 - The list: ticks, selection, swatch clicks, menu
+		//==================================================================
 		_functions.Columns.Add("");
 		_functions.SmallImageList = _swatches;
 		_functions.Resize += (_, _) => FitColumn();
@@ -84,7 +96,7 @@ internal sealed class GraphPanel : Panel
 			{
 				return;
 			}
-			string name = _list[e.Item.Index].Name;
+			string name = _rows[e.Item.Index].Name;
 			if (e.Item.Checked == _settings.IsShown(name))
 			{
 				return;
@@ -106,11 +118,11 @@ internal sealed class GraphPanel : Panel
 		_functions.HandleDestroyed += (_, _) => _ready = false;
 		_functions.SelectedIndexChanged += (_, _) =>
 		{
-			if (_filling || !_ready || Selected() is not { } fn)
+			if (_filling || !_ready || Selected() is not { } row)
 			{
 				return;
 			}
-			_settings.Function = fn.Name;
+			_settings.Function = row.Name;
 			Notify();
 		};
 		_functions.DoubleClick += async (_, _) =>
@@ -123,18 +135,35 @@ internal sealed class GraphPanel : Panel
 			{
 				_functions.Items[index].Checked = !_functions.Items[index].Checked;
 			}
-			if (Selected() is { } fn)
+			await EditSelectedAsync();
+		};
+		_functions.MouseClick += (_, e) =>
+		{
+			var hit = _functions.HitTest(e.Location);
+			if (e.Button == MouseButtons.Left && hit.Item != null && hit.Location == ListViewHitTestLocations.Image && Graphable(hit.Item.Index))
 			{
-				await _commands.EditFunctionAsync(fn);
+				ChooseColour(_rows[hit.Item.Index]);
 			}
 		};
-		EventHandler onChanged = (_, _) => ShowSelection();
+		_functions.ContextMenuStrip = BuildListMenu();
+		EventHandler onChanged = (_, _) =>
+		{
+			if (LinesKey() != _linesKey)
+			{
+				FillList();    // equations or colours changed in the other panel
+			}
+			else
+			{
+				ShowSelection();
+			}
+		};
 		_settings.Changed += onChanged;
 		Disposed += (_, _) =>
 		{
 			_settings.Changed -= onChanged;    // the settings outlive a closed Graph window
 			_swatches.Dispose();
 		};
+		// end BLOCK 2
 
 		Controls.Add(Plot);
 		Controls.Add(_functions);
@@ -146,7 +175,7 @@ internal sealed class GraphPanel : Panel
 	{
 		_list = functions;
 		var before = _settings.Graphable;
-		_settings.Graphable = functions.Where(f => f.Parameters.Count == 1).Select(f => f.Name).ToList();
+		_settings.Graphable = GraphableNames();
 		if (before.Count > 0)
 		{
 			// a function added after start-up is drawn at once (Add from the graph)
@@ -161,7 +190,7 @@ internal sealed class GraphPanel : Panel
 		{
 			_settings.Shown.Add(_settings.Graphable[0]);
 		}
-		if (_settings.Function == null || !functions.Any(f => Same(f.Name, _settings.Function)))
+		if (_settings.Function == null || !_settings.Graphable.Concat(functions.Select(f => f.Name)).Any(n => Same(n, _settings.Function)))
 		{
 			_settings.Function = _settings.Shown.FirstOrDefault();
 		}
@@ -169,21 +198,38 @@ internal sealed class GraphPanel : Panel
 		Plot.RequestRefresh();
 	}
 
+	private List<string> GraphableNames()
+	{
+		return _list.Where(f => f.Parameters.Count == 1).Select(f => f.Name).Concat(_settings.Equations).ToList();
+	}
+
+	private string LinesKey()
+	{
+		return string.Join("\n", _settings.Equations) + "|" + string.Join(",", _settings.Colours.Select(c => $"{c.Key}={c.Value}"));
+	}
+
+	//==================================================================
+	//  Filling the list
+	//==================================================================
 	private void FillList()
 	{
+		_linesKey = LinesKey();
+		_rows = _list.Select(fn => new Row(fn.Name, fn.Head + fn.Body, fn))
+			.Concat(_settings.Equations.Select(eq => new Row(eq, eq, null)))
+			.ToList();
 		_filling = true;
 		_functions.BeginUpdate();
 		_functions.Items.Clear();
 		_swatches.Images.Clear();
-		foreach (var fn in _list)
+		foreach (var row in _rows)
 		{
-			int colour = _settings.ColourIndex(fn.Name);
-			var item = new ListViewItem(fn.Head + fn.Body) { ToolTipText = fn.Head + fn.Body };
-			if (colour >= 0)
+			var item = new ListViewItem(row.Text) { ToolTipText = row.Text };
+			if (row.IsEquation || row.Function!.Parameters.Count == 1)
 			{
-				_swatches.Images.Add(Swatch(Theme.Series(colour)));
+				_swatches.Images.Add(Swatch(Theme.LineColour(_settings, row.Name)));
 				item.ImageIndex = _swatches.Images.Count - 1;
-				item.Checked = _settings.IsShown(fn.Name);
+				item.Checked = _settings.IsShown(row.Name);
+				item.ToolTipText += "\n(click the colour to change it)";
 			}
 			else
 			{
@@ -194,20 +240,23 @@ internal sealed class GraphPanel : Panel
 		}
 		_functions.EndUpdate();
 		_filling = false;
-		int rows = Math.Clamp(_list.Count, 1, MaxRows);
+		int rows = Math.Clamp(_rows.Count, 1, MaxRows);
 		// GetItemRect would create the list's handle early; estimate until it exists
-		int row = _ready && _functions.Items.Count > 0 ? _functions.GetItemRect(0).Height : _functions.Font.Height + 6;
-		_functions.Height = rows * row + 4;
+		int rowHeight = _ready && _functions.Items.Count > 0 ? _functions.GetItemRect(0).Height : Math.Max(_functions.Font.Height + 6, SwatchSize + 4);
+		_functions.Height = rows * rowHeight + 4;
 		FitColumn();
 		ShowSelection();
 	}
 
+	// A filled square with a frame, big enough to click
 	private static Bitmap Swatch(Color colour)
 	{
-		var bitmap = new Bitmap(12, 12);
+		var bitmap = new Bitmap(SwatchSize, SwatchSize);
 		using var g = Graphics.FromImage(bitmap);
 		using var brush = new SolidBrush(colour);
-		g.FillRectangle(brush, 1, 4, 10, 4);
+		using var frame = new Pen(SystemColors.ControlDark);
+		g.FillRectangle(brush, 1, 1, SwatchSize - 3, SwatchSize - 3);
+		g.DrawRectangle(frame, 1, 1, SwatchSize - 3, SwatchSize - 3);
 		return bitmap;
 	}
 
@@ -231,15 +280,15 @@ internal sealed class GraphPanel : Panel
 			_functions.BeginInvoke(ShowSelection);    // not inside the list's own notification
 			return;
 		}
-		int index = _list.ToList().FindIndex(f => Same(f.Name, _settings.Function));
+		int index = _rows.FindIndex(r => Same(r.Name, _settings.Function));
 		_filling = true;
-		for (int i = 0; i < _functions.Items.Count; i++)
+		for (int i = 0; i < _functions.Items.Count && i < _rows.Count; i++)
 		{
 			var item = _functions.Items[i];
 			item.Selected = i == index;
 			if (Graphable(i))
 			{
-				item.Checked = _settings.IsShown(_list[i].Name);
+				item.Checked = _settings.IsShown(_rows[i].Name);
 			}
 		}
 		_filling = false;
@@ -263,7 +312,7 @@ internal sealed class GraphPanel : Panel
 
 	private bool Graphable(int index)
 	{
-		return index >= 0 && index < _list.Count && _list[index].Parameters.Count == 1;
+		return index >= 0 && index < _rows.Count && (_rows[index].IsEquation || _rows[index].Function!.Parameters.Count == 1);
 	}
 
 	private void UpdateButtons()
@@ -271,14 +320,138 @@ internal sealed class GraphPanel : Panel
 		_edit.Enabled = _delete.Enabled = Selected() != null;
 	}
 
-	private UserFunction? Selected()
+	private Row? Selected()
 	{
 		int index = _functions.SelectedIndices.Count > 0 ? _functions.SelectedIndices[0] : -1;
-		return index >= 0 && index < _list.Count ? _list[index] : null;
+		return index >= 0 && index < _rows.Count ? _rows[index] : null;
 	}
 
 	private static bool Same(string a, string? b)
 	{
 		return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
+	}
+
+	//==================================================================
+	//  Colours (G4)
+	//==================================================================
+	private void ChooseColour(Row row)
+	{
+		using var dialog = new ColorDialog { Color = Theme.LineColour(_settings, row.Name), FullOpen = true, AnyColor = true };
+		if (dialog.ShowDialog(FindForm()) == DialogResult.OK)
+		{
+			_settings.Colours[row.Name] = dialog.Color.ToArgb() | unchecked((int)0xFF000000);
+			FillList();
+			_settings.NotifyChanged();
+		}
+	}
+
+	private ContextMenuStrip BuildListMenu()
+	{
+		var menu = new ContextMenuStrip();
+		var colour = new ToolStripMenuItem("&Colour...", null, (_, _) =>
+		{
+			if (Selected() is { } row)
+			{
+				ChooseColour(row);
+			}
+		});
+		var reset = new ToolStripMenuItem("&Default Colour", null, (_, _) =>
+		{
+			if (Selected() is { } row && _settings.Colours.Remove(row.Name))
+			{
+				FillList();
+				_settings.NotifyChanged();
+			}
+		});
+		var edit = new ToolStripMenuItem("&Edit...", null, async (_, _) => await EditSelectedAsync());
+		var delete = new ToolStripMenuItem("De&lete", null, async (_, _) => await DeleteSelectedAsync());
+		menu.Items.AddRange(new ToolStripItem[] { colour, reset, new ToolStripSeparator(), edit, delete });
+		menu.Opening += (_, e) =>
+		{
+			var at = _functions.PointToClient(Cursor.Position);
+			if (_functions.HitTest(at).Item is { } item)
+			{
+				item.Selected = true;
+			}
+			int index = _functions.SelectedIndices.Count > 0 ? _functions.SelectedIndices[0] : -1;
+			if (index < 0)
+			{
+				e.Cancel = true;
+				return;
+			}
+			colour.Enabled = Graphable(index);
+			reset.Enabled = Graphable(index) && _settings.Colours.ContainsKey(_rows[index].Name);
+		};
+		return menu;
+	}
+
+	//==================================================================
+	//  Edit and Delete for both kinds; equations (G5)
+	//==================================================================
+	private async Task EditSelectedAsync()
+	{
+		switch (Selected())
+		{
+			case { IsEquation: true } row:
+				await EditEquationAsync(row.Name);
+				break;
+			case { Function: { } fn }:
+				await _commands.EditFunctionAsync(fn);
+				break;
+		}
+	}
+
+	private async Task DeleteSelectedAsync()
+	{
+		switch (Selected())
+		{
+			case { IsEquation: true } row:
+				_settings.Equations.RemoveAll(e => Same(e, row.Name));
+				_settings.SetShown(row.Name, false);
+				_settings.Colours.Remove(row.Name);
+				if (Same(row.Name, _settings.Function))
+				{
+					_settings.Function = _settings.Shown.FirstOrDefault();
+				}
+				RefreshLines();
+				break;
+			case { Function: { } fn }:
+				await _commands.DeleteAsync(fn.Name);
+				break;
+		}
+	}
+
+	private async Task AddEquationAsync()
+	{
+		if (await EquationDialog.AskAsync(FindForm(), _session, "Add Equation", "x^2+y^2=r^2", _settings.Equations) is not { } text)
+		{
+			return;
+		}
+		_settings.Equations.Add(text);
+		_settings.SetShown(text, true);
+		_settings.Function = text;
+		RefreshLines();
+	}
+
+	private async Task EditEquationAsync(string old)
+	{
+		var others = _settings.Equations.Where(e => !Same(e, old)).ToList();
+		if (await EquationDialog.AskAsync(FindForm(), _session, "Edit Equation", old, others) is not { } text || text == old)
+		{
+			return;
+		}
+		int index = _settings.Equations.FindIndex(e => Same(e, old));
+		_settings.Equations[index] = text;
+		_settings.Rename(old, text);
+		_settings.SetShown(old, false);
+		RefreshLines();
+	}
+
+	// After the equation list changed: colours by place, both panels, the plot
+	private void RefreshLines()
+	{
+		_settings.Graphable = GraphableNames();
+		FillList();
+		_settings.NotifyChanged();
 	}
 }

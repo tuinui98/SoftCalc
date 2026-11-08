@@ -28,8 +28,38 @@ internal sealed class GraphSettings
 	public string? Function { get; set; }
 	public List<string> Shown { get; } = new();
 
-	// One-parameter functions in definition order; a function's colour is its place here
+	// One-parameter functions in definition order, then the equations; a
+	// line's default colour is its place here
 	public IReadOnlyList<string> Graphable { get; set; } = Array.Empty<string>();
+
+	// Equations in x and y typed in the graph (`x^2+y^2=r^2`), in the order
+	// added; a line's name is its text, which always holds '=' (G5)
+	public List<string> Equations { get; } = new();
+
+	// Colours the owner picked, ARGB, by line name (G4); the rest use the palette
+	public Dictionary<string, int> Colours { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+	public static bool IsEquation(string name)
+	{
+		return name.Contains('=');
+	}
+
+	// A renamed function keeps its colour, tick and selection
+	public void Rename(string oldName, string newName)
+	{
+		if (Colours.Remove(oldName, out int colour))
+		{
+			Colours[newName] = colour;
+		}
+		if (IsShown(oldName))
+		{
+			SetShown(newName, true);
+		}
+		if (string.Equals(Function, oldName, StringComparison.OrdinalIgnoreCase))
+		{
+			Function = newName;
+		}
+	}
 
 	public int ColourIndex(string name)
 	{
@@ -104,6 +134,22 @@ internal static class PlotMath
 {
 	public const int MaxGridLines = 200;
 	public const double PolarSpokeDegrees = 15;    // [DEF] spoke spacing; the original fixed it too
+
+	// "#RRGGBB" in settings.json <-> opaque ARGB
+	public static int? ParseColour(string? hex)
+	{
+		if (hex is { Length: 7 } && hex[0] == '#'
+			&& int.TryParse(hex[1..], System.Globalization.NumberStyles.HexNumber, null, out int rgb))
+		{
+			return unchecked((int)0xFF000000) | rgb;
+		}
+		return null;
+	}
+
+	public static string FormatColour(int argb)
+	{
+		return "#" + (argb & 0xFFFFFF).ToString("X6");
+	}
 
 	// Checks one min/max/increment triple; returns an error message or null
 	public static string? CheckRange(string axis, double min, double max, double step)

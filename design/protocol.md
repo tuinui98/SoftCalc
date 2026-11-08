@@ -108,6 +108,24 @@ formatted like a result, plus a float for drawing; both `null` where
 it is undefined or not real. Graph trace (G2); does not change
 `answer` or `$n`.
 
+### `plot_equation`
+`{"equation": "x^2+y^2=r^2", "x_min": -10, "x_max": 10, "y_min": -10,
+"y_max": 10, "cols": 60, "rows": 45}` -> `{"segments": [[x1, y1, x2, y2], ...]}`:
+line segments where lhs = rhs (x and y are the axes, other names are
+variables). lhs - rhs is sampled on a cols x rows grid; cells where it
+changes sign are split 6 x 6 and traced by marching squares; a sign
+change through a pole is left out. At most 40000 cells. A malformed
+equation answers `ok: false` (`An equation needs one '='`, `An
+equation needs x or y`, `Unknown name 'q'`). Low precision (graph2_plan G5).
+
+### `equation_at`
+`{"equation": "x^2+y^2=r^2", "axis": "x"|"y", "value": "1.5", "guess": 2.6,
+"window": 0.1}` -> `{"x": "1.5", "y": "2.598...", "x_value": 1.5, "y_value": 2.598}`:
+the point on the curve with `axis` fixed at `value` (decimal text, so
+it is exact), the other coordinate solved near `guess` at full
+precision; all `null` when no root lies within `window`. Graph trace
+(G6); does not change `answer` or `$n`.
+
 ### `literal`
 `{"text": "0x1F"}` -> `{"text": "31"}`: one number literal shown in
 the output base for the Input hint line; `null` when the text is not a
