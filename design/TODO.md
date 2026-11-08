@@ -166,7 +166,7 @@ Recorded at the owner's request after M8. Nothing here is started.
     - Format `4-1-0`, negatives `-4-1-0`, always decimal digits.
     - The wa part rounds by the Decimals setting; 100 wa carries to a
       ngan.
-  - Proposed 2026-11-08, waiting for the owner:
+  - Input, decided 2026-11-08 (owner: keep it simple, adjust after use):
     - Typing `4-1-50` in: three plain numbers joined by `-` right before
       a tag whose source is rnw (`[rnw]` or `[rnw->...]`) read as one
       value, 4 rai + 1 ngan + 50 wa = 4.375 rai. Ngan and wa may exceed
@@ -175,6 +175,9 @@ Recorded at the owner's request after M8. Nothing here is started.
       5.875 with ` = 5-3-50` on the right. A line shows the rnw text
       when it has an rnw value or an `->rnw` tag.
     - Pitfall: without the tag right after, `4-1-50` is subtraction
-      (`4-1-50 + 0-2-400 [rnw]` reads the first group as -47). The
-      Input hint line and History's right-hand side show how it was
-      read.
+      (`4-1-50 + 0-2-400 [rnw]` reads the first group as -47), so does
+      `(4-1-50)[rnw]`; `6800 [rnw]` is 6800 rai; `10-4-1-50 [rnw]` is
+      10 minus 4-1-50. The Input hint line shows how a group is read
+      (`4-1-50 = 4.375 rai`); owner expects this to help most.
+    - Simple rule kept: any line with an rnw value shows the rnw text,
+      even a ratio (`4-1-50[rnw] / 0-2-0[rnw]` shows ` = 8-3-0`).
