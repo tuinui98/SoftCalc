@@ -238,6 +238,7 @@ internal sealed class DefinitionEditor : Form
 		string name = _name.Text.Trim();
 		if (_editing != null && !Same(_editing, name))
 		{
+			_commands.NotifyRenamed(_editing, name);
 			await _commands.DeleteAsync(_editing);    // renamed
 		}
 		else

@@ -8,6 +8,7 @@
 
 using System.Diagnostics;
 using System.Text.Json.Nodes;
+using SoftCalc.Logic;
 
 namespace SoftCalc.Engine;
 
@@ -236,6 +237,37 @@ internal sealed class EngineSession : IDisposable
 	{
 		var reply = await GuardedAsync("value_at", new JsonObject { ["function"] = function, ["x"] = x });
 		return ((string?)reply["text"], (double?)reply["value"]);
+	}
+
+	// Equation in x and y: line segments (x1, y1, x2, y2) in the rectangle (graph2_plan G5)
+	public async Task<IReadOnlyList<(double X1, double Y1, double X2, double Y2)>> PlotEquationAsync(
+		string equation, WorldRect view, int cols, int rows)
+	{
+		var reply = await GuardedAsync("plot_equation", new JsonObject
+		{
+			["equation"] = equation, ["x_min"] = view.MinX, ["x_max"] = view.MaxX, ["y_min"] = view.MinY, ["y_max"] = view.MaxY,
+			["cols"] = cols, ["rows"] = rows,
+		});
+		var segments = new List<(double, double, double, double)>();
+		foreach (var node in reply["segments"]?.AsArray() ?? new JsonArray())
+		{
+			if (node is JsonArray s && s.Count == 4)
+			{
+				segments.Add(((double)s[0]!, (double)s[1]!, (double)s[2]!, (double)s[3]!));
+			}
+		}
+		return segments;
+	}
+
+	// Trace on an equation: fix x (or y) at the exact text value, solve the other near guess (G6)
+	public async Task<(string? X, string? Y, double? XValue, double? YValue)> EquationAtAsync(
+		string equation, string axis, string value, double guess, double window)
+	{
+		var reply = await GuardedAsync("equation_at", new JsonObject
+		{
+			["equation"] = equation, ["axis"] = axis, ["value"] = value, ["guess"] = guess, ["window"] = window,
+		});
+		return ((string?)reply["x"], (string?)reply["y"], (double?)reply["x_value"], (double?)reply["y_value"]);
 	}
 
 	// Deleting a History result line removes `$n` (1 = newest) from the engine too

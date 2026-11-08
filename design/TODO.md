@@ -143,14 +143,14 @@ Recorded at the owner's request after M8. Nothing here is started.
     - Order by Up / Down buttons in this round.
 - [ ] Later: drag and drop to reorder buttons and groups in the
       Customize Ribbon tree (owner 2026-11-08).
-- [ ] Graph line colours: let the owner change a function's colour.
+- [x] Graph line colours (done 2026-11-09, design/graph2_plan.md G4): let the owner change a function's colour.
       To plan: where to pick it (swatch in the function list, the
       editor, the legend), a colour dialog or a fixed palette, saved per
       function name, and how it looks in light and dark themes.
   - Owner 2026-11-08: in the Graph window; click a colour swatch beside
     the function in its list and pick with the Windows colour dialog.
     The function list box may need a new layout for the swatches.
-- [ ] Question from the owner 2026-11-08: can the graph take an equation
+- [x] Equations in x and y (done 2026-11-09, graph2_plan G5). Question from the owner 2026-11-08: can the graph take an equation
       that is not `f(x)=...` and convert it itself, e.g. the circle
       `r^2=x^2+y^2`? Answered: yes, as an implicit plot (sample
       lhs-rhs on a grid, draw where it changes sign).
@@ -166,7 +166,7 @@ Recorded at the owner's request after M8. Nothing here is started.
     when x was fixed, x when y was fixed); the right-click menu has
     Copy x, Copy y and Copy (x, y), and Insert in Input the same three.
     `f(x)` lines keep their current Copy Value / Insert Value.
-- [ ] Trace snaps to the nearest line (owner 2026-11-08, same batch):
+- [x] Trace snaps to the nearest line (done 2026-11-09, graph2_plan G6; owner 2026-11-08, same batch):
   - Measure the pixel distance from the mouse to every shown line
     (`f(x)`, polar, equations) using the points already drawn; trace
     the nearest one within 20 px. Farther away: no dot, the status

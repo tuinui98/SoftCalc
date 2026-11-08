@@ -48,6 +48,8 @@ internal sealed class GraphPrefs
 	public bool Trace { get; set; } = true;
 	public string? Function { get; set; }
 	public List<string>? Shown { get; set; }    // null in files from before G3: show Function
+	public List<string>? Equations { get; set; }    // equations in x and y (G5)
+	public Dictionary<string, string>? Colours { get; set; }    // picked line colours, "#RRGGBB" by name (G4)
 	public double MinX { get; set; } = -10;
 	public double MaxX { get; set; } = 10;
 	public double GridX { get; set; } = 1;

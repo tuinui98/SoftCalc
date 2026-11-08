@@ -20,13 +20,15 @@ from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
 from .functions import WORD_FUNCTIONS, Functions, binary, negate, postfix
 from .lexer import join_digit_spaces, tokenize
-from .parser import parse_line
+from .parser import parse, parse_line
 from .rpn import parse_rpn
 from .units import convert
 from . import currency
 
 GUARD_DIGITS = 10
 PLOT_DIGITS = 20
+EQUATION_REFINE = 6    # [DEF] each crossed coarse cell is split 6 x 6
+MAX_EQUATION_CELLS = 40000
 MAX_CALL_DEPTH = 200
 CONSTANT_NAMES = {"pi", "e", "i", "j", "today", "now"}
 ANSWER_NAMES = {"answer", "ans"}
@@ -570,6 +572,156 @@ class Engine:
         if mode == "polar":
             return [float(value * mpmath.cos(t)), float(value * mpmath.sin(t))]
         return [float(t), float(value)]
+
+    #------------------------------------------------------------------
+    #  Equations in x and y (implicit plot, design/graph2_plan.md G5)
+    #------------------------------------------------------------------
+    def equation_tree(self, text, builtins):
+        """Parse `lhs = rhs` into the tree of lhs - rhs; x and y are the axes."""
+        sides = text.split("=")
+        if len(sides) != 2:
+            raise CalcError("An equation needs one '='")
+        lhs, rhs = (side.strip() for side in sides)
+        if not lhs or not rhs:
+            raise CalcError("An equation needs something on both sides of '='")
+        is_function = lambda name: self.is_function(name, builtins)
+        tree = ("bin", "-", parse(lhs, is_function), parse(rhs, is_function))
+        names = set(self.names_in(tree))
+        if not names & {"x", "y"}:
+            raise CalcError("An equation needs x or y")
+        axes = {"x": mpmath.mpf(1), "y": mpmath.mpf(1)}
+        for name in names - {"x", "y"}:
+            self.lookup(name, builtins, axes)    # unknown names fail here, not as an empty plot
+        return tree
+
+    def names_in(self, node):
+        """Every variable name read in a tree, lower case."""
+        if isinstance(node, list):
+            for child in node:
+                yield from self.names_in(child)
+            return
+        if not isinstance(node, tuple):
+            return
+        if node[0] == "name":
+            yield node[1].lower()
+            return
+        for child in node[1:]:
+            yield from self.names_in(child)
+
+    def equation_value(self, tree, builtins, x, y):
+        """lhs - rhs at (x, y) as a float; None where undefined or not real."""
+        try:
+            value = self.eval_node(tree, builtins, {"x": x, "y": y}, 0)
+        except CalcError:
+            return None
+        if isinstance(value, mpmath.mpc):
+            if abs(value.imag) > abs(value) * mpmath.mpf(10) ** -10:
+                return None
+            value = value.real
+        if not isinstance(value, mpmath.mpf) or mpmath.isinf(value) or mpmath.isnan(value):
+            return None
+        return float(value)
+
+    def plot_equation(self, text, x_min, x_max, y_min, y_max, cols, rows):
+        """Line segments [x1, y1, x2, y2] where lhs = rhs in the rectangle.
+
+        lhs - rhs is sampled on a cols x rows grid; only cells where it
+        changes sign (or becomes undefined) are split EQUATION_REFINE
+        times and traced by marching squares. A sign change through a
+        pole (`y = 1/x` at x = 0) is dropped: there the middle of the
+        cell is farther from zero than its corners. A curve that only
+        touches zero without crossing, or is smaller than a coarse cell,
+        is not drawn.
+        """
+        if cols < 1 or rows < 1 or cols * rows > MAX_EQUATION_CELLS:
+            raise CalcError("Bad equation grid")
+        if not x_max > x_min or not y_max > y_min:
+            raise CalcError("Empty range")
+        refine = EQUATION_REFINE
+        with mpmath.workdps(PLOT_DIGITS):
+            builtins = Functions(self.settings.angle, self.settings.word_size)
+            tree = self.equation_tree(text, builtins)
+            dx = (x_max - x_min) / (cols * refine)
+            dy = (y_max - y_min) / (rows * refine)
+            grid = {}
+
+            def at(i, j):
+                key = (i, j)
+                if key not in grid:
+                    grid[key] = self.equation_value(tree, builtins, mpmath.mpf(x_min + i * dx), mpmath.mpf(y_min + j * dy))
+                return grid[key]
+
+            segments = []
+            for ci in range(cols):
+                for cj in range(rows):
+                    corners = [at(ci * refine, cj * refine), at((ci + 1) * refine, cj * refine),
+                               at((ci + 1) * refine, (cj + 1) * refine), at(ci * refine, (cj + 1) * refine)]
+                    known = [v for v in corners if v is not None]
+                    mixed = any(v < 0 for v in known) and any(v >= 0 for v in known)
+                    if not mixed and (len(known) == 4 or not known):
+                        continue
+                    for i in range(ci * refine, (ci + 1) * refine):
+                        for j in range(cj * refine, (cj + 1) * refine):
+                            self.trace_cell(tree, builtins, at, i, j, x_min, y_min, dx, dy, segments)
+        return segments
+
+    def trace_cell(self, tree, builtins, at, i, j, x_min, y_min, dx, dy, segments):
+        """Marching squares on one fine cell; appends its segments."""
+        values = [at(i, j), at(i + 1, j), at(i + 1, j + 1), at(i, j + 1)]
+        if any(v is None for v in values):
+            return
+        if all(v < 0 for v in values) or all(v >= 0 for v in values):
+            return
+        corners = [(i, j), (i + 1, j), (i + 1, j + 1), (i, j + 1)]
+        crossings = []
+        for edge in range(4):
+            a, b = values[edge], values[(edge + 1) % 4]
+            if (a < 0) != (b < 0):
+                share = a / (a - b)
+                (ai, aj), (bi, bj) = corners[edge], corners[(edge + 1) % 4]
+                crossings.append((x_min + (ai + (bi - ai) * share) * dx, y_min + (aj + (bj - aj) * share) * dy))
+        middle = self.equation_value(tree, builtins, mpmath.mpf(x_min + (i + 0.5) * dx), mpmath.mpf(y_min + (j + 0.5) * dy))
+        if middle is None or abs(middle) > 2 * max(abs(v) for v in values):
+            return    # a pole or a jump, not a crossing
+        if len(crossings) == 2:
+            segments.append([*crossings[0], *crossings[1]])
+        elif len(crossings) == 4:
+            # saddle: the middle's sign says which corners connect
+            first, second = ((0, 1), (2, 3)) if (middle < 0) == (values[0] < 0) else ((0, 3), (1, 2))
+            for a, b in (first, second):
+                segments.append([*crossings[a], *crossings[b]])
+
+    def equation_at(self, text, axis, value, guess, window):
+        """Point on the curve with one coordinate fixed (graph trace, G6).
+
+        axis: "x" fixes x = value (text, exact) and solves for y near
+        guess; "y" the other way round. Full precision. Returns
+        (x_text, y_text, x_float, y_float), or None when no root lies
+        within `window` of the guess.
+        """
+        with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
+            builtins = Functions(self.settings.angle, self.settings.word_size)
+            tree = self.equation_tree(text, builtins)
+            try:
+                fixed = mpmath.mpf(value)
+            except ValueError:
+                raise CalcError(f"Not a number: '{value}'") from None
+
+            def f(t):
+                point = {"x": fixed, "y": t} if axis == "x" else {"x": t, "y": fixed}
+                result = self.eval_node(tree, builtins, point, 0)
+                if isinstance(result, mpmath.mpc):
+                    result = result.real
+                return result
+
+            try:
+                root = mpmath.findroot(f, (mpmath.mpf(guess) - window / 4, mpmath.mpf(guess) + window / 4), solver="secant")
+            except (CalcError, ValueError, ZeroDivisionError, TypeError):
+                return None
+            if isinstance(root, mpmath.mpc) or abs(root - mpmath.mpf(guess)) > window:
+                return None
+            x, y = (fixed, root) if axis == "x" else (root, fixed)
+            return self.format_value(x), self.format_value(y), float(x), float(y)
 
     def value_at(self, name, t):
         """Full-precision value of a one-parameter function at t (graph trace, G2).

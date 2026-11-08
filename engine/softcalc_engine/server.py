@@ -76,6 +76,8 @@ class Dispatcher:
             "menu_insert": self.op_menu_insert,
             "plot": self.op_plot,
             "value_at": self.op_value_at,
+            "plot_equation": self.op_plot_equation,
+            "equation_at": self.op_equation_at,
             "literal": self.op_literal,
             "delete_result": self.op_delete_result,
             "pcf_export": lambda request: {"text": self.engine.export_pcf()},
@@ -168,6 +170,27 @@ class Dispatcher:
         t = argument(request, "x", (int, float))
         text, value = self.engine.value_at(argument(request, "function", str), t)
         return {"text": text, "value": value}
+
+    def op_plot_equation(self, request):
+        cols = argument(request, "cols", int, 60, required=False)
+        rows = argument(request, "rows", int, 45, required=False)
+        segments = self.engine.plot_equation(
+            argument(request, "equation", str),
+            argument(request, "x_min", (int, float)), argument(request, "x_max", (int, float)),
+            argument(request, "y_min", (int, float)), argument(request, "y_max", (int, float)), cols, rows)
+        return {"segments": segments}
+
+    def op_equation_at(self, request):
+        axis = argument(request, "axis", str)
+        if axis not in ("x", "y"):
+            raise RequestError("'axis' must be x or y")
+        found = self.engine.equation_at(
+            argument(request, "equation", str), axis, argument(request, "value", str),
+            argument(request, "guess", (int, float)), argument(request, "window", (int, float)))
+        if found is None:
+            return {"x": None, "y": None, "x_value": None, "y_value": None}
+        x_text, y_text, x_value, y_value = found
+        return {"x": x_text, "y": y_text, "x_value": x_value, "y_value": y_value}
 
     def op_literal(self, request):
         return {"text": self.engine.literal_hint(argument(request, "text", str))}

@@ -411,3 +411,22 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   shows it greyed as "(missing)". A group with no shown buttons is
   hidden.
 - Later (TODO): drag and drop in the tree, an icon picker.
+
+## Graph lines (owner 2026-11-08, design/graph2_plan.md)
+- Colours: click a line's colour square in the Graph list (sidebar or
+  window) to pick another with the Windows colour dialog; right-click
+  has Colour... and Default Colour. Saved per line name; renaming a
+  function keeps its colour.
+- Equations in x and y: Add > Equation... (e.g. `x^2+y^2=r^2` with
+  `r=3`, `y^2=x^3-x`). x and y are the axes; other names are
+  variables, read when drawn. Drawn by sampling lhs - rhs and tracing
+  where it changes sign, so a curve that only touches zero is not
+  drawn. Listed after the functions, ticked, coloured, edited and
+  deleted like them; saved in settings.json, not in definitions.pcf.
+- Trace follows the shown line nearest the mouse (within 20 px), not
+  only the selected one; the dot snaps to the nearest point on it and
+  takes the line's colour; the status line names the line. On an
+  equation, x is fixed where the line is flatter and y where it is
+  steeper, and the other coordinate is solved at full precision. Click
+  copies the solved value; right-click: Copy x, Copy y, Copy (x, y),
+  and the same for Insert.

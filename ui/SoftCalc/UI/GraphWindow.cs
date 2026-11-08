@@ -24,7 +24,7 @@ internal sealed class GraphWindow : Form
 	private readonly ToolStripButton _xyButton = new("XY") { ToolTipText = "XY graph" };
 	private readonly ToolStripButton _polarButton = new("Polar") { ToolTipText = "Polar graph" };
 	private readonly ToolStripButton _gridButton = new("Grid") { ToolTipText = "Show grid" };
-	private readonly ToolStripButton _traceButton = new("Trace") { ToolTipText = "Dot and value on the selected line" };
+	private readonly ToolStripButton _traceButton = new("Trace") { ToolTipText = "Dot and value on the line nearest the mouse" };
 	private readonly Label _status = new()
 	{
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 22, TextAlign = ContentAlignment.MiddleLeft,
@@ -259,9 +259,14 @@ internal sealed class GraphWindow : Form
 		_lastPointer = point;
 		if (point != null && _graph.Plot.Trace is { } trace)
 		{
+			if (trace.IsEquation)
+			{
+				SetStatus($"{trace.Function}:   x = {trace.XText}   y = {trace.YText}");    // full precision
+				return;
+			}
 			// the traced value, full precision: g(2.35) = 0.9977...
 			string at = PlotMath.FormatTick(trace.T, trace.Step);
-			SetStatus($"{_settings.Function}({at}) = {trace.Text ?? "undefined"}");
+			SetStatus($"{trace.Function}({at}) = {trace.Text ?? "undefined"}");
 			return;
 		}
 		if (point is not { } p)

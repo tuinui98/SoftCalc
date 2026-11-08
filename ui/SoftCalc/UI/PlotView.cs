@@ -1,8 +1,10 @@
-// PlotView.cs - Draws the selected function for the sidebar and the Graph window
+// PlotView.cs - Draws the shown functions and equations for the sidebar and the Graph window
 //
-// Asks the engine for points (one per pixel column, polar: per sample),
-// caches them, and repaints from the cache. A new request is made when
-// the function, the graph settings, the size, or the angle unit change.
+// Asks the engine for points (one per pixel column, polar: per sample)
+// of each function and for line segments of each equation in x and y
+// (graph2_plan G5), caches them, and repaints from the cache. A new
+// request is made when the lines, the graph settings, the size, or the
+// angle unit change.
 // In the Graph window (interactive) it also draws axis numbers and
 // handles zoom, pan and keys: PlotView.Navigation.cs.
 
@@ -10,6 +12,14 @@ using SoftCalc.Engine;
 using SoftCalc.Logic;
 
 namespace SoftCalc.UI;
+
+// One drawn line: a function's points (Start/End: its x or theta range)
+// or an equation's segments
+internal sealed record PlotSeries(string Name, IReadOnlyList<(double X, double Y)?> Points, double Start, double End,
+	IReadOnlyList<(double X1, double Y1, double X2, double Y2)> Segments)
+{
+	public bool IsEquation => GraphSettings.IsEquation(Name);
+}
 
 internal sealed partial class PlotView : Control
 {
@@ -19,9 +29,13 @@ internal sealed partial class PlotView : Control
 	private readonly EngineSession _session;
 	private readonly GraphSettings _settings;
 	private readonly System.Windows.Forms.Timer _debounce = new() { Interval = 120 };
-	// One run of points per shown function, in GraphSettings.Shown order (G3)
-	private IReadOnlyList<(string Name, IReadOnlyList<(double X, double Y)?> Points)> _series =
-		Array.Empty<(string, IReadOnlyList<(double X, double Y)?>)>();
+	private const int EquationCell = 10;    // [DEF] pixels per coarse equation cell
+	private static readonly IReadOnlyList<(double X1, double Y1, double X2, double Y2)> NoSegments =
+		Array.Empty<(double, double, double, double)>();
+	private static readonly IReadOnlyList<(double X, double Y)?> NoPoints = Array.Empty<(double X, double Y)?>();
+
+	// One per shown line, in GraphSettings.Shown order (G3)
+	private IReadOnlyList<PlotSeries> _series = Array.Empty<PlotSeries>();
 	private string? _message;
 	private int _requestNumber;
 
@@ -76,21 +90,24 @@ internal sealed partial class PlotView : Control
 		var names = _settings.Shown.ToList();
 		if (names.Count == 0 || Width < 4)
 		{
-			_series = Array.Empty<(string, IReadOnlyList<(double X, double Y)?>)>();
+			_series = Array.Empty<PlotSeries>();
 			_message = names.Count == 0 ? "No function selected" : null;
 			Invalidate();
 			return;
 		}
 		bool polar = _settings.Mode == GraphMode.Polar;
 		int samples = polar ? PolarSamples : Math.Clamp(Width, 2, MaxSamples);
-		var series = new List<(string, IReadOnlyList<(double X, double Y)?>)>();
+		double start = polar ? _settings.MinT : _settings.MinX, end = polar ? _settings.MaxT : _settings.MaxX;
+		var found = new Dictionary<string, PlotSeries>(StringComparer.OrdinalIgnoreCase);
 		string? error = null;
-		foreach (string name in names)
+		//==================================================================
+		//  BLOCK 1 - Functions, then the view they fit (sidebar)
+		//==================================================================
+		foreach (string name in names.Where(n => !GraphSettings.IsEquation(n)))
 		{
 			try
 			{
-				series.Add((name, await _session.PlotAsync(name, polar ? "polar" : "xy",
-					polar ? _settings.MinT : _settings.MinX, polar ? _settings.MaxT : _settings.MaxX, samples)));
+				found[name] = new PlotSeries(name, await _session.PlotAsync(name, polar ? "polar" : "xy", start, end, samples), start, end, NoSegments);
 			}
 			catch (EngineException ex)
 			{
@@ -101,31 +118,67 @@ internal sealed partial class PlotView : Control
 				return;    // a newer request is on its way
 			}
 		}
-		_series = series;
-		_message = series.Count == 0 ? error : null;
+		// end BLOCK 1
+		//==================================================================
+		//  BLOCK 2 - Equations in the drawn rectangle
+		//==================================================================
+		var world = DrawnView(found.Values);
+		var area = PlotArea();
+		int cols = Math.Clamp((int)(area.Width / EquationCell), 4, 150);
+		int rows = Math.Clamp((int)(area.Height / EquationCell), 4, 150);
+		foreach (string name in names.Where(GraphSettings.IsEquation))
+		{
+			try
+			{
+				found[name] = new PlotSeries(name, NoPoints, 0, 0, await _session.PlotEquationAsync(name, world, cols, rows));
+			}
+			catch (EngineException ex)
+			{
+				error ??= $"{name}: {ex.Message}";
+			}
+			if (request != _requestNumber)
+			{
+				return;
+			}
+		}
+		// end BLOCK 2
+		_series = names.Where(found.ContainsKey).Select(n => found[n]).ToList();
+		_message = _series.Count == 0 ? error : null;
 		Invalidate();
 	}
 
 	private IEnumerable<(double X, double Y)> AllPoints()
 	{
-		return _series.SelectMany(s => s.Points).Where(p => p != null).Select(p => p!.Value);
+		return PointsOf(_series);
+	}
+
+	private static IEnumerable<(double X, double Y)> PointsOf(IEnumerable<PlotSeries> series)
+	{
+		return series.SelectMany(s => s.Points).Where(p => p != null).Select(p => p!.Value);
 	}
 
 	// Sidebar (owner, G3): the X range as set, Y fitted to the lines so their
 	// shape shows (polar: R fitted); the Graph window shows the set range
+	// Equations do not take part: they are drawn in the rectangle the functions fit
 	private WorldRect DrawnView()
+	{
+		return DrawnView(_series);
+	}
+
+	private WorldRect DrawnView(IEnumerable<PlotSeries> series)
 	{
 		var world = _settings.View;
 		if (_interactive)
 		{
 			return world;
 		}
+		var points = PointsOf(series).ToList();
 		if (_settings.Mode == GraphMode.Polar)
 		{
-			var r = PlotMath.FitRange(AllPoints().Select(p => Math.Sqrt(p.X * p.X + p.Y * p.Y)));
+			var r = PlotMath.FitRange(points.Select(p => Math.Sqrt(p.X * p.X + p.Y * p.Y)));
 			return r is { Max: > 0 } fit ? new WorldRect(-fit.Max, fit.Max, -fit.Max, fit.Max) : world;
 		}
-		var y = PlotMath.FitRange(AllPoints().Select(p => p.Y));
+		var y = PlotMath.FitRange(points.Select(p => p.Y));
 		return y is { } fy ? world with { MinY = fy.Min, MaxY = fy.Max } : world;
 	}
 
@@ -163,16 +216,20 @@ internal sealed partial class PlotView : Control
 			DrawTicks(g, world, screen);
 		}
 		g.SetClip(screen);
-		foreach (var (name, points) in _series)
+		foreach (var line in _series)
 		{
-			bool selected = string.Equals(name, _settings.Function, StringComparison.OrdinalIgnoreCase);
-			using var pen = new Pen(Theme.Series(_settings.ColourIndex(name)), selected && _series.Count > 1 ? 2.4f : 1.6f);
-			foreach (var segment in PlotMath.Segments(points, world))
+			bool selected = string.Equals(line.Name, _settings.Function, StringComparison.OrdinalIgnoreCase);
+			using var pen = new Pen(Theme.LineColour(_settings, line.Name), selected && _series.Count > 1 ? 2.4f : 1.6f);
+			foreach (var segment in PlotMath.Segments(line.Points, world))
 			{
 				if (segment.Count >= 2)
 				{
 					g.DrawLines(pen, segment.Select(p => PlotMath.Clamp(PlotMath.ToScreen(p.X, p.Y, world, screen), screen)).ToArray());
 				}
+			}
+			foreach (var (x1, y1, x2, y2) in line.Segments)
+			{
+				g.DrawLine(pen, PlotMath.ToScreen(x1, y1, world, screen), PlotMath.ToScreen(x2, y2, world, screen));
 			}
 		}
 		g.ResetClip();
@@ -211,7 +268,7 @@ internal sealed partial class PlotView : Control
 		{
 			string name = _series[i].Name;
 			int y = box.Top + 3 + i * row;
-			using var pen = new Pen(Theme.Series(_settings.ColourIndex(name)), 2.4f);
+			using var pen = new Pen(Theme.LineColour(_settings, name), 2.4f);
 			g.DrawLine(pen, box.Left + 6, y + row / 2, box.Left + 22, y + row / 2);
 			TextRenderer.DrawText(g, name, Font, new Point(box.Left + 26, y), SystemColors.WindowText);
 		}
