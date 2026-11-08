@@ -167,7 +167,7 @@ class Dispatcher:
         return {"points": points}
 
     def op_value_at(self, request):
-        t = argument(request, "x", (int, float))
+        t = argument(request, "x", (int, float, str))    # text: the x as the status line shows it
         text, value = self.engine.value_at(argument(request, "function", str), t)
         return {"text": text, "value": value}
 

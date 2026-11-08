@@ -101,10 +101,12 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	public async Task ValueAtGivesFullPrecisionOrNothing()
 	{
 		await Session.EvalAsync("r(x)=sqrt(x)");
-		var (text, value) = await Session.ValueAtAsync("r", 2);
+		var (text, value) = await Session.ValueAtAsync("r", "2");
 		Assert.StartsWith("1.41421356237309504880", text);
 		Assert.Equal(Math.Sqrt(2), value!.Value, 9);
-		Assert.Equal((null, null), await Session.ValueAtAsync("r", -1));
+		Assert.Equal((null, null), await Session.ValueAtAsync("r", "-1"));
+		await Session.EvalAsync("sq(x)=x^2");
+		Assert.Equal("2.0449", (await Session.ValueAtAsync("sq", "1.43")).Text);    // the x as shown, not the nearest double
 	}
 
 	[Fact]

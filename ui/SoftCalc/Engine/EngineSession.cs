@@ -233,7 +233,8 @@ internal sealed class EngineSession : IDisposable
 	}
 
 	// Graph trace: full-precision text and a float; nulls where undefined (G2)
-	public async Task<(string? Text, double? Value)> ValueAtAsync(string function, double x)
+	// x as decimal text, as the status line shows it, so 1.43 is exactly 1.43 (not the nearest double)
+	public async Task<(string? Text, double? Value)> ValueAtAsync(string function, string x)
 	{
 		var reply = await GuardedAsync("value_at", new JsonObject { ["function"] = function, ["x"] = x });
 		return ((string?)reply["text"], (double?)reply["value"]);
