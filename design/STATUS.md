@@ -167,6 +167,6 @@ Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 2
   and calls the protected handlers. Run it from
   `ui/SoftCalc/bin/Debug/net10.0-windows/` so it finds the dev engine;
   its windows show on the owner's screen; restore the clipboard.
-- Shell edits: Git Bash heredocs collapse `\` and eat ``-like
-  sequences; edit files with the Edit/Write tools or Python using
-  `chr(92)` for backslashes.
+- Shell edits: Git Bash heredocs collapse doubled backslashes and turn
+  \n / \r in Python strings into real line breaks; edit files with
+  the Edit/Write tools, or Python using chr(92) for a backslash.
