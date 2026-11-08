@@ -66,10 +66,21 @@ internal static partial class InputHelp
 	[GeneratedRegex(@"(?<![A-Za-z0-9_.:$])(0[xX][0-9A-Fa-f]+|0[bBoOdD][0-9]+|[01]+b|(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?)$")]
 	private static partial Regex LiteralAtEnd();
 
-	// The number literal left of the caret, for the engine to convert, or null
+	// A rai-ngan-wa group with its tag before the caret: `4-1-50 [rnw`, `4-1-50 [rnw]`, `4-1-50 [rnw->m2]`
+	[GeneratedRegex(@"(?<![0-9.])(\d+(?:\.\d+)?-\d+(?:\.\d+)?-\d+(?:\.\d+)?)\s*\[\s*(?:rnw|rai-ngan-wa)(?:\s*->[^\]]*)?\]?\s*$", RegexOptions.IgnoreCase)]
+	private static partial Regex RnwAtEnd();
+
+	// The number literal left of the caret, for the engine to convert, or
+	// null; a rai-ngan-wa group (`4-1-50`) shows how it is read (owner 2026-11-08)
 	public static string? LiteralAt(string text, int caret)
 	{
-		var match = LiteralAtEnd().Match(text[..Math.Clamp(caret, 0, text.Length)]);
+		string left = text[..Math.Clamp(caret, 0, text.Length)];
+		var group = RnwAtEnd().Match(left);
+		if (group.Success)
+		{
+			return group.Groups[1].Value;
+		}
+		var match = LiteralAtEnd().Match(left);
 		return match.Success ? match.Value : null;
 	}
 

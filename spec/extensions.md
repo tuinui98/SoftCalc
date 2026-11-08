@@ -452,3 +452,26 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   keeps the scale, panning keeps it. A one-axis zoom (Shift/Ctrl +
   wheel), Fit Y, Reset, a typed range with Apply, or the button again
   end it. Not in Polar (square already).
+
+## Area and rai-ngan-wa (owner 2026-11-08, built 2026-11-09)
+- Conversions > Area: `mm2 cm2 m2 ha km2`, `in2 ft2 yd2 acre mi2`,
+  Thai `wa2` (square wa, 4 m2), `ngan` (400 m2), `rai` (1600 m2), and
+  `rnw`. Exact through m2 (1 acre = 4046.8564224 m2). Aliases: `m^2`,
+  `sqm`, `sqft`, `ft^2`, `hectare`, `acres`, `ac`, `sqwa`, `wa^2`,
+  `rai-ngan-wa`, and the like.
+- `rnw` is rai-ngan-wa. As a number it is rai: `6800 [m2->rnw]` = 4.25,
+  `4.25 [rnw->m2]` = 6800. When a line's last tag converts to rnw
+  (`[rnw]` or `[...->rnw]`), History's faint right-hand side shows the
+  result as `= 4-1-0` (always decimal digits; the wa part rounds by
+  Decimals and 100 wa carry to a ngan; negatives `-4-1-0`). Even a
+  ratio shows it (simple rule, owner).
+- Typing `4-1-50`: three numbers joined by `-` right before an rnw tag
+  (`4-1-50 [rnw]`, `4-1-50 [rnw->m2]`) are one value, 4 rai + 1 ngan +
+  50 wa = 4.375 rai; ngan and wa may go past their range. `[rnw]` alone
+  is `[rnw->rnw]`, so `4-1-50[rnw]+0-2-400[rnw]` = 5.875, `= 5-3-50`.
+  Without the tag right after, `-` is subtraction (`4-1-50 + 0-2-400
+  [rnw]` reads the first group as -47). The Input hint line shows how a
+  group is read: `4-1-50 = 4.375 rai`. Not in RPN.
+- History's faint right-hand text drops a repeated line: when it is the
+  typed line plus ` = ...`, only `= ...` shows (`= 5-3-50`, and
+  `= 0xFF` for a fully typed `twos(-1, 8)`).

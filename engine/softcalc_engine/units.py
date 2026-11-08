@@ -5,6 +5,9 @@ international definitions (1 lb = 0.45359237 kg [FIX]). Temperature is
 affine and converts through kelvin. Time adds year, month, week and hour
 [EXT]; a year is 365 days and a month 30 days (owner's choice), so a
 year is not exactly 12 months. Long names (`year`, `hours`, ...) are aliases of the tokens.
+Area [EXT, owner 2026-11-08] goes through m2 and includes the Thai units
+rai (1600 m2), ngan (400 m2) and square wa (4 m2); `rnw` is rai-ngan-wa:
+as a number it is rai, typed as `4-1-50 [rnw]` and shown as `4-1-50`.
 """
 
 import mpmath
@@ -24,6 +27,11 @@ LINEAR = {
     "mi/h": ("velocity", "1609.344/3600"), "m/s": ("velocity", "1"),
     "ft/h": ("velocity", "0.3048/3600"), "km/h": ("velocity", "1000/3600"),
     "knot": ("velocity", "1852/3600"),
+    "mm2": ("area", "0.000001"), "cm2": ("area", "0.0001"), "m2": ("area", "1"),
+    "ha": ("area", "10000"), "km2": ("area", "1000000"),
+    "in2": ("area", "0.00064516"), "ft2": ("area", "0.09290304"), "yd2": ("area", "0.83612736"),
+    "acre": ("area", "4046.8564224"), "mi2": ("area", "2589988.110336"),
+    "wa2": ("area", "4"), "ngan": ("area", "400"), "rai": ("area", "1600"), "rnw": ("area", "1600"),
 }
 TEMPERATURE = ("c", "f", "k")
 ALIASES = {
@@ -31,7 +39,13 @@ ALIASES = {
     "week": "wk", "weeks": "wk", "day": "d", "days": "d",
     "hour": "h", "hours": "h", "hr": "h", "minute": "min", "minutes": "min",
     "sec": "s", "second": "s", "seconds": "s",
+    "mm^2": "mm2", "cm^2": "cm2", "m^2": "m2", "sqm": "m2", "km^2": "km2",
+    "hectare": "ha", "hectares": "ha",
+    "in^2": "in2", "sqin": "in2", "ft^2": "ft2", "sqft": "ft2", "yd^2": "yd2", "sqyd": "yd2",
+    "acres": "acre", "ac": "acre", "mi^2": "mi2", "sqmi": "mi2",
+    "wa^2": "wa2", "sqwa": "wa2", "rai-ngan-wa": "rnw",
 }
+RNW_NAMES = ("rnw", "rai-ngan-wa")
 
 # Menu order of categories and units (Conversions menu, SPEC 3)
 MENU = {
@@ -39,6 +53,7 @@ MENU = {
     "Mass": ["lb", "oz", "g", "kg"],
     "Time": ["yr", "mo", "wk", "d", "h", "min", "s"],
     "Velocity": ["mi/h", "m/s", "ft/h", "km/h", "knot"],
+    "Area": ["mm2", "cm2", "m2", "ha", "km2", "in2", "ft2", "yd2", "acre", "mi2", "wa2", "ngan", "rai", "rnw"],
     "Temperature": ["c", "f", "k"],
 }
 
@@ -90,3 +105,27 @@ def convert(value, source, target):
     if src_cat == "temperature":
         return from_kelvin(to_kelvin(value, source), target)
     return value * exact(LINEAR[source][1]) / exact(LINEAR[target][1])
+
+
+#----------------------------------------------------------------------
+#  rai-ngan-wa (owner 2026-11-08): 1 rai = 4 ngan = 400 square wa
+#----------------------------------------------------------------------
+def rnw_value(text):
+    """`4-1-50` -> 4.375 (rai). Ngan and wa may go past their range."""
+    rai, ngan, wa = (mpmath.mpf(part) for part in text.split("-"))
+    return rai + ngan / 4 + wa / 400
+
+
+def rnw_text(value, precision, decimals, pad_zeros, format_number):
+    """4.25 (rai) -> `4-1-0`. The wa part rounds like other results
+    (Decimals setting) and 100 wa carry to a ngan; always decimal digits.
+    """
+    sign = "-" if value < 0 else ""
+    # round the whole in square wa first, so 99.996 wa at 2 decimals carries
+    total = mpmath.mpf(format_number(abs(value) * 400, precision, "dec", decimals, False))
+    rai = int(mpmath.floor(total / 400))
+    rest = total - rai * 400
+    ngan = int(mpmath.floor(rest / 100))
+    wa = rest - ngan * 100
+    return f"{sign}{rai}-{ngan}-{format_number(wa, precision, 'dec', decimals, pad_zeros)}"
+

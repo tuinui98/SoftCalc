@@ -133,7 +133,8 @@ precision; all `null` when no root lies within `window`. Graph trace
 `{"text": "0x1F"}` -> `{"text": "31"}`: one number literal shown in
 the output base for the Input hint line; `null` when the text is not a
 single literal, is already in the output base, or the output base
-cannot show it exactly (`0.1` in hex). History lines use the same rule
+cannot show it exactly (`0.1` in hex). A rai-ngan-wa group answers in
+rai: `{"text": "4-1-50"}` -> `{"text": "4.375 rai"}`. History lines use the same rule
 in `display_input`.
 
 ### `pcf_export`

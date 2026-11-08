@@ -18,6 +18,7 @@ Nodes are tuples:
 
 from .errors import CalcError
 from .lexer import tokenize
+from .units import RNW_NAMES
 
 KEYWORD_MOD = "mod"
 CONTINUE_OPS = ("+", "-", "*", "/")
@@ -135,6 +136,8 @@ class Parser:
             if "->" in body:
                 source, _, target = body.partition("->")
                 node = ("conv", source, target, node)
+            elif body in RNW_NAMES:
+                node = ("conv", "rnw", "rnw", node)    # `[rnw]` is `[rnw->rnw]`
             else:
                 node = ("fmt", body, node)    # `now [longdatetime]` [EXT]
             if self.peek().kind == "op" and self.peek().text in CONTINUE_OPS or self.at_mod():
@@ -221,6 +224,9 @@ class Parser:
         if token.kind == "ref":
             self.advance()
             return ("ref", int(token.text))
+        if token.kind == "rnw":
+            self.advance()
+            return ("rnw", token.text)
         if token.kind in ("date", "duration"):
             self.advance()
             return (token.kind, token.text)
