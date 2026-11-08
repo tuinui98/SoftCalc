@@ -25,7 +25,7 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [x] Add/Edit dialogs: Functions / Variables editor, done 2026-11-07.
 - [x] Red error lines in History: owner keeps them (2026-11-07).
 
-## 5. Owner requests after v1.0.0 (2026-11-07, decided, not started; owner collects more before building)
+## 5. Owner requests after v1.0.0 (2026-11-07, all built; 1.1.0 not released)
 - [x] About box (done 2026-11-07): a short note only (name, version, data folder). The
       third-party licence box is hidden at first; a link (e.g. "Show
       third-party licences") opens it.
@@ -103,3 +103,15 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [ ] Graph lines vanishing on view switches: reported once, not
       reproduced, skipped by the owner (STATUS.md "Open items").
 - [ ] File > Help (section 3).
+
+## 7. Owner requests 2026-11-08 (not started; plan and discuss first)
+- [ ] Ribbon customisation: add, remove, edit and rearrange the ribbon's
+      buttons and groups. To plan: a Customize Ribbon window (available
+      commands on the left, groups and their buttons on the right, Add /
+      Remove / Up / Down / Rename / New Group, Reset to default) or a
+      lighter form; which commands can go on it (every menu command, or
+      a set); saved in settings.json; what Reset restores.
+- [ ] Graph line colours: let the owner change a function's colour.
+      To plan: where to pick it (swatch in the function list, the
+      editor, the legend), a colour dialog or a fixed palette, saved per
+      function name, and how it looks in light and dark themes.
