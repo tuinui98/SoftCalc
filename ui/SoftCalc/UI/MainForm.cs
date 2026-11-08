@@ -619,8 +619,17 @@ internal sealed partial class MainForm : Form
 		{
 			await _session.StartAsync();
 			await RestoreSessionAsync();
-			BuildCatalogMenus(await _session.CatalogAsync());
-			await RefreshStateAsync();
+			_ribbonHeld = true;    // one ribbon build once catalog and user functions are in
+			try
+			{
+				BuildCatalogMenus(await _session.CatalogAsync());
+				await RefreshStateAsync();
+			}
+			finally
+			{
+				_ribbonHeld = false;
+			}
+			RebuildRibbon();
 			ShowSettingChecks();
 			_input.Enabled = true;
 			_input.Focus();

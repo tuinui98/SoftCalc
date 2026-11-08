@@ -28,8 +28,14 @@ internal sealed partial class MainForm
 		return RibbonCommands.FromMenu(_menu, new[] { precision }, new HashSet<ToolStripMenuItem> { _userFunctionsMenu }, dynamicTexts);
 	}
 
+	private bool _ribbonHeld;    // start-up: menus are refilled twice, build once after
+
 	private void RebuildRibbon()
 	{
+		if (_ribbonHeld)
+		{
+			return;
+		}
 		_ribbon.Build(_ribbonLayout, RibbonCommandList());
 		_ribbon.ShowSettings(_session.Settings);
 	}
