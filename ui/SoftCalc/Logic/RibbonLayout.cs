@@ -45,6 +45,8 @@ internal static class RibbonLayout
 {
 	public const string DecimalsToken = "{decimals}";
 	public const string PrecisionId = "Ribbon/Precision";    // the only command not taken from a menu
+	public const string SpaceId = "Ribbon/Space";    // a gap half an icon wide (owner 2026-11-11)
+	public const string SeparatorId = "Ribbon/Separator";    // a line between buttons in a group
 	public const int MaxColumns = 12;
 	public static readonly string[] Displays = { "icon", "text", "both" };
 	public const int MaxIconSvg = 64 * 1024;
@@ -81,6 +83,12 @@ internal static class RibbonLayout
 		return new RibbonItem { Id = id, Label = label, Display = display };
 	}
 
+	// A space or a separator: no command, no label, icon or display
+	public static bool IsGap(string id)
+	{
+		return id is SpaceId or SeparatorId;
+	}
+
 	public static List<RibbonGroup> Clone(IEnumerable<RibbonGroup> layout)
 	{
 		return layout.Select(g => new RibbonGroup
@@ -113,6 +121,11 @@ internal static class RibbonLayout
 			group.Items.RemoveAll(i => i == null || string.IsNullOrEmpty(i.Id));
 			foreach (var item in group.Items)
 			{
+				if (IsGap(item.Id))
+				{
+					(item.Label, item.Display, item.IconSvg) = (null, null, null);
+					continue;
+				}
 				if (item.Display != null && !Displays.Contains(item.Display))
 				{
 					item.Display = null;

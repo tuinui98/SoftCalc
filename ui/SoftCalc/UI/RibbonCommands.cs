@@ -22,6 +22,9 @@ internal sealed class RibbonCommand
 	public Func<string>? DynamicText { get; init; }
 
 	public bool IsDropDown => Children != null;
+
+	// Space or separator: drawn by the ribbon, runs nothing
+	public bool IsGap => Logic.RibbonLayout.IsGap(Id);
 }
 
 // One line in the Available commands tree
@@ -70,7 +73,12 @@ internal sealed class RibbonCommands
 			commands.Tree.Add(commands.Walk(item, new List<string>(), new List<string>(), submenus));
 		}
 		var ribbonNode = new CommandNode { Text = "Ribbon" };
-		foreach (var extra in extras)
+		var gaps = new[]
+		{
+			new RibbonCommand { Id = Logic.RibbonLayout.SpaceId, Text = "Space", Path = "Space (a gap between buttons)" },
+			new RibbonCommand { Id = Logic.RibbonLayout.SeparatorId, Text = "Separator", Path = "Separator (a line between buttons)" },
+		};
+		foreach (var extra in gaps.Concat(extras))
 		{
 			commands._byId[extra.Id] = extra;
 			ribbonNode.Children.Add(new CommandNode { Text = extra.Text, Command = extra });

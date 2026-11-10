@@ -112,6 +112,10 @@ internal sealed class Ribbon : FlowLayoutPanel
 
 	private ToolStripItem MakeItem(RibbonItem item, RibbonCommand command)
 	{
+		if (command.IsGap)
+		{
+			return new RibbonGap(command.Id == RibbonLayout.SeparatorId, IconPixels / 2);
+		}
 		var image = ImageFor(item, command);
 		string display = item.Display ?? (image != null ? "both" : "text");
 		bool hasIcon = image != null && display != "text";
@@ -283,5 +287,37 @@ internal sealed class Ribbon : FlowLayoutPanel
 		box.Controls.Add(strip, 0, 0);
 		box.Controls.Add(label, 0, 1);
 		return box;
+	}
+}
+
+// A space or a separator line in a ribbon group: half an icon wide, as
+// tall as the row (owner 2026-11-11)
+internal sealed class RibbonGap : ToolStripItem
+{
+	private readonly bool _line;
+
+	public RibbonGap(bool line, int width)
+	{
+		_line = line;
+		AutoSize = false;
+		Size = new Size(width, 1);
+		Anchor = AnchorStyles.Top | AnchorStyles.Bottom;
+		Margin = Padding.Empty;
+		AccessibleName = line ? "Separator" : "Space";
+	}
+
+	public bool IsLine => _line;
+
+	protected override void OnPaint(PaintEventArgs e)
+	{
+		base.OnPaint(e);
+		if (!_line)
+		{
+			return;
+		}
+		int x = Width / 2;
+		int inset = Math.Min(4, Height / 4);
+		using var pen = new Pen(SystemColors.ControlDark);
+		e.Graphics.DrawLine(pen, x, inset, x, Height - 1 - inset);
 	}
 }

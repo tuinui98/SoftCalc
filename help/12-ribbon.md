@@ -39,6 +39,11 @@ To change it:
   one that shows only text now, such as Deg.
 - **Edit** on a group: its caption and how many columns it has. In a
   caption, `{decimals}` shows the current decimal places.
+- **Space** and **Separator**, under Ribbon in the left list, go
+  between buttons like a command: a gap half an icon wide, or a thin
+  line that splits a group into parts. Add as many as you like; they
+  show as `(space)` and `(separator)` and have no Edit. In a group of
+  several rows each takes one place in the grid, like a button.
 - **New group** adds a group; **Reset to default** brings back the
   ribbon above.
 - **Apply** shows the change and keeps the window open; **OK** applies
