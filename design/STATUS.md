@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-09: version 1.2.0 released (TODO sections 5 and 7; 1.1.0 skipped). Everything below is committed on `main` and
+Updated 2026-11-11: version 1.3.0 released (TODO sections 8 and 9). Everything below is committed on `main` and
 pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
 
 Open work is listed in `design/TODO.md`.
@@ -85,7 +85,21 @@ Area conversions and rai-ngan-wa (2026-11-09): Conversions > Area with
 Thai units, `rnw` values typed as `4-1-50 [rnw]`, History `= 4-1-0`,
 hint `4-1-50 = 4.375 rai`; History's faint text drops a repeated line.
 
-Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 258 passed.
+Version 1.3.0 (2026-11-10/11, TODO sections 8 and 9): Help window
+(File > Help, F1, topics in `help/`, pictures from `tools/HelpShots`);
+version in the caption; build-day ECB rates embedded by `publish.ps1`;
+Graph Add as Function... / Equation... / Examples... buttons in the
+Graph window (the sidebar keeps the split button); Graph Examples
+gallery with constants, notes and a hint after Use, thumbnails drawn in
+radians (engine `plot_equation` takes an optional `angle`); Customize
+Ribbon own icons (SVG pasted from iconmcp.com, a file or built-in,
+kept as `icon_svg`; `SvgIcon` draws arcs, relative paths, fill-rule,
+transforms), Space and Separator items; the sidebar graph draws the
+Graph window's range at the window's scale (no more fitted Y).
+`publish.ps1`'s rates-seed path had a stray line break from
+2026-11-10; fixed in the 1.3.0 release.
+
+Tests: engine `pytest` 538 passed (frozen-exe test included); UI `dotnet test` 300 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
@@ -136,8 +150,7 @@ Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 2
   older Windows than 11.
 
 ## Open items
-- Owner decisions 2026-11-07: red error lines stay; the sidebar graph
-  always fits Y; Samples box colour and the light Font dialog in dark
+- Owner decisions 2026-11-07: red error lines stay; Samples box colour and the light Font dialog in dark
   mode are fine.
 - The one report (2026-11-07) of graph lines vanishing on view switches
   was dropped 2026-11-09 (owner: likely an accidental double-click).

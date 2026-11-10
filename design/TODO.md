@@ -98,7 +98,8 @@ Recorded at the owner's request after M8. Nothing here is started.
 ## 6. Still open from v1.0.0
 - [ ] Try the release exe on another PC (no .NET/Python) and with its
       antivirus; the exe is unsigned (SmartScreen warning expected).
-      On hold (owner 2026-11-09).
+      On hold (owner 2026-11-09); owner tries 1.3.0 on another PC next
+      (2026-11-11).
 - [x] Live check of the read-only fallback (exe in Program Files, data
       to `%APPDATA%\SoftCalc`): the owner checked 1.2.0, 2026-11-09.
 - [x] Graph lines vanishing on view switches: dropped 2026-11-09, the
@@ -215,7 +216,7 @@ ends 1:1, the drag insert line is visible enough on dark.
     - Simple rule kept: any line with an rnw value shows the rnw text,
       even a ratio (`4-1-50[rnw] / 0-2-0[rnw]` shows ` = 8-3-0`).
 
-## 8. Owner requests 2026-11-10 (all built by 2026-11-11, not released yet)
+## 8. Owner requests 2026-11-10 (all built by 2026-11-11, released in 1.3.0)
 - [x] Help (decided 2026-11-10, owner took all proposals): in-app Help
       window, topic list + search on the left, text on the right; text
       in `help/*.md` embedded in the exe; English first, Thai later;
@@ -301,7 +302,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       fetch replaces it once online. Build goes on without it when the
       ECB cannot be reached; dev builds embed nothing.
 
-## 9. Owner requests 2026-11-11 (all built 2026-11-11, not released yet)
+## 9. Owner requests 2026-11-11 (all built 2026-11-11, released in 1.3.0)
 - [x] Customize Ribbon: Insert Space, a gap between buttons about half
       an icon wide (10 px at 100%).
 - [x] Customize Ribbon: Insert Separator, a line between buttons that

@@ -48,8 +48,7 @@ if (Test-Path $zip) { Remove-Item $zip }
 & $python (Join-Path $root "tools\make_notices.py")
 if ($LASTEXITCODE -ne 0) { throw "notices failed" }
 # Today's ECB rates for a PC that was never online (owner 2026-11-10)
-$seed = Join-Path $root "ui\SoftCalc\obj
-ates-seed.xml"
+$seed = Join-Path $root "ui\SoftCalc\obj\rates-seed.xml"
 if (Test-Path $seed) { Remove-Item $seed }
 $seedArg = @()
 try
