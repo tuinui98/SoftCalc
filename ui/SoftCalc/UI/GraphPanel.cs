@@ -54,10 +54,12 @@ internal sealed class GraphPanel : Panel
 		//  BLOCK 1 - Toolbar: Add (function or equation), Edit, Delete, Window
 		//==================================================================
 		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
-		var add = new ToolStripSplitButton("Add") { ToolTipText = "Add a function (arrow: or an equation in x and y)" };
+		var add = new ToolStripSplitButton("Add") { ToolTipText = "Add a function (arrow: an equation in x and y, or an example curve)" };
 		add.ButtonClick += async (_, _) => await _commands.AddFunctionAsync();
 		add.DropDownItems.Add(new ToolStripMenuItem("&Function...", null, async (_, _) => await _commands.AddFunctionAsync()));
 		add.DropDownItems.Add(new ToolStripMenuItem("&Equation...", null, async (_, _) => await AddEquationAsync()));
+		add.DropDownItems.Add(new ToolStripSeparator());
+		add.DropDownItems.Add(new ToolStripMenuItem("E&xamples...", null, async (_, _) => await AddExampleAsync()));
 		toolbar.Items.Add(add);
 		_edit.Click += async (_, _) => await EditSelectedAsync();
 		_delete.Click += async (_, _) => await DeleteSelectedAsync();
@@ -421,9 +423,30 @@ internal sealed class GraphPanel : Panel
 		}
 	}
 
-	private async Task AddEquationAsync()
+	// Graph > Add > Examples: pick a curve, then the usual editor to change and add it
+	private async Task AddExampleAsync()
 	{
-		if (await EquationDialog.AskAsync(FindForm(), _session, "Add Equation", "x^2+y^2=r^2", _settings.Equations) is not { } text)
+		GraphExample? example;
+		using (var gallery = new GraphGallery(_session))
+		{
+			example = gallery.ShowDialog(FindForm()) == DialogResult.OK ? gallery.Picked : null;
+		}
+		if (example == null)
+		{
+			return;
+		}
+		if (example.IsEquation)
+		{
+			await AddEquationAsync(example.Text);
+			return;
+		}
+		string name = GraphExamples.FreeName(example.Name, _commands.State().Functions.Select(f => f.Name));
+		await _commands.AddFunctionAsync(name, example.Text);
+	}
+
+	private async Task AddEquationAsync(string start = "x^2+y^2=r^2")
+	{
+		if (await EquationDialog.AskAsync(FindForm(), _session, "Add Equation", start, _settings.Equations) is not { } text)
 		{
 			return;
 		}

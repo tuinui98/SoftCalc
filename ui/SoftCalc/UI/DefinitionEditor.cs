@@ -30,7 +30,9 @@ internal sealed class DefinitionEditor : Form
 	private bool _loading;
 	private int _shownIndex = -1;
 
-	public DefinitionEditor(bool isFunction, DefinitionCommands commands, string? select)
+	// preset: a new definition already filled in (Graph > Add > Examples), not yet applied
+	public DefinitionEditor(bool isFunction, DefinitionCommands commands, string? select,
+		(string Name, string Parameters, string Body)? preset = null)
 	{
 		_isFunction = isFunction;
 		_commands = commands;
@@ -117,7 +119,13 @@ internal sealed class DefinitionEditor : Form
 			};
 		}
 		Reload(select);
-		Shown += (_, _) => (_editing == null ? _name : _body).Focus();
+		if (preset is { } fill)
+		{
+			_name.Text = fill.Name;
+			_parameters.Text = fill.Parameters;
+			_body.Text = fill.Body;    // TextChanged marks it unsaved: OK applies it
+		}
+		Shown += (_, _) => (_editing == null && preset == null ? _name : _body).Focus();
 	}
 
 	private static void AddRow(TableLayoutPanel table, string label, Control box)

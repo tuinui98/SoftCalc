@@ -110,6 +110,20 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
+	public async Task EveryGraphExampleDrawsAndDefines()
+	{
+		foreach (var example in SoftCalc.Logic.GraphExamples.Functions.Concat(SoftCalc.Logic.GraphExamples.Equations))
+		{
+			var segments = await Session.PlotEquationAsync(example.IsEquation ? example.Text : "y=" + example.Text, example.View, 40, 30);
+			Assert.True(segments.Count > 50, example.Title);
+			if (!example.IsEquation)
+			{
+				Assert.Equal("definition", (await Session.EvalAsync(example.Definition)).Kind);
+			}
+		}
+	}
+
+	[Fact]
 	public async Task EquationPlotsAndSolvesOverThePipe()
 	{
 		await Session.EvalAsync("r=2");

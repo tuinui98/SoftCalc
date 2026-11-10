@@ -233,9 +233,11 @@ ends 1:1, the drag insert line is visible enough on dark.
     click into Input, pictures by theme; stock WebBrowser control.
 - [x] Window caption followed by the version: `SoftCalc [v1.2.0]`
       (owner 2026-11-10, done; faint/italic would need a custom-drawn title bar).
-- [ ] Graph Add Function / Equation: a gallery of example functions and
+- [x] Graph Add Function / Equation: a gallery of example functions and
       equations with a small graph each; pick one to edit before adding.
-      Needs a list of classic 2D curves (proposed 2026-11-10).
+      Built 2026-11-10: Add arrow > Examples..., 16 functions and 16
+      equations (Logic/GraphExamples.cs), thumbnails drawn by the engine,
+      Use opens the Functions editor or Add Equation filled in.
 - [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a

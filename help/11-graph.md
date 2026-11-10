@@ -19,6 +19,13 @@ In the Graph panel or the Graph window:
 - The arrow next to Add > **Equation...** takes an equation in `x` and
   `y`, such as `x^2+y^2=9` or `y^2=x^3-x`. Other names in it are variables, read when
   the line is drawn, so `x^2+y^2=r^2` follows `r`.
+- The arrow next to Add > **Examples...** shows classic curves, each
+  with a small graph: parabola, sine, bell curve, circle, heart,
+  lemniscate and more. Pick one with **Use...** or a double-click; it
+  opens in the Functions editor or Add Equation, so you can change it
+  before OK adds it.
+
+![Graph Examples](img/graph-examples.light.png)
 
 The list shows every line with a tick box and a colour square:
 

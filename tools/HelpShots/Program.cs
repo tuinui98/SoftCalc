@@ -227,6 +227,18 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		{
 			await WindowShotAsync("customize-ribbon", customize);
 		}
+		using (var gallery = new GraphGallery(session))
+		{
+			gallery.StartPosition = FormStartPosition.Manual;
+			gallery.Location = new Point(form.Right + 20, form.Top);
+			gallery.Show(form);
+			Program.Call(gallery, "ShowKind", true);    // the equations
+			var items = Program.Field<ListView>(gallery, "_list");
+			var heart = items.Items.Cast<ListViewItem>().First(i => i.Text == "Heart");
+			heart.Selected = true;
+			heart.EnsureVisible();
+			await OpenedShotAsync("graph-examples", gallery, 2500);    // thumbnails come from the engine
+		}
 		await (Task)Program.Call(form, "ChangeDecimalsAsync", (int?)2)!;    // money with 2 places
 		Program.Call(form, "OpenCompoundWindow");
 		await OpenedShotAsync("compound", Program.Field<Form>(form, "_compoundWindow"), 1500);
