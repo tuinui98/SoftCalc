@@ -296,6 +296,13 @@ internal sealed class CustomizeRibbonDialog : Form
 		{
 			return new TreeNode($"(missing) {item.Label ?? item.Id}") { Tag = pos, ForeColor = SystemColors.GrayText };
 		}
+		if (command.IsGap)
+		{
+			return new TreeNode(command.Id == RibbonLayout.SeparatorId ? "(separator)" : "(space)")
+			{
+				Tag = pos, ToolTipText = command.Path, ForeColor = SystemColors.GrayText,
+			};
+		}
 		string text = item.Label ?? command.Text;
 		string kind = command.IsDropDown ? " ▾" : "";
 		string detail = item.Label != null ? $"    ({command.Text})" : "";
@@ -360,7 +367,7 @@ internal sealed class CustomizeRibbonDialog : Form
 		}
 		_up.Enabled = CanMove(pos, -1);
 		_down.Enabled = CanMove(pos, +1);
-		_edit.Enabled = pos.IsGroup || _commands.Find(_layout[pos.Group].Items[pos.Item].Id) != null;
+		_edit.Enabled = pos.IsGroup || _commands.Find(_layout[pos.Group].Items[pos.Item].Id) is { IsGap: false };
 		_rowButtons.Location = new Point(
 			Math.Max(0, _ribbon.ClientSize.Width - _rowButtons.Width - 2),
 			node.Bounds.Top + (node.Bounds.Height - _rowButtons.Height) / 2);
@@ -575,7 +582,7 @@ internal sealed class CustomizeRibbonDialog : Form
 		{
 			var item = _layout[pos.Group].Items[pos.Item];
 			var command = _commands.Find(item.Id);
-			changed = command != null && EditItem(item, command);
+			changed = command is { IsGap: false } && EditItem(item, command);
 		}
 		if (changed)
 		{

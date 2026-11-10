@@ -302,9 +302,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       ECB cannot be reached; dev builds embed nothing.
 
 ## 9. Owner requests 2026-11-11
-- [ ] Customize Ribbon: Insert Space, a gap between buttons about half
+- [x] Customize Ribbon: Insert Space, a gap between buttons about half
       an icon wide (10 px at 100%).
-- [ ] Customize Ribbon: Insert Separator, a line between buttons that
+- [x] Customize Ribbon: Insert Separator, a line between buttons that
       splits a group into parts.
   - To decide: a line inside a group only, or also something between
     groups; in a group of several rows a space or line fills one grid
@@ -313,3 +313,8 @@ ends 1:1, the drag insert line is visible enough on dark.
     `Ribbon/Precision`), listed first in Available commands under
     "Ribbon", usable many times; added, dragged and removed like a
     button; no Edit; shown in the tree as `(space)` / `(separator)`.
+  - Owner 2026-11-11: (1) a line inside a group; (2) one grid cell in
+    a group of several rows is fine; (3) the space width is fixed.
+  - Built 2026-11-11 as sketched (`RibbonGap` in Ribbon.cs, both 10 px
+    at 100%; the separator is a ControlDark line as tall as the row).
+    Owner to try it.

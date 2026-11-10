@@ -117,6 +117,50 @@ public sealed class RibbonLayoutTests
 	}
 
 	[Fact]
+	public void SpaceAndSeparatorAreRibbonCommandsDrawnAsGaps()
+	{
+		using var menu = new MenuStrip();
+		var view = new ToolStripMenuItem("&View");
+		view.DropDownItems.Add(new ToolStripMenuItem("&Clear History"));
+		menu.Items.Add(view);
+		var commands = RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), new HashSet<ToolStripMenuItem>());
+		var ribbonNode = commands.Tree.Single(n => n.Text == "Ribbon");
+		Assert.Equal(new[] { "Space", "Separator" }, ribbonNode.Children.Select(c => c.Text));
+		Assert.True(commands.Find(RibbonLayout.SpaceId)!.IsGap);
+		Assert.False(commands.Find("View/Clear History")!.IsGap);
+
+		var layout = new List<RibbonGroup>
+		{
+			new()
+			{
+				Caption = "G", Columns = 5, Items =
+				{
+					new RibbonItem { Id = "View/Clear History" }, new RibbonItem { Id = RibbonLayout.SpaceId },
+					new RibbonItem { Id = "View/Clear History" }, new RibbonItem { Id = RibbonLayout.SeparatorId, Label = "x" },
+				},
+			},
+		};
+		RibbonLayout.Sanitize(layout);
+		Assert.Null(layout[0].Items[3].Label);    // a gap has no label
+		using var ribbon = new Ribbon();
+		ribbon.Build(layout, commands);
+		var items = ribbon.Controls.Cast<Control>().SelectMany(Descendants).OfType<ToolStrip>().SelectMany(s => s.Items.Cast<ToolStripItem>()).ToList();
+		Assert.Equal(4, items.Count);
+		var gaps = items.OfType<RibbonGap>().ToList();
+		Assert.Equal(new[] { false, true }, gaps.Select(g => g.IsLine));
+		Assert.All(gaps, g => Assert.Equal(10, g.Width));    // half of a 20 px icon at 96 dpi
+	}
+
+	private static IEnumerable<Control> Descendants(Control control)
+	{
+		yield return control;
+		foreach (var child in control.Controls.Cast<Control>().SelectMany(Descendants))
+		{
+			yield return child;
+		}
+	}
+
+	[Fact]
 	public void DropDownCopiesFollowTheMenuAndClickIt()
 	{
 		int clicks = 0;
