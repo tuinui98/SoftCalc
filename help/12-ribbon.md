@@ -3,7 +3,7 @@
 The ribbon is the row of buttons under the menu bar. Every button runs
 a menu command, so anything you can do from a menu can have a button.
 
-![The default ribbon](img/ribbon.png)
+![The default ribbon](img/ribbon.light.png)
 
 | group | buttons |
 |---|---|
@@ -20,7 +20,7 @@ View > Show Ribbon hides or shows it. Numeric Calc never shows it.
 
 View > Customize Ribbon..., or right-click the ribbon.
 
-![Customize Ribbon](img/customize-ribbon.png)
+![Customize Ribbon](img/customize-ribbon.light.png)
 
 - **Left**: every command, in menu order. Filter by menu or search by
   name. Each function, unit pair and user function is a command.

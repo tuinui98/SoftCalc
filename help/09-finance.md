@@ -24,13 +24,15 @@ nper(0.01, -500, 10000)       => 22.42574187803646223120137896696
 
 - Saving 100 a month for 10 years at 5% a year gives 15528.23.
 - A 3,000,000 loan over 30 years at 6% costs 17986.52 a month.
+- Paying 500 a month on a 10,000 debt at 1% a month clears it in
+  22.43 months, so 23 payments.
 
 ## Compound Interest window
 
 Tools > Compound Interest... (ribbon: **Interest**) works out savings
 without formulas.
 
-![The Compound Interest window](img/compound.png)
+![The Compound Interest window](img/compound.light.png)
 
 - Fill in Principal, Annual rate %, Years and, if you add money
   regularly, Contribution, Contribution every, and whether it comes at

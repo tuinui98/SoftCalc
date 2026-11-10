@@ -24,7 +24,7 @@ You do not need to remember unit names:
    you want: Conversions > Length > ft > m.
 3. Input now reads `5 [ft->m]`; press Enter.
 
-![Conversions > Length > ft > m](img/menu-conversions.png)
+![Conversions > Length > ft > m](img/menu-conversions.light.png)
 
 The ribbon's **Conversions** button (Tools group) opens the same menu.
 A conversion you use often can get its own ribbon button

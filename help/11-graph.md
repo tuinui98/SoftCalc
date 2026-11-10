@@ -7,7 +7,7 @@ SoftCalc draws functions with one parameter, and equations in `x` and
 - **Tools > Graph...** (ribbon: **Graph**, or **Window** in the Graph
   panel) opens the Graph window, with zoom, trace and ranges.
 
-![The Graph window with two functions and a circle](img/graph.png)
+![The Graph window with two functions and a circle](img/graph.light.png)
 
 ## Adding lines
 

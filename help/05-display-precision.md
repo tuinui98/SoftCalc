@@ -24,7 +24,7 @@ scientific form: `2^200` at 32 digits is
 
 ## Decimal places
 
-![The ribbon: Angle, Output, Decimals, Mode, History and Tools groups](img/ribbon.png)
+![The ribbon: Angle, Output, Decimals, Mode, History and Tools groups](img/ribbon.light.png)
 
 Ribbon **Decimals** group, or View > Decimal Places:
 

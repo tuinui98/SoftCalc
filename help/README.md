@@ -20,8 +20,8 @@ Examples sit in fenced blocks marked `calc` (or `rpn` for RPN mode):
 
 ## Pictures
 
-`![caption](img/name.png)` refers to `img/name.light.png` and
-`img/name.dark.png`; Help shows the one for the current theme. They are
+Write `![caption](img/name.light.png)`, so the picture shows in any
+Markdown viewer; in dark theme Help shows `img/name.dark.png` instead. They are
 made from SoftCalc's own windows, never by hand:
 
     dotnet build tools/HelpShots

@@ -37,7 +37,7 @@ hyp(3, 4)                     => 5
 In Advanced View, the **Graph** and **Variables** panels on the left
 have **Add** and **Edit** buttons. They open an editor:
 
-![The Functions editor](img/editor-functions.png)
+![The Functions editor](img/editor-functions.light.png)
 
 - the list on the left holds your definitions; pick one to edit it;
 - fill in **Name**, **Parameters** (functions only) and **Definition**

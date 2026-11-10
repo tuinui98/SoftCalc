@@ -3,7 +3,7 @@
 Type a calculation in the **Input** box and press **Enter**. The line
 and its result go to **History**; the Input box clears for the next line.
 
-![The main window: History above, the hint line and Input below](img/main.png)
+![The main window: History above, the hint line and Input below](img/main.light.png)
 
 ```calc
 1+2*3                 => 7

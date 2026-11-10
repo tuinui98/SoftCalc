@@ -1,6 +1,6 @@
 # Views and appearance
 
-![The View menu](img/menu-view.png)
+![The View menu](img/menu-view.light.png)
 
 ## Layouts
 

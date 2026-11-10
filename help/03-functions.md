@@ -9,7 +9,7 @@ The **Functions** menu lists every built-in function by group. Picking one:
 - on an empty Input it gives `sqrt()` with the caret inside the brackets;
 - an operator (`+`, `^`, `mod`, `!`, ...) is put at the caret instead.
 
-![Functions menu with Trig Functions open](img/menu-functions.png)
+![Functions menu with Trig Functions open](img/menu-functions.light.png)
 
 User Functions, at the bottom, lists the functions you defined
 (section *Variables and user functions*).
