@@ -270,6 +270,24 @@ ends 1:1, the drag insert line is visible enough on dark.
       fetchable URL); `SvgIcon` draws only a small SVG subset (absolute
       M L H V C Z, line, circle, ellipse, rect), so other icons may
       need more of SVG; MIT licence note stays in About.
+  - Checked 2026-11-11: iconmcp.com has no public SVG URL or API (JS
+    site; `?icon=<name>` is a page). Its icon dialog has Copy SVG and
+    Download SVG; outline icons match ours, Solid uses `fill-rule`,
+    `stroke="none"`, and the site's SVGs use path `A` and `Q`.
+  - Owner 2026-11-11: (1) no program fetch: the user copies the SVG
+    on the site and pastes it, or picks a downloaded .svg file;
+    (2) the SVG text is kept in settings.json on the ribbon item
+    (`icon_svg`); (3) text-only commands (Deg, Hex, ...) can take an
+    icon too, then Show offers Icon / Text / Both.
+  - Plan: Edit Button gets an Icon row (20 px preview, Choose...).
+    Choose Icon: Built-in, Open iconmcp.com, Paste (also offered when
+    the window is reactivated with SVG on the clipboard), From
+    file..., None; light and dark preview. `SvgIcon` gains path A, Q,
+    S, T and relative commands, polyline/polygon, `fill-rule`,
+    `stroke="none"`, `<g>` inheritance; anything else is refused with
+    "can't draw: <element>". XML read with DTD off and no resolver,
+    64 KB limit. Tests with outline/solid trash and an arc; Help
+    12-ribbon and its picture.
 - [x] Currency rates before the first fetch (owner 2026-11-10, built
       2026-11-10 as proposed): today a PC that was never online gets `Currency rates
       unavailable`. Proposed: `build/publish.ps1` fetches the ECB file
