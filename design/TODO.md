@@ -341,7 +341,11 @@ ends 1:1, the drag insert line is visible enough on dark.
 ## 10. Making the GitHub repo public (owner asked 2026-11-11; to decide)
 - [x] Licence for SoftCalc's own code: MIT (owner 2026-11-11), `LICENSE`.
 - [x] Root README.md, English only (owner 2026-11-11).
-- [ ] Commit author e-mail shows in the public history. Owner
+- [x] Commit author e-mail shows in the public history. Done
+      2026-11-11: all 179 commits and the v1.0.0 tag rewritten
+      (git-filter-repo --mailmap), main and 13 tags force-pushed; trees
+      unchanged; releases kept; backup mirror of the old history in
+      D:\Projects\softcalc-history-backup-20261111.git. Owner
       2026-11-11: rewrite the history to the GitHub noreply address
       (tuinui98@users.noreply.github.com, as GitHub shows it); force-push, all 13
       tags re-made. Confirm the exact steps with the owner first.
