@@ -77,3 +77,6 @@ File > Help or **F1** opens this Help; F1 in the Graph, Compound
 Interest, Functions or Customize Ribbon window opens its own topic.
 Click an example line to put it in Input. Search finds the topics that
 hold every word you type.
+
+The title bar shows the version, such as `SoftCalc [v1.2.0]`; File >
+About SoftCalc... shows it too, with the data folder and the licences.

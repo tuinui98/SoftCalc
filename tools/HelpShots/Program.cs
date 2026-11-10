@@ -255,7 +255,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			var heart = items.Items.Cast<ListViewItem>().First(i => i.Text == "Heart");
 			heart.Selected = true;
 			heart.EnsureVisible();
-			await OpenedShotAsync("graph-examples", gallery, 2500);    // thumbnails come from the engine
+			await OpenedShotAsync("graph-examples", gallery, 5000);    // thumbnails come from the engine, one by one
 		}
 		// Add Equation is modal and opens inside AskAsync: take the picture from a timer, then cancel it
 		var circle = GraphExamples.Equations[0];

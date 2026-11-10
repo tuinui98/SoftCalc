@@ -290,6 +290,9 @@ internal sealed class HelpWindow : Form
 		}
 	}
 
+	// A plain dialog names its topic in its Tag: "help:graph"
+	public const string TopicTag = "help:";
+
 	// The window or the nearest owner with its own topic
 	internal static string TopicFor(Form form)
 	{
@@ -297,7 +300,8 @@ internal sealed class HelpWindow : Form
 		{
 			string? topic = at switch
 			{
-				GraphWindow => "graph",    // also its Add Equation dialog, owned by it
+				GraphWindow or GraphGallery => "graph",    // also opened from the sidebar
+				{ Tag: string tag } when tag.StartsWith(TopicTag, StringComparison.Ordinal) => tag[TopicTag.Length..],
 				CompoundWindow => "finance",
 				DefinitionEditor => "variables-functions",
 				CustomizeRibbonDialog => "ribbon",

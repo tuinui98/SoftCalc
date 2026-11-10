@@ -20,7 +20,7 @@ internal static class EquationDialog
 		{
 			Text = title, FormBorderStyle = FormBorderStyle.FixedDialog, MinimizeBox = false, MaximizeBox = false,
 			ShowInTaskbar = false, StartPosition = FormStartPosition.CenterParent, ClientSize = new Size(380, 150),
-			Padding = new Padding(10),
+			Padding = new Padding(10), Tag = HelpWindow.TopicTag + "graph",    // F1, also when opened from the sidebar
 		};
 		var help = new Label
 		{
