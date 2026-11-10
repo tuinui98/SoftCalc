@@ -5,7 +5,9 @@
 // mode, so the tiles are drawn here too). The
 // thumbnails are drawn by the engine after the window opens (an equation
 // grid of 40 x 30 cells; a function is drawn as the equation y = body,
-// which drops the jumps at poles). Use (or a double-click) returns the
+// which drops the jumps at poles), always in radians: in Deg a sine over
+// -7..7 is a flat line, so the top line then says the pictures use
+// radians. Use (or a double-click) returns the
 // example; the caller opens it in the Functions editor or Add Equation
 // so it can be changed before it is added. Under the tiles: the form with
 // its constants and what they change.
@@ -72,10 +74,12 @@ internal sealed class GraphGallery : Form
 		var cancel = new Button { Text = "Cancel", AutoSize = true, MinimumSize = new Size(80, 0), DialogResult = DialogResult.Cancel };
 		var buttons = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(4, 0, 8, 8) };
 		buttons.Controls.AddRange(new Control[] { cancel, _use });
+		string angle = (string?)session.Settings["angle"] ?? "rad";
 		var hint = new Label
 		{
-			Text = "Pick a curve: it opens in the editor with its constants as numbers; change them, then OK adds it.",
-			Dock = DockStyle.Top, AutoSize = false, Height = 26, TextAlign = ContentAlignment.MiddleLeft,
+			Text = "Pick a curve: it opens in the editor with its constants as numbers; change them, then OK adds it."
+				+ (angle == "rad" ? "" : $"\nPictures use radians; SoftCalc is in {AngleName(angle)}, so sin, cos and tan draw differently."),
+			Dock = DockStyle.Top, AutoSize = false, Height = angle == "rad" ? 26 : 42, TextAlign = ContentAlignment.MiddleLeft,
 			ForeColor = SystemColors.GrayText, Padding = new Padding(8, 0, 0, 0),
 		};
 		Controls.Add(_list);
@@ -97,6 +101,11 @@ internal sealed class GraphGallery : Form
 		_list.ItemActivate += (_, _) => Use();
 		_use.Click += (_, _) => Use();
 		Shown += async (_, _) => await DrawThumbnailsAsync();
+	}
+
+	public static string AngleName(string angle)
+	{
+		return angle == "deg" ? "Degrees" : angle == "grad" ? "Grads" : "Radians";
 	}
 
 	private GraphExample? Selected()
@@ -181,7 +190,7 @@ internal sealed class GraphGallery : Form
 			IReadOnlyList<(double X1, double Y1, double X2, double Y2)> segments;
 			try
 			{
-				segments = await _session.PlotEquationAsync(example.IsEquation ? example.Text : "y=" + example.Text, example.View, 40, 30);
+				segments = await _session.PlotEquationAsync(example.IsEquation ? example.Text : "y=" + example.Text, example.View, 40, 30, "rad");
 			}
 			catch (EngineException)
 			{

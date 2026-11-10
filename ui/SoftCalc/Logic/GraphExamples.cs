@@ -28,6 +28,9 @@ internal sealed record GraphExample(string Title, string Name, string Form, stri
 
 	// Shown under the input after Use: the form, then the note one clause a line
 	public string Hint => "Form: " + Form + Environment.NewLine + Note.Replace("; ", Environment.NewLine);
+
+	// sin, cos or tan in it: drawn differently outside radians
+	public bool UsesAngles => Regex.IsMatch(Form, @"\b(sin|cos|tan)\(");
 }
 
 internal static class GraphExamples

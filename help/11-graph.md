@@ -32,8 +32,12 @@ input. Change the numbers if you like, then OK adds the line.
 
 ![Add Equation with an example](img/graph-example-equation.light.png)
 
-In the narrow Graph panel of Advanced View the buttons wrap to a second
-row.
+The pictures are drawn in radians. In Degrees or Grads, sin, cos and
+tan draw differently in the graph; the gallery and the hint say so.
+
+In the narrow Graph panel of Advanced View the three are under one
+button: **Add** adds a function, its arrow has **Equation...** and
+**Examples...**.
 
 The list shows every line with a tick box and a colour square:
 

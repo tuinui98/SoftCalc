@@ -666,8 +666,11 @@ class Engine:
             return None
         return float(value)
 
-    def plot_equation(self, text, x_min, x_max, y_min, y_max, cols, rows):
+    def plot_equation(self, text, x_min, x_max, y_min, y_max, cols, rows, angle=None):
         """Line segments [x1, y1, x2, y2] where lhs = rhs in the rectangle.
+
+        angle overrides the angle setting for this drawing only (the
+        Graph Examples pictures are drawn in radians whatever the mode).
 
         lhs - rhs is sampled on a cols x rows grid; only cells where it
         changes sign (or becomes undefined) are split EQUATION_REFINE
@@ -683,7 +686,7 @@ class Engine:
             raise CalcError("Empty range")
         refine = EQUATION_REFINE
         with mpmath.workdps(PLOT_DIGITS):
-            builtins = Functions(self.settings.angle, self.settings.word_size)
+            builtins = Functions(angle or self.settings.angle, self.settings.word_size)
             tree = self.equation_tree(text, builtins)
             dx = (x_max - x_min) / (cols * refine)
             dy = (y_max - y_min) / (rows * refine)
