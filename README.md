@@ -48,7 +48,7 @@ fv(0.05/12, 120, -100)    15528.227944566792820456167703351
 ## Download
 
 Get the latest version from
-[Releases](https://github.com/tuinui98/softcalc/releases). Two Windows
+[Releases](https://github.com/tuinui98/SoftCalc/releases). Two Windows
 x64 builds:
 
 | file | size | needs |
@@ -117,7 +117,7 @@ trademarks of Microsoft Corporation.
 ## Feedback
 
 Bug reports and ideas are welcome as
-[issues](https://github.com/tuinui98/softcalc/issues). Pull requests are
+[issues](https://github.com/tuinui98/SoftCalc/issues). Pull requests are
 not accepted: this is a clean-room project, and outside code cannot be
 checked for that.
 
