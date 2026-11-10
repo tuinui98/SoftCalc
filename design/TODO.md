@@ -352,9 +352,9 @@ ends 1:1, the drag insert line is visible enough on dark.
 - [x] Issues / pull requests from others: owner 2026-11-11, issues
       open, pull requests not accepted (README says why: clean room).
 - [x] "private" wording in CLAUDE.md and STATUS.md.
-- [ ] After the push: owner turns on "Block command line pushes that
+- [x] After the push: owner turns on "Block command line pushes that
       expose my email" (GitHub Settings > Emails), reads the README and
-      switches the repo to public.
+      switches the repo to public. Owner 2026-11-11: all done.
 - [x] Owner switched the repo to public (2026-11-11); backup of the
       old history deleted. Releases v1.0.0 and v1.2.0 kept; v1.3.0
       notes carry the SHA-256 of both exes, and publish.ps1 now prints
