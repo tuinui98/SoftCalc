@@ -152,4 +152,35 @@ public class PlotMathTests
 		s.ResetRange();
 		Assert.Equal(10, s.MaxR);
 	}
+
+	[Fact]
+	public void SidebarShowsTheWindowRangeAtTheWindowScale()
+	{
+		var world = new WorldRect(-28, 28, -20, 20);    // window drawing area 700 x 500: 0.08 units per pixel both ways
+		// sidebar 300 x 150, wider than the window: all of Y, X grown around the centre
+		var wide = PlotMath.SameShape(world, 700.0 / 500, 300, 150);
+		Assert.Equal(-20, wide.MinY, 9);
+		Assert.Equal(20, wide.MaxY, 9);
+		Assert.Equal(40, wide.MaxX, 9);    // 300 px at 40/150 units per pixel
+		Assert.Equal(-40, wide.MinX, 9);
+		// sidebar 260 x 260, taller: all of X, Y grown
+		var tall = PlotMath.SameShape(world, 700.0 / 500, 260, 260);
+		Assert.Equal(-28, tall.MinX, 9);
+		Assert.Equal(28, tall.MaxX, 9);
+		Assert.Equal(28, tall.MaxY, 9);
+		// the same shape as the window: exactly the window's range
+		var same = PlotMath.SameShape(world, 2, 200, 100);
+		Assert.Equal((world.MinX, world.MaxX, world.MinY, world.MaxY), (Math.Round(same.MinX, 9), Math.Round(same.MaxX, 9), Math.Round(same.MinY, 9), Math.Round(same.MaxY, 9)));
+	}
+
+	[Fact]
+	public void SidebarKeepsAStretchedWindowScale()
+	{
+		// window 600 x 300 showing x -10..10, y -10..10: y squeezed 2:1
+		var view = PlotMath.SameShape(new WorldRect(-10, 10, -10, 10), 2, 200, 200);
+		Assert.Equal(-10, view.MinX, 9);
+		Assert.Equal(10, view.MaxX, 9);
+		Assert.Equal(20, view.MaxY, 9);    // same units per pixel ratio (y twice x), so y shows more
+		Assert.Equal(-20, view.MinY, 9);
+	}
 }

@@ -3,7 +3,11 @@
 SoftCalc draws functions with one parameter, and equations in `x` and
 `y`.
 
-- In **Advanced View**, the Graph panel on the left shows a small graph.
+- In **Advanced View**, the Graph panel on the left shows a small graph:
+  the Graph window's range at the same scale, so a circle that is round
+  there is round here too. All of the window's range shows; when the
+  panel's shape differs, it shows a little more on one side, around the
+  centre.
 - **Tools > Graph...** (ribbon: **Graph**, or **Window** in the Graph
   panel) opens the Graph window, with zoom, trace and ranges.
 

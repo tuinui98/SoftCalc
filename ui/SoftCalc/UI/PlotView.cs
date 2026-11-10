@@ -157,7 +157,8 @@ internal sealed partial class PlotView : Control
 		}
 		bool polar = _settings.Mode == GraphMode.Polar;
 		int samples = polar ? PolarSamples : Math.Clamp(Width, 2, MaxSamples);
-		double start = polar ? _settings.MinT : _settings.MinX, end = polar ? _settings.MaxT : _settings.MaxX;
+		var world = DrawnView();
+		double start = polar ? _settings.MinT : world.MinX, end = polar ? _settings.MaxT : world.MaxX;
 		// lines still in view are kept and replaced one by one as they arrive
 		var found = new Dictionary<string, PlotSeries>(StringComparer.OrdinalIgnoreCase);
 		if (_seriesPolar == polar)
@@ -171,7 +172,7 @@ internal sealed partial class PlotView : Control
 		var fresh = new List<PlotSeries>();
 		string? error = null;
 		//==================================================================
-		//  BLOCK 1 - Functions, then the view they fit (sidebar)
+		//  BLOCK 1 - Functions over the drawn x range
 		//==================================================================
 		foreach (string name in names.Where(n => !GraphSettings.IsEquation(n)))
 		{
@@ -192,7 +193,6 @@ internal sealed partial class PlotView : Control
 		//==================================================================
 		//  BLOCK 2 - Equations in the drawn rectangle
 		//==================================================================
-		var world = DrawnView(fresh);
 		var area = PlotArea();
 		int cols = Math.Clamp((int)(area.Width / EquationCell), 4, 150);
 		int rows = Math.Clamp((int)(area.Height / EquationCell), 4, 150);
@@ -231,29 +231,34 @@ internal sealed partial class PlotView : Control
 		return series.SelectMany(s => s.Points).Where(p => p != null).Select(p => p!.Value);
 	}
 
-	// Sidebar (owner, G3): the X range as set, Y fitted to the lines so their
-	// shape shows (polar: R fitted); the Graph window shows the set range
-	// Equations do not take part: they are drawn in the rectangle the functions fit
+	// The Graph window shows the set range. The sidebar (owner 2026-11-11,
+	// before: Y fitted to the lines) shows the same range at the window's
+	// x to y scale: all of it, the other axis grown around the centre.
+	// Polar: both draw a square area, so the range as set.
 	private WorldRect DrawnView()
 	{
-		return DrawnView(_series);
-	}
-
-	private WorldRect DrawnView(IEnumerable<PlotSeries> series)
-	{
 		var world = _settings.View;
-		if (_interactive)
+		if (_interactive || _settings.Mode == GraphMode.Polar)
 		{
 			return world;
 		}
-		var points = PointsOf(series).ToList();
-		if (_settings.Mode == GraphMode.Polar)
+		var area = PlotArea();
+		return PlotMath.SameShape(world, _settings.PlotAspect ?? area.Width / area.Height, area.Width, area.Height);
+	}
+
+	// Graph window, XY: keep the drawing area's shape for the sidebar
+	private void NoteAspect(RectangleF screen)
+	{
+		if (!_interactive || _settings.Mode != GraphMode.XY || screen.Width < 20 || screen.Height < 20)
 		{
-			var r = PlotMath.FitRange(points.Select(p => Math.Sqrt(p.X * p.X + p.Y * p.Y)));
-			return r is { Max: > 0 } fit ? new WorldRect(-fit.Max, fit.Max, -fit.Max, fit.Max) : world;
+			return;
 		}
-		var y = PlotMath.FitRange(points.Select(p => p.Y));
-		return y is { } fy ? world with { MinY = fy.Min, MaxY = fy.Max } : world;
+		double aspect = screen.Width / screen.Height;
+		if (_settings.PlotAspect is not { } old || Math.Abs(aspect / old - 1) > 0.005)
+		{
+			_settings.PlotAspect = aspect;
+			_settings.NotifyChanged();
+		}
 	}
 
 	public void SaveImage(string path)
@@ -274,6 +279,7 @@ internal sealed partial class PlotView : Control
 		var screen = PlotArea();
 		var world = DrawnView();
 		_drawnWidth = screen.Width;
+		NoteAspect(screen);
 		if (_settings.ShowGrid)
 		{
 			if (_settings.Mode == GraphMode.XY)
@@ -371,12 +377,12 @@ internal sealed partial class PlotView : Control
 	private void DrawXyGrid(Graphics g, WorldRect world, RectangleF screen)
 	{
 		using var pen = new Pen(Theme.PlotGrid);
-		foreach (double x in PlotMath.GridLines(world.MinX, world.MaxX, _settings.GridX))
+		foreach (double x in PlotMath.GridLines(world.MinX, world.MaxX, SidebarStep(_settings.GridX, world.Width, screen.Width)))
 		{
 			float sx = PlotMath.ToScreen(x, 0, world, screen).X;
 			g.DrawLine(pen, sx, screen.Top, sx, screen.Bottom);
 		}
-		double gridY = _interactive ? _settings.GridY : PlotMath.NiceStep(world.Height, 10);    // fitted sidebar Y
+		double gridY = SidebarStep(_settings.GridY, world.Height, screen.Height);
 		foreach (double y in PlotMath.GridLines(world.MinY, world.MaxY, gridY))
 		{
 			float sy = PlotMath.ToScreen(0, y, world, screen).Y;
@@ -384,13 +390,19 @@ internal sealed partial class PlotView : Control
 		}
 	}
 
+	// The set grid step, or in the small sidebar a coarser one when the lines would be under 4 px apart
+	private double SidebarStep(double set, double span, float pixels)
+	{
+		return _interactive || set <= 0 || span / set * 4 <= pixels ? set : PlotMath.NiceStep(span, 10);
+	}
+
 	private void DrawPolarGrid(Graphics g, WorldRect world, RectangleF screen)
 	{
 		using var pen = new Pen(Theme.PlotGrid);
 		var center = PlotMath.ToScreen(0, 0, world, screen);
 		float scale = screen.Width / (float)world.Width;
-		double maxR = world.MaxX;    // the set R Max, or the fitted one in the sidebar
-		double gridR = _interactive ? _settings.GridR : PlotMath.NiceStep(maxR, 5);
+		double maxR = world.MaxX;    // the set R Max
+		double gridR = SidebarStep(_settings.GridR, maxR, screen.Width / 2);
 		foreach (double r in PlotMath.GridLines(0, maxR, gridR).Where(r => r > 0))
 		{
 			float radius = (float)r * scale;

@@ -318,10 +318,19 @@ ends 1:1, the drag insert line is visible enough on dark.
   - Built 2026-11-11 as sketched (`RibbonGap` in Ribbon.cs, both 10 px
     at 100%; the separator is a ControlDark line as tall as the row).
     Owner to try it.
-- [ ] Sidebar graph range (owner 2026-11-11: "looks auto-fitted all the
+- [x] Sidebar graph range (owner 2026-11-11: "looks auto-fitted all the
       time"). Cause: G3 (2026-11-07) fits the sidebar's Y to the
       functions; equations take no part. With the cubic example over the
       Graph window's wide 1:1 X range (about -28..28) Y runs to about
       +-22000, so the other lines go flat and the circle is a dot.
       Proposed: the sidebar draws the Graph window's range (X and Y as
       set), stretched to the panel; polar likewise uses R Max.
+  - Owner 2026-11-11: the window's range at the window's scale; all of
+    it in the panel, the other axis grown around the centre (shows at
+    least what the window shows).
+  - Built 2026-11-11: `PlotMath.SameShape`; the Graph window keeps its
+    drawing area's width / height in `GraphSettings.PlotAspect`, saved
+    as `graph.plot_aspect` (until the window was opened, the panel's
+    own shape: the range as set). Polar draws a square in both, so
+    the set R Max. The sidebar grid uses the set steps, coarser when
+    lines would be under 4 px apart. Owner to try it.
