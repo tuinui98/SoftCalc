@@ -6,7 +6,8 @@
 # 4. publishes the UI as single files with the engine zip embedded:
 #    SoftCalc.exe self-contained and compressed, SoftCalc-net10.exe
 #    needing the .NET 10 Desktop Runtime; 5. smoke-runs each exe from
-#    an empty folder. The ECB rates of the day are embedded too
+#    an empty folder; 6. prints the SHA-256 of both for the release
+#    notes. The ECB rates of the day are embedded too
 #    (rates-seed.xml, used before the first fetch; skipped when the ECB
 #    cannot be reached).
 # Plan: design/m9_plan.md. Run from any folder:
@@ -129,3 +130,13 @@ finally
 	if ($saved) { $env:SOFTCALC_DATA_DIR = $saved }
 }
 # end BLOCK 4
+
+#==================================================================
+#  BLOCK 5 - SHA-256 for the release notes (owner 2026-11-11)
+#==================================================================
+"SHA-256 (paste into the release notes):"
+foreach ($name in @("SoftCalc.exe", "SoftCalc-net10.exe"))
+{
+	"$((Get-FileHash -Algorithm SHA256 (Join-Path $dist $name)).Hash.ToLower())  $name"
+}
+# end BLOCK 5
