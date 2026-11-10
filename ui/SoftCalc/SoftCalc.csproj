@@ -36,6 +36,11 @@
 		<EmbeddedResource Include="..\..\help\img\*.png" LogicalName="help/img/%(Filename)%(Extension)" />
 	</ItemGroup>
 
+	<!-- ECB rates of the build day, fetched by build/publish.ps1 (-p:RatesSeed=...); used before the first fetch -->
+	<ItemGroup Condition="'$(RatesSeed)' != ''">
+		<EmbeddedResource Include="$(RatesSeed)" LogicalName="rates-seed.xml" />
+	</ItemGroup>
+
 	<!-- M9: the frozen engine, zipped by build/publish.ps1 (-p:EngineZip=...); development builds use engine/.venv -->
 	<ItemGroup Condition="'$(EngineZip)' != ''">
 		<EmbeddedResource Include="$(EngineZip)" LogicalName="engine.zip" />

@@ -6,7 +6,9 @@
 # 4. publishes the UI as single files with the engine zip embedded:
 #    SoftCalc.exe self-contained and compressed, SoftCalc-net10.exe
 #    needing the .NET 10 Desktop Runtime; 5. smoke-runs each exe from
-#    an empty folder.
+#    an empty folder. The ECB rates of the day are embedded too
+#    (rates-seed.xml, used before the first fetch; skipped when the ECB
+#    cannot be reached).
 # Plan: design/m9_plan.md. Run from any folder:
 #   powershell -ExecutionPolicy Bypass -File build\publish.ps1
 
@@ -45,6 +47,23 @@ if (Test-Path $zip) { Remove-Item $zip }
 "engine.zip $([math]::Round((Get-Item $zip).Length / 1MB, 1)) MB"
 & $python (Join-Path $root "tools\make_notices.py")
 if ($LASTEXITCODE -ne 0) { throw "notices failed" }
+# Today's ECB rates for a PC that was never online (owner 2026-11-10)
+$seed = Join-Path $root "ui\SoftCalc\obj
+ates-seed.xml"
+if (Test-Path $seed) { Remove-Item $seed }
+$seedArg = @()
+try
+{
+	$xml = (Invoke-WebRequest "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml" -UseBasicParsing -TimeoutSec 20).Content
+	if ($xml -notmatch "<Cube time='(\d{4}-\d\d-\d\d)'") { throw "not an ECB rates file" }
+	[IO.File]::WriteAllText($seed, $xml)
+	$seedArg = @("-p:RatesSeed=$seed")
+	"rates-seed.xml ECB $($Matches[1])"
+}
+catch
+{
+	Write-Warning "ECB rates not embedded: $($_.Exception.Message)"
+}
 # end BLOCK 2
 
 #==================================================================
@@ -56,11 +75,11 @@ $project = Join-Path $root "ui\SoftCalc\SoftCalc.csproj"
 # .NET 10 Desktop Runtime (x64) installed and is about 9 MB (owner 2026-11-07)
 & $dotnet publish $project -c Release -r win-x64 --self-contained true `
 	-p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-	-p:DebugType=none "-p:EngineZip=$zip" -o $dist --nologo -v quiet
+	-p:DebugType=none "-p:EngineZip=$zip" @seedArg -o $dist --nologo -v quiet
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish (self-contained) failed" }
 $shared = Join-Path ([IO.Path]::GetTempPath()) ("softcalc-fd-" + [guid]::NewGuid().ToString("N"))
 & $dotnet publish $project -c Release -r win-x64 --self-contained false `
-	-p:PublishSingleFile=true -p:DebugType=none "-p:EngineZip=$zip" -o $shared --nologo -v quiet
+	-p:PublishSingleFile=true -p:DebugType=none "-p:EngineZip=$zip" @seedArg -o $shared --nologo -v quiet
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish (framework-dependent) failed" }
 Move-Item (Join-Path $shared "SoftCalc.exe") (Join-Path $dist "SoftCalc-net10.exe")
 Remove-Item -Recurse -Force $shared

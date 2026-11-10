@@ -18,8 +18,9 @@ its result line, for example `ECB 2026-11-05`.
   working day, around 16:00 Central European Time.
 - The rates are kept in the data folder, so currency lines work offline
   with the last rates; the note then ends in `, offline`.
-- Before the first fetch there are no rates: without internet a currency
-  line gives `Currency rates unavailable`.
+- Before its first fetch SoftCalc has the rates of the day it was built;
+  a currency line then fetches, and shows the built-in rates with
+  `, offline` when that fails.
 - This is the only time SoftCalc uses the internet.
 - A code the ECB does not publish gives `No ECB rate for ...`.
 

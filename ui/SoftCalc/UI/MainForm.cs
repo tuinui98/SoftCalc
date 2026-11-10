@@ -90,7 +90,7 @@ internal sealed partial class MainForm : Form
 		_session.DefinitionsChanged += (_, text) => OnDefinitionsChanged(text);
 		_rates = new RatesSource(folder.RatesPath);
 		_session.RatesProvider = FetchRatesAsync;
-		Text = "SoftCalc";
+		Text = $"SoftCalc [v{AboutDialog.Version}]";    // owner 2026-11-10
 		Icon = SvgIcon.ProgramIcon();
 		StartPosition = FormStartPosition.CenterScreen;
 		KeyPreview = true;
