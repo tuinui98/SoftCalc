@@ -300,3 +300,16 @@ ends 1:1, the drag insert line is visible enough on dark.
       app uses it, the note shows its date and `, offline`; a normal
       fetch replaces it once online. Build goes on without it when the
       ECB cannot be reached; dev builds embed nothing.
+
+## 9. Owner requests 2026-11-11
+- [ ] Customize Ribbon: Insert Space, a gap between buttons about half
+      an icon wide (10 px at 100%).
+- [ ] Customize Ribbon: Insert Separator, a line between buttons that
+      splits a group into parts.
+  - To decide: a line inside a group only, or also something between
+    groups; in a group of several rows a space or line fills one grid
+    cell like a button; space width fixed or editable.
+  - Sketch: special ids `Ribbon/Space` and `Ribbon/Separator` (like
+    `Ribbon/Precision`), listed first in Available commands under
+    "Ribbon", usable many times; added, dragged and removed like a
+    button; no Edit; shown in the tree as `(space)` / `(separator)`.
