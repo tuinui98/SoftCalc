@@ -53,6 +53,7 @@ internal sealed class GraphPrefs
 	public bool Square { get; set; }    // 1:1 lock in the Graph window
 	public WindowPlacement? Window { get; set; }    // Graph window; null until it was first used
 	public int RangeWidth { get; set; } = 150;
+	public double? PlotAspect { get; set; }    // the Graph window's drawing area, width / height
 	public double MinX { get; set; } = -10;
 	public double MaxX { get; set; } = 10;
 	public double GridX { get; set; } = 1;

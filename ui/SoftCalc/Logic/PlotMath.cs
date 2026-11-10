@@ -47,6 +47,10 @@ internal sealed class GraphSettings
 	public bool WindowMaximized { get; set; }
 	public int RangeWidth { get; set; } = 150;
 
+	// The Graph window's XY drawing area, width / height, as last shown;
+	// the sidebar draws its range in the same shape (owner 2026-11-11)
+	public double? PlotAspect { get; set; }
+
 	public static bool IsEquation(string name)
 	{
 		return name.Contains('=');
@@ -146,6 +150,23 @@ internal static class PlotMath
 	// 1:1 around the centre: the axis with fewer units per pixel is widened
 	// to the other's, so nothing in view is cut off. With unitsPerPixel the
 	// scale is given instead (window resized while locked).
+	// The Graph window's range in another drawing area (sidebar, owner
+	// 2026-11-11): the same x to y scale as the window, whose drawing area
+	// is windowAspect = width / height; the whole range shows and the other
+	// axis grows around the centre, so it shows at least what the window does
+	public static WorldRect SameShape(WorldRect world, double windowAspect, double width, double height)
+	{
+		if (world.Width <= 0 || world.Height <= 0 || windowAspect <= 0 || width <= 0 || height <= 0)
+		{
+			return world;
+		}
+		double ratio = world.Height / world.Width * windowAspect;    // y units per x unit, per pixel
+		double perX = Math.Max(world.Width / width, world.Height / (ratio * height));
+		double cx = (world.MinX + world.MaxX) / 2, cy = (world.MinY + world.MaxY) / 2;
+		double halfW = perX * width / 2, halfH = ratio * perX * height / 2;
+		return new WorldRect(cx - halfW, cx + halfW, cy - halfH, cy + halfH);
+	}
+
 	public static WorldRect Square(WorldRect world, double width, double height, double? unitsPerPixel = null)
 	{
 		double per = unitsPerPixel ?? Math.Max(world.Width / Math.Max(1, width), world.Height / Math.Max(1, height));
