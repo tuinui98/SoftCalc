@@ -339,7 +339,11 @@ ends 1:1, the drag insert line is visible enough on dark.
     lines would be under 4 px apart. Owner checked 2026-11-11: OK.
 
 ## 10. Making the GitHub repo public (owner asked 2026-11-11; to decide)
-- [ ] Licence for SoftCalc's own code (none yet).
-- [ ] Root README.md (none yet).
-- [ ] Commit author e-mail shows in the public history.
+- [ ] Licence for SoftCalc's own code (none yet). Owner 2026-11-11: MIT.
+- [ ] Root README.md (none yet). Owner 2026-11-11: English only.
+- [ ] Commit author e-mail shows in the public history. Owner
+      2026-11-11: rewrite the history to the GitHub noreply address
+      (4589604+tuinui98@users.noreply.github.com); force-push, all 13
+      tags re-made. Confirm the exact steps with the owner first.
+- [ ] Issues / pull requests from others: owner asked for pros and cons.
 - [ ] "private" wording in CLAUDE.md and STATUS.md.
