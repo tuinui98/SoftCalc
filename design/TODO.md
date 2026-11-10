@@ -355,3 +355,7 @@ ends 1:1, the drag insert line is visible enough on dark.
 - [ ] After the push: owner turns on "Block command line pushes that
       expose my email" (GitHub Settings > Emails), reads the README and
       switches the repo to public.
+- [x] Owner switched the repo to public (2026-11-11); backup of the
+      old history deleted. Releases v1.0.0 and v1.2.0 kept; v1.3.0
+      notes carry the SHA-256 of both exes, and publish.ps1 now prints
+      them for every release.
