@@ -2,6 +2,7 @@
 
 using System.Text.RegularExpressions;
 using SoftCalc.Logic;
+using SoftCalc.UI;
 
 namespace SoftCalc.Tests;
 
@@ -62,6 +63,17 @@ public sealed class HelpTests
 		Assert.Equal(HelpTopics.All.Count, HelpTopics.Search("  ").Count);
 		Assert.Contains(HelpTopics.Search("RAI ngan"), t => t.Id == "06-conversions");
 		Assert.Empty(HelpTopics.Search("zzqqxx"));
+	}
+
+	[Fact]
+	public void F1TopicFollowsTheWindowAndItsOwners()
+	{
+		using var plain = new Form();
+		Assert.Equal("getting-started", HelpWindow.TopicFor(plain));
+		using var equation = new Form { Tag = HelpWindow.TopicTag + "graph" };    // Add Equation, even from the sidebar
+		Assert.Equal("graph", HelpWindow.TopicFor(equation));
+		using var owned = new Form { Owner = equation };
+		Assert.Equal("graph", HelpWindow.TopicFor(owned));
 	}
 
 	[Fact]
