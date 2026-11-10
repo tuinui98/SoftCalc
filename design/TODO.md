@@ -226,9 +226,8 @@ ends 1:1, the drag insert line is visible enough on dark.
       buttons and layout wanted: screenshots made by a harness
       (DrawToBitmap, light and dark) so they can be regenerated.
       First step: draft topics 1-2 for the owner to check the tone.
-- [ ] Window caption followed by the version, faint or italic. Note:
-      Windows draws the title bar text in one style; faint/italic needs
-      a custom-drawn caption, so discuss plain `SoftCalc 1.2.0` first.
+- [ ] Window caption followed by the version: plain `SoftCalc 1.2.0`
+      (owner 2026-11-10; faint/italic would need a custom-drawn title bar).
 - [ ] Graph Add Function / Equation: a gallery of example functions and
       equations with a small graph each; pick one to edit before adding.
       Needs a list of classic 2D curves (proposed 2026-11-10).
