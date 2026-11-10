@@ -42,6 +42,15 @@
 | Ctrl+Up / Ctrl+Down | move the selected row |
 | Esc while dragging | cancel the drag |
 
+## Help
+
+| key | does |
+|---|---|
+| F1 | open Help at the topic for the window you are in |
+| click an example | put the line in Input |
+| Enter or Down in Search | go to the topic list |
+| Esc | close Help |
+
 ## Menus
 
 Alt and the underlined letter open a menu, as in other Windows programs:

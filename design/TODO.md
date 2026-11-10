@@ -15,8 +15,8 @@ Recorded at the owner's request after M8. Nothing here is started.
 - [x] About box (show the IconMCP licence there too).
 
 ## 3. Out of scope for v1
-- [ ] File > Help (disabled): new help text later; the original's help
-      must not be copied.
+- [x] File > Help (disabled): new help text later; the original's help
+      must not be copied. Built 2026-11-10 (section 8).
 
 ## 4. Ideas to discuss with the owner first
 - [x] Graph interface: done 2026-11-06 (design/graph_plan.md G1-G3).
@@ -103,7 +103,7 @@ Recorded at the owner's request after M8. Nothing here is started.
       to `%APPDATA%\SoftCalc`): the owner checked 1.2.0, 2026-11-09.
 - [x] Graph lines vanishing on view switches: dropped 2026-11-09, the
       owner thinks it was an accidental double-click.
-- [ ] File > Help (section 3).
+- [x] File > Help (section 3), built 2026-11-10.
 
 ## 7. Owner requests 2026-11-08 (all built 2026-11-09, released in 1.2.0)
 Owner checked 2026-11-09: the colour dialog works, Shift/Ctrl + wheel
@@ -226,6 +226,11 @@ ends 1:1, the drag insert line is visible enough on dark.
       buttons and layout wanted: screenshots made by a harness
       (DrawToBitmap, light and dark) so they can be regenerated.
       First step: draft topics 1-2 for the owner to check the tone.
+  - Text and pictures done 2026-11-10 (branch help-draft, owner
+    checked); image links name the light file, dark theme swaps it.
+    Help window built 2026-11-10 (branch help-window): File > Help
+    and F1 (topic for the active window), list + search, examples
+    click into Input, pictures by theme; stock WebBrowser control.
 - [ ] Window caption followed by the version: plain `SoftCalc 1.2.0`
       (owner 2026-11-10; faint/italic would need a custom-drawn title bar).
 - [ ] Graph Add Function / Equation: a gallery of example functions and
@@ -237,3 +242,10 @@ ends 1:1, the drag insert line is visible enough on dark.
       fetchable URL); `SvgIcon` draws only a small SVG subset (absolute
       M L H V C Z, line, circle, ellipse, rect), so other icons may
       need more of SVG; MIT licence note stays in About.
+- [ ] Currency rates before the first fetch (owner 2026-11-10, keep for
+      later): today a PC that was never online gets `Currency rates
+      unavailable`. Proposed: `build/publish.ps1` fetches the ECB file
+      at build time and embeds it (about 2 KB); with no `rates.xml` the
+      app uses it, the note shows its date and `, offline`; a normal
+      fetch replaces it once online. Build goes on without it when the
+      ECB cannot be reached; dev builds embed nothing.

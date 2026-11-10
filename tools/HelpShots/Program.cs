@@ -31,7 +31,7 @@ internal static partial class Program
 	{
 		if (args.Length == 0)
 		{
-			Console.Error.WriteLine("usage: HelpShots <help/img folder> [light|dark]");
+			Console.Error.WriteLine("usage: HelpShots <help/img folder> [light|dark [help]]");
 			return 2;
 		}
 		string outDir = Path.GetFullPath(args[0]);
@@ -46,10 +46,10 @@ internal static partial class Program
 			}
 			return failed;
 		}
-		return RunTheme(outDir, args[1]);
+		return RunTheme(outDir, args[1], args.Length > 2 && args[2] == "help");
 	}
 
-	private static int RunTheme(string outDir, string theme)
+	private static int RunTheme(string outDir, string theme, bool helpOnly)
 	{
 		//==================================================================
 		//  BLOCK 1 - Scratch data folder and settings
@@ -94,7 +94,7 @@ internal static partial class Program
 		{
 			try
 			{
-				await new Shots(form, session, outDir, theme).RunAsync();
+				await new Shots(form, session, outDir, theme).RunAsync(helpOnly);
 			}
 			catch (Exception ex)
 			{
@@ -164,7 +164,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 	private readonly TextBox _input = Program.Field<TextBox>(form, "_input");
 	private readonly MenuStrip _menu = Program.Field<MenuStrip>(form, "_menu");
 
-	public async Task RunAsync()
+	public async Task RunAsync(bool helpOnly)
 	{
 		//==================================================================
 		//  BLOCK 1 - Engine ready, definitions for the graph and editor
@@ -183,6 +183,11 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			await session.EvalAsync(definition);
 		}
 		await (Task)Program.Call(form, "RefreshStateAsync")!;
+		if (helpOnly)
+		{
+			await HelpWindowAsync();
+			return;
+		}
 
 		//==================================================================
 		//  BLOCK 2 - Main window, ribbon
@@ -233,6 +238,27 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		plot.Focus();    // no selected text in the Range panel
 		await OpenedShotAsync("graph", graph, 2500);
 	}   // end RunAsync
+
+	// A check of the Help window itself (not a help picture): two topics, a search, an example click
+	private async Task HelpWindowAsync()
+	{
+		HelpWindow.Open("conversions", form);
+		var help = Application.OpenForms.OfType<HelpWindow>().First();
+		help.StartPosition = FormStartPosition.Manual;
+		help.Location = new Point(form.Right + 20, form.Top);
+		await Task.Delay(1500);
+		Save("check-help-conversions", Program.Capture(help.Handle).Picture);
+		HelpWindow.Open("finance", form);
+		await Task.Delay(1000);
+		Save("check-help-finance", Program.Capture(help.Handle).Picture);
+		Program.Field<TextBox>(help, "_search").Text = "rai";
+		await Task.Delay(1000);
+		Save("check-help-search", Program.Capture(help.Handle).Picture);
+		help.PutInInput("6800 [m2->rnw]");
+		await Task.Delay(300);
+		Console.WriteLine("input after example click: " + _input.Text);
+		help.Close();
+	}
 
 	private async Task SubmitAsync(string line)
 	{

@@ -70,3 +70,10 @@ Turn it off with View > Show Input Hints.
 View > Numeric Calc, History View and Advanced View change the layout.
 Advanced View adds the Graph and Variables side panel. View > Show Samples
 shows a pane of short examples (not in Numeric Calc).
+
+## Help
+
+File > Help or **F1** opens this Help; F1 in the Graph, Compound
+Interest, Functions or Customize Ribbon window opens its own topic.
+Click an example line to put it in Input. Search finds the topics that
+hold every word you type.

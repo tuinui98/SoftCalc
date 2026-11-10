@@ -26,6 +26,7 @@ internal static class Program
 				MessageBoxButtons.OK, MessageBoxIcon.Error);
 			return;
 		}
+		Application.AddMessageFilter(new HelpWindow.HelpKey());    // F1 opens Help from any window
 		bool restart;
 		using (var session = new EngineSession(startInfo))
 		{

@@ -29,3 +29,7 @@ made from SoftCalc's own windows, never by hand:
 
 The tool needs `engine/.venv`, shows SoftCalc windows for about 40 s and
 uses a scratch data folder. Rerun it after a UI change.
+
+`HelpShots.exe <folder> light help` (or `dark`) only checks the Help
+window: it saves `check-help-*.png` to the folder (not for `help/img`)
+and prints Input after a simulated example click.
