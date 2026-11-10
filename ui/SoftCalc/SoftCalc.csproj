@@ -20,6 +20,7 @@
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="SoftCalc.Tests" />
+		<InternalsVisibleTo Include="HelpShots" />
 	</ItemGroup>
 
 	<!-- Toolbar icons (IconMCP, MIT: Icons/LICENSE.txt) and the window icon -->
