@@ -215,7 +215,7 @@ ends 1:1, the drag insert line is visible enough on dark.
     - Simple rule kept: any line with an rnw value shows the rnw text,
       even a ratio (`4-1-50[rnw] / 0-2-0[rnw]` shows ` = 8-3-0`).
 
-## 8. Owner requests 2026-11-10 (not started)
+## 8. Owner requests 2026-11-10 (all built by 2026-11-11, not released yet)
 - [x] Help (decided 2026-11-10, owner took all proposals): in-app Help
       window, topic list + search on the left, text on the right; text
       in `help/*.md` embedded in the exe; English first, Thai later;
@@ -292,7 +292,7 @@ ends 1:1, the drag insert line is visible enough on dark.
     Icon row, `RibbonItem.IconSvg`, `SvgIcon` rewritten (the 9 shipped
     icons render pixel-identical), `SvgIconTests`; a hand-edited
     icon that can't be drawn falls back to the command's icon. Help
-    12-ribbon "Own icons" with two pictures. Owner to try it.
+    12-ribbon "Own icons" with two pictures. Owner checked 2026-11-11: OK.
 - [x] Currency rates before the first fetch (owner 2026-11-10, built
       2026-11-10 as proposed): today a PC that was never online gets `Currency rates
       unavailable`. Proposed: `build/publish.ps1` fetches the ECB file
@@ -301,7 +301,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       fetch replaces it once online. Build goes on without it when the
       ECB cannot be reached; dev builds embed nothing.
 
-## 9. Owner requests 2026-11-11
+## 9. Owner requests 2026-11-11 (all built 2026-11-11, not released yet)
 - [x] Customize Ribbon: Insert Space, a gap between buttons about half
       an icon wide (10 px at 100%).
 - [x] Customize Ribbon: Insert Separator, a line between buttons that
@@ -317,7 +317,7 @@ ends 1:1, the drag insert line is visible enough on dark.
     a group of several rows is fine; (3) the space width is fixed.
   - Built 2026-11-11 as sketched (`RibbonGap` in Ribbon.cs, both 10 px
     at 100%; the separator is a ControlDark line as tall as the row).
-    Owner to try it.
+    Owner checked 2026-11-11: OK.
 - [x] Sidebar graph range (owner 2026-11-11: "looks auto-fitted all the
       time"). Cause: G3 (2026-11-07) fits the sidebar's Y to the
       functions; equations take no part. With the cubic example over the
@@ -333,4 +333,4 @@ ends 1:1, the drag insert line is visible enough on dark.
     as `graph.plot_aspect` (until the window was opened, the panel's
     own shape: the range as set). Polar draws a square in both, so
     the set R Max. The sidebar grid uses the set steps, coarser when
-    lines would be under 4 px apart. Owner to try it.
+    lines would be under 4 px apart. Owner checked 2026-11-11: OK.
