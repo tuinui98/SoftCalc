@@ -96,10 +96,12 @@ Recorded at the owner's request after M8. Nothing here is started.
     setting offers only the four sizes.
 
 ## 6. Still open from v1.0.0
-- [ ] Try the release exe on another PC (no .NET/Python) and with its
+- [x] Try the release exe on another PC (no .NET/Python) and with its
       antivirus; the exe is unsigned (SmartScreen warning expected).
-      On hold (owner 2026-11-09); owner tries 1.3.0 on another PC next
-      (2026-11-11).
+      Owner 2026-11-11, 1.3.0: SoftCalc-net10.exe warned, then asked for
+      .NET 10 and opened its download page; after installing it runs
+      normally. Online it fetched rates.xml; offline it shows
+      `ECB 2026-11-10, offline` (the embedded rates).
 - [x] Live check of the read-only fallback (exe in Program Files, data
       to `%APPDATA%\SoftCalc`): the owner checked 1.2.0, 2026-11-09.
 - [x] Graph lines vanishing on view switches: dropped 2026-11-09, the
@@ -335,3 +337,9 @@ ends 1:1, the drag insert line is visible enough on dark.
     own shape: the range as set). Polar draws a square in both, so
     the set R Max. The sidebar grid uses the set steps, coarser when
     lines would be under 4 px apart. Owner checked 2026-11-11: OK.
+
+## 10. Making the GitHub repo public (owner asked 2026-11-11; to decide)
+- [ ] Licence for SoftCalc's own code (none yet).
+- [ ] Root README.md (none yet).
+- [ ] Commit author e-mail shows in the public history.
+- [ ] "private" wording in CLAUDE.md and STATUS.md.
