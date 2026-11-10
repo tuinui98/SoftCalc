@@ -264,7 +264,7 @@ ends 1:1, the drag insert line is visible enough on dark.
 - [x] Owner test (2026-11-10): open examples from the gallery and edit
       them in the graph (change the numbers, check the notes hold).
       Owner 2026-11-10: graph OK.
-- [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
+- [x] Customize Ribbon: own icons for buttons (built 2026-11-11 as planned below). Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a
       fetchable URL); `SvgIcon` draws only a small SVG subset (absolute
@@ -288,6 +288,11 @@ ends 1:1, the drag insert line is visible enough on dark.
     "can't draw: <element>". XML read with DTD off and no resolver,
     64 KB limit. Tests with outline/solid trash and an arc; Help
     12-ribbon and its picture.
+  - Built 2026-11-11: `UI/IconPicker.cs` (Choose Icon), Edit Button
+    Icon row, `RibbonItem.IconSvg`, `SvgIcon` rewritten (the 9 shipped
+    icons render pixel-identical), `SvgIconTests`; a hand-edited
+    icon that can't be drawn falls back to the command's icon. Help
+    12-ribbon "Own icons" with two pictures. Owner to try it.
 - [x] Currency rates before the first fetch (owner 2026-11-10, built
       2026-11-10 as proposed): today a PC that was never online gets `Currency rates
       unavailable`. Proposed: `build/publish.ps1` fetches the ECB file

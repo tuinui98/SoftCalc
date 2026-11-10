@@ -299,6 +299,10 @@ internal sealed class CustomizeRibbonDialog : Form
 		string text = item.Label ?? command.Text;
 		string kind = command.IsDropDown ? " ▾" : "";
 		string detail = item.Label != null ? $"    ({command.Text})" : "";
+		if (item.IconSvg != null)
+		{
+			detail += "    [own icon]";
+		}
 		return new TreeNode(text + kind + detail) { Tag = pos, ToolTipText = command.Path };
 	}
 
@@ -608,17 +612,53 @@ internal sealed class CustomizeRibbonDialog : Form
 		var label = new TextBox { Text = item.Label ?? "", Width = 220, PlaceholderText = command.DynamicText?.Invoke() ?? command.Text };
 		var display = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList, Width = 140 };
 		display.Items.AddRange(new object[] { "Icon and text", "Icon only", "Text only" });
-		string current = item.Display ?? (command.Icon != null ? "both" : "text");
+		string? svg = item.IconSvg;
+		bool HasIcon() => svg != null || command.Icon != null;
+		string current = item.Display ?? (HasIcon() ? "both" : "text");
 		display.SelectedIndex = current switch
 		{
 			"icon" => 1,
 			"text" => 2,
 			_ => 0,
 		};
-		display.Enabled = command.Icon != null;    // no icon: text only
+
+		// Icon: a 20 px preview, what it is, and Choose... (owner 2026-11-11)
+		var preview = new PictureBox { Size = new Size(24, 24), SizeMode = PictureBoxSizeMode.CenterImage, Margin = new Padding(3, 3, 6, 3) };
+		var source = new Label { AutoSize = true, Anchor = AnchorStyles.Left, ForeColor = SystemColors.GrayText };
+		var choose = new Button { Text = "&Choose...", AutoSize = true, Margin = new Padding(12, 3, 3, 3) };
+		var iconRow = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty, WrapContents = false };
+		iconRow.Controls.AddRange(new Control[] { preview, source, choose });
+		void ShowIcon()
+		{
+			int size = (int)Math.Round(20 * form.DeviceDpi / 96.0);
+			preview.Image = svg != null ? SvgIcon.FromText(svg, size, SystemColors.ControlText)
+				: command.Icon != null ? SvgIcon.Get(command.Icon, size, SystemColors.ControlText) : null;
+			source.Text = svg != null ? "own icon" : command.Icon != null ? "the command's icon" : "none";
+			display.Enabled = HasIcon();    // no icon: text only
+			if (!HasIcon())
+			{
+				display.SelectedIndex = 2;
+			}
+		}
+		choose.Click += (_, _) =>
+		{
+			bool hadIcon = HasIcon();
+			if (IconPicker.Ask(form, svg, command.Icon, out var picked))
+			{
+				svg = picked;
+				if (!hadIcon && HasIcon())
+				{
+					display.SelectedIndex = 0;    // a text-only button that just got an icon shows it
+				}
+				ShowIcon();
+			}
+		};
+		ShowIcon();
+
 		var fields = Fields(form);
 		fields.Controls.Add(new Label { Text = command.Path, AutoSize = true, ForeColor = SystemColors.GrayText }, 1, fields.RowCount++);
 		AddField(fields, "&Label", label);
+		AddField(fields, "&Icon", iconRow);
 		AddField(fields, "&Show", display);
 		FitSmall(form, fields);
 		if (form.ShowDialog(this) != DialogResult.OK)
@@ -627,7 +667,8 @@ internal sealed class CustomizeRibbonDialog : Form
 		}
 		string text = label.Text.Trim();
 		item.Label = text.Length == 0 ? null : text;
-		item.Display = command.Icon == null ? null : display.SelectedIndex switch
+		item.IconSvg = svg;
+		item.Display = !HasIcon() ? null : display.SelectedIndex switch
 		{
 			1 => "icon",
 			2 => "text",
