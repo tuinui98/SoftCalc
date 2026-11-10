@@ -21,6 +21,10 @@ internal sealed class RibbonItem
 	// "icon", "text" or "both"; null = icon and text when the command has an icon
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public string? Display { get; set; }
+
+	// An own icon's SVG text (Customize Ribbon > Edit Button > Icon); null = the command's icon, if any
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+	public string? IconSvg { get; set; }
 }
 
 internal sealed class RibbonGroup
@@ -43,6 +47,7 @@ internal static class RibbonLayout
 	public const string PrecisionId = "Ribbon/Precision";    // the only command not taken from a menu
 	public const int MaxColumns = 12;
 	public static readonly string[] Displays = { "icon", "text", "both" };
+	public const int MaxIconSvg = 64 * 1024;
 
 	private static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
@@ -81,7 +86,7 @@ internal static class RibbonLayout
 		return layout.Select(g => new RibbonGroup
 		{
 			Caption = g.Caption, Columns = g.Columns,
-			Items = g.Items.Select(i => new RibbonItem { Id = i.Id, Label = i.Label, Display = i.Display }).ToList(),
+			Items = g.Items.Select(i => new RibbonItem { Id = i.Id, Label = i.Label, Display = i.Display, IconSvg = i.IconSvg }).ToList(),
 		}).ToList();
 	}
 
@@ -115,6 +120,10 @@ internal static class RibbonLayout
 				if (string.IsNullOrEmpty(item.Label))
 				{
 					item.Label = null;
+				}
+				if (string.IsNullOrWhiteSpace(item.IconSvg) || item.IconSvg.Length > MaxIconSvg)
+				{
+					item.IconSvg = null;
 				}
 			}
 		}

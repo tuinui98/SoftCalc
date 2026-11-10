@@ -227,6 +227,24 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		{
 			await WindowShotAsync("customize-ribbon", customize);
 		}
+		// Edit Button and Choose Icon are modal: pictured from a timer, then cancelled
+		const string angleIcon = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\" fill=\"none\" stroke=\"currentColor\" "
+			+ "stroke-width=\"1\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M13.5 13.5 H2.5 L11 4\"/>"
+			+ "<path d=\"M8 13.5 A5.5 5.5 0 0 0 6.17 9.4\"/></svg>";
+		using (var customize = new CustomizeRibbonDialog(list, RibbonLayout.Clone(layout), _ => { }))
+		{
+			customize.StartPosition = FormStartPosition.Manual;
+			customize.Location = new Point(form.Right + 20, form.Top);
+			customize.Show(form);
+			var degrees = new RibbonItem { Id = "View/Advanced Options/Degrees", Label = "Deg", IconSvg = angleIcon };
+			var edit = ModalShotAsync("ribbon-edit-button", "Edit Button", 800);
+			Program.Call(customize, "EditItem", degrees, list.Find(degrees.Id)!);
+			await edit;
+			var pick = ModalShotAsync("ribbon-choose-icon", "Choose Icon", 800);
+			IconPicker.Ask(customize, angleIcon, null, out _);
+			await pick;
+			customize.Close();
+		}
 		using (var gallery = new GraphGallery(session))
 		{
 			gallery.StartPosition = FormStartPosition.Manual;

@@ -112,8 +112,9 @@ internal sealed class Ribbon : FlowLayoutPanel
 
 	private ToolStripItem MakeItem(RibbonItem item, RibbonCommand command)
 	{
-		string display = item.Display ?? (command.Icon != null ? "both" : "text");
-		bool hasIcon = command.Icon != null && display != "text";
+		var image = ImageFor(item, command);
+		string display = item.Display ?? (image != null ? "both" : "text");
+		bool hasIcon = image != null && display != "text";
 		ToolStripItem button;
 		if (command.IsDropDown)
 		{
@@ -151,7 +152,7 @@ internal sealed class Ribbon : FlowLayoutPanel
 		button.ImageScaling = ToolStripItemImageScaling.None;
 		if (hasIcon)
 		{
-			button.Image = Icon(command.Icon!);
+			button.Image = image;
 		}
 		button.DisplayStyle = !hasIcon ? ToolStripItemDisplayStyle.Text
 			: display == "icon" ? ToolStripItemDisplayStyle.Image : ToolStripItemDisplayStyle.ImageAndText;
@@ -229,10 +230,23 @@ internal sealed class Ribbon : FlowLayoutPanel
 	//==================================================================
 	//  Building blocks
 	//==================================================================
-	private Bitmap Icon(string name)
+	private int IconPixels => (int)Math.Round(IconSize * DeviceDpi / 96.0);
+
+	// The own icon when it draws, else the command's icon, else none
+	private Bitmap? ImageFor(RibbonItem item, RibbonCommand command)
 	{
-		int size = (int)Math.Round(IconSize * DeviceDpi / 96.0);
-		return SvgIcon.Get(name, size, SystemColors.ControlText);
+		if (item.IconSvg != null)
+		{
+			try
+			{
+				return SvgIcon.FromText(item.IconSvg, IconPixels, SystemColors.ControlText);
+			}
+			catch (SvgException)
+			{
+				// a hand-edited settings.json: fall back to the command's icon
+			}
+		}
+		return command.Icon != null ? SvgIcon.Get(command.Icon, IconPixels, SystemColors.ControlText) : null;
 	}
 
 	private Control Group(string caption, int columns, ToolStripItem[] items)
