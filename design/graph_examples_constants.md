@@ -4,8 +4,10 @@ Owner decisions: Use... puts the form with the defaults written in as
 numbers (`(x-a)^2+(y-b)^2=r^2` becomes `(x-0)^2+(y-0)^2=2^2`); circle
 uses `(x-a)`. Thumbnails are drawn with the defaults. Constant names
 avoid the engine constants e, i, j, pi. Notes checked by hand; each form
-is drawn through the engine before it goes in. Open: how the Functions
-editor / Add Equation show the form and note after Use.
+is drawn through the engine before it goes in. After Use a grey label
+shows the form and the note below the input: in the Functions editor in
+the empty space under the lowest input, in Add Equation a window 3-4
+lines taller.
 
 ## Functions
 
