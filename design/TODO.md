@@ -318,3 +318,10 @@ ends 1:1, the drag insert line is visible enough on dark.
   - Built 2026-11-11 as sketched (`RibbonGap` in Ribbon.cs, both 10 px
     at 100%; the separator is a ControlDark line as tall as the row).
     Owner to try it.
+- [ ] Sidebar graph range (owner 2026-11-11: "looks auto-fitted all the
+      time"). Cause: G3 (2026-11-07) fits the sidebar's Y to the
+      functions; equations take no part. With the cubic example over the
+      Graph window's wide 1:1 X range (about -28..28) Y runs to about
+      +-22000, so the other lines go flat and the circle is a dot.
+      Proposed: the sidebar draws the Graph window's range (X and Y as
+      set), stretched to the panel; polar likewise uses R Max.
