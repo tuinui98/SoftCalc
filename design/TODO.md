@@ -238,6 +238,21 @@ ends 1:1, the drag insert line is visible enough on dark.
       Built 2026-11-10: Add arrow > Examples..., 16 functions and 16
       equations (Logic/GraphExamples.cs), thumbnails drawn by the engine,
       Use opens the Functions editor or Add Equation filled in.
+- [ ] Graph Add as buttons (owner 2026-11-10): the Add split button's
+      arrow is hard to hit; make three toolbar buttons Function...,
+      Equation..., Examples... (shorten labels if the narrow Graph panel
+      overflows them).
+- [ ] Graph Examples with constants (owner 2026-11-10): each example
+      gets a form with constants and a note on what each changes, e.g.
+      `(x-a)^2+(y-b)^2=r^2`, note `centre (a, b), r = radius`; circle
+      uses `(x-a)` (owner chose it so the centre reads (a, b)). Use...
+      puts the form with the defaults filled in, not variables:
+      `(x-0)^2+(y-0)^2=2^2`. Thumbnails use the defaults. Proposed
+      forms, notes and defaults: `design/graph_examples_constants.md`
+      (all 32; `x^y=y^x` has no constant); not to use names e, i, j, pi.
+      Every form drawn through the engine before it goes in. Open:
+      how the Functions editor / Add Equation show the hint (form +
+      note) after Use (owner thinking).
 - [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a
