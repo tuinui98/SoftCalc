@@ -101,6 +101,9 @@ through `powershell -File`, `-Lines @(...)` keeps only the first line.
 ## Git
 - One branch per milestone (`m1-engine-core`, ...), merged to `main`
   when its tests pass; tag `milestone/<yyyymmdd>-<name>`.
-- Remote: private https://github.com/tuinui98/softcalc (created 2026-11-05).
+- Remote: https://github.com/tuinui98/softcalc (created 2026-11-05;
+  made public by the owner after 2026-11-11). Commits use the GitHub
+  noreply address `tuinui98@users.noreply.github.com` as author and
+  committer (owner 2026-11-11), never a personal e-mail.
   Push every commit to `main` and every tag; keep local and GitHub in sync.
   Merged feature branches stay local.

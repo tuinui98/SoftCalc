@@ -339,11 +339,15 @@ ends 1:1, the drag insert line is visible enough on dark.
     lines would be under 4 px apart. Owner checked 2026-11-11: OK.
 
 ## 10. Making the GitHub repo public (owner asked 2026-11-11; to decide)
-- [ ] Licence for SoftCalc's own code (none yet). Owner 2026-11-11: MIT.
-- [ ] Root README.md (none yet). Owner 2026-11-11: English only.
+- [x] Licence for SoftCalc's own code: MIT (owner 2026-11-11), `LICENSE`.
+- [x] Root README.md, English only (owner 2026-11-11).
 - [ ] Commit author e-mail shows in the public history. Owner
       2026-11-11: rewrite the history to the GitHub noreply address
-      (4589604+tuinui98@users.noreply.github.com); force-push, all 13
+      (tuinui98@users.noreply.github.com, as GitHub shows it); force-push, all 13
       tags re-made. Confirm the exact steps with the owner first.
-- [ ] Issues / pull requests from others: owner asked for pros and cons.
-- [ ] "private" wording in CLAUDE.md and STATUS.md.
+- [x] Issues / pull requests from others: owner 2026-11-11, issues
+      open, pull requests not accepted (README says why: clean room).
+- [x] "private" wording in CLAUDE.md and STATUS.md.
+- [ ] After the push: owner turns on "Block command line pushes that
+      expose my email" (GitHub Settings > Emails), reads the README and
+      switches the repo to public.
