@@ -216,7 +216,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       even a ratio (`4-1-50[rnw] / 0-2-0[rnw]` shows ` = 8-3-0`).
 
 ## 8. Owner requests 2026-11-10 (not started)
-- [ ] Help (decided 2026-11-10, owner took all proposals): in-app Help
+- [x] Help (decided 2026-11-10, owner took all proposals): in-app Help
       window, topic list + search on the left, text on the right; text
       in `help/*.md` embedded in the exe; English first, Thai later;
       short reference with examples; topics 1-16 as proposed (getting
