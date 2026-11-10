@@ -383,7 +383,10 @@ internal sealed partial class MainForm : Form
 	private void BuildMenus()
 	{
 		var file = new ToolStripMenuItem("&File");
-		file.DropDownItems.Add(new ToolStripMenuItem("&Help") { Enabled = false });
+		file.DropDownItems.Add(new ToolStripMenuItem("&Help", null, (_, _) => HelpWindow.Open("getting-started", this))
+		{
+			ShortcutKeyDisplayString = "F1",    // the key itself: HelpWindow.HelpKey, in every window
+		});
 		file.DropDownItems.Add(new ToolStripMenuItem("A&bout SoftCalc...", null, (_, _) =>
 		{
 			using var about = new AboutDialog(_folder.Root);
@@ -858,6 +861,19 @@ internal sealed partial class MainForm : Form
 		var (text, caret) = InputRules.InsertResult(_input.Text, _input.SelectionStart, _input.SelectionLength, value, rpn);
 		_input.Text = text;
 		_input.SelectionStart = caret;
+		_input.Focus();
+	}
+
+	// A Help example clicked: its line replaces Input
+	internal void PutInInput(string line)
+	{
+		if (WindowState == FormWindowState.Minimized)
+		{
+			WindowState = FormWindowState.Normal;
+		}
+		Activate();
+		_input.Text = line;
+		_input.SelectionStart = _input.TextLength;
 		_input.Focus();
 	}
 
