@@ -185,6 +185,42 @@ public sealed class ToolsTests : IDisposable
 	}
 
 	[Fact]
+	public void SeedRatesServeUntilTheFirstFetch()
+	{
+		var now = Utc(11, 9, 10);
+		var source = new RatesSource(CachePath, _ => throw new HttpRequestException("offline"), () => now, () => Sample);
+		var payload = source.LoadCached();
+		Assert.Equal("2026-11-05", (string?)payload["date"]);
+		Assert.Equal(Unix(now), (long?)payload["next_check"]);    // the first currency line still fetches
+		Assert.False(File.Exists(CachePath));
+	}
+
+	[Fact]
+	public async Task SeedRatesGoStaleWhenTheFetchFails()
+	{
+		var source = new RatesSource(CachePath, _ => throw new HttpRequestException("offline"), () => Utc(11, 9, 10), () => Sample);
+		source.LoadCached();
+		var payload = await source.FetchAsync();
+		Assert.Equal("2026-11-05", (string?)payload["date"]);
+		Assert.True((bool?)payload["stale"]);
+	}
+
+	[Fact]
+	public void CacheWinsOverSeed()
+	{
+		File.WriteAllText(CachePath, Sample);
+		var payload = new RatesSource(CachePath, _ => Task.FromResult(Sample), () => Utc(11, 6, 10), () => "<bad/>").LoadCached();
+		Assert.Equal("2026-11-05", (string?)payload["date"]);
+	}
+
+	[Fact]
+	public void NoSeedNoRates()
+	{
+		var payload = new RatesSource(CachePath, _ => Task.FromResult(Sample), () => Utc(11, 9, 10), () => null).LoadCached();
+		Assert.Null((string?)payload["date"]);
+	}
+
+	[Fact]
 	public void CachedLatestRatesAreNotDue()
 	{
 		File.WriteAllText(CachePath, Sample);

@@ -15,6 +15,10 @@ namespace SoftCalc.UI;
 
 internal sealed class AboutDialog : Form
 {
+	// The product version without the source hash ("1.2.0"); also in the main window's caption
+	public static string Version { get; } = Assembly.GetExecutingAssembly()
+		.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "?";
+
 	public AboutDialog(string dataFolder)
 	{
 		Text = "About SoftCalc";
@@ -25,14 +29,12 @@ internal sealed class AboutDialog : Form
 		StartPosition = FormStartPosition.CenterParent;
 		FormBorderStyle = FormBorderStyle.FixedDialog;
 
-		string version = Assembly.GetExecutingAssembly()
-			.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "?";
 		var picture = new PictureBox { Size = new Size(48, 48), SizeMode = PictureBoxSizeMode.Zoom, Margin = new Padding(0, 0, 12, 0) };
 		using (var icon = new Icon(SvgIcon.ProgramIcon(), 48, 48))
 		{
 			picture.Image = icon.ToBitmap();
 		}
-		var title = new Label { Text = $"SoftCalc {version}", AutoSize = true, Font = new Font(Font.FontFamily, 13f, FontStyle.Bold) };
+		var title = new Label { Text = $"SoftCalc {Version}", AutoSize = true, Font = new Font(Font.FontFamily, 13f, FontStyle.Bold) };
 		var subtitle = new Label { Text = "Calculator with history, graphs, units, dates and currency. Personal use.", AutoSize = true, ForeColor = SystemColors.GrayText };
 		var heading = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 2, Padding = new Padding(12, 12, 12, 6) };
 		heading.Controls.Add(picture, 0, 0);

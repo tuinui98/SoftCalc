@@ -160,8 +160,7 @@ Tests: engine `pytest` 520 passed (frozen-exe test included); UI `dotnet test` 2
   `build/build_engine.ps1`; it is only needed for packaging and for
   tests run from outside the repo folder.
 - Next: nothing ordered. Open in `design/TODO.md`: the other-PC test
-  (on hold); section 8 (caption, Graph gallery, ribbon icons, seed
-  currency rates). Help is built (help/*.md, UI/HelpWindow.cs). The owner batches requests:
+  (on hold); section 8 (Graph gallery, ribbon icons). Help is built (help/*.md, UI/HelpWindow.cs). The owner batches requests:
   note them in TODO, build when told, release only when asked.
 - Driving UI handlers without the real mouse (graph trace, drops in
   Customize Ribbon): a small reflection harness that creates MainForm

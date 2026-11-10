@@ -231,8 +231,8 @@ ends 1:1, the drag insert line is visible enough on dark.
     Help window built 2026-11-10 (branch help-window): File > Help
     and F1 (topic for the active window), list + search, examples
     click into Input, pictures by theme; stock WebBrowser control.
-- [ ] Window caption followed by the version: plain `SoftCalc 1.2.0`
-      (owner 2026-11-10; faint/italic would need a custom-drawn title bar).
+- [x] Window caption followed by the version: `SoftCalc [v1.2.0]`
+      (owner 2026-11-10, done; faint/italic would need a custom-drawn title bar).
 - [ ] Graph Add Function / Equation: a gallery of example functions and
       equations with a small graph each; pick one to edit before adding.
       Needs a list of classic 2D curves (proposed 2026-11-10).
@@ -242,8 +242,8 @@ ends 1:1, the drag insert line is visible enough on dark.
       fetchable URL); `SvgIcon` draws only a small SVG subset (absolute
       M L H V C Z, line, circle, ellipse, rect), so other icons may
       need more of SVG; MIT licence note stays in About.
-- [ ] Currency rates before the first fetch (owner 2026-11-10, keep for
-      later): today a PC that was never online gets `Currency rates
+- [x] Currency rates before the first fetch (owner 2026-11-10, built
+      2026-11-10 as proposed): today a PC that was never online gets `Currency rates
       unavailable`. Proposed: `build/publish.ps1` fetches the ECB file
       at build time and embeds it (about 2 KB); with no `rates.xml` the
       app uses it, the note shows its date and `, offline`; a normal
