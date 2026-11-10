@@ -51,16 +51,18 @@ internal sealed class GraphPanel : Panel
 		Plot = new PlotView(session, settings, interactive) { Dock = DockStyle.Fill };
 
 		//==================================================================
-		//  BLOCK 1 - Toolbar: Add (function or equation), Edit, Delete, Window
+		//  BLOCK 1 - Toolbar: add a function / equation / example, Edit, Delete, Window
 		//==================================================================
-		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
-		var add = new ToolStripSplitButton("Add") { ToolTipText = "Add a function (arrow: an equation in x and y, or an example curve)" };
-		add.ButtonClick += async (_, _) => await _commands.AddFunctionAsync();
-		add.DropDownItems.Add(new ToolStripMenuItem("&Function...", null, async (_, _) => await _commands.AddFunctionAsync()));
-		add.DropDownItems.Add(new ToolStripMenuItem("&Equation...", null, async (_, _) => await AddEquationAsync()));
-		add.DropDownItems.Add(new ToolStripSeparator());
-		add.DropDownItems.Add(new ToolStripMenuItem("E&xamples...", null, async (_, _) => await AddExampleAsync()));
-		toolbar.Items.Add(add);
+		// three buttons, not a split button: its arrow was hard to hit (owner 2026-11-10);
+		// Flow wraps them to a second row in the narrow Advanced View sidebar instead of hiding some
+		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top, LayoutStyle = ToolStripLayoutStyle.Flow };
+		toolbar.Items.Add(new ToolStripButton("Function...", null, async (_, _) => await _commands.AddFunctionAsync())
+			{ ToolTipText = "Add a function, such as f(x)=x^2-2" });
+		toolbar.Items.Add(new ToolStripButton("Equation...", null, async (_, _) => await AddEquationAsync())
+			{ ToolTipText = "Add an equation in x and y, such as x^2+y^2=9" });
+		toolbar.Items.Add(new ToolStripButton("Examples...", null, async (_, _) => await AddExampleAsync())
+			{ ToolTipText = "Add a classic curve from a gallery" });
+		toolbar.Items.Add(new ToolStripSeparator());
 		_edit.Click += async (_, _) => await EditSelectedAsync();
 		_delete.Click += async (_, _) => await DeleteSelectedAsync();
 		toolbar.Items.Add(_edit);
@@ -437,16 +439,16 @@ internal sealed class GraphPanel : Panel
 		}
 		if (example.IsEquation)
 		{
-			await AddEquationAsync(example.Text);
+			await AddEquationAsync(example.Text, example.Hint);
 			return;
 		}
 		string name = GraphExamples.FreeName(example.Name, _commands.State().Functions.Select(f => f.Name));
-		await _commands.AddFunctionAsync(name, example.Text);
+		await _commands.AddFunctionAsync(name, example.Text, example.Hint);
 	}
 
-	private async Task AddEquationAsync(string start = "x^2+y^2=r^2")
+	private async Task AddEquationAsync(string start = "x^2+y^2=r^2", string? hint = null)
 	{
-		if (await EquationDialog.AskAsync(FindForm(), _session, "Add Equation", start, _settings.Equations) is not { } text)
+		if (await EquationDialog.AskAsync(FindForm(), _session, "Add Equation", start, _settings.Equations, hint) is not { } text)
 		{
 			return;
 		}

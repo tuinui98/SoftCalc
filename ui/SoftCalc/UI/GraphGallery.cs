@@ -7,7 +7,8 @@
 // grid of 40 x 30 cells; a function is drawn as the equation y = body,
 // which drops the jumps at poles). Use (or a double-click) returns the
 // example; the caller opens it in the Functions editor or Add Equation
-// so it can be changed before it is added.
+// so it can be changed before it is added. Under the tiles: the form with
+// its constants and what they change.
 
 using System.Drawing.Drawing2D;
 using SoftCalc.Engine;
@@ -33,6 +34,11 @@ internal sealed class GraphGallery : Form
 	{
 		Dock = DockStyle.Bottom, AutoSize = false, Height = 28, TextAlign = ContentAlignment.MiddleLeft,
 		Font = new Font("Consolas", 10f), Padding = new Padding(8, 0, 0, 0), UseMnemonic = false,
+	};
+	private readonly Label _note = new()
+	{
+		Dock = DockStyle.Bottom, AutoSize = false, Height = 24, TextAlign = ContentAlignment.TopLeft,
+		ForeColor = SystemColors.GrayText, Padding = new Padding(8, 0, 0, 0), UseMnemonic = false,
 	};
 	private readonly Button _use = new() { Text = "&Use...", AutoSize = true, MinimumSize = new Size(80, 0), Enabled = false };
 
@@ -68,12 +74,13 @@ internal sealed class GraphGallery : Form
 		buttons.Controls.AddRange(new Control[] { cancel, _use });
 		var hint = new Label
 		{
-			Text = "Pick a curve to open it in the editor, change it if you like, then OK adds it to the graph.",
+			Text = "Pick a curve: it opens in the editor with its constants as numbers; change them, then OK adds it.",
 			Dock = DockStyle.Top, AutoSize = false, Height = 26, TextAlign = ContentAlignment.MiddleLeft,
 			ForeColor = SystemColors.GrayText, Padding = new Padding(8, 0, 0, 0),
 		};
 		Controls.Add(_list);
 		Controls.Add(_formula);
+		Controls.Add(_note);
 		Controls.Add(hint);
 		Controls.Add(kinds);
 		Controls.Add(buttons);
@@ -83,7 +90,8 @@ internal sealed class GraphGallery : Form
 		_list.SelectedIndexChanged += (_, _) =>
 		{
 			var example = Selected();
-			_formula.Text = example?.Definition ?? "";
+			_formula.Text = example?.FormLine ?? "";
+			_note.Text = example?.Note ?? "";
 			_use.Enabled = example != null;
 		};
 		_list.ItemActivate += (_, _) => Use();
@@ -107,11 +115,12 @@ internal sealed class GraphGallery : Form
 		{
 			if (_examples[i].IsEquation == equations)
 			{
-				_list.Items.Add(new ListViewItem(_examples[i].Title, i) { ToolTipText = _examples[i].Definition });
+				_list.Items.Add(new ListViewItem(_examples[i].Title, i) { ToolTipText = _examples[i].FormLine + "\n" + _examples[i].Note });
 			}
 		}
 		_list.EndUpdate();
 		_formula.Text = "";
+		_note.Text = "";
 		_use.Enabled = false;
 	}
 

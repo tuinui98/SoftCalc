@@ -239,6 +239,11 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			heart.EnsureVisible();
 			await OpenedShotAsync("graph-examples", gallery, 2500);    // thumbnails come from the engine
 		}
+		// Add Equation is modal and opens inside AskAsync: take the picture from a timer, then cancel it
+		var circle = GraphExamples.Equations[0];
+		var shot = ModalShotAsync("graph-example-equation", "Add Equation", 800);
+		await EquationDialog.AskAsync(form, session, "Add Equation", circle.Text, Array.Empty<string>(), circle.Hint);
+		await shot;
 		await (Task)Program.Call(form, "ChangeDecimalsAsync", (int?)2)!;    // money with 2 places
 		Program.Call(form, "OpenCompoundWindow");
 		await OpenedShotAsync("compound", Program.Field<Form>(form, "_compoundWindow"), 1500);
@@ -342,6 +347,22 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		window.Location = new Point(form.Right + 20, form.Top);
 		window.Show(form);
 		await OpenedShotAsync(name, window, 800);
+	}
+
+	// A modal dialog opened right after this starts: found by its caption, pictured, cancelled
+	private async Task ModalShotAsync(string name, string caption, int settle)
+	{
+		await Task.Delay(settle);
+		var window = Application.OpenForms.Cast<Form>().First(f => f.Text == caption);
+		window.ActiveControl = null;
+		await Task.Delay(200);
+		var (picture, _) = Program.Capture(window.Handle);
+		using (picture)
+		{
+			Save(name, picture);
+		}
+		window.DialogResult = DialogResult.Cancel;
+		await Task.Delay(200);
 	}
 
 	private async Task OpenedShotAsync(string name, Form window, int settle)

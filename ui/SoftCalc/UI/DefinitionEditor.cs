@@ -22,6 +22,7 @@ internal sealed class DefinitionEditor : Form
 	private readonly TextBox _body = new() { Dock = DockStyle.Fill };
 	private readonly Label _preview = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(3, 6, 3, 0) };
 	private readonly Label _note = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(3, 2, 3, 0) };
+	private readonly Label _hint = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(3, 10, 3, 0), Visible = false, UseMnemonic = false };
 	private readonly Label _error = new() { AutoSize = true, ForeColor = Theme.Error, Margin = new Padding(3, 6, 3, 0) };
 	private readonly Button _delete = new() { Text = "Delete", AutoSize = true };
 	private List<(string Name, string Parameters, string Body, string Text)> _items = new();
@@ -30,9 +31,10 @@ internal sealed class DefinitionEditor : Form
 	private bool _loading;
 	private int _shownIndex = -1;
 
-	// preset: a new definition already filled in (Graph > Add > Examples), not yet applied
+	// preset: a new definition already filled in (Graph > Add > Examples), not yet applied;
+	// hint: shown under the fields while that preset is the one in them
 	public DefinitionEditor(bool isFunction, DefinitionCommands commands, string? select,
-		(string Name, string Parameters, string Body)? preset = null)
+		(string Name, string Parameters, string Body)? preset = null, string? hint = null)
 	{
 		_isFunction = isFunction;
 		_commands = commands;
@@ -76,7 +78,7 @@ internal sealed class DefinitionEditor : Form
 			AddRow(fields, "&Parameters", _parameters);
 		}
 		AddRow(fields, isFunction ? "&Definition" : "&Value", _body);
-		foreach (var label in new[] { _preview, _note, _error })
+		foreach (var label in new[] { _preview, _note, _error, _hint })
 		{
 			fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 			fields.Controls.Add(label, 1, fields.RowCount++);
@@ -124,6 +126,8 @@ internal sealed class DefinitionEditor : Form
 			_name.Text = fill.Name;
 			_parameters.Text = fill.Parameters;
 			_body.Text = fill.Body;    // TextChanged marks it unsaved: OK applies it
+			_hint.Text = hint ?? "";
+			_hint.Visible = hint != null;
 		}
 		Shown += (_, _) => (_editing == null && preset == null ? _name : _body).Focus();
 	}
@@ -168,6 +172,7 @@ internal sealed class DefinitionEditor : Form
 	private void ShowItem((string Name, string Parameters, string Body, string Text)? item)
 	{
 		_loading = true;
+		_hint.Visible = false;    // the example's hint belongs to the preset only
 		_editing = item?.Name;
 		_name.Text = item?.Name ?? "";
 		_parameters.Text = item?.Parameters ?? (_isFunction ? "x" : "");
