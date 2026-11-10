@@ -261,8 +261,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       Owner found sin/cos/tan thumbnails flat (calculator in Deg): the
       pictures are now drawn in radians (`plot_equation` takes an
       optional `angle`), the gallery and the hint say so outside Rad.
-- [ ] Owner test (2026-11-10): open examples from the gallery and edit
+- [x] Owner test (2026-11-10): open examples from the gallery and edit
       them in the graph (change the numbers, check the notes hold).
+      Owner 2026-11-10: graph OK.
 - [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a
