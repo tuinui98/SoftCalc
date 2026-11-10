@@ -250,9 +250,11 @@ ends 1:1, the drag insert line is visible enough on dark.
       `(x-0)^2+(y-0)^2=2^2`. Thumbnails use the defaults. Proposed
       forms, notes and defaults: `design/graph_examples_constants.md`
       (all 32; `x^y=y^x` has no constant); not to use names e, i, j, pi.
-      Every form drawn through the engine before it goes in. Open:
-      how the Functions editor / Add Equation show the hint (form +
-      note) after Use (owner thinking).
+      Every form drawn through the engine before it goes in. Hint
+      after Use (owner 2026-11-10): grey label with the form and the
+      note, below the input; Functions editor puts it in the empty
+      space under the lowest input, Add Equation grows 3-4 lines
+      taller for it; shown only when opened from Examples.
 - [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a
