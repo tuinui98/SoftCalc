@@ -241,8 +241,9 @@ ends 1:1, the drag insert line is visible enough on dark.
 - [x] Graph Add as buttons (owner 2026-11-10): the Add split button's
       arrow is hard to hit; make three toolbar buttons Function...,
       Equation..., Examples... (shorten labels if the narrow Graph panel
-      overflows them). Built 2026-11-10; the toolbar wraps (Flow) in the
-      sidebar instead of shortening labels.
+      overflows them). Built 2026-11-10. Owner then: only the Graph
+      window gets the buttons; the Advanced View sidebar keeps the Add
+      split button (done).
 - [x] Graph Examples with constants (owner 2026-11-10): each example
       gets a form with constants and a note on what each changes, e.g.
       `(x-a)^2+(y-b)^2=r^2`, note `centre (a, b), r = radius`; circle
@@ -257,6 +258,11 @@ ends 1:1, the drag insert line is visible enough on dark.
       space under the lowest input, Add Equation grows 3-4 lines
       taller for it; shown only when opened from Examples. Built
       2026-11-10; the gallery shows the form and note under the tiles.
+      Owner found sin/cos/tan thumbnails flat (calculator in Deg): the
+      pictures are now drawn in radians (`plot_equation` takes an
+      optional `angle`), the gallery and the hint say so outside Rad.
+- [ ] Owner test (2026-11-10): open examples from the gallery and edit
+      them in the graph (change the numbers, check the notes hold).
 - [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a

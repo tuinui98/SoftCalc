@@ -174,10 +174,13 @@ class Dispatcher:
     def op_plot_equation(self, request):
         cols = argument(request, "cols", int, 60, required=False)
         rows = argument(request, "rows", int, 45, required=False)
+        angle = argument(request, "angle", (str, type(None)), None, required=False)
+        if angle is not None and angle not in SETTING_CHOICES["angle"]:
+            raise RequestError(f"'angle' must be one of {SETTING_CHOICES['angle']}")
         segments = self.engine.plot_equation(
             argument(request, "equation", str),
             argument(request, "x_min", (int, float)), argument(request, "x_max", (int, float)),
-            argument(request, "y_min", (int, float)), argument(request, "y_max", (int, float)), cols, rows)
+            argument(request, "y_min", (int, float)), argument(request, "y_max", (int, float)), cols, rows, angle)
         return {"segments": segments}
 
     def op_equation_at(self, request):

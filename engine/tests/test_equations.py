@@ -91,6 +91,19 @@ def test_protocol_ops():
     assert dispatcher.handle({"op": "equation_at", "equation": "x=1", "axis": "z", "value": "0", "guess": 0, "window": 1})["ok"] is False
 
 
+def test_angle_override_draws_in_radians_without_changing_the_setting():
+    dispatcher = Dispatcher()
+    dispatcher.handle({"op": "settings", "angle": "deg"})
+    request = {"op": "plot_equation", "equation": "y=sin(x)", "x_min": -7, "x_max": 7, "y_min": -1.6, "y_max": 1.6,
+               "cols": 40, "rows": 30}
+    flat = dispatcher.handle(request)["segments"]
+    wave = dispatcher.handle({**request, "angle": "rad"})["segments"]
+    assert max(abs(s[1]) for s in flat) < 0.2    # sin of 7 degrees
+    assert max(s[1] for s in wave) > 0.95 and min(s[1] for s in wave) < -0.95
+    assert dispatcher.handle({"op": "settings"})["angle"] == "deg"
+    assert dispatcher.handle({**request, "angle": "turns"})["ok"] is False
+
+
 def test_value_at_takes_the_shown_decimal_text():
     engine = engine_with("sq(x)=x^2")
     assert engine.value_at("sq", "1.43")[0] == "2.0449"

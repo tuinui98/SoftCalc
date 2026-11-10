@@ -52,6 +52,13 @@ public sealed class GraphExamplesTests
 	}
 
 	[Fact]
+	public void TrigExamplesAreMarkedAsUsingAngles()
+	{
+		var marked = GraphExamples.Functions.Concat(GraphExamples.Equations).Where(e => e.UsesAngles).Select(e => e.Title).ToList();
+		Assert.Equal(new[] { "Sine", "Cosine", "Tangent", "Sinc", "x sin(1/x)", "Two waves", "Egg crate" }, marked);
+	}
+
+	[Fact]
 	public void EveryConstantIsInItsFormAndGoneFromItsText()
 	{
 		var reserved = new[] { "e", "i", "j", "pi", "x", "y" };

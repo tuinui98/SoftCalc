@@ -242,13 +242,18 @@ internal sealed class EngineSession : IDisposable
 
 	// Equation in x and y: line segments (x1, y1, x2, y2) in the rectangle (graph2_plan G5)
 	public async Task<IReadOnlyList<(double X1, double Y1, double X2, double Y2)>> PlotEquationAsync(
-		string equation, WorldRect view, int cols, int rows)
+		string equation, WorldRect view, int cols, int rows, string? angle = null)
 	{
-		var reply = await GuardedAsync("plot_equation", new JsonObject
+		var request = new JsonObject
 		{
 			["equation"] = equation, ["x_min"] = view.MinX, ["x_max"] = view.MaxX, ["y_min"] = view.MinY, ["y_max"] = view.MaxY,
 			["cols"] = cols, ["rows"] = rows,
-		});
+		};
+		if (angle != null)
+		{
+			request["angle"] = angle;    // this drawing only; the setting stays
+		}
+		var reply = await GuardedAsync("plot_equation", request);
 		var segments = new List<(double, double, double, double)>();
 		foreach (var node in reply["segments"]?.AsArray() ?? new JsonArray())
 		{

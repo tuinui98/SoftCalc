@@ -112,15 +112,21 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	[Fact]
 	public async Task EveryGraphExampleDrawsAndDefines()
 	{
+		// as the gallery draws them: in radians even when the calculator is in degrees
+		await Session.ChangeSettingsAsync(new System.Text.Json.Nodes.JsonObject { ["angle"] = "deg" });
 		foreach (var example in SoftCalc.Logic.GraphExamples.Functions.Concat(SoftCalc.Logic.GraphExamples.Equations))
 		{
-			var segments = await Session.PlotEquationAsync(example.IsEquation ? example.Text : "y=" + example.Text, example.View, 40, 30);
+			var segments = await Session.PlotEquationAsync(example.IsEquation ? example.Text : "y=" + example.Text, example.View, 40, 30, "rad");
 			Assert.True(segments.Count > 50, example.Title);
+			double high = segments.Max(s => Math.Max(s.Y1, s.Y2)), low = segments.Min(s => Math.Min(s.Y1, s.Y2));
+			Assert.True(!example.UsesAngles || high - low > 0.3 * (example.View.MaxY - example.View.MinY), example.Title + " is flat");
 			if (!example.IsEquation)
 			{
 				Assert.Equal("definition", (await Session.EvalAsync(example.Definition)).Kind);
 			}
 		}
+		Assert.Equal("deg", (string?)Session.Settings["angle"]);    // the drawings left the setting alone
+		await Session.ChangeSettingsAsync(new System.Text.Json.Nodes.JsonObject { ["angle"] = "rad" });
 	}
 
 	[Fact]

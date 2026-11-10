@@ -120,6 +120,8 @@ changes sign are split 6 x 6 and traced by marching squares; a sign
 change through a pole is left out. At most 40000 cells. A malformed
 equation answers `ok: false` (`An equation needs one '='`, `An
 equation needs x or y`, `Unknown name 'q'`). Low precision (graph2_plan G5).
+Optional `"angle": "rad"|"deg"|"grad"` draws in that angle mode instead
+of the setting, without changing it (the Graph Examples pictures).
 
 ### `equation_at`
 `{"equation": "x^2+y^2=r^2", "axis": "x"|"y", "value": "1.5", "guess": 2.6,
