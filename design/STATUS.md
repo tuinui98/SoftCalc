@@ -1,7 +1,7 @@
 # SoftCalc - project status (handoff)
 
 Updated 2026-11-11: version 1.3.0 released (TODO sections 8 and 9). Everything below is committed on `main` and
-pushed to the private GitHub repo https://github.com/tuinui98/softcalc.
+pushed to the GitHub repo https://github.com/tuinui98/softcalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
 
