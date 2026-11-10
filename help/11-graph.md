@@ -13,19 +13,27 @@ SoftCalc draws functions with one parameter, and equations in `x` and
 
 In the Graph panel or the Graph window:
 
-- **Add** (or its arrow > **Function...**) opens the Functions editor:
-  define for example `f(x)=x^2-2`. A function with one parameter is
-  drawn.
-- The arrow next to Add > **Equation...** takes an equation in `x` and
-  `y`, such as `x^2+y^2=9` or `y^2=x^3-x`. Other names in it are variables, read when
-  the line is drawn, so `x^2+y^2=r^2` follows `r`.
-- The arrow next to Add > **Examples...** shows classic curves, each
-  with a small graph: parabola, sine, bell curve, circle, heart,
-  lemniscate and more. Pick one with **Use...** or a double-click; it
-  opens in the Functions editor or Add Equation, so you can change it
-  before OK adds it.
+- **Function...** opens the Functions editor: define for example
+  `f(x)=x^2-2`. A function with one parameter is drawn.
+- **Equation...** takes an equation in `x` and `y`, such as `x^2+y^2=9`
+  or `y^2=x^3-x`. Other names in it are variables, read when the line
+  is drawn, so `x^2+y^2=r^2` follows `r`.
+- **Examples...** shows classic curves, each with a small graph:
+  parabola, sine, bell curve, circle, heart, lemniscate and more. Under
+  the pictures are the curve's form with its constants, such as
+  `(x-a)^2+(y-b)^2=r^2`, and what each constant changes.
 
 ![Graph Examples](img/graph-examples.light.png)
+
+Pick one with **Use...** or a double-click. It opens in the Functions
+editor or Add Equation with the constants written in as numbers, such
+as `(x-0)^2+(y-0)^2=2^2`; the form and the note stay in grey under the
+input. Change the numbers if you like, then OK adds the line.
+
+![Add Equation with an example](img/graph-example-equation.light.png)
+
+In the narrow Graph panel of Advanced View the buttons wrap to a second
+row.
 
 The list shows every line with a tick box and a colour square:
 

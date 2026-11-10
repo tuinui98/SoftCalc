@@ -34,9 +34,38 @@ public sealed class GraphExamplesTests
 	}
 
 	[Fact]
-	public void DefinitionReadsAsTyped()
+	public void DefinitionHasTheDefaultsAsNumbers()
 	{
-		Assert.Equal("parabola(x)=x^2", GraphExamples.Functions[0].Definition);
-		Assert.Equal("x^2+y^2=4", GraphExamples.Equations[0].Definition);
+		Assert.Equal("parabola(x)=1*(x-0)^2+0", GraphExamples.Functions[0].Definition);
+		Assert.Equal("(x-0)^2+(y-0)^2=2^2", GraphExamples.Equations[0].Definition);
+		Assert.Equal("parabola(x)=a*(x-h)^2+k", GraphExamples.Functions[0].FormLine);
+		Assert.Equal("Form: (x-a)^2+(y-b)^2=r^2" + Environment.NewLine + "centre (a, b)" + Environment.NewLine + "r = radius",
+			GraphExamples.Equations[0].Hint);
+	}
+
+	[Fact]
+	public void WithDefaultsReplacesWholeNamesOnly()
+	{
+		var defaults = new[] { ("a", "-1"), ("b", "1/3") };
+		Assert.Equal("abs(x)+(-1)*x+(1/3)", GraphExamples.WithDefaults("abs(x)+a*x+b", defaults));
+		Assert.Equal("ab+a2", GraphExamples.WithDefaults("ab+a2", defaults));
+	}
+
+	[Fact]
+	public void EveryConstantIsInItsFormAndGoneFromItsText()
+	{
+		var reserved = new[] { "e", "i", "j", "pi", "x", "y" };
+		foreach (var example in GraphExamples.Functions.Concat(GraphExamples.Equations))
+		{
+			var words = System.Text.RegularExpressions.Regex.Matches(example.Text, "[A-Za-z_][A-Za-z_0-9]*").Select(m => m.Value).ToList();
+			Assert.False(string.IsNullOrWhiteSpace(example.Note), example.Title);
+			foreach (var (name, value) in example.Defaults)
+			{
+				Assert.DoesNotContain(name, reserved);
+				Assert.Matches(@"\b" + name + @"\b", example.Form);
+				Assert.DoesNotContain(name, words);
+				Assert.True(double.TryParse(value.Replace("1/3", "0.3"), System.Globalization.CultureInfo.InvariantCulture, out _), value);
+			}
+		}
 	}
 }

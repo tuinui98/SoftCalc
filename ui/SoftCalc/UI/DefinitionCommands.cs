@@ -56,9 +56,9 @@ internal sealed partial class DefinitionCommands
 	}
 
 	// A new function filled in from an example; the editor's OK adds it
-	public async Task AddFunctionAsync(string name, string body)
+	public async Task AddFunctionAsync(string name, string body, string? hint = null)
 	{
-		using var editor = new DefinitionEditor(true, this, null, (name, "x", body));
+		using var editor = new DefinitionEditor(true, this, null, (name, "x", body), hint);
 		editor.ShowDialog(_owner);
 		await _refresh();
 	}

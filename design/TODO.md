@@ -238,11 +238,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       Built 2026-11-10: Add arrow > Examples..., 16 functions and 16
       equations (Logic/GraphExamples.cs), thumbnails drawn by the engine,
       Use opens the Functions editor or Add Equation filled in.
-- [ ] Graph Add as buttons (owner 2026-11-10): the Add split button's
+- [x] Graph Add as buttons (owner 2026-11-10): the Add split button's
       arrow is hard to hit; make three toolbar buttons Function...,
       Equation..., Examples... (shorten labels if the narrow Graph panel
-      overflows them).
-- [ ] Graph Examples with constants (owner 2026-11-10): each example
+      overflows them). Built 2026-11-10; the toolbar wraps (Flow) in the
+      sidebar instead of shortening labels.
+- [x] Graph Examples with constants (owner 2026-11-10): each example
       gets a form with constants and a note on what each changes, e.g.
       `(x-a)^2+(y-b)^2=r^2`, note `centre (a, b), r = radius`; circle
       uses `(x-a)` (owner chose it so the centre reads (a, b)). Use...
@@ -254,7 +255,8 @@ ends 1:1, the drag insert line is visible enough on dark.
       after Use (owner 2026-11-10): grey label with the form and the
       note, below the input; Functions editor puts it in the empty
       space under the lowest input, Add Equation grows 3-4 lines
-      taller for it; shown only when opened from Examples.
+      taller for it; shown only when opened from Examples. Built
+      2026-11-10; the gallery shows the form and note under the tiles.
 - [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
       user to iconmcp.com to pick one and the program fetches it. To
       check: how the site offers an icon (copy SVG / download / a
