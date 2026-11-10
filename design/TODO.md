@@ -214,3 +214,27 @@ ends 1:1, the drag insert line is visible enough on dark.
       (`4-1-50 = 4.375 rai`); owner expects this to help most.
     - Simple rule kept: any line with an rnw value shows the rnw text,
       even a ratio (`4-1-50[rnw] / 0-2-0[rnw]` shows ` = 8-3-0`).
+
+## 8. Owner requests 2026-11-10 (not started)
+- [ ] Help (decided 2026-11-10, owner took all proposals): in-app Help
+      window, topic list + search on the left, text on the right; text
+      in `help/*.md` embedded in the exe; English first, Thai later;
+      short reference with examples; topics 1-16 as proposed (getting
+      started ... error messages). Extras: click an example to put it
+      in Input, F1 opens the topic for the current window, a test runs
+      every `line => result` example through the engine. Pictures of
+      buttons and layout wanted: screenshots made by a harness
+      (DrawToBitmap, light and dark) so they can be regenerated.
+      First step: draft topics 1-2 for the owner to check the tone.
+- [ ] Window caption followed by the version, faint or italic. Note:
+      Windows draws the title bar text in one style; faint/italic needs
+      a custom-drawn caption, so discuss plain `SoftCalc 1.2.0` first.
+- [ ] Graph Add Function / Equation: a gallery of example functions and
+      equations with a small graph each; pick one to edit before adding.
+      Needs a list of classic 2D curves (proposed 2026-11-10).
+- [ ] Customize Ribbon: own icons for buttons. Owner asked: send the
+      user to iconmcp.com to pick one and the program fetches it. To
+      check: how the site offers an icon (copy SVG / download / a
+      fetchable URL); `SvgIcon` draws only a small SVG subset (absolute
+      M L H V C Z, line, circle, ellipse, rect), so other icons may
+      need more of SVG; MIT licence note stays in About.
