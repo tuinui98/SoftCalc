@@ -359,3 +359,33 @@ ends 1:1, the drag insert line is visible enough on dark.
       old history deleted. Releases v1.0.0 and v1.2.0 kept; v1.3.0
       notes carry the SHA-256 of both exes, and publish.ps1 now prints
       them for every release.
+
+## 11. Owner ideas 2026-11-11 (noted only; plan and discuss first)
+- [ ] Numeric Calc view: better size and layout, and scientific
+      calculator buttons.
+  - To discuss: which buttons (sin/cos/tan, inverse, log/ln, x^y, root,
+    n!, pi, e, memory, parentheses, Deg/Rad), how they insert into Input
+    (text like the menus do, so History stays expression based),
+    resizable keypad, font scaling with Text Size.
+- [ ] Random tools (a section or window):
+  - Pick a topic at random from a list; add, remove and import topics
+    (text file, one per line); then pick one of that topic's options.
+  - Plain 50/50 or weighted picks (a bias per item).
+  - Password generator: length, symbols, digits, upper/lower case;
+    several at once, copy one or copy all; no history kept.
+    "Seed with a favourite word": to discuss, since a word-seeded
+    generator is repeatable and as weak as the word; maybe only as an
+    extra mixed into the system's secure random source.
+  - To discuss: the random source (System.Security.Cryptography
+    RandomNumberGenerator for passwords), whether picks go to History,
+    clipboard clearing after a time.
+- [ ] Crypto wallet seeds (first: list what SoftCalc could do).
+  - Possible: BIP39 mnemonic words (12/24) from a secure random source
+    with the checksum word; check a typed mnemonic's checksum; maybe
+    dice/coin entropy entered by hand.
+  - Saving: encrypt the seed with a password (e.g. AES-GCM with a
+    slow key derivation such as scrypt/Argon2) for import/export, and
+    possibly an encrypted file to keep in e-mail.
+  - To discuss before any build: risks of a seed ever touching a
+    general-purpose PC, the clipboard and e-mail; the BIP39 word list
+    licence; no network use; whether this belongs in a calculator.
