@@ -245,10 +245,10 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			await pick;
 			customize.Close();
 		}
-		// Random window: a biased coin on the Numbers tab, then the Password tab
+		// Random window: a biased coin on Simple, a right skew on Advanced, Password, ten clock pulls on Entropy
 		var randomPrefs = new RandomPrefs { Kind = "coin", Count = 6, HeadsPercent = 70, HeadWord = "Yes", TailWord = "No", Shape = "right",
 			EntropySource = "clock" };
-		using (var random = new RandomWindow(randomPrefs, _ => { }))
+		using (var random = new RandomWindow(randomPrefs, _ => { }, new SeedEngine(session.StartInfo, () => 32)))    // Seed shown on, never used
 		{
 			random.StartPosition = FormStartPosition.Manual;
 			random.Location = new Point(form.Right + 20, form.Top);

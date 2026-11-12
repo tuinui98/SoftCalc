@@ -400,7 +400,11 @@ ends 1:1, the drag insert line is visible enough on dark.
     protocol `draws`); New seed and the Entropy tab done (R5: sources
     side by side, Use as Seed, Mix into System). At release: README
     to list the Random window and that the beacons go on the network
-    only when asked. Then the random source (R4): Seed (through an
+    only when asked.
+  - Owner 2026-11-13: help updated (17-random rewritten: seeds with
+    checked examples, shaped functions, Source row, Simple, Advanced,
+    Password with signature, Entropy; 03-functions Random row); all
+    help pictures regenerated, new random-advanced and random-entropy. Then the random source (R4): Seed (through an
     engine of the window's own, matching rands() in Input) and Add
     entropy; Password always System. Help also to cover these.
   - Pick a topic at random from a list; add, remove and import topics
