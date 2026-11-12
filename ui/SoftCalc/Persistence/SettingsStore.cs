@@ -100,6 +100,7 @@ internal sealed class RandomPrefs
 	public string SymbolSet { get; set; } = Logic.RandomTools.DefaultSymbols;
 	public bool NoLookAlikes { get; set; }
 	public int PasswordCount { get; set; } = 5;
+	public string SignaturePlace { get; set; } = "end";    // the signature itself is never saved
 	public WindowPlacement? Window { get; set; }
 }
 
@@ -330,6 +331,10 @@ internal static class SettingsStore
 		r.PasswordCount = Math.Clamp(r.PasswordCount, 1, 50);
 		r.SymbolSet ??= d.SymbolSet;
 		r.HeadWord ??= "";
+		if (!Logic.RandomTools.Places.Contains(r.SignaturePlace))
+		{
+			r.SignaturePlace = d.SignaturePlace;
+		}
 		r.TailWord ??= "";
 	}
 }

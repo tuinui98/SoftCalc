@@ -187,12 +187,30 @@ public sealed class RandomToolsTests
 	}
 
 	[Fact]
-	public void FavouriteWordIsMixedNotRepeated()
+	public void SignatureIsWrittenInAndCountsInLength()
 	{
-		var first = RandomTools.Password(new MixedRandom("mango"), All(20)).Password;
-		var second = RandomTools.Password(new MixedRandom("mango"), All(20)).Password;
-		Assert.NotEqual(first, second);    // fresh secure bytes each time
-		Assert.Equal(20, first!.Length);
+		var options = All(16);
+		var end = RandomTools.Signed(Secure, options, "Tui", "end").Password!;
+		Assert.Equal(16, end.Length);
+		Assert.EndsWith("Tui", end);
+		Assert.StartsWith("Tui", RandomTools.Signed(Secure, options, "Tui", "start").Password!);
+		for (int i = 0; i < 50; i++)
+		{
+			Assert.Contains("Tui", RandomTools.Signed(Secure, options, "Tui", "anywhere").Password!);
+		}
+		var (atFront, _) = RandomTools.Signed(new Fixed(0), new PasswordOptions(6, false, false, true, false, "", false), "ab", "anywhere");
+		Assert.Equal("ab0000", atFront);    // place 0 drawn: the very start
+		Assert.Equal(13, RandomTools.RandomPart(options, "Tui").Length);    // strength counts 13 random characters
+		Assert.Equal(16, RandomTools.Signed(Secure, options, "", "end").Password!.Length);    // no signature: all random
+	}
+
+	[Fact]
+	public void SignatureLeavesRoomForEveryKind()
+	{
+		var (none, error) = RandomTools.Signed(Secure, All(6), "abc", "end");
+		Assert.Null(none);
+		Assert.Contains("at least 7", error);
+		Assert.NotNull(RandomTools.Signed(Secure, All(7), "abc", "end").Password);
 	}
 
 	[Fact]
@@ -207,7 +225,7 @@ public sealed class RandomToolsTests
 			settings.Random.PasswordLength = 32;
 			settings.Random.Tab = "password";
 			SettingsStore.Save(path, settings);
-			Assert.DoesNotContain("mango", File.ReadAllText(path));
+			Assert.DoesNotContain("signature\":", File.ReadAllText(path));    // only signature_place
 			var loaded = SettingsStore.Load(path).Settings.Random;
 			Assert.Equal(("dice", 20, 32, "password"), (loaded.Kind, loaded.Sides, loaded.PasswordLength, loaded.Tab));
 

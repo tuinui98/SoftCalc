@@ -55,9 +55,11 @@ come later. Window size and place are remembered too.
   list is cleared when the window closes. Options are saved.
 - Clipboard: a copied password is kept out of Windows clipboard
   history and cloud sync, and cleared after 30 s if it is still there.
-- Favourite word (owner: option b): mixed into fresh secure bytes
-  (HMAC-SHA256 keyed with them), so it cannot make a password weaker
-  and the same word does not give the same password. Not saved.
+- Signature (owner 2026-11-12, replacing the "favourite word" mixed
+  into the source, which in practice changed nothing): the owner's own
+  mark written into each password as typed, at the end, the start or
+  anywhere. Length counts it; the strength counts only the random
+  characters. The place is saved, the signature never.
 
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so
