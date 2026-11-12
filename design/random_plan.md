@@ -61,6 +61,37 @@ come later. Window size and place are remembered too.
   anywhere. Length counts it; the strength counts only the random
   characters. The place is saved, the signature never.
 
+## Advanced random tab (R3, owner 2026-11-12)
+- Tabs become Simple random (was Numbers), Advanced random, Password.
+- Shape list (13): Flat, Bell, Narrow bell, Right skew, Left skew,
+  Triangle, U shape, Two peaks, Rising, Falling, Decay, Growth, Custom
+  (Beta a, b). One Strength control (bell sharpness, skew, peak gap),
+  plus Peak at for Triangle. Owner: try it and adjust.
+- Range: Whole (from-to cut into one slot per number, both ends
+  included) or Decimals with places. Count, Copy, Copy All, Insert
+  into Input as in Simple random. No "no repeats": results follow the
+  shape as drawn.
+- The chosen shape is drawn beside the list; after Generate a
+  histogram of the results is drawn over it.
+- Insert Command: each shape is one engine call, `randbeta(a, b, from,
+  to)`, `randtri(peak, from, to)`, `randexp(rate, from, to)` (rate < 0
+  rises) or `randpeaks(gap, from, to)`; whole from and to give a whole
+  number, a point (`1.0`) gives decimals, so a decimal shape is
+  `round(randbeta(4, 4, 1.0, 10), 2)`.
+- Engine side done 2026-11-12 (`random_shapes.py`, full precision on
+  mpmath, built on getrandbits so a seed repeats on any Python;
+  tests/test_random_shapes.py pins seed-42 values).
+
+## Random source (R4, owner 2026-11-12; layout to discuss with the UI)
+- Both kinds: Seed (repeatable) and Add entropy (mixed into the
+  system's generator: mouse, typing, dice or coin results; a bits
+  meter). Neither is ever saved.
+- Password tab: always System; Seed is disabled there.
+- Seed mode draws through an engine of the window's own (option 1),
+  so the window's results match the same `rands(seed)` and calls typed
+  in Input, at the same precision and in the same order. Insert
+  Command then puts `rands(seed)` first.
+
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so
   tests can feed fixed numbers; no WinForms.

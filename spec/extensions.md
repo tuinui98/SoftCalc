@@ -506,3 +506,14 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   Tail. Insert Command puts one draw's line in Input: `rand(a, b)`,
   `round(rand(a.0, b), places)`, coin `round(rand())` at 50% else
   `floor(rand()+p)` (1 = head), dice `rand(1, sides)`.
+- Shaped draws (owner 2026-11-12): `randbeta(a, b, [from, to])`,
+  `randtri(peak, [from, to])`, `randexp(rate, [from, to])` (density
+  e^(-rate x), rate < 0 rises), `randpeaks(gap, [from, to])` (two
+  Beta humps at 0.5 -+ gap/2, size a+b = 20). Without a range they
+  draw 0 to 1. Whole-number from and to give a whole number with both
+  ends included (one slot per number, the triangle peaks in the peak's
+  slot); a point or a fraction in the range gives a decimal. Full
+  working precision; all draws, rand() too, use getrandbits with their
+  own rejection loop so a seed repeats on any Python version. History
+  shows their drawn values like rand(). In RPN they take all four (or
+  three) operands.

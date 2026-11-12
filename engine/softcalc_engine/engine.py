@@ -21,6 +21,7 @@ from . import dates
 from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
 from .functions import RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
+from .random_shapes import SHAPE_FUNCTIONS, below, shaped
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
 from .rpn import parse_rpn
@@ -33,6 +34,7 @@ PLOT_DIGITS = 20
 EQUATION_REFINE = 6    # [DEF] each crossed coarse cell is split 6 x 6
 MAX_EQUATION_CELLS = 40000
 MAX_CALL_DEPTH = 200
+DRAW_FUNCTIONS = set(RANDOM_FUNCTIONS) - {"rands"}    # their drawn values show in History
 CONSTANT_NAMES = {"pi", "e", "i", "j", "today", "now"}
 ANSWER_NAMES = {"answer", "ans"}
 RESERVED = CONSTANT_NAMES | ANSWER_NAMES | {"mod"}
@@ -251,7 +253,7 @@ class Engine:
                 return
             if not isinstance(node, tuple):
                 return
-            if node[0] == "call" and node[1].lower() == "rand" and id(node) in self.draws:
+            if node[0] == "call" and node[1].lower() in DRAW_FUNCTIONS and id(node) in self.draws:
                 values.append(self.draws[id(node)])
             for child in node[1:]:
                 walk(child)
@@ -270,7 +272,7 @@ class Engine:
         cursor = 0
         count = 0
         for index, token in enumerate(tokens[:-1]):
-            if token.kind != "name" or token.text.lower() != "rand" or tokens[index + 1].text != "(":
+            if token.kind != "name" or token.text.lower() not in DRAW_FUNCTIONS or tokens[index + 1].text != "(":
                 continue
             number = count
             count += 1
@@ -308,12 +310,19 @@ class Engine:
         numbers in, both ends included, give a whole number; a fraction or
         a literal with a point (`rand(1.0, 10)`) gives a decimal.
         rands(seed) makes the next draws repeat; rands() unseeds.
+        The shaped draws (randbeta, ...) are in random_shapes.
         """
         key = node[1].lower()
-        Functions.check_count(key, args, 0, 1 if key == "rands" else 2)
         for arg in args:
             if not isinstance(arg, mpmath.mpf):
                 raise CalcError(f"{key} needs real numbers")
+        if key in SHAPE_FUNCTIONS:
+            fixed, full = SHAPE_FUNCTIONS[key]
+            span = node[2][fixed:] if len(args) == full else []
+            whole = bool(span) and not (any(self.has_point(arg) for arg in span)
+                                        or any(a != mpmath.floor(a) for a in args[fixed:]))
+            return shaped(self.random, key, args, whole)
+        Functions.check_count(key, args, 0, 1 if key == "rands" else 2)
         if key == "rands":
             if not args:
                 self.random.seed()
@@ -328,13 +337,15 @@ class Engine:
             low, high = high, low
         decimal = any(self.has_point(arg) for arg in node[2]) or any(a != mpmath.floor(a) for a in args)
         if not decimal:
-            return mpmath.mpf(self.random.randint(int(low), int(high)))
+            return mpmath.mpf(int(low) + below(self.random, int(high) - int(low) + 1))
         return low + (high - low) * self.random_fraction()
 
     def random_fraction(self):
-        """A uniform value in [0, 1) with as many decimal digits as the precision."""
+        """A uniform value in [0, 1) with as many decimal digits as the precision.
+        below() rather than randrange, so a seed repeats on any Python.
+        """
         digits = self.settings.precision
-        return mpmath.mpf(self.random.randrange(10 ** digits)) / mpmath.mpf(10) ** digits
+        return mpmath.mpf(below(self.random, 10 ** digits)) / mpmath.mpf(10) ** digits
 
     def has_point(self, node):
         """True if the argument is written with a decimal point or exponent (`1.0`, `1e3`)."""

@@ -36,7 +36,7 @@ CATALOG = {
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
         "Two's Complement": ["twos", "signed"],
         "Rounding": ["round", "ceil", "floor"],
-        "Random": ["rand", "rands"],
+        "Random": ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks"],
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
     "currencies": currency.CODES,

@@ -10,11 +10,12 @@ import mpmath
 
 from . import dates, finance
 from .errors import CalcError
+from .random_shapes import SHAPE_FUNCTIONS
 
 ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 WORD_FUNCTIONS = ("twos", "signed")    # two's complement (owner 2026-11-07)
 ROUNDING_FUNCTIONS = ("round", "ceil", "floor")    # owner 2026-11-12
-RANDOM_FUNCTIONS = ("rand", "rands")    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
+RANDOM_FUNCTIONS = ("rand", "rands", *SHAPE_FUNCTIONS)    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
 MAX_ROUND_DIGITS = 1000
 MAX_BITS = 1024
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
@@ -80,6 +81,8 @@ class Functions:
     def min_arity(self, name):
         """Argument count used in RPN, where optional arguments cannot be told apart."""
         key = name.lower()
+        if key in SHAPE_FUNCTIONS:
+            return SHAPE_FUNCTIONS[key][1]    # with the range
         if key in RANDOM_FUNCTIONS:
             return 0
         entry = finance.FUNCTIONS.get(key)
