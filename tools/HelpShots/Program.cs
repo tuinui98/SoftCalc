@@ -245,8 +245,8 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			await pick;
 			customize.Close();
 		}
-		// Random window: dice on the Numbers tab, then the Password tab
-		var randomPrefs = new RandomPrefs { Kind = "dice", Count = 5 };
+		// Random window: a biased coin on the Numbers tab, then the Password tab
+		var randomPrefs = new RandomPrefs { Kind = "coin", Count = 6, HeadsPercent = 70, HeadWord = "Yes", TailWord = "No" };
 		using (var random = new RandomWindow(randomPrefs, _ => { }))
 		{
 			random.StartPosition = FormStartPosition.Manual;

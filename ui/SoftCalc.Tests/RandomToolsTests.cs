@@ -71,6 +71,36 @@ public sealed class RandomToolsTests
 		Assert.Equal(new[] { true, false }, RandomTools.Coins(new Fixed(4999, 5000), 50, 2));
 	}
 
+	[Theory]
+	[InlineData("whole", 1, 100, "rand(1, 100)")]
+	[InlineData("whole", 10, -5, "rand(-5, 10)")]
+	[InlineData("decimal", 1, 2, "round(rand(1.0, 2), 2)")]
+	[InlineData("decimal", 0.5, 2, "round(rand(0.5, 2), 2)")]
+	[InlineData("dice", 0, 0, "rand(1, 6)")]
+	public void CommandDrawsTheSameKind(string kind, double from, double to, string want)
+	{
+		Assert.Equal(want, RandomTools.Command(kind, (decimal)from, (decimal)to, 2, 50, 6));
+	}
+
+	[Fact]
+	public void CoinCommandIsOneForHeads()
+	{
+		Assert.Equal("round(rand())", RandomTools.Command("coin", 0, 0, 0, 50, 6));
+		Assert.Equal("floor(rand()+0.7)", RandomTools.Command("coin", 0, 0, 0, 70, 6));
+		Assert.Equal("floor(rand()+0)", RandomTools.Command("coin", 0, 0, 0, 0, 6));
+		Assert.Equal("floor(rand()+1)", RandomTools.Command("coin", 0, 0, 0, 100, 6));
+	}
+
+	[Fact]
+	public void CoinWordsDefaultToHeadAndTail()
+	{
+		Assert.Equal(("Head", "Tail"), (RandomTools.DefaultHead, RandomTools.DefaultTail));
+		var prefs = new RandomPrefs { Kind = "coin", HeadWord = "Yes", TailWord = "No" };
+		using var window = new RandomWindow(prefs, _ => { });
+		window.SavePrefs();
+		Assert.Equal(("Yes", "No"), (prefs.HeadWord, prefs.TailWord));
+	}
+
 	[Fact]
 	public void DiceRollOneToSides()
 	{

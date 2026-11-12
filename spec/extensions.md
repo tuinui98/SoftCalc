@@ -501,3 +501,7 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   system's secure generator. Results never go to History or disk; a
   copied password is kept out of clipboard history and cloud sync and
   wiped after 30 s and when SoftCalc closes.
+- Coin words (owner 2026-11-12): Head word / Tail word, empty = Head /
+  Tail. Insert Command puts one draw's line in Input: `rand(a, b)`,
+  `round(rand(a.0, b), places)`, coin `round(rand())` at 50% else
+  `floor(rand()+p)` (1 = head), dice `rand(1, sides)`.

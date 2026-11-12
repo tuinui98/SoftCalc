@@ -61,6 +61,19 @@ def test_history_shows_the_drawn_values():
     assert engine.evaluate("rand(-5, -1)").display_input.startswith("(-")
 
 
+def test_coin_lines_from_insert_command_give_one_or_zero():
+    engine = Engine()
+    fair = {r.text for r in results(engine, "round(rand())", 200)}
+    assert fair == {"0", "1"}
+    biased = [r.text for r in results(engine, "floor(rand()+0.7)", 4000)]
+    assert set(biased) == {"0", "1"}
+    assert 2600 < biased.count("1") < 3000    # 70% give or take
+    assert {r.text for r in results(engine, "floor(rand()+1)", 50)} == {"1"}
+    assert {r.text for r in results(engine, "floor(rand()+0)", 50)} == {"0"}
+    decimals = [r.value for r in results(engine, "round(rand(1.0, 2), 2)", 200)]
+    assert all(1 <= v <= 2 and v * 100 == mpmath.floor(v * 100 + mpmath.mpf("0.5")) for v in decimals)
+
+
 def test_bad_arguments():
     engine = Engine()
     assert engine.evaluate("rand(i)").text.startswith("ERROR:")

@@ -91,6 +91,8 @@ internal sealed class RandomPrefs
 	public int Places { get; set; } = 2;
 	public decimal HeadsPercent { get; set; } = 50;
 	public int Sides { get; set; } = 6;
+	public string HeadWord { get; set; } = "";    // empty: Head
+	public string TailWord { get; set; } = "";    // empty: Tail
 	public int PasswordLength { get; set; } = 16;
 	public bool Upper { get; set; } = true;
 	public bool Lower { get; set; } = true;
@@ -328,5 +330,7 @@ internal static class SettingsStore
 		r.PasswordLength = Math.Clamp(r.PasswordLength, 4, 128);
 		r.PasswordCount = Math.Clamp(r.PasswordCount, 1, 50);
 		r.SymbolSet ??= d.SymbolSet;
+		r.HeadWord ??= "";
+		r.TailWord ??= "";
 	}
 }

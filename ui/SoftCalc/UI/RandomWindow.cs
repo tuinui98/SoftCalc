@@ -31,6 +31,8 @@ internal sealed class RandomWindow : Form
 	private readonly NumericUpDown _places = Number(0, RandomTools.MaxPlaces, 0);
 	private readonly NumericUpDown _heads = Number(0, 100, 2);
 	private readonly NumericUpDown _sides = Number(2, 1000, 0);
+	private readonly TextBox _headWord = new() { Width = 90, PlaceholderText = RandomTools.DefaultHead };
+	private readonly TextBox _tailWord = new() { Width = 90, PlaceholderText = RandomTools.DefaultTail };
 	private readonly CheckBox _noRepeats = new() { Text = "No &repeats", AutoSize = true };
 	private readonly CheckBox _sort = new() { Text = "S&ort", AutoSize = true };
 	private readonly ListBox _numbers = Results(false);
@@ -111,6 +113,16 @@ internal sealed class RandomWindow : Form
 		}
 		fields.Controls.Add(extra, 2, row);
 		fields.SetColumnSpan(extra, 2);
+		// Coin: the words shown for heads and tails (owner 2026-11-12)
+		int wordsRow = fields.RowCount++;
+		var headCaption = Caption("Hea&d word");
+		var tailCaption = Caption("Tai&l word");
+		_captions[_headWord] = headCaption;
+		_captions[_tailWord] = tailCaption;
+		fields.Controls.Add(headCaption, 0, wordsRow);
+		fields.Controls.Add(_headWord, 1, wordsRow);
+		fields.Controls.Add(tailCaption, 2, wordsRow);
+		fields.Controls.Add(_tailWord, 3, wordsRow);
 		var checks = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty };
 		checks.Controls.AddRange(new Control[] { _noRepeats, _sort });
 		fields.Controls.Add(checks, 1, fields.RowCount++);
@@ -125,8 +137,11 @@ internal sealed class RandomWindow : Form
 		var insert = new Button { Text = "&Insert into Input", AutoSize = true };
 		insert.Click += (_, _) => InsertSelected();
 		_numbers.DoubleClick += (_, _) => InsertSelected();
+		var command = new Button { Text = "Insert Co&mmand", AutoSize = true };
+		new ToolTip().SetToolTip(command, "Put the rand() line for these settings in Input, to run there");
+		command.Click += (_, _) => _insert(Command());
 		var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, Margin = new Padding(0, 6, 0, 0) };
-		buttons.Controls.AddRange(new Control[] { draw, copy, copyAll, insert });
+		buttons.Controls.AddRange(new Control[] { draw, copy, copyAll, insert, command });
 
 		page.Controls.Add(_numbers);
 		page.Controls.Add(_numbersNote);
@@ -143,6 +158,8 @@ internal sealed class RandomWindow : Form
 		SetShown(_to, range);
 		SetShown(_places, _decimal.Checked);
 		SetShown(_heads, _coin.Checked);
+		SetShown(_headWord, _coin.Checked);
+		SetShown(_tailWord, _coin.Checked);
 		SetShown(_sides, _dice.Checked);
 		_noRepeats.Visible = _whole.Checked;
 		_sort.Visible = range;
@@ -176,7 +193,8 @@ internal sealed class RandomWindow : Form
 		{
 			var flips = RandomTools.Coins(_secure, _heads.Value, count);
 			int heads = flips.Count(f => f);
-			ShowNumbers(flips.Select(f => f ? "Heads" : "Tails"), null, $"Heads {heads}, tails {flips.Count - heads}");
+			string head = Word(_headWord, RandomTools.DefaultHead), tail = Word(_tailWord, RandomTools.DefaultTail);
+			ShowNumbers(flips.Select(f => f ? head : tail), null, $"{head} {heads}, {tail} {flips.Count - heads}");
 		}
 		else
 		{
@@ -201,11 +219,25 @@ internal sealed class RandomWindow : Form
 	// A drawn number (several: joined by spaces) at the Input's caret
 	private void InsertSelected()
 	{
-		var picked = _numbers.SelectedItems.Cast<string>().Where(t => t is not ("Heads" or "Tails")).ToList();
+		var picked = _numbers.SelectedItems.Cast<string>()
+			.Where(t => decimal.TryParse(t, NumberStyles.Number, CultureInfo.InvariantCulture, out _)).ToList();    // coin words stay out
 		if (picked.Count > 0)
 		{
 			_insert(string.Join(" ", picked));
 		}
+	}
+
+	private static string Word(TextBox box, string fallback)
+	{
+		string word = box.Text.Trim();
+		return word.Length > 0 ? word : fallback;
+	}
+
+	// The rand() line that draws one value with these settings
+	private string Command()
+	{
+		string kind = (string)new[] { _whole, _decimal, _coin, _dice }.First(k => k.Checked).Tag!;
+		return RandomTools.Command(kind, _from.Value, _to.Value, (int)_places.Value, _heads.Value, (int)_sides.Value);
 	}
 
 	//==================================================================
@@ -329,6 +361,7 @@ internal sealed class RandomWindow : Form
 		(_from.Value, _to.Value, _count.Value) = (p.From, p.To, p.Count);
 		(_places.Value, _heads.Value, _sides.Value) = (p.Places, p.HeadsPercent, p.Sides);
 		(_noRepeats.Checked, _sort.Checked) = (p.NoRepeats, p.Sort);
+		(_headWord.Text, _tailWord.Text) = (p.HeadWord, p.TailWord);
 		var kind = new[] { _whole, _decimal, _coin, _dice }.FirstOrDefault(k => (string)k.Tag! == p.Kind) ?? _whole;
 		kind.Checked = true;
 		ShowKind();
@@ -345,6 +378,7 @@ internal sealed class RandomWindow : Form
 		(p.From, p.To, p.Count) = (_from.Value, _to.Value, (int)_count.Value);
 		(p.Places, p.HeadsPercent, p.Sides) = ((int)_places.Value, _heads.Value, (int)_sides.Value);
 		(p.NoRepeats, p.Sort) = (_noRepeats.Checked, _sort.Checked);
+		(p.HeadWord, p.TailWord) = (_headWord.Text.Trim(), _tailWord.Text.Trim());
 		p.Kind = (string)new[] { _whole, _decimal, _coin, _dice }.First(k => k.Checked).Tag!;
 		(p.PasswordLength, p.PasswordCount) = ((int)_length.Value, (int)_passwordCount.Value);
 		(p.Upper, p.Lower, p.Digits, p.Symbols) = (_upper.Checked, _lower.Checked, _digits.Checked, _symbols.Checked);
