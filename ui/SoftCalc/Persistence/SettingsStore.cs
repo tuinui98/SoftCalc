@@ -78,6 +78,30 @@ internal sealed class CompoundPrefs
 	public bool AtStart { get; set; }
 }
 
+// Last options of the Random window (design/random_plan.md); never the results
+internal sealed class RandomPrefs
+{
+	public string Tab { get; set; } = "numbers";
+	public string Kind { get; set; } = "whole";    // whole, decimal, coin, dice
+	public decimal From { get; set; } = 1;
+	public decimal To { get; set; } = 100;
+	public int Count { get; set; } = 1;
+	public bool NoRepeats { get; set; }
+	public bool Sort { get; set; }
+	public int Places { get; set; } = 2;
+	public decimal HeadsPercent { get; set; } = 50;
+	public int Sides { get; set; } = 6;
+	public int PasswordLength { get; set; } = 16;
+	public bool Upper { get; set; } = true;
+	public bool Lower { get; set; } = true;
+	public bool Digits { get; set; } = true;
+	public bool Symbols { get; set; } = true;
+	public string SymbolSet { get; set; } = Logic.RandomTools.DefaultSymbols;
+	public bool NoLookAlikes { get; set; }
+	public int PasswordCount { get; set; } = 5;
+	public WindowPlacement? Window { get; set; }
+}
+
 internal sealed class AppSettings
 {
 	public int Precision { get; set; } = 32;
@@ -107,6 +131,7 @@ internal sealed class AppSettings
 	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
 	public float? TextFontSize { get; set; }
 	public CompoundPrefs Compound { get; set; } = new();
+	public RandomPrefs Random { get; set; } = new();
 
 	// Customize Ribbon layout; null = the default (design/ribbon_plan.md)
 	public List<RibbonGroup>? Ribbon { get; set; }
@@ -246,6 +271,8 @@ internal static class SettingsStore
 		s.Window ??= new WindowPlacement();
 		s.Graph ??= new GraphPrefs();
 		s.Compound ??= new CompoundPrefs();
+		s.Random ??= new RandomPrefs();
+		SanitizeRandom(s.Random);
 		if (s.Ribbon != null)
 		{
 			RibbonLayout.Sanitize(s.Ribbon);
@@ -279,5 +306,27 @@ internal static class SettingsStore
 		{
 			c.ContributionFreq = "monthly";
 		}
+	}
+
+	private static void SanitizeRandom(RandomPrefs r)
+	{
+		var d = new RandomPrefs();
+		if (r.Tab is not ("numbers" or "password"))
+		{
+			r.Tab = d.Tab;
+		}
+		if (r.Kind is not ("whole" or "decimal" or "coin" or "dice"))
+		{
+			r.Kind = d.Kind;
+		}
+		r.From = Math.Clamp(r.From, -Logic.RandomTools.Limit, Logic.RandomTools.Limit);
+		r.To = Math.Clamp(r.To, -Logic.RandomTools.Limit, Logic.RandomTools.Limit);
+		r.Count = Math.Clamp(r.Count, 1, Logic.RandomTools.MaxCount);
+		r.Places = Math.Clamp(r.Places, 0, Logic.RandomTools.MaxPlaces);
+		r.HeadsPercent = Math.Clamp(r.HeadsPercent, 0, 100);
+		r.Sides = Math.Clamp(r.Sides, 2, 1000);
+		r.PasswordLength = Math.Clamp(r.PasswordLength, 4, 128);
+		r.PasswordCount = Math.Clamp(r.PasswordCount, 1, 50);
+		r.SymbolSet ??= d.SymbolSet;
 	}
 }

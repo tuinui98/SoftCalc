@@ -73,6 +73,7 @@ internal sealed partial class MainForm : Form
 	private VariablesPanel _variablesPanel = null!;
 	private GraphWindow? _graphWindow;
 	private CompoundWindow? _compoundWindow;
+	private RandomWindow? _randomWindow;
 
 	// Set when the window closes to come back with a new theme (Program restarts)
 	public bool RestartRequested { get; private set; }
@@ -220,6 +221,20 @@ internal sealed partial class MainForm : Form
 		else
 		{
 			_compoundWindow.Activate();
+		}
+	}
+
+	// Tools > Random (design/random_plan.md); a drawn number goes to Input at the caret
+	private void OpenRandomWindow()
+	{
+		if (_randomWindow == null || _randomWindow.IsDisposed)
+		{
+			_randomWindow = new RandomWindow(_prefs.Random, InsertValue);
+			_randomWindow.Show(this);
+		}
+		else
+		{
+			_randomWindow.Activate();
 		}
 	}
 
@@ -478,6 +493,7 @@ internal sealed partial class MainForm : Form
 		var tools = new ToolStripMenuItem("&Tools");
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Graph...", null, (_, _) => OpenGraphWindow()));
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Compound Interest...", null, (_, _) => OpenCompoundWindow()));
+		tools.DropDownItems.Add(new ToolStripMenuItem("&Random...", null, (_, _) => OpenRandomWindow()));
 
 		_menu.Items.AddRange(new ToolStripItem[] { file, view, _functionsMenu, _conversionsMenu, tools });
 	}

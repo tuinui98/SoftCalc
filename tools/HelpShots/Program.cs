@@ -245,6 +245,23 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			await pick;
 			customize.Close();
 		}
+		// Random window: dice on the Numbers tab, then the Password tab
+		var randomPrefs = new RandomPrefs { Kind = "dice", Count = 5 };
+		using (var random = new RandomWindow(randomPrefs, _ => { }))
+		{
+			random.StartPosition = FormStartPosition.Manual;
+			random.Location = new Point(form.Right + 20, form.Top);
+			random.Show(form);
+			Program.Call(random, "DrawNumbers");
+			await Task.Delay(300);
+			Save("random-numbers", Program.Capture(random.Handle).Picture);
+			Program.Field<TabControl>(random, "_tabs").SelectedIndex = 1;
+			Program.Call(random, "DrawPasswords");
+			random.ActiveControl = null;
+			await Task.Delay(300);
+			Save("random-password", Program.Capture(random.Handle).Picture);
+			random.Close();
+		}
 		using (var gallery = new GraphGallery(session))
 		{
 			gallery.StartPosition = FormStartPosition.Manual;

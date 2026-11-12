@@ -35,6 +35,8 @@ CATALOG = {
         "Date Functions": ["epoch", "fromepoch", "longdate", "longtime", "longdatetime"],
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
         "Two's Complement": ["twos", "signed"],
+        "Rounding": ["round", "ceil", "floor"],
+        "Random": ["rand", "rands"],
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
     "currencies": currency.CODES,

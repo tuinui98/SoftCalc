@@ -303,6 +303,7 @@ internal sealed class HelpWindow : Form
 				GraphWindow or GraphGallery => "graph",    // also opened from the sidebar
 				{ Tag: string tag } when tag.StartsWith(TopicTag, StringComparison.Ordinal) => tag[TopicTag.Length..],
 				CompoundWindow => "finance",
+				RandomWindow => "random",
 				DefinitionEditor => "variables-functions",
 				CustomizeRibbonDialog => "ribbon",
 				MainForm => "getting-started",

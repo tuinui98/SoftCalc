@@ -373,7 +373,16 @@ ends 1:1, the drag insert line is visible enough on dark.
     "what to eat": a list to pick from, options such as fried or
     omelette egg, and a list of shops to order from).
   - Owner 2026-11-12: Simple random and Password first, custom tabs
-    later. Draft plan: design/random_plan.md (waiting for the owner).
+    later. Plan: design/random_plan.md.
+  - Owner 2026-11-12: rand() whole/decimal by the arguments (`1.0`
+    gives decimals), favourite word mixed in (b), Numbers tab as
+    planned, clipboard wiped after 30 s, Numbers results not in
+    History; plus round(), ceil(), floor().
+  - Built 2026-11-12 (R0-R2): engine rand/rands/round/ceil/floor
+    (tests/test_random.py), Tools > Random... with Numbers and Password
+    tabs (Logic/RandomTools.cs, UI/RandomWindow.cs, RandomToolsTests),
+    help 17-random and 03-functions Rounding. Owner to try it. Custom
+    list tabs still to plan.
   - Pick a topic at random from a list; add, remove and import topics
     (text file, one per line); then pick one of that topic's options.
   - Plain 50/50 or weighted picks (a bias per item).

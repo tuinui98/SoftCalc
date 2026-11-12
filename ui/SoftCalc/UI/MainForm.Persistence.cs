@@ -121,6 +121,11 @@ internal sealed partial class MainForm
 	//==================================================================
 	private void SaveOnClose()
 	{
+		SecretClipboard.WipeNow();    // a copied password does not outlive SoftCalc
+		if (_randomWindow != null && !_randomWindow.IsDisposed)
+		{
+			_randomWindow.SavePrefs();
+		}
 		try
 		{
 			CaptureSettings();

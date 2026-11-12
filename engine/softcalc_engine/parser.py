@@ -22,6 +22,7 @@ from .units import RNW_NAMES
 
 KEYWORD_MOD = "mod"
 CONTINUE_OPS = ("+", "-", "*", "/")
+EMPTY_CALLS = ("rand", "rands")    # the only calls that may be empty (owner 2026-11-12)
 
 
 class Parser:
@@ -249,6 +250,9 @@ class Parser:
     def call(self, name):
         self.expect_op("(")
         if self.at_op(")"):
+            if name.lower() in EMPTY_CALLS:
+                self.advance()
+                return ("call", name, [])
             raise CalcError(f"{name}() needs an argument")
         args = [self.chain()]
         while self.at_op(","):

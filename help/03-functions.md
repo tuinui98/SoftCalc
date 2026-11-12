@@ -32,6 +32,8 @@ log10(1000)           => 3
 | Date Functions | `epoch fromepoch longdate longtime longdatetime` (section *Dates and time*) |
 | Finance Functions | `fv pv pmt nper` (section *Finance*) |
 | Two's Complement | `twos` `signed` |
+| Rounding | `round` `ceil` `floor` |
+| Random | `rand` `rands` (section *Random*) |
 
 ## Angles
 
@@ -67,3 +69,21 @@ twos(300, 8)          => 44
 - A value outside the word wraps, like hardware: `twos(300, 8)` is 44.
 - History adds the result in hex on the right: `twos(-1)` shows
   `twos(-1, 32) = 0xFFFFFFFF`.
+
+## Rounding
+
+`round(x)` rounds half away from zero; `round(x, digits)` keeps that
+many decimal places (a negative count rounds to tens, hundreds, ...).
+`floor(x)` goes down to a whole number, `ceil(x)` up.
+
+```calc
+round(2.5)            => 3
+round(-2.5)           => -3
+round(3.14159, 2)     => 3.14
+round(1234, -2)       => 1200
+floor(-1.2)           => -2
+ceil(1.2)             => 2
+```
+
+A value only a hair off a whole number from binary rounding counts as
+that number: `floor(0.1*30)` is 3.
