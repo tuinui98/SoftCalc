@@ -33,7 +33,7 @@ log10(1000)           => 3
 | Finance Functions | `fv pv pmt nper` (section *Finance*) |
 | Two's Complement | `twos` `signed` |
 | Rounding | `round` `ceil` `floor` |
-| Random | `rand` `rands` (section *Random*) |
+| Random | `rand` `rands` `randbeta` `randtri` `randexp` `randpeaks` (section *Random*) |
 
 ## Angles
 

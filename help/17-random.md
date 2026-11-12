@@ -1,7 +1,8 @@
 # Random
 
-Random numbers come two ways: `rand()` in any line, and the Random
-window for lists of numbers, coin flips, dice and passwords.
+Random numbers come two ways: functions such as `rand()` in any line,
+and the Random window for lists of numbers, coin flips, dice, numbers
+in a shape, passwords and a look at where randomness comes from.
 
 ## rand() in a line
 
@@ -13,7 +14,8 @@ window for lists of numbers, coin flips, dice and passwords.
 
 Whole numbers give a whole number, both ends included: `rand(1, 6)` is
 a dice roll. A fraction, or a number written with a point, gives a
-decimal: `rand(1.0, 6)` is any value from 1 to 6.
+decimal: `rand(1.0, 6)` is any value from 1 to 6. Decimals have as many
+digits as the precision.
 
 ```calc
 rand(1, 6)
@@ -27,32 +29,101 @@ roll(n)=rand(1, n)
   `rand(1, 6)+1` shows `4+1`.
 - Use Expression (click the line) brings back `rand(...)`, which draws
   again; Insert Result (Shift+click) takes the number already drawn.
-- `rands(42)` sets the seed: the draws after it are the same each time
-  you give that seed. `rands()` makes them unpredictable again.
-- rand() is for games and samples. For passwords use the Password tab,
-  which uses the system's secure generator.
+- rand() is for games, samples and tests. For passwords use the
+  Password tab, which uses the system's secure generator.
+
+## Seeds
+
+`rands(seed)` makes the draws after it repeat: the same seed gives the
+same numbers, in any window and on any computer. `rands()` makes them
+unpredictable again.
+
+```calc
+rands(42)       => Seed 42
+rand(1, 6)      => 4
+rand(1, 6)      => 4
+rand(1, 6)      => 6
+rands(42)       => Seed 42
+rand(1, 6)      => 4
+```
+
+A seed is a number (`42`, `-7.5`). A short seed is easy to guess, so a
+seed is for repeating draws, never for secrets.
+
+## Numbers in a shape
+
+`rand()` gives every value the same chance. These give some values
+more often than others:
+
+| you type | shape |
+|---|---|
+| `randbeta(a, b)` | Beta: a and b above 1 make a hump, below 1 pile up at both ends |
+| `randtri(peak)` | a triangle rising to the peak |
+| `randexp(rate)` | falling away (rate above 0) or climbing (below 0) |
+| `randpeaks(gap)` | two humps; gap from 0 (together) to 1 (at the ends) |
+
+Without a range they draw from 0 to 1. Add `from, to` at the end for a
+range: whole numbers give whole numbers with both ends included, a
+point gives decimals, as with rand().
+
+```calc
+rands(7)                              => Seed 7
+randbeta(4, 4, 1, 10)                 => 8
+randtri(3, 1, 10)                     => 7
+randexp(4, 0, 100)                    => 41
+randpeaks(0.5, 1, 10)                 => 3
+round(randbeta(2, 5, 1.0, 10), 2)     => 3.17
+```
+
+`randbeta(4, 4, 1, 10)` is a bell over 1 to 10, `randbeta(2, 5, ...)`
+leans to the small end, `randbeta(5, 2, ...)` to the large end and
+`randbeta(0.5, 0.5, ...)` keeps away from the middle. In RPN give all
+four (or three) numbers: `2 5 1 10 randbeta`.
 
 ## The Random window
 
-Tools > Random... (it can go on the ribbon too).
+Tools > Random... (it can go on the ribbon too). It has four tabs:
+Simple, Advanced, Password and Entropy.
 
-![The Random window](img/random-numbers.light.png)
+### Source
 
-**Numbers** tab:
+The row above the tabs chooses where the numbers come from:
+
+- **System**: the system's secure generator, different every time.
+  The window opens with it.
+- **Seed**: type a number, or press **New seed**. Simple and Advanced
+  then give the same list each time for the same seed: exactly what
+  `rands(seed)` and the tab's Insert Command line, typed that many
+  times in Input, give at the same precision. The first seeded draw
+  takes a second or so.
+- **New seed** fills the box with a 128-bit number (39 digits) from
+  System; on the Entropy tab it takes one from the source chosen there
+  instead. Note it down to draw the same numbers again.
+- The Password tab always uses System: Seed is greyed out there and
+  comes back on the other tabs.
+- **System + entropy (N bits)** shows while values from the Entropy
+  tab are mixed in.
+
+The seed is never saved.
+
+### Simple
+
+![The Simple tab](img/random-numbers.light.png)
 
 - **Whole numbers** from From to To, both included; **No repeats**
-  draws each number at most once; **Sort** puts them in order.
+  draws each number at most once.
 - **Decimals** from From to To with the decimal **Places** you choose.
 - **Coin**: **Heads %** sets the chance of a head (50 is fair).
   **Head word** and **Tail word** change what is shown, such as Yes and
   No; empty, they are Head and Tail.
 - **Dice** with any number of **Sides**; the sum is shown under the
   list.
-- **Count** draws several at once. **Copy** copies the selected lines,
-  **Copy All** every line; **Insert into Input** (or a double-click)
-  puts the selected numbers in Input.
-- **Insert Command** puts the matching `rand()` line in Input instead,
-  to run (and run again) yourself:
+- **Count** draws several at once. **Sort** puts the list in order,
+  smallest first. **Copy** copies the selected lines, **Copy All**
+  every line; **Insert into Input** (or a double-click) puts the
+  selected numbers in Input.
+- **Insert Command** puts the matching line in Input instead, to run
+  (and run again) yourself:
 
 | settings | line |
 |---|---|
@@ -62,25 +133,109 @@ Tools > Random... (it can go on the ribbon too).
 | coin, 70% | `floor(rand()+0.7)`: 1 with a 70% chance |
 | dice, 6 sides | `rand(1, 6)` |
 
-Count, No repeats and Sort are for the list only.
+With a seed, type `rands(seed)` in Input first to get the window's
+numbers.
 
-**Password** tab:
+### Advanced
+
+![The Advanced tab](img/random-advanced.light.png)
+
+Draws numbers that follow a shape. Pick the **Shape**; the picture on
+the right draws it over From to To, and after **Generate** the
+results' bars are drawn over it, so you can see they follow it. The
+line under the buttons says what the shape does, and after Generate
+the mean, lowest and highest value.
+
+| shape | most values |
+|---|---|
+| Flat | anywhere: every value as likely |
+| Bell, Narrow bell | near the middle |
+| Right skew | small, with a long tail to the right |
+| Left skew | large, with a long tail to the left |
+| Triangle | near **Peak at** |
+| U shape | near both ends |
+| Two peaks | in two humps |
+| Rising, Falling | the larger, or the smaller, the more often |
+| Decay, Growth | very near From, or very near To |
+| Custom | as Beta(**a**, **b**) gives |
+
+- **Strength** (1 to 10, 5 to start) sets how strong the shape is: how
+  narrow the bell, how far a skew leans, how deep the dip of the U, how
+  far apart the two peaks, how steep a slope.
+- **Whole numbers** gives each number from From to To its own slot,
+  both ends included; **Decimals** with **Places**.
+- **Count** goes up to 10000, enough for the bars to show the shape.
+- Sort, Copy, Copy All and Insert into Input work as on Simple.
+  **Insert Command** gives the function that draws the same way, at
+  full precision, such as `randbeta(4, 4, 1, 10)` or
+  `round(randexp(-4, 1.0, 10), 2)`.
+
+### Password
 
 ![The Password tab](img/random-password.light.png)
 
-- **Length**, and the kinds of characters: upper case, lower case,
-  digits, symbols (edit the symbol list if a site allows only some).
-  Each chosen kind appears at least once.
+- **Length**, **Count**, and the kinds of characters: upper case,
+  lower case, digits, symbols. Each chosen kind appears at least once.
+- The symbol groups tick their symbols into the list and untick them
+  out of it; you can also edit the list by hand, for a site that
+  allows only some symbols. Quotes and Slashes start unticked, since
+  many sites refuse them.
 - **Leave out look-alikes** drops `I l 1 O 0 o`.
-- **Favourite word** is mixed into the secure random source: it can
-  never make a password weaker, but the same word does not give the
-  same password again.
-- The line under the list shows the strength in bits; 80 or more is
-  strong.
+- **Signature**: your own mark, written into every password as you
+  typed it, at the end, at the start or anywhere. It counts in Length.
+  The signature is never saved.
+- The line under the buttons shows the strength: length times log2 of
+  the number of characters to choose from, in bits, counting only the
+  random characters (anyone who knows your signature knows that part).
+  80 bits or more is strong.
 - Double-click or **Copy** copies one password, **Copy All** every
   one. A copied password is kept out of the Windows clipboard history
-  and is wiped from the clipboard after 30 seconds (and when SoftCalc
-  closes).
+  and cloud clipboard, and is wiped from the clipboard after 30
+  seconds (and when SoftCalc closes).
+
+### Entropy
+
+![The Entropy tab](img/random-entropy.light.png)
+
+Entropy is the unpredictable part a random number grows from. This tab
+lets you get values from different sources side by side and see how
+random they really are.
+
+| source | what it gives |
+|---|---|
+| System (Windows CNG) | the output of Windows' generator (AES-CTR-DRBG, NIST SP 800-90A) |
+| TPM 2.0 chip | the output of the generator in the computer's TPM chip |
+| CPU timing jitter | raw: 1024 timings of a small task, which wobble |
+| Clock | raw: the time in 100 ns ticks, the classic weak seed |
+| GUID v4 | 122 random bits from the system generator |
+| Mouse movement | raw: positions and times as you move the mouse in the box |
+| Key timing | raw: the keys and the times between them as you type in the box |
+| Dice rolls | raw: results of real dice you type in, 1 to 6 |
+| NIST Randomness Beacon | a public 512-bit value, new every minute |
+| drand (League of Entropy) | a public 256-bit value, new every 30 seconds |
+
+- **Get** adds one row; **Get x10** adds ten (for the beacons: the
+  last ten values). Mouse, Keys and Dice give one row from what you
+  put in.
+- Each row shows the **Raw** value, the **Seed** made from it
+  (SHA-256 of the raw bytes, cut to 128 bits), how far a number moved
+  since the row before (**Change**, for the clock), how many bits of
+  the raw value and of the seed changed, and the estimated
+  unpredictable bits (**Entropy**).
+- The clock shows why a seed must come from a good source: ten pulls
+  move by only a few ticks, yet their seeds change about 64 of 128
+  bits, just as truly random ones do. Hashing hides the pattern; it
+  adds nothing to it.
+- The beacons are public, so they count as no secret bits. They are
+  fetched from the internet only when you press Get, and the request
+  sends nothing about you.
+- **Use as Seed** puts the chosen row's seed in the Seed box.
+- **Mix into System** stirs the chosen rows (all of them when none is
+  chosen) into the system generator for every tab, Password too: each
+  draw then hashes your entropy with fresh bytes from System, so it is
+  never weaker than System alone. **Clear mix** stops it; closing the
+  window does too.
 
 Nothing drawn in the window goes to History or to a file; the lists
-are cleared when the window closes. The window keeps only its settings.
+are cleared when the window closes. The window keeps only its
+settings, never a seed, a signature or a password.
