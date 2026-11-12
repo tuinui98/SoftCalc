@@ -109,6 +109,9 @@ come later. Window size and place are remembered too.
   line); the note after Generate says to type rands(seed) first.
 - New seed (owner 2026-11-12): a button beside the Seed box fills it
   with 128 bits (39 digits) from the system generator.
+  Owner 2026-11-13: while the Entropy tab is open, New seed is Get from
+  that tab's source then Use as Seed; on the other tabs it stays the
+  system generator.
 
 ## Entropy tab (R5, owner 2026-11-12)
 - Replaces the planned Add entropy window. To try sources and
