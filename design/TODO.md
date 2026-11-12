@@ -368,6 +368,10 @@ ends 1:1, the drag insert line is visible enough on dark.
     (text like the menus do, so History stays expression based),
     resizable keypad, font scaling with Text Size.
 - [ ] Random tools (a section or window):
+  - Owner 2026-11-12: a window of its own with tabs: Simple random,
+    Password generator, and tabs the user makes for own lists (e.g.
+    "what to eat": a list to pick from, options such as fried or
+    omelette egg, and a list of shops to order from).
   - Pick a topic at random from a list; add, remove and import topics
     (text file, one per line); then pick one of that topic's options.
   - Plain 50/50 or weighted picks (a bias per item).
@@ -389,3 +393,11 @@ ends 1:1, the drag insert line is visible enough on dark.
   - To discuss before any build: risks of a seed ever touching a
     general-purpose PC, the clipboard and e-mail; the BIP39 word list
     licence; no network use; whether this belongs in a calculator.
+  - Owner 2026-11-12 asked whether a real wallet can be made. Answered:
+    making one (mnemonic, seed, keys, receive addresses) is possible
+    offline with tested libraries (NBitcoin for Bitcoin, Nethereum for
+    Ethereum, both MIT) checked against the BIP test vectors; sending
+    needs transactions signed and broadcast (a node or service, or a
+    PSBT handed to another wallet). Suggested: SoftCalc makes and checks
+    the mnemonic and shows addresses; spending stays in an established
+    wallet that imports the same words.
