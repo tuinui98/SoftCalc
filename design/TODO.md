@@ -367,7 +367,8 @@ ends 1:1, the drag insert line is visible enough on dark.
     n!, pi, e, memory, parentheses, Deg/Rad), how they insert into Input
     (text like the menus do, so History stays expression based),
     resizable keypad, font scaling with Text Size.
-- [ ] Random tools (a section or window):
+- [x] Random tools (a section or window): built 2026-11-12/13, help
+      updated; not released yet (after 1.3.0).
   - Owner 2026-11-12: a window of its own with tabs: Simple random,
     Password generator, and tabs the user makes for own lists (e.g.
     "what to eat": a list to pick from, options such as fried or
@@ -404,20 +405,15 @@ ends 1:1, the drag insert line is visible enough on dark.
   - Owner 2026-11-13: help updated (17-random rewritten: seeds with
     checked examples, shaped functions, Source row, Simple, Advanced,
     Password with signature, Entropy; 03-functions Random row); all
-    help pictures regenerated, new random-advanced and random-entropy. Then the random source (R4): Seed (through an
-    engine of the window's own, matching rands() in Input) and Add
-    entropy; Password always System. Help also to cover these.
+    help pictures regenerated, new random-advanced and random-entropy.
+- [ ] Random window: custom list tabs (owner 2026-11-12: "later, details
+      to discuss").
   - Pick a topic at random from a list; add, remove and import topics
-    (text file, one per line); then pick one of that topic's options.
+    (text file, one per line); then pick one of that topic's options
+    (e.g. "what to eat": dishes, then how, then a shop).
   - Plain 50/50 or weighted picks (a bias per item).
-  - Password generator: length, symbols, digits, upper/lower case;
-    several at once, copy one or copy all; no history kept.
-    "Seed with a favourite word": to discuss, since a word-seeded
-    generator is repeatable and as weak as the word; maybe only as an
-    extra mixed into the system's secure random source.
-  - To discuss: the random source (System.Security.Cryptography
-    RandomNumberGenerator for passwords), whether picks go to History,
-    clipboard clearing after a time.
+  - To discuss: where the lists are saved, whether picks go to
+    History, Seed and the Entropy mix for picks too.
 - [ ] Crypto wallet seeds (first: list what SoftCalc could do).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe
