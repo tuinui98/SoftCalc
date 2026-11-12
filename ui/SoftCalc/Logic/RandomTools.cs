@@ -66,6 +66,8 @@ internal static class RandomTools
 	public const string DigitSet = "0123456789";
 	public const string DefaultSymbols = "!@#$%^&*()-_=+[]{};:,.?/";
 	public const string LookAlikes = "Il1O0o";
+	public const string DefaultHead = "Head";    // owner 2026-11-12
+	public const string DefaultTail = "Tail";
 	public const int MaxCount = 1000;
 	public const int MaxPlaces = 10;
 	public const decimal Limit = 1_000_000_000_000_000m;    // |From|, |To| up to 10^15
@@ -165,6 +167,42 @@ internal static class RandomTools
 	{
 		long threshold = (long)decimal.Round(Math.Clamp(headsPercent, 0, 100) * 100);
 		return Enumerable.Range(0, count).Select(_ => (long)source.Below(10000) < threshold).ToList();
+	}
+
+	// Insert Command (owner 2026-11-12): one draw as a line for Input.
+	// Coin: 1 = head, 0 = tail; 50% is round(rand()), otherwise
+	// floor(rand()+p), which is 1 with chance p.
+	public static string Command(string kind, decimal from, decimal to, int places, decimal headsPercent, int sides)
+	{
+		if (from > to)
+		{
+			(from, to) = (to, from);
+		}
+		switch (kind)
+		{
+			case "decimal":
+				return $"round(rand({WithPoint(from)}, {Plain(to)}), {places})";
+			case "coin":
+				decimal p = Math.Clamp(headsPercent, 0, 100) / 100;
+				return p == 0.5m ? "round(rand())" : $"floor(rand()+{Plain(p)})";
+			case "dice":
+				return $"rand(1, {sides})";
+			default:
+				return $"rand({Plain(decimal.Truncate(from))}, {Plain(decimal.Truncate(to))})";
+		}
+	}
+
+	// `1` -> `1.0`, so rand() draws decimals (owner 2026-11-12)
+	private static string WithPoint(decimal value)
+	{
+		string text = Plain(value);
+		return text.Contains('.') ? text : text + ".0";
+	}
+
+	// Without trailing zeros: 2.00 -> 2, 0.70 -> 0.7
+	private static string Plain(decimal value)
+	{
+		return Text(value / 1.000000000000000000000000000000000m);
 	}
 
 	public static List<int> Dice(IRandomSource source, int sides, int count)

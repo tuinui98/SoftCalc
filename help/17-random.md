@@ -43,12 +43,26 @@ Tools > Random... (it can go on the ribbon too).
 - **Whole numbers** from From to To, both included; **No repeats**
   draws each number at most once; **Sort** puts them in order.
 - **Decimals** from From to To with the decimal **Places** you choose.
-- **Coin**: heads or tails; **Heads %** sets the chance (50 is fair).
+- **Coin**: **Heads %** sets the chance of a head (50 is fair).
+  **Head word** and **Tail word** change what is shown, such as Yes and
+  No; empty, they are Head and Tail.
 - **Dice** with any number of **Sides**; the sum is shown under the
   list.
 - **Count** draws several at once. **Copy** copies the selected lines,
   **Copy All** every line; **Insert into Input** (or a double-click)
   puts the selected numbers in Input.
+- **Insert Command** puts the matching `rand()` line in Input instead,
+  to run (and run again) yourself:
+
+| settings | line |
+|---|---|
+| whole numbers 1 to 100 | `rand(1, 100)` |
+| decimals 1 to 2, 2 places | `round(rand(1.0, 2), 2)` |
+| coin, 50% | `round(rand())`: 1 is a head, 0 a tail |
+| coin, 70% | `floor(rand()+0.7)`: 1 with a 70% chance |
+| dice, 6 sides | `rand(1, 6)` |
+
+Count, No repeats and Sort are for the list only.
 
 **Password** tab:
 
