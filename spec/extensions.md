@@ -496,8 +496,9 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   `round(2.675, 2)` = 2.68). Functions menu groups Rounding and Random.
 - Tools > Random... window: Numbers (whole numbers with no repeats and
   sort, decimals with places, coin with heads %, dice with sum) and
-  Password (length, kinds, symbol set, look-alikes, a favourite word
-  mixed into the secure source, strength in bits). Both use the
+  Password (length, kinds, symbol groups, look-alikes, a signature
+  written into each password at the end, start or anywhere, strength
+  in bits of the random part). Both use the
   system's secure generator. Results never go to History or disk; a
   copied password is kept out of clipboard history and cloud sync and
   wiped after 30 s and when SoftCalc closes.

@@ -6,7 +6,6 @@
 
 using System.Globalization;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace SoftCalc.Logic;
 
@@ -26,32 +25,6 @@ internal sealed class SecureRandom : IRandomSource
 			Span<byte> bytes = stackalloc byte[8];
 			RandomNumberGenerator.Fill(bytes);
 			return BitConverter.ToUInt64(bytes);
-		});
-	}
-}
-
-// Password "favourite word" (owner 2026-11-12, option b): the word is mixed
-// with fresh secure bytes, so it can never make a password weaker, and the
-// same word does not give the same password
-internal sealed class MixedRandom : IRandomSource
-{
-	private readonly byte[] _key = RandomNumberGenerator.GetBytes(32);
-	private readonly byte[] _word;
-	private ulong _counter;
-
-	public MixedRandom(string word)
-	{
-		_word = Encoding.UTF8.GetBytes(word);
-	}
-
-	public ulong Below(ulong bound)
-	{
-		return RandomTools.Unbiased(bound, () =>
-		{
-			var block = new byte[_word.Length + 8];
-			_word.CopyTo(block, 0);
-			BitConverter.TryWriteBytes(block.AsSpan(_word.Length), _counter++);
-			return BitConverter.ToUInt64(HMACSHA256.HashData(_key, block), 0);
 		});
 	}
 }
@@ -308,6 +281,43 @@ internal static class RandomTools
 			(chars[i], chars[j]) = (chars[j], chars[i]);
 		}
 		return (new string(chars), null);
+	}
+
+	// Signature (owner 2026-11-12): the owner's own mark written into each
+	// password as typed, at the start, the end or anywhere; Length counts it,
+	// the strength counts only the random characters around it
+	public static readonly string[] Places = { "end", "start", "anywhere" };
+
+	public static (string? Password, string? Error) Signed(IRandomSource source, PasswordOptions options, string signature,
+		string place)
+	{
+		if (signature.Length == 0)
+		{
+			return Password(source, options);
+		}
+		int kinds = Kinds(options).Count;
+		int randomLength = options.Length - signature.Length;
+		if (kinds > 0 && randomLength < Math.Max(kinds, 1))
+		{
+			return (null, $"Length must be at least {signature.Length + kinds}: the signature is {signature.Length} long.");
+		}
+		var (part, error) = Password(source, options with { Length = randomLength });
+		if (part == null)
+		{
+			return (null, error);
+		}
+		return place switch
+		{
+			"start" => (signature + part, null),
+			"anywhere" => (part.Insert((int)source.Below((ulong)part.Length + 1), signature), null),
+			_ => (part + signature, null),
+		};
+	}
+
+	// The random part's options: the signature's characters are not random
+	public static PasswordOptions RandomPart(PasswordOptions options, string signature)
+	{
+		return options with { Length = Math.Max(0, options.Length - signature.Length) };
 	}
 
 	private static char Pick(IRandomSource source, string set)

@@ -1,8 +1,8 @@
 // RandomWindow.cs - Tools > Random: Numbers and Password tabs (design/random_plan.md R1-R2)
 //
 // Numbers: whole numbers, decimals, a coin with a bias, dice. Password:
-// length, character kinds, look-alikes, a favourite word mixed into the
-// secure source. Results live only in the lists: nothing goes to
+// length, character kinds, look-alikes, a signature written into each
+// password. Results live only in the lists: nothing goes to
 // History or to disk, and the lists are cleared when the window closes.
 // A copied password stays out of the clipboard history and is wiped
 // after 30 s (SecretClipboard). Custom list tabs come later.
@@ -50,7 +50,8 @@ internal sealed class RandomWindow : Form
 	private bool _settingGroups;
 	private readonly CheckBox _noLookAlikes = new() { Text = $"Leave out look-&alikes ({RandomTools.LookAlikes})", AutoSize = true };
 	private readonly NumericUpDown _passwordCount = Number(1, 50, 0);
-	private readonly TextBox _word = new() { Width = 200, PlaceholderText = "optional" };
+	private readonly TextBox _signature = new() { Width = 160, PlaceholderText = "optional" };
+	private readonly ComboBox _place = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
 	private readonly ListBox _passwords = Results(true);
 	private readonly Label _strength = Note();
 
@@ -80,7 +81,7 @@ internal sealed class RandomWindow : Form
 		{
 			_numbers.Items.Clear();
 			_passwords.Items.Clear();
-			_word.Clear();
+			_signature.Clear();
 		};
 	}
 
@@ -296,14 +297,17 @@ internal sealed class RandomWindow : Form
 		fields.SetColumnSpan(groups, 4);
 		fields.Controls.Add(_noLookAlikes, 0, fields.RowCount++);
 		fields.SetColumnSpan(_noLookAlikes, 4);
+		// Signature (owner 2026-11-12): a personal mark written into each password
+		_place.Items.AddRange(new object[] { "at the end", "at the start", "anywhere" });
 		var wordRow = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty };
-		wordRow.Controls.Add(new Label { Text = "Favourite &word", AutoSize = true, Margin = new Padding(3, 6, 6, 3) });
-		wordRow.Controls.Add(_word);
+		wordRow.Controls.Add(new Label { Text = "Sig&nature", AutoSize = true, Margin = new Padding(3, 6, 6, 3) });
+		wordRow.Controls.Add(_signature);
+		wordRow.Controls.Add(_place);
 		fields.Controls.Add(wordRow, 0, fields.RowCount++);
 		fields.SetColumnSpan(wordRow, 4);
 		var wordNote = Note();
-		wordNote.Text = "The word is mixed into the secure random source: it never weakens a password, "
-			+ "and the same word does not give the same password. It is not saved.";
+		wordNote.Text = "Your signature goes into every password as typed, and counts in Length. "
+			+ "The strength counts only the random characters. The signature is not saved.";
 		wordNote.Dock = DockStyle.None;
 		wordNote.MaximumSize = new Size(480, 0);
 		fields.Controls.Add(wordNote, 0, fields.RowCount++);
@@ -313,6 +317,7 @@ internal sealed class RandomWindow : Form
 			box.CheckedChanged += (_, _) => ShowStrength();
 		}
 		_length.ValueChanged += (_, _) => ShowStrength();
+		_signature.TextChanged += (_, _) => ShowStrength();
 		_symbolSet.TextChanged += (_, _) =>
 		{
 			ShowStrength();
@@ -355,21 +360,22 @@ internal sealed class RandomWindow : Form
 
 	private void ShowStrength()
 	{
-		var options = Options();
+		var options = RandomTools.RandomPart(Options(), _signature.Text);
 		int pool = RandomTools.PoolSize(options);
 		_strength.ForeColor = SystemColors.GrayText;
+		string signed = _signature.Text.Length > 0 ? $" + signature {_signature.Text.Length}" : "";
 		_strength.Text = pool == 0 ? "No characters chosen."
-			: $"{pool} characters, {options.Length} long: about {RandomTools.StrengthBits(options):0} bits";
+			: $"{pool} characters, {options.Length} random{signed}: about {RandomTools.StrengthBits(options):0} bits";
 	}
 
 	private void DrawPasswords()
 	{
 		_passwords.Items.Clear();
 		var options = Options();
-		IRandomSource source = _word.Text.Length > 0 ? new MixedRandom(_word.Text) : _secure;
+		string place = RandomTools.Places[Math.Max(0, _place.SelectedIndex)];
 		for (int i = 0; i < (int)_passwordCount.Value; i++)
 		{
-			var (password, error) = RandomTools.Password(source, options);
+			var (password, error) = RandomTools.Signed(_secure, options, _signature.Text, place);
 			if (password == null)
 			{
 				_strength.ForeColor = Theme.Error;
@@ -422,6 +428,7 @@ internal sealed class RandomWindow : Form
 		(_upper.Checked, _lower.Checked, _digits.Checked, _symbols.Checked) = (p.Upper, p.Lower, p.Digits, p.Symbols);
 		(_symbolSet.Text, _noLookAlikes.Checked) = (p.SymbolSet, p.NoLookAlikes);
 		TickGroups();
+		_place.SelectedIndex = Math.Max(0, Array.IndexOf(RandomTools.Places, p.SignaturePlace));
 		_tabs.SelectedIndex = p.Tab == "password" ? 1 : 0;
 		ShowStrength();
 	}
@@ -437,6 +444,7 @@ internal sealed class RandomWindow : Form
 		(p.PasswordLength, p.PasswordCount) = ((int)_length.Value, (int)_passwordCount.Value);
 		(p.Upper, p.Lower, p.Digits, p.Symbols) = (_upper.Checked, _lower.Checked, _digits.Checked, _symbols.Checked);
 		(p.SymbolSet, p.NoLookAlikes) = (_symbolSet.Text, _noLookAlikes.Checked);
+		p.SignaturePlace = RandomTools.Places[Math.Max(0, _place.SelectedIndex)];
 		p.Tab = _tabs.SelectedIndex == 1 ? "password" : "numbers";
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		p.Window = new WindowPlacement { X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height };
