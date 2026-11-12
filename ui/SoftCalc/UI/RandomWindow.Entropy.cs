@@ -21,11 +21,7 @@ internal sealed partial class RandomWindow
 	private readonly Label _entropyAbout = new() { AutoSize = true, MaximumSize = new Size(500, 0), Dock = DockStyle.Top, Padding = new Padding(3, 4, 3, 4) };
 	private readonly Button _entropyGet = new() { Text = "&Get", AutoSize = true, MinimumSize = new Size(70, 0) };
 	private readonly Button _entropyGetTen = new() { Text = "Get x&10", AutoSize = true };
-	private readonly Label _mousePad = new()
-	{
-		Height = 80, Dock = DockStyle.Top, BorderStyle = BorderStyle.FixedSingle, TextAlign = ContentAlignment.MiddleCenter,
-		BackColor = SystemColors.Window, Text = "Move the mouse here",
-	};
+	private readonly MousePad _mousePad = new() { Height = 80, Dock = DockStyle.Top };
 	private readonly TextBox _keyBox = new() { Dock = DockStyle.Top, PlaceholderText = "Type anything here" };
 	private readonly TextBox _diceBox = new() { Dock = DockStyle.Top, PlaceholderText = "Dice results, e.g. 3 6 1 4 2 5 ..." };
 	private readonly ListView _entropyRows = new()
@@ -60,7 +56,8 @@ internal sealed partial class RandomWindow
 			_lastMouse = e.Location;
 			_mouseData.AddRange(new long[] { e.X, e.Y, Stopwatch.GetTimestamp() });
 			_mouseMoves++;
-			_mousePad.Text = $"{_mouseMoves} moves (about {Math.Min(Entropy.MaxBits, _mouseMoves * MouseBitsEach):0} bits)";
+			_mousePad.AddPoint(e.Location);
+			_mousePad.Caption = $"{_mouseMoves} moves (about {Math.Min(Entropy.MaxBits, _mouseMoves * MouseBitsEach):0} bits)";
 		};
 		_keyBox.KeyPress += (_, e) =>
 		{
@@ -290,7 +287,7 @@ internal sealed partial class RandomWindow
 		_mouseData.Clear();
 		_keyData.Clear();
 		(_mouseMoves, _keyPresses) = (0, 0);
-		_mousePad.Text = "Move the mouse here";
+		_mousePad.Reset("Move the mouse here");
 		_keyBox.Clear();
 		_diceBox.Clear();
 		EntropyNote("", false);
