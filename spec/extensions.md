@@ -506,6 +506,12 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   Simple and Advanced then draw through an engine of the window's own
   and give the same values as rands(seed) and the tab's Insert Command
   line typed in Input (same precision); the seed is never saved.
+  New seed fills it with 128 bits from the system generator. Entropy
+  tab: system, TPM, CPU jitter, clock, GUID, mouse, keys, dice, NIST
+  beacon, drand side by side (raw value, 128-bit SHA-256 seed, bits
+  changed between pulls, estimated bits); Use as Seed, or Mix into
+  System (HMAC with the system's bytes, all tabs, until cleared). The
+  beacons are fetched only on Get.
   Results never go to History or disk; a
   copied password is kept out of clipboard history and cloud sync and
   wiped after 30 s and when SoftCalc closes.

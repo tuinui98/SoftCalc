@@ -19,7 +19,7 @@ internal sealed partial class RandomWindow : Form
 {
 	private readonly RandomPrefs _prefs;
 	private readonly Action<string> _insert;
-	private readonly IRandomSource _secure = new SecureRandom();
+	private readonly MixedRandom _secure = new();    // the system generator, with any entropy mixed in (Entropy tab)
 	private readonly TabControl _tabs = new() { Dock = DockStyle.Fill };
 
 	// Numbers tab
@@ -56,7 +56,7 @@ internal sealed partial class RandomWindow : Form
 	private readonly ComboBox _place = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
 	private readonly ListBox _passwords = Results(true);
 	private readonly Label _strength = Note();
-	private static readonly string[] TabIds = { "numbers", "advanced", "password" };    // the tab pages in order, as saved
+	private static readonly string[] TabIds = { "numbers", "advanced", "password", "entropy" };    // the tab pages in order, as saved
 
 	public RandomWindow(RandomPrefs prefs, Action<string> insert, SoftCalc.Engine.SeedEngine? seeds = null)
 	{
@@ -79,6 +79,7 @@ internal sealed partial class RandomWindow : Form
 		_tabs.TabPages.Add(NumbersTab());
 		_tabs.TabPages.Add(AdvancedTab());
 		_tabs.TabPages.Add(PasswordTab());
+		_tabs.TabPages.Add(EntropyTab());
 		Controls.Add(_tabs);
 		Controls.Add(SourceRow());
 		LoadPrefs();
@@ -92,6 +93,8 @@ internal sealed partial class RandomWindow : Form
 			_signature.Clear();
 			_seed.Clear();
 			_seeds?.Dispose();
+			_secure.Clear();
+			ClearEntropy();
 		};
 	}
 
@@ -482,6 +485,7 @@ internal sealed partial class RandomWindow : Form
 		TickGroups();
 		_place.SelectedIndex = Math.Max(0, Array.IndexOf(RandomTools.Places, p.SignaturePlace));
 		LoadShapePrefs(p);
+		LoadEntropyPrefs(p);
 		_tabs.SelectedIndex = Math.Max(0, Array.IndexOf(TabIds, p.Tab));
 		ShowStrength();
 	}
@@ -499,6 +503,7 @@ internal sealed partial class RandomWindow : Form
 		(p.SymbolSet, p.NoLookAlikes) = (_symbolSet.Text, _noLookAlikes.Checked);
 		p.SignaturePlace = RandomTools.Places[Math.Max(0, _place.SelectedIndex)];
 		SaveShapePrefs(p);
+		SaveEntropyPrefs(p);
 		p.Tab = TabIds[Math.Max(0, _tabs.SelectedIndex)];
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		p.Window = new WindowPlacement { X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height };

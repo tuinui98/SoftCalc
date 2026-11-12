@@ -246,7 +246,8 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			customize.Close();
 		}
 		// Random window: a biased coin on the Numbers tab, then the Password tab
-		var randomPrefs = new RandomPrefs { Kind = "coin", Count = 6, HeadsPercent = 70, HeadWord = "Yes", TailWord = "No", Shape = "right" };
+		var randomPrefs = new RandomPrefs { Kind = "coin", Count = 6, HeadsPercent = 70, HeadWord = "Yes", TailWord = "No", Shape = "right",
+			EntropySource = "clock" };
 		using (var random = new RandomWindow(randomPrefs, _ => { }))
 		{
 			random.StartPosition = FormStartPosition.Manual;
@@ -265,6 +266,11 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			random.ActiveControl = null;
 			await Task.Delay(300);
 			Save("random-password", Program.Capture(random.Handle).Picture);
+			Program.Field<TabControl>(random, "_tabs").SelectedIndex = 3;    // Entropy: ten clock pulls
+			Program.Call(random, "GetEntropy", 10);
+			random.ActiveControl = null;
+			Application.DoEvents();
+			Save("random-entropy", Program.Capture(random.Handle).Picture);
 			random.Close();
 		}
 		using (var gallery = new GraphGallery(session))

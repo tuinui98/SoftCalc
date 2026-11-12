@@ -112,6 +112,7 @@ internal sealed class RandomPrefs
 	public decimal ShapeTo { get; set; } = 10;
 	public int ShapePlaces { get; set; } = 2;
 	public int ShapeCount { get; set; } = 1000;
+	public string EntropySource { get; set; } = "system";    // Entropy tab: the source shown; samples are never saved
 	public WindowPlacement? Window { get; set; }
 }
 
@@ -324,7 +325,7 @@ internal static class SettingsStore
 	private static void SanitizeRandom(RandomPrefs r)
 	{
 		var d = new RandomPrefs();
-		if (r.Tab is not ("numbers" or "advanced" or "password"))
+		if (r.Tab is not ("numbers" or "advanced" or "password" or "entropy"))
 		{
 			r.Tab = d.Tab;
 		}
@@ -359,5 +360,9 @@ internal static class SettingsStore
 		r.ShapeTo = Math.Clamp(r.ShapeTo, -Logic.RandomTools.Limit, Logic.RandomTools.Limit);
 		r.ShapePlaces = Math.Clamp(r.ShapePlaces, 0, Logic.RandomTools.MaxPlaces);
 		r.ShapeCount = Math.Clamp(r.ShapeCount, 1, Logic.RandomShapes.MaxCount);
+		if (!Logic.Entropy.Sources.Any(s => s.Id == r.EntropySource))
+		{
+			r.EntropySource = d.EntropySource;
+		}
 	}
 }
