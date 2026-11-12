@@ -475,3 +475,29 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
 - History's faint right-hand text drops a repeated line: when it is the
   typed line plus ` = ...`, only `= ...` shows (`= 5-3-50`, and
   `= 0xFF` for a fully typed `twos(-1, 8)`).
+
+## Random and rounding (owner 2026-11-12, design/random_plan.md)
+- `rand()` 0 to 1 (as many decimal digits as the precision), `rand(n)`
+  0 to n, `rand(a, b)` a to b. Whole-number arguments give a whole
+  number with both ends included; a fraction or a literal written with
+  a point or exponent (`rand(1.0, 10)`) gives a decimal. Not
+  cryptographic (Python's Mersenne Twister); `rands(seed)` makes the
+  draws repeat (same seed, same draws in any window), `rands()`
+  reseeds from the system. Both may be called with no arguments; no
+  other call may.
+- History's faint right-hand text has each drawn value in place of
+  its `rand(...)` (`rand(1,6)+1` shows `4+1`); a rand() inside another
+  goes with the outer one. Use Expression draws again, Insert Result
+  takes the drawn value. Only calls written in the line are shown; a
+  user function that draws shows as typed. RPN lines show as typed.
+- `round(x, [digits])` half away from zero (negative digits round to
+  tens, hundreds), `ceil(x)`, `floor(x)`; a value within rounding noise
+  of a whole number or a half counts as it (`floor(0.1*30)` = 3,
+  `round(2.675, 2)` = 2.68). Functions menu groups Rounding and Random.
+- Tools > Random... window: Numbers (whole numbers with no repeats and
+  sort, decimals with places, coin with heads %, dice with sum) and
+  Password (length, kinds, symbol set, look-alikes, a favourite word
+  mixed into the secure source, strength in bits). Both use the
+  system's secure generator. Results never go to History or disk; a
+  copied password is kept out of clipboard history and cloud sync and
+  wiped after 30 s and when SoftCalc closes.

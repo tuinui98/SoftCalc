@@ -13,6 +13,9 @@ from .errors import CalcError
 
 ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 WORD_FUNCTIONS = ("twos", "signed")    # two's complement (owner 2026-11-07)
+ROUNDING_FUNCTIONS = ("round", "ceil", "floor")    # owner 2026-11-12
+RANDOM_FUNCTIONS = ("rand", "rands")    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
+MAX_ROUND_DIGITS = 1000
 MAX_BITS = 1024
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
 NUMBER_TYPES = (mpmath.mpf, mpmath.mpc)
@@ -71,11 +74,15 @@ class Functions:
         }
 
     def names(self):
-        return set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS) | set(WORD_FUNCTIONS)
+        return (set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS) | set(WORD_FUNCTIONS)
+                | set(ROUNDING_FUNCTIONS) | set(RANDOM_FUNCTIONS))
 
     def min_arity(self, name):
         """Argument count used in RPN, where optional arguments cannot be told apart."""
-        entry = finance.FUNCTIONS.get(name.lower())
+        key = name.lower()
+        if key in RANDOM_FUNCTIONS:
+            return 0
+        entry = finance.FUNCTIONS.get(key)
         return entry[1] if entry else 1
 
     def call(self, name, args):
@@ -90,6 +97,9 @@ class Functions:
         if key in WORD_FUNCTIONS:
             self.check_count(key, args, 1, 2)
             return self.word(key, args)
+        if key in ROUNDING_FUNCTIONS:
+            self.check_count(key, args, 1, 2 if key == "round" else 1)
+            return rounded(key, args)
         fn = self.table.get(key)
         if fn is None:
             raise CalcError(f"Unknown function '{name}'")
@@ -120,7 +130,8 @@ class Functions:
             pattern -= size
         return mpmath.mpf(pattern)
 
-    def check_count(self, key, args, low, high):
+    @staticmethod
+    def check_count(key, args, low, high):
         if not low <= len(args) <= high:
             wanted = str(low) if low == high else f"{low} to {high}"
             raise CalcError(f"{key} expects {wanted} argument(s)")
@@ -152,6 +163,46 @@ class Functions:
 
     def inverse(self, fn):
         return lambda x: self.from_rad(fn(x))
+
+
+#----------------------------------------------------------------------
+#  Rounding (owner 2026-11-12)
+#----------------------------------------------------------------------
+def snap_whole(y):
+    """y itself, or the nearest integer when y is only rounding noise away
+    from it (0.1*30 is 2.99999...9 in binary and floor() must give 3).
+    """
+    nearest = mpmath.nint(y)
+    tolerance = mpmath.mpf(10) ** (NOISE_MARGIN + 2 - mpmath.mp.dps) * max(1, abs(nearest))
+    return nearest if abs(y - nearest) <= tolerance else y
+
+
+def rounded(key, args):
+    """round(x, [digits]) half away from zero; ceil(x), floor(x).
+
+    round(2.5) = 3, round(-2.5) = -3, round(3.14159, 2) = 3.14,
+    round(1234, -2) = 1200.
+    """
+    require_numbers(key, *args)
+    if not is_real(args[0]):
+        raise CalcError(f"{key} needs a real number")
+    x = args[0]
+    digits = whole(args[1], key) if len(args) > 1 else 0
+    if abs(digits) > MAX_ROUND_DIGITS:
+        raise CalcError(f"{key}: digits must be -{MAX_ROUND_DIGITS} to {MAX_ROUND_DIGITS}")
+    scale = mpmath.mpf(10) ** abs(digits)    # an exact integer, unlike 10^-2
+    y = x * scale if digits >= 0 else x / scale
+    if key == "floor":
+        result = mpmath.floor(snap_whole(y))
+    elif key == "ceil":
+        result = mpmath.ceil(snap_whole(y))
+    else:
+        size = snap_whole(abs(y) * 2) / 2    # 2.675*100 is 267.4999...: snapped to the true half
+        result = mpmath.floor(size + mpmath.mpf("0.5"))
+        result = result if y >= 0 else -result
+    if digits == 0:
+        return mpmath.mpf(result)
+    return result / scale if digits > 0 else result * scale
 
 
 #----------------------------------------------------------------------

@@ -1,6 +1,7 @@
 # Random window - plan (TODO section 11, owner 2026-11-12)
 
-Draft for the owner; nothing is built. Custom list tabs come later.
+Built 2026-11-12 (R0-R2) with the owner's choices; custom list tabs
+come later. Window size and place are remembered too.
 
 ## Window
 - Tools > Random... opens a window of its own (like Compound
@@ -15,8 +16,10 @@ Draft for the owner; nothing is built. Custom list tabs come later.
 
 ## rand() in the calculator (R0, owner 2026-11-12)
 - `rand()`: a decimal from 0 to 1; `rand(n)`: 0 to n; `rand(a, b)`: a
-  to b. To decide: integer arguments give whole numbers with both ends
-  included (dice: `rand(1, 6)`), others a decimal.
+  to b. Owner: whole-number arguments give whole numbers with both ends
+  included (dice: `rand(1, 6)`); a fraction or a literal with a point
+  (`rand(1.0, 10)`) gives a decimal.
+- Also round(x, [digits]), ceil(x), floor(x) (owner 2026-11-12).
 - `rands(seed)` sets the seed, so the next draws repeat; `rands()`
   goes back to an unpredictable seed. Engine side, per window; an
   engine restart reseeds. Not for passwords (the Password tab uses the
@@ -27,8 +30,8 @@ Draft for the owner; nothing is built. Custom list tabs come later.
   Result takes the drawn value. The help says so.
 - The hint line only shows signatures (`rand([a], [b])`), it never
   draws. History restore keeps the drawn values; nothing is drawn again.
-- A user function may call it (`dice()=rand(1,6)`); a graph of it is
-  noise.
+- A user function may call it (`roll(n)=rand(1, n)`; a function needs
+  a parameter); a graph of it is noise.
 
 ## Numbers tab (R1)
 - Integer from Min to Max (both included), Count, "No repeats" (draw
@@ -52,10 +55,9 @@ Draft for the owner; nothing is built. Custom list tabs come later.
   list is cleared when the window closes. Options are saved.
 - Clipboard: a copied password is kept out of Windows clipboard
   history and cloud sync, and cleared after 30 s if it is still there.
-- Favourite word (to decide): (a) leave it out; (b) mix it into the
-  secure random bytes (cannot make a password weaker, but the same word
-  does not give the same password); (c) derive the password from the
-  word (repeatable, as weak as the word - not recommended).
+- Favourite word (owner: option b): mixed into fresh secure bytes
+  (HMAC-SHA256 keyed with them), so it cannot make a password weaker
+  and the same word does not give the same password. Not saved.
 
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so

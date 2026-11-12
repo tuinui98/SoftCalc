@@ -8,6 +8,7 @@ each input line into an EvalResult. It also exports and imports the
 """
 
 import math
+import random
 import re
 from dataclasses import dataclass, field
 from fractions import Fraction
@@ -19,7 +20,7 @@ from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationVa
 from . import dates
 from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
-from .functions import WORD_FUNCTIONS, Functions, binary, negate, postfix
+from .functions import RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
 from .rpn import parse_rpn
@@ -103,6 +104,8 @@ class Engine:
         self.functions = {}    # lower-case name -> UserFunction
         self.rates = currency.Rates()
         self.used_rates = False
+        self.random = random.Random()    # rand(); seeded from the system until rands(seed)
+        self.draws = {}    # id of a rand() node in the current line -> its value, for History
         if load_defaults:
             for line in DEFAULT_FUNCTIONS:
                 self.evaluate(line)
@@ -117,6 +120,7 @@ class Engine:
     def evaluate(self, text):
         """Evaluate one input line and record its result."""
         self.used_rates = False
+        self.draws = {}
         result = self.evaluate_line(text)
         if self.used_rates and result.kind in ("result", "definition"):
             result.note = self.rates.note()
@@ -137,7 +141,8 @@ class Engine:
                     return self.define(text, tree, builtins)
                 value = self.eval_node(tree, builtins, {}, 0)
                 shown = self.format_value(value)
-                display = self.display_line(text, builtins) + self.word_suffix(text, value) + self.rnw_suffix(text, value)
+                display = (self.display_line(text, builtins, self.drawn_in(tree)) + self.word_suffix(text, value)
+                           + self.rnw_suffix(text, value))
         except currency.RatesNeeded:
             return EvalResult("rates_needed", text)
         except CalcError as exc:
@@ -175,7 +180,7 @@ class Engine:
     #------------------------------------------------------------------
     #  History display (E10)
     #------------------------------------------------------------------
-    def display_line(self, text, builtins):
+    def display_line(self, text, builtins, drawn=()):
         """Rebuild the input with values in place of variables, answer and $n.
 
         Explicit `*` is added where a value replaces a name inside an
@@ -186,7 +191,7 @@ class Engine:
         """
         if self.settings.rpn:
             return re.sub(r"\S+", lambda m: self.display_rpn_item(m.group(), builtins), text)
-        source = self.fill_word_size(join_digit_spaces(text))
+        source = self.fill_draws(self.fill_word_size(join_digit_spaces(text)), drawn)
         tokens = tokenize(source)
         out = []
         cursor = 0
@@ -234,6 +239,112 @@ class Engine:
         for pos in reversed(inserts):
             source = f"{source[:pos]}, {self.settings.word_size}{source[pos:]}"
         return source
+
+    def drawn_in(self, tree):
+        """The rand() values of the line, in the order the calls are written."""
+        values = []
+
+        def walk(node):
+            if isinstance(node, list):
+                for child in node:
+                    walk(child)
+                return
+            if not isinstance(node, tuple):
+                return
+            if node[0] == "call" and node[1].lower() == "rand" and id(node) in self.draws:
+                values.append(self.draws[id(node)])
+            for child in node[1:]:
+                walk(child)
+
+        walk(tree)
+        return values
+
+    def fill_draws(self, source, drawn):
+        """`rand(1, 6)+1` -> `4+1`: each drawn value in place of its call
+        (owner 2026-11-12). A rand() inside another one goes with it.
+        """
+        if not drawn:
+            return source
+        tokens = tokenize(source)
+        out = []
+        cursor = 0
+        count = 0
+        for index, token in enumerate(tokens[:-1]):
+            if token.kind != "name" or token.text.lower() != "rand" or tokens[index + 1].text != "(":
+                continue
+            number = count
+            count += 1
+            if token.pos < cursor or number >= len(drawn):
+                continue    # inside a call already replaced
+            close = self.closing(tokens, index + 1)
+            if close is None:
+                return source
+            before = tokens[index - 1] if index > 0 else None
+            joined = before is not None and (self.ends_operand(before) or before.kind == "name")
+            out.append(source[cursor:token.pos] + ("*" if joined else "") + self.wrap(drawn[number]))
+            cursor = tokens[close].pos + 1
+        out.append(source[cursor:])
+        return "".join(out)
+
+    @staticmethod
+    def closing(tokens, opening):
+        """Index of the `)` that closes the `(` at tokens[opening]."""
+        depth = 0
+        for index in range(opening, len(tokens)):
+            token = tokens[index]
+            if token.kind == "op" and token.text == "(":
+                depth += 1
+            elif token.kind == "op" and token.text == ")":
+                depth -= 1
+                if depth == 0:
+                    return index
+        return None
+
+    #------------------------------------------------------------------
+    #  rand() and rands() (owner 2026-11-12)
+    #------------------------------------------------------------------
+    def random_call(self, node, args):
+        """rand(): 0 to 1; rand(n): 0 to n; rand(a, b): a to b. Whole
+        numbers in, both ends included, give a whole number; a fraction or
+        a literal with a point (`rand(1.0, 10)`) gives a decimal.
+        rands(seed) makes the next draws repeat; rands() unseeds.
+        """
+        key = node[1].lower()
+        Functions.check_count(key, args, 0, 1 if key == "rands" else 2)
+        for arg in args:
+            if not isinstance(arg, mpmath.mpf):
+                raise CalcError(f"{key} needs real numbers")
+        if key == "rands":
+            if not args:
+                self.random.seed()
+                return TextValue("Random seed")
+            seed = args[0]
+            self.random.seed(str(int(seed)) if seed == mpmath.floor(seed) else mpmath.nstr(seed, 50))
+            return TextValue(f"Seed {self.format_value(seed)}")
+        if not args:
+            return self.random_fraction()
+        low, high = (mpmath.mpf(0), args[0]) if len(args) == 1 else (args[0], args[1])
+        if low > high:
+            low, high = high, low
+        decimal = any(self.has_point(arg) for arg in node[2]) or any(a != mpmath.floor(a) for a in args)
+        if not decimal:
+            return mpmath.mpf(self.random.randint(int(low), int(high)))
+        return low + (high - low) * self.random_fraction()
+
+    def random_fraction(self):
+        """A uniform value in [0, 1) with as many decimal digits as the precision."""
+        digits = self.settings.precision
+        return mpmath.mpf(self.random.randrange(10 ** digits)) / mpmath.mpf(10) ** digits
+
+    def has_point(self, node):
+        """True if the argument is written with a decimal point or exponent (`1.0`, `1e3`)."""
+        if isinstance(node, list):
+            return any(self.has_point(child) for child in node)
+        if not isinstance(node, tuple):
+            return False
+        if node[0] == "num":
+            return node[2] == 10 and any(c in node[1] for c in ".eE")
+        return any(self.has_point(child) for child in node[1:])
 
     def word_suffix(self, text, value):
         """` = 0xFF` after a line that uses twos() or signed(): the whole
@@ -415,6 +526,11 @@ class Engine:
             return self.result_ref(node[1])
         if kind == "call":
             args = [self.eval_node(arg, builtins, scope, depth) for arg in node[2]]
+            if node[1].lower() in RANDOM_FUNCTIONS:
+                value = self.random_call(node, args)
+                if depth == 0:
+                    self.draws[id(node)] = value
+                return value
             return self.call(node[1], args, builtins, depth)
         if kind == "neg":
             return negate(self.eval_node(node[1], builtins, scope, depth))
