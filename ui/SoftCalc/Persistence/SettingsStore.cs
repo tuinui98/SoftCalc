@@ -101,6 +101,17 @@ internal sealed class RandomPrefs
 	public bool NoLookAlikes { get; set; }
 	public int PasswordCount { get; set; } = 5;
 	public string SignaturePlace { get; set; } = "end";    // the signature itself is never saved
+	// Advanced random tab (owner 2026-11-12)
+	public string Shape { get; set; } = "bell";
+	public decimal ShapeStrength { get; set; } = Logic.RandomShapes.DefaultStrength;
+	public decimal ShapePeak { get; set; } = 3;
+	public decimal ShapeA { get; set; } = 2;
+	public decimal ShapeB { get; set; } = 5;
+	public bool ShapeWhole { get; set; } = true;
+	public decimal ShapeFrom { get; set; } = 1;
+	public decimal ShapeTo { get; set; } = 10;
+	public int ShapePlaces { get; set; } = 2;
+	public int ShapeCount { get; set; } = 1000;
 	public WindowPlacement? Window { get; set; }
 }
 
@@ -313,7 +324,7 @@ internal static class SettingsStore
 	private static void SanitizeRandom(RandomPrefs r)
 	{
 		var d = new RandomPrefs();
-		if (r.Tab is not ("numbers" or "password"))
+		if (r.Tab is not ("numbers" or "advanced" or "password"))
 		{
 			r.Tab = d.Tab;
 		}
@@ -336,5 +347,17 @@ internal static class SettingsStore
 			r.SignaturePlace = d.SignaturePlace;
 		}
 		r.TailWord ??= "";
+		if (!Logic.RandomShapes.Shapes.Any(s => s.Id == r.Shape))
+		{
+			r.Shape = d.Shape;
+		}
+		r.ShapeStrength = Math.Clamp(r.ShapeStrength, Logic.RandomShapes.MinStrength, Logic.RandomShapes.MaxStrength);
+		r.ShapePeak = Math.Clamp(r.ShapePeak, -Logic.RandomTools.Limit, Logic.RandomTools.Limit);
+		r.ShapeA = Math.Clamp(r.ShapeA, Logic.RandomShapes.MinBeta, Logic.RandomShapes.MaxBeta);
+		r.ShapeB = Math.Clamp(r.ShapeB, Logic.RandomShapes.MinBeta, Logic.RandomShapes.MaxBeta);
+		r.ShapeFrom = Math.Clamp(r.ShapeFrom, -Logic.RandomTools.Limit, Logic.RandomTools.Limit);
+		r.ShapeTo = Math.Clamp(r.ShapeTo, -Logic.RandomTools.Limit, Logic.RandomTools.Limit);
+		r.ShapePlaces = Math.Clamp(r.ShapePlaces, 0, Logic.RandomTools.MaxPlaces);
+		r.ShapeCount = Math.Clamp(r.ShapeCount, 1, Logic.RandomShapes.MaxCount);
 	}
 }

@@ -1,6 +1,7 @@
-// RandomWindow.cs - Tools > Random: Numbers and Password tabs (design/random_plan.md R1-R2)
+// RandomWindow.cs - Tools > Random: Simple random, Advanced random and Password tabs (design/random_plan.md R1-R3)
 //
-// Numbers: whole numbers, decimals, a coin with a bias, dice. Password:
+// Simple random: whole numbers, decimals, a coin with a bias, dice.
+// Advanced random (RandomWindow.Advanced.cs): draws in a shape. Password:
 // length, character kinds, look-alikes, a signature written into each
 // password. Results live only in the lists: nothing goes to
 // History or to disk, and the lists are cleared when the window closes.
@@ -13,7 +14,7 @@ using SoftCalc.Persistence;
 
 namespace SoftCalc.UI;
 
-internal sealed class RandomWindow : Form
+internal sealed partial class RandomWindow : Form
 {
 	private readonly RandomPrefs _prefs;
 	private readonly Action<string> _insert;
@@ -54,6 +55,7 @@ internal sealed class RandomWindow : Form
 	private readonly ComboBox _place = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 110 };
 	private readonly ListBox _passwords = Results(true);
 	private readonly Label _strength = Note();
+	private static readonly string[] TabIds = { "numbers", "advanced", "password" };    // the tab pages in order, as saved
 
 	public RandomWindow(RandomPrefs prefs, Action<string> insert)
 	{
@@ -73,6 +75,7 @@ internal sealed class RandomWindow : Form
 				Screen.AllScreens.Select(s => s.WorkingArea).ToList());
 		}
 		_tabs.TabPages.Add(NumbersTab());
+		_tabs.TabPages.Add(AdvancedTab());
 		_tabs.TabPages.Add(PasswordTab());
 		Controls.Add(_tabs);
 		LoadPrefs();
@@ -80,6 +83,7 @@ internal sealed class RandomWindow : Form
 		FormClosed += (_, _) =>
 		{
 			_numbers.Items.Clear();
+			_shapeList.Items.Clear();
 			_passwords.Items.Clear();
 			_signature.Clear();
 		};
@@ -90,7 +94,7 @@ internal sealed class RandomWindow : Form
 	//==================================================================
 	private TabPage NumbersTab()
 	{
-		var page = new TabPage("Numbers") { Padding = new Padding(8) };
+		var page = new TabPage("Simple random") { Padding = new Padding(8) };
 		var kinds = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true };
 		kinds.Controls.AddRange(new Control[] { _whole, _decimal, _coin, _dice });
 		foreach (var kind in new[] { _whole, _decimal, _coin, _dice })
@@ -138,13 +142,13 @@ internal sealed class RandomWindow : Form
 		var copyAll = new Button { Text = "Copy &All", AutoSize = true };
 		copyAll.Click += (_, _) => CopyLines(_numbers, all: true, secret: false);
 		var insert = new Button { Text = "&Insert into Input", AutoSize = true };
-		insert.Click += (_, _) => InsertSelected();
-		_numbers.DoubleClick += (_, _) => InsertSelected();
+		insert.Click += (_, _) => InsertSelected(_numbers);
+		_numbers.DoubleClick += (_, _) => InsertSelected(_numbers);
 		var command = new Button { Text = "Insert Co&mmand", AutoSize = true };
 		new ToolTip().SetToolTip(command, "Put the rand() line for these settings in Input, to run there");
 		command.Click += (_, _) => _insert(Command());
 		var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, Margin = new Padding(0, 6, 0, 0) };
-		_sort.Click += (_, _) => SortNumbers();
+		_sort.Click += (_, _) => SortNumbers(_numbers);
 		buttons.Controls.AddRange(new Control[] { draw, _sort, copy, copyAll, insert, command });
 
 		page.Controls.Add(_numbers);
@@ -221,25 +225,25 @@ internal sealed class RandomWindow : Form
 	}
 
 	// Sort (owner 2026-11-12: a button, not a setting): the list in order, smallest first
-	private void SortNumbers()
+	private static void SortNumbers(ListBox list)
 	{
-		var values = _numbers.Items.Cast<string>()
+		var values = list.Items.Cast<string>()
 			.Select(t => (Text: t, Ok: decimal.TryParse(t, NumberStyles.Number, CultureInfo.InvariantCulture, out var v), Value: v))
 			.ToList();
 		if (values.Count < 2 || values.Any(v => !v.Ok))
 		{
 			return;
 		}
-		_numbers.BeginUpdate();
-		_numbers.Items.Clear();
-		_numbers.Items.AddRange(values.OrderBy(v => v.Value).Select(v => (object)v.Text).ToArray());
-		_numbers.EndUpdate();
+		list.BeginUpdate();
+		list.Items.Clear();
+		list.Items.AddRange(values.OrderBy(v => v.Value).Select(v => (object)v.Text).ToArray());
+		list.EndUpdate();
 	}
 
 	// A drawn number (several: joined by spaces) at the Input's caret
-	private void InsertSelected()
+	private void InsertSelected(ListBox list)
 	{
-		var picked = _numbers.SelectedItems.Cast<string>()
+		var picked = list.SelectedItems.Cast<string>()
 			.Where(t => decimal.TryParse(t, NumberStyles.Number, CultureInfo.InvariantCulture, out _)).ToList();    // coin words stay out
 		if (picked.Count > 0)
 		{
@@ -429,7 +433,8 @@ internal sealed class RandomWindow : Form
 		(_symbolSet.Text, _noLookAlikes.Checked) = (p.SymbolSet, p.NoLookAlikes);
 		TickGroups();
 		_place.SelectedIndex = Math.Max(0, Array.IndexOf(RandomTools.Places, p.SignaturePlace));
-		_tabs.SelectedIndex = p.Tab == "password" ? 1 : 0;
+		LoadShapePrefs(p);
+		_tabs.SelectedIndex = Math.Max(0, Array.IndexOf(TabIds, p.Tab));
 		ShowStrength();
 	}
 
@@ -445,7 +450,8 @@ internal sealed class RandomWindow : Form
 		(p.Upper, p.Lower, p.Digits, p.Symbols) = (_upper.Checked, _lower.Checked, _digits.Checked, _symbols.Checked);
 		(p.SymbolSet, p.NoLookAlikes) = (_symbolSet.Text, _noLookAlikes.Checked);
 		p.SignaturePlace = RandomTools.Places[Math.Max(0, _place.SelectedIndex)];
-		p.Tab = _tabs.SelectedIndex == 1 ? "password" : "numbers";
+		SaveShapePrefs(p);
+		p.Tab = TabIds[Math.Max(0, _tabs.SelectedIndex)];
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		p.Window = new WindowPlacement { X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height };
 	}

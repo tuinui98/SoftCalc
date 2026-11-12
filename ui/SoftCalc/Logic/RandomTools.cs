@@ -178,14 +178,14 @@ internal static class RandomTools
 	}
 
 	// `1` -> `1.0`, so rand() draws decimals (owner 2026-11-12)
-	private static string WithPoint(decimal value)
+	public static string WithPoint(decimal value)
 	{
 		string text = Plain(value);
 		return text.Contains('.') ? text : text + ".0";
 	}
 
 	// Without trailing zeros: 2.00 -> 2, 0.70 -> 0.7
-	private static string Plain(decimal value)
+	public static string Plain(decimal value)
 	{
 		return Text(value / 1.000000000000000000000000000000000m);
 	}

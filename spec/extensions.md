@@ -494,8 +494,11 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   tens, hundreds), `ceil(x)`, `floor(x)`; a value within rounding noise
   of a whole number or a half counts as it (`floor(0.1*30)` = 3,
   `round(2.675, 2)` = 2.68). Functions menu groups Rounding and Random.
-- Tools > Random... window: Numbers (whole numbers with no repeats and
-  sort, decimals with places, coin with heads %, dice with sum) and
+- Tools > Random... window: Simple random (whole numbers with no
+  repeats and sort, decimals with places, coin with heads %, dice with
+  sum), Advanced random (a shape from a list of 13 with a Strength,
+  whole or decimal range, the shape drawn with the results' bars; Insert
+  Command gives the randbeta/randtri/randexp/randpeaks call) and
   Password (length, kinds, symbol groups, look-alikes, a signature
   written into each password at the end, start or anywhere, strength
   in bits of the random part). Both use the
