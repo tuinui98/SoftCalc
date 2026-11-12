@@ -372,6 +372,8 @@ ends 1:1, the drag insert line is visible enough on dark.
     Password generator, and tabs the user makes for own lists (e.g.
     "what to eat": a list to pick from, options such as fried or
     omelette egg, and a list of shops to order from).
+  - Owner 2026-11-12: Simple random and Password first, custom tabs
+    later. Draft plan: design/random_plan.md (waiting for the owner).
   - Pick a topic at random from a list; add, remove and import topics
     (text file, one per line); then pick one of that topic's options.
   - Plain 50/50 or weighted picks (a bias per item).
