@@ -34,7 +34,7 @@ internal sealed class RandomWindow : Form
 	private readonly TextBox _headWord = new() { Width = 90, PlaceholderText = RandomTools.DefaultHead };
 	private readonly TextBox _tailWord = new() { Width = 90, PlaceholderText = RandomTools.DefaultTail };
 	private readonly CheckBox _noRepeats = new() { Text = "No &repeats", AutoSize = true };
-	private readonly CheckBox _sort = new() { Text = "S&ort", AutoSize = true };
+	private readonly Button _sort = new() { Text = "S&ort", AutoSize = true };
 	private readonly ListBox _numbers = Results(false);
 	private readonly Label _numbersNote = Note();
 	private readonly Dictionary<Control, Label> _captions = new();
@@ -45,7 +45,9 @@ internal sealed class RandomWindow : Form
 	private readonly CheckBox _lower = new() { Text = "&Lower case a-z", AutoSize = true };
 	private readonly CheckBox _digits = new() { Text = "Di&gits 0-9", AutoSize = true };
 	private readonly CheckBox _symbols = new() { Text = "&Symbols", AutoSize = true };
-	private readonly TextBox _symbolSet = new() { Width = 200 };
+	private readonly TextBox _symbolSet = new() { Width = 260 };
+	private readonly List<(CheckBox Box, string Chars)> _symbolGroups = new();
+	private bool _settingGroups;
 	private readonly CheckBox _noLookAlikes = new() { Text = $"Leave out look-&alikes ({RandomTools.LookAlikes})", AutoSize = true };
 	private readonly NumericUpDown _passwordCount = Number(1, 50, 0);
 	private readonly TextBox _word = new() { Width = 200, PlaceholderText = "optional" };
@@ -124,7 +126,7 @@ internal sealed class RandomWindow : Form
 		fields.Controls.Add(tailCaption, 2, wordsRow);
 		fields.Controls.Add(_tailWord, 3, wordsRow);
 		var checks = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty };
-		checks.Controls.AddRange(new Control[] { _noRepeats, _sort });
+		checks.Controls.Add(_noRepeats);
 		fields.Controls.Add(checks, 1, fields.RowCount++);
 		fields.SetColumnSpan(checks, 3);
 
@@ -141,7 +143,8 @@ internal sealed class RandomWindow : Form
 		new ToolTip().SetToolTip(command, "Put the rand() line for these settings in Input, to run there");
 		command.Click += (_, _) => _insert(Command());
 		var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, Margin = new Padding(0, 6, 0, 0) };
-		buttons.Controls.AddRange(new Control[] { draw, copy, copyAll, insert, command });
+		_sort.Click += (_, _) => SortNumbers();
+		buttons.Controls.AddRange(new Control[] { draw, _sort, copy, copyAll, insert, command });
 
 		page.Controls.Add(_numbers);
 		page.Controls.Add(_numbersNote);
@@ -181,12 +184,12 @@ internal sealed class RandomWindow : Form
 		int count = (int)_count.Value;
 		if (_whole.Checked)
 		{
-			var (values, error) = RandomTools.Integers(_secure, (long)_from.Value, (long)_to.Value, count, _noRepeats.Checked, _sort.Checked);
+			var (values, error) = RandomTools.Integers(_secure, (long)_from.Value, (long)_to.Value, count, _noRepeats.Checked, sort: false);
 			ShowNumbers(values?.Select(v => v.ToString(CultureInfo.InvariantCulture)), error, null);
 		}
 		else if (_decimal.Checked)
 		{
-			var (values, error) = RandomTools.Decimals(_secure, _from.Value, _to.Value, (int)_places.Value, count, _sort.Checked);
+			var (values, error) = RandomTools.Decimals(_secure, _from.Value, _to.Value, (int)_places.Value, count, sort: false);
 			ShowNumbers(values?.Select(RandomTools.Text), error, null);
 		}
 		else if (_coin.Checked)
@@ -214,6 +217,22 @@ internal sealed class RandomWindow : Form
 		_numbers.Items.AddRange(lines.Cast<object>().ToArray());
 		_numbers.SelectedIndex = 0;
 		_numbersNote.Text = note ?? "";
+	}
+
+	// Sort (owner 2026-11-12: a button, not a setting): the list in order, smallest first
+	private void SortNumbers()
+	{
+		var values = _numbers.Items.Cast<string>()
+			.Select(t => (Text: t, Ok: decimal.TryParse(t, NumberStyles.Number, CultureInfo.InvariantCulture, out var v), Value: v))
+			.ToList();
+		if (values.Count < 2 || values.Any(v => !v.Ok))
+		{
+			return;
+		}
+		_numbers.BeginUpdate();
+		_numbers.Items.Clear();
+		_numbers.Items.AddRange(values.OrderBy(v => v.Value).Select(v => (object)v.Text).ToArray());
+		_numbers.EndUpdate();
 	}
 
 	// A drawn number (several: joined by spaces) at the Input's caret
@@ -256,6 +275,25 @@ internal sealed class RandomWindow : Form
 		symbols.Controls.AddRange(new Control[] { _symbols, _symbolSet });
 		fields.Controls.Add(symbols, 0, fields.RowCount++);
 		fields.SetColumnSpan(symbols, 4);
+		// Symbol groups (owner 2026-11-12): a tick adds the group to the box, untick removes it
+		var groups = new FlowLayoutPanel { AutoSize = true, Margin = new Padding(20, 0, 0, 0), MaximumSize = new Size(500, 0) };
+		var tips = new ToolTip();
+		foreach (var (name, chars) in RandomTools.SymbolGroups)
+		{
+			var box = new CheckBox { Text = $"{name}  {chars}", AutoSize = true, UseMnemonic = false };
+			tips.SetToolTip(box, $"Tick to add {chars} to the symbols, untick to take them out");
+			box.CheckedChanged += (_, _) =>
+			{
+				if (!_settingGroups)
+				{
+					_symbolSet.Text = RandomTools.ToggleSymbols(_symbolSet.Text, chars, box.Checked);
+				}
+			};
+			_symbolGroups.Add((box, chars));
+			groups.Controls.Add(box);
+		}
+		fields.Controls.Add(groups, 0, fields.RowCount++);
+		fields.SetColumnSpan(groups, 4);
 		fields.Controls.Add(_noLookAlikes, 0, fields.RowCount++);
 		fields.SetColumnSpan(_noLookAlikes, 4);
 		var wordRow = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty };
@@ -275,7 +313,11 @@ internal sealed class RandomWindow : Form
 			box.CheckedChanged += (_, _) => ShowStrength();
 		}
 		_length.ValueChanged += (_, _) => ShowStrength();
-		_symbolSet.TextChanged += (_, _) => ShowStrength();
+		_symbolSet.TextChanged += (_, _) =>
+		{
+			ShowStrength();
+			TickGroups();
+		};
 
 		var draw = new Button { Text = "&Generate", AutoSize = true, MinimumSize = new Size(90, 0) };
 		draw.Click += (_, _) => DrawPasswords();
@@ -292,6 +334,17 @@ internal sealed class RandomWindow : Form
 		page.Controls.Add(buttons);
 		page.Controls.Add(fields);
 		return page;
+	}
+
+	// A group is ticked while all of its symbols are in the box (also after a hand edit)
+	private void TickGroups()
+	{
+		_settingGroups = true;
+		foreach (var (box, chars) in _symbolGroups)
+		{
+			box.Checked = chars.All(_symbolSet.Text.Contains);
+		}
+		_settingGroups = false;
 	}
 
 	private PasswordOptions Options()
@@ -360,7 +413,7 @@ internal sealed class RandomWindow : Form
 		var p = _prefs;
 		(_from.Value, _to.Value, _count.Value) = (p.From, p.To, p.Count);
 		(_places.Value, _heads.Value, _sides.Value) = (p.Places, p.HeadsPercent, p.Sides);
-		(_noRepeats.Checked, _sort.Checked) = (p.NoRepeats, p.Sort);
+		_noRepeats.Checked = p.NoRepeats;
 		(_headWord.Text, _tailWord.Text) = (p.HeadWord, p.TailWord);
 		var kind = new[] { _whole, _decimal, _coin, _dice }.FirstOrDefault(k => (string)k.Tag! == p.Kind) ?? _whole;
 		kind.Checked = true;
@@ -368,6 +421,7 @@ internal sealed class RandomWindow : Form
 		(_length.Value, _passwordCount.Value) = (p.PasswordLength, p.PasswordCount);
 		(_upper.Checked, _lower.Checked, _digits.Checked, _symbols.Checked) = (p.Upper, p.Lower, p.Digits, p.Symbols);
 		(_symbolSet.Text, _noLookAlikes.Checked) = (p.SymbolSet, p.NoLookAlikes);
+		TickGroups();
 		_tabs.SelectedIndex = p.Tab == "password" ? 1 : 0;
 		ShowStrength();
 	}
@@ -377,7 +431,7 @@ internal sealed class RandomWindow : Form
 		var p = _prefs;
 		(p.From, p.To, p.Count) = (_from.Value, _to.Value, (int)_count.Value);
 		(p.Places, p.HeadsPercent, p.Sides) = ((int)_places.Value, _heads.Value, (int)_sides.Value);
-		(p.NoRepeats, p.Sort) = (_noRepeats.Checked, _sort.Checked);
+		p.NoRepeats = _noRepeats.Checked;
 		(p.HeadWord, p.TailWord) = (_headWord.Text.Trim(), _tailWord.Text.Trim());
 		p.Kind = (string)new[] { _whole, _decimal, _coin, _dice }.First(k => k.Checked).Tag!;
 		(p.PasswordLength, p.PasswordCount) = ((int)_length.Value, (int)_passwordCount.Value);

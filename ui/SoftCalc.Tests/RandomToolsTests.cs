@@ -149,6 +149,34 @@ public sealed class RandomToolsTests
 	}
 
 	[Fact]
+	public void SymbolGroupTickRemovesThenAppends()
+	{
+		Assert.Equal("!@#$%&*?-_", RandomTools.ToggleSymbols("!@#$%&*?", "-_", on: true));
+		Assert.Equal("!@#$%&*?-_", RandomTools.ToggleSymbols("-!@#$%&*?", "-_", on: true));    // a hand-typed - is not doubled
+		Assert.Equal("!@#", RandomTools.ToggleSymbols("!-@_#", "-_", on: false));
+		var all = string.Concat(RandomTools.SymbolGroups.Select(g => g.Chars));
+		Assert.Equal(all.Length, all.Distinct().Count());    // no symbol in two groups
+		Assert.Equal(string.Concat(RandomTools.SymbolGroups.Take(5).Select(g => g.Chars)), RandomTools.DefaultSymbols);
+		Assert.DoesNotContain('"', RandomTools.DefaultSymbols);    // quotes and slashes start unticked
+	}
+
+	[Fact]
+	public void SymbolGroupsFollowTheBox()
+	{
+		var prefs = new RandomPrefs { SymbolSet = "-_!@#$%&*?" };
+		using var window = new RandomWindow(prefs, _ => { });
+		var groups = (List<(CheckBox Box, string Chars)>)typeof(RandomWindow)
+			.GetField("_symbolGroups", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(window)!;
+		Assert.Equal(new[] { true, true, false, false, false, false, false }, groups.Select(g => g.Box.Checked));
+		groups[2].Box.Checked = true;    // Maths
+		window.SavePrefs();
+		Assert.Equal("-_!@#$%&*?+=^~", prefs.SymbolSet);
+		groups[0].Box.Checked = false;    // Common
+		window.SavePrefs();
+		Assert.Equal("-_+=^~", prefs.SymbolSet);
+	}
+
+	[Fact]
 	public void StrengthIsLengthTimesLog2Pool()
 	{
 		var digits = new PasswordOptions(10, false, false, true, false, "", false);
