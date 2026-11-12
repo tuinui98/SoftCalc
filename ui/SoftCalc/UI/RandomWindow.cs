@@ -6,7 +6,8 @@
 // password. Results live only in the lists: nothing goes to
 // History or to disk, and the lists are cleared when the window closes.
 // A copied password stays out of the clipboard history and is wiped
-// after 30 s (SecretClipboard). Custom list tabs come later.
+// after 30 s (SecretClipboard). The Source row (RandomWindow.Seed.cs)
+// picks System or a repeatable Seed. Custom list tabs come later.
 
 using System.Globalization;
 using SoftCalc.Logic;
@@ -57,10 +58,11 @@ internal sealed partial class RandomWindow : Form
 	private readonly Label _strength = Note();
 	private static readonly string[] TabIds = { "numbers", "advanced", "password" };    // the tab pages in order, as saved
 
-	public RandomWindow(RandomPrefs prefs, Action<string> insert)
+	public RandomWindow(RandomPrefs prefs, Action<string> insert, SoftCalc.Engine.SeedEngine? seeds = null)
 	{
 		_prefs = prefs;
 		_insert = insert;
+		_seeds = seeds;
 		Text = "Random";
 		Icon = SvgIcon.ProgramIcon();
 		ShowInTaskbar = false;
@@ -78,7 +80,9 @@ internal sealed partial class RandomWindow : Form
 		_tabs.TabPages.Add(AdvancedTab());
 		_tabs.TabPages.Add(PasswordTab());
 		Controls.Add(_tabs);
+		Controls.Add(SourceRow());
 		LoadPrefs();
+		SourceForTab();
 		FormClosing += (_, _) => SavePrefs();
 		FormClosed += (_, _) =>
 		{
@@ -86,6 +90,8 @@ internal sealed partial class RandomWindow : Form
 			_shapeList.Items.Clear();
 			_passwords.Items.Clear();
 			_signature.Clear();
+			_seed.Clear();
+			_seeds?.Dispose();
 		};
 	}
 
@@ -94,7 +100,7 @@ internal sealed partial class RandomWindow : Form
 	//==================================================================
 	private TabPage NumbersTab()
 	{
-		var page = new TabPage("Simple random") { Padding = new Padding(8) };
+		var page = new TabPage("Simple") { Padding = new Padding(8) };
 		var kinds = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true };
 		kinds.Controls.AddRange(new Control[] { _whole, _decimal, _coin, _dice });
 		foreach (var kind in new[] { _whole, _decimal, _coin, _dice })
@@ -136,7 +142,7 @@ internal sealed partial class RandomWindow : Form
 		fields.SetColumnSpan(checks, 3);
 
 		var draw = new Button { Text = "&Generate", AutoSize = true, MinimumSize = new Size(90, 0) };
-		draw.Click += (_, _) => DrawNumbers();
+		draw.Click += async (_, _) => await DrawNumbers();
 		var copy = new Button { Text = "Cop&y", AutoSize = true };
 		copy.Click += (_, _) => CopyLines(_numbers, all: false, secret: false);
 		var copyAll = new Button { Text = "Copy &All", AutoSize = true };
@@ -182,12 +188,20 @@ internal sealed partial class RandomWindow : Form
 		_captions[control].Visible = shown;
 	}
 
-	private void DrawNumbers()
+	private async Task DrawNumbers()
 	{
+		if (_drawing)
+		{
+			return;
+		}
 		_numbers.Items.Clear();
 		_numbersNote.ForeColor = SystemColors.GrayText;
 		int count = (int)_count.Value;
-		if (_whole.Checked)
+		if (SeedInUse is { } seed)
+		{
+			await DrawNumbersSeeded(seed, count);
+		}
+		else if (_whole.Checked)
 		{
 			var (values, error) = RandomTools.Integers(_secure, (long)_from.Value, (long)_to.Value, count, _noRepeats.Checked, sort: false);
 			ShowNumbers(values?.Select(v => v.ToString(CultureInfo.InvariantCulture)), error, null);
@@ -208,6 +222,40 @@ internal sealed partial class RandomWindow : Form
 		{
 			var dice = RandomTools.Dice(_secure, (int)_sides.Value, count);
 			ShowNumbers(dice.Select(d => d.ToString(CultureInfo.InvariantCulture)), null, $"Sum {dice.Sum()}");
+		}
+	}
+
+	// Seed: Insert Command's line drawn count times by the window's engine
+	private async Task DrawNumbersSeeded(string seed, int count)
+	{
+		bool unique = _whole.Checked && _noRepeats.Checked;
+		if (unique)
+		{
+			decimal low = decimal.Truncate(Math.Min(_from.Value, _to.Value)), high = decimal.Truncate(Math.Max(_from.Value, _to.Value));
+			if (count > high - low + 1)
+			{
+				ShowNumbers(null, $"Only {high - low + 1} different numbers from {low} to {high}.", null);
+				return;
+			}
+		}
+		var texts = await SeedDrawsAsync(seed, Command(), count, unique, _numbersNote);
+		if (texts == null)
+		{
+			return;
+		}
+		if (_coin.Checked)
+		{
+			int heads = texts.Count(t => t == "1");
+			string head = Word(_headWord, RandomTools.DefaultHead), tail = Word(_tailWord, RandomTools.DefaultTail);
+			ShowNumbers(texts.Select(t => t == "1" ? head : tail), null, $"{head} {heads}, {tail} {texts.Count - heads} (seed {seed})");
+		}
+		else if (_dice.Checked)
+		{
+			ShowNumbers(texts, null, $"Sum {texts.Sum(t => long.Parse(t, CultureInfo.InvariantCulture))} (seed {seed})");
+		}
+		else
+		{
+			ShowNumbers(texts, null, SeedNote(seed));
 		}
 	}
 

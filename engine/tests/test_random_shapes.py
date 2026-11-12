@@ -106,3 +106,29 @@ def test_in_rpn_they_take_the_range():
     engine = Engine()
     engine.settings.rpn = True
     assert engine.evaluate("2 5 1 10 randbeta").value in [mpmath.mpf(n) for n in range(1, 11)]
+
+
+def test_draws_op_matches_lines_typed_after_rands():
+    """The Random window's Seed: same values as rands(seed) and the line typed count times."""
+    from softcalc_engine.server import Dispatcher
+    dispatcher = Dispatcher()
+    for line in ("rand(1, 6)", "round(randbeta(4, 4, 1.0, 10), 2)", "floor(rand()+0.7)"):
+        reply = dispatcher.handle({"op": "draws", "seed": "42", "line": line, "count": 20})
+        engine = Engine()
+        engine.evaluate("rands(42)")
+        assert reply["texts"] == [engine.evaluate(line).text for _ in range(20)], line
+    assert dispatcher.engine.results == []    # draws are not $n results
+    unique = dispatcher.handle({"op": "draws", "seed": "7", "line": "rand(1, 6)", "count": 6, "unique": True})["texts"]
+    assert sorted(unique) == ["1", "2", "3", "4", "5", "6"]
+
+
+@pytest.mark.parametrize("request_, error", [
+    ({"seed": "4)+1", "line": "rand()", "count": 1}, "'seed'"),
+    ({"seed": "1", "line": "rand()", "count": 0}, "'count'"),
+    ({"seed": "1", "line": "1/0", "count": 1}, "Division"),
+    ({"seed": "1", "line": "rand(1, 3)", "count": 4, "unique": True}, "different"),
+])
+def test_draws_op_refuses(request_, error):
+    from softcalc_engine.server import Dispatcher
+    reply = Dispatcher().handle({"op": "draws", **request_})
+    assert not reply["ok"] and error in reply["error"]

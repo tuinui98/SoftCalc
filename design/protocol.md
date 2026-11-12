@@ -190,5 +190,15 @@ engine does no network I/O; the UI fetches and caches the rates (M8).
 `rates: {}` with a future `next_check` means none are available yet
 (conversions then fail with `Currency rates unavailable`).
 
+### `draws`
+`{"seed": "42", "line": "rand(1, 6)", "count": 10, "unique": false}` ->
+`{"texts": ["4", "4", ...]}`. The Random window's Seed (owner
+2026-11-12): evaluates `rands(seed)`, then `line` `count` times
+(1 to 10000), so the texts are what typing those lines in Input would
+give at the same settings. `seed` is a plain number (`42`, `-7.5`).
+`unique: true` draws again when a text came up before (No repeats)
+and fails after count x 50 + 1000 tries. A line that gives an error
+fails the request with that error. The draws are not kept as `$n`.
+
 ### `shutdown`
 `{}` -> `{}`, then the process exits.
