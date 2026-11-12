@@ -246,7 +246,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			customize.Close();
 		}
 		// Random window: a biased coin on the Numbers tab, then the Password tab
-		var randomPrefs = new RandomPrefs { Kind = "coin", Count = 6, HeadsPercent = 70, HeadWord = "Yes", TailWord = "No" };
+		var randomPrefs = new RandomPrefs { Kind = "coin", Count = 6, HeadsPercent = 70, HeadWord = "Yes", TailWord = "No", Shape = "right" };
 		using (var random = new RandomWindow(randomPrefs, _ => { }))
 		{
 			random.StartPosition = FormStartPosition.Manual;
@@ -255,7 +255,12 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			Program.Call(random, "DrawNumbers");
 			await Task.Delay(300);
 			Save("random-numbers", Program.Capture(random.Handle).Picture);
-			Program.Field<TabControl>(random, "_tabs").SelectedIndex = 1;
+			Program.Field<TabControl>(random, "_tabs").SelectedIndex = 1;    // Advanced random: a right skew, drawn
+			Program.Call(random, "DrawShaped");
+			random.ActiveControl = null;
+			Application.DoEvents();
+			Save("random-advanced", Program.Capture(random.Handle).Picture);
+			Program.Field<TabControl>(random, "_tabs").SelectedIndex = 2;    // Password
 			Program.Call(random, "DrawPasswords");
 			random.ActiveControl = null;
 			await Task.Delay(300);

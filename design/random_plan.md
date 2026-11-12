@@ -81,6 +81,13 @@ come later. Window size and place are remembered too.
 - Engine side done 2026-11-12 (`random_shapes.py`, full precision on
   mpmath, built on getrandbits so a seed repeats on any Python;
   tests/test_random_shapes.py pins seed-42 values).
+- Tab done 2026-11-12: `Logic/RandomShapes.cs` (Strength 1-10, 5 =
+  the pictures chosen: Bell Beta(4, 4), Narrow Beta(12, 12), skews
+  Beta(2, 5) / Beta(5, 2), U Beta(0.6, 0.6), Two peaks gap 0.5, Rising
+  / Falling Beta(2, 1) / Beta(1, 2), Decay / Growth rate +-4; doubles,
+  SecureRandom), `UI/ShapePlot.cs`, `UI/RandomWindow.Advanced.cs`;
+  Count up to 10000; the line under the buttons says what the shape
+  does, and after Generate the mean, lowest and highest.
 
 ## Random source (R4, owner 2026-11-12; layout to discuss with the UI)
 - Both kinds: Seed (repeatable) and Add entropy (mixed into the
