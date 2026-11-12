@@ -31,7 +31,7 @@ internal sealed partial class RandomWindow
 
 	private TabPage AdvancedTab()
 	{
-		var page = new TabPage("Advanced random") { Padding = new Padding(8) };
+		var page = new TabPage("Advanced") { Padding = new Padding(8) };
 		_shape.Items.AddRange(RandomShapes.Shapes.Select(s => (object)s.Name).ToArray());
 		_shapeStrength.Width = 60;
 		_betaA.Width = 80;
@@ -73,7 +73,7 @@ internal sealed partial class RandomWindow
 		_shapeWhole.CheckedChanged += (_, _) => ShapeChanged();
 
 		var draw = new Button { Text = "&Generate", AutoSize = true, MinimumSize = new Size(90, 0) };
-		draw.Click += (_, _) => DrawShaped();
+		draw.Click += async (_, _) => await DrawShaped();
 		var sort = new Button { Text = "S&ort", AutoSize = true };
 		sort.Click += (_, _) => SortNumbers(_shapeList);
 		var copy = new Button { Text = "Cop&y", AutoSize = true };
@@ -145,11 +145,16 @@ internal sealed partial class RandomWindow
 			RandomTools.Text(decimal.Round(high, places)));
 	}
 
-	private void DrawShaped()
+	private async Task DrawShaped()
 	{
+		if (_drawing)
+		{
+			return;
+		}
 		_shapeList.Items.Clear();
+		// System draws here; Seed checks the settings here too, then the window's engine draws
 		var (values, error) = RandomShapes.Values(_secure, CurrentCurve(), _shapeFrom.Value, _shapeTo.Value, _peak.Value,
-			ShapeWhole, (int)_shapePlaces.Value, (int)_shapeCount.Value);
+			ShapeWhole, (int)_shapePlaces.Value, SeedInUse == null ? (int)_shapeCount.Value : 1);
 		if (values == null)
 		{
 			_shapeNote.ForeColor = Theme.Error;
@@ -157,12 +162,31 @@ internal sealed partial class RandomWindow
 			ShowShape(Array.Empty<double>());
 			return;
 		}
+		List<string> texts;
+		string summarySuffix = "";
+		if (SeedInUse is { } seed)
+		{
+			var drawn = await SeedDrawsAsync(seed, ShapeCommand(), (int)_shapeCount.Value, false, _shapeNote);
+			if (drawn == null)
+			{
+				ShowShape(Array.Empty<double>());
+				return;
+			}
+			texts = drawn;
+			values = drawn.Select(t => decimal.TryParse(t, System.Globalization.NumberStyles.Float,
+				System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 0).ToList();
+			summarySuffix = $" (seed {seed})";
+		}
+		else
+		{
+			texts = values.Select(RandomTools.Text).ToList();
+		}
 		_shapeList.BeginUpdate();
-		_shapeList.Items.AddRange(values.Select(v => (object)RandomTools.Text(v)).ToArray());
+		_shapeList.Items.AddRange(texts.Cast<object>().ToArray());
 		_shapeList.EndUpdate();
 		_shapeList.SelectedIndex = 0;
 		_shapeNote.ForeColor = SystemColors.GrayText;
-		_shapeNote.Text = RandomShapes.Summary(values, ShapeWhole ? 0 : (int)_shapePlaces.Value);
+		_shapeNote.Text = RandomShapes.Summary(values, ShapeWhole ? 0 : (int)_shapePlaces.Value) + summarySuffix;
 		ShowShape(RandomShapes.Bars(values, _shapeFrom.Value, _shapeTo.Value, ShapeWhole));
 	}
 

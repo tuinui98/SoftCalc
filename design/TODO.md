@@ -395,7 +395,9 @@ ends 1:1, the drag insert line is visible enough on dark.
     drawn, with a histogram of the results), whole or decimal ranges,
     no "no repeats"; first tab renamed Simple random. Engine functions
     randbeta/randtri/randexp/randpeaks done (R3 in random_plan.md);
-    the tab done too; owner to try it. Then the random source (R4): Seed (through an
+    the tab done too; owner tried it (tabs renamed Simple / Advanced /
+    Password). Seed done (Source row, the window's own engine,
+    protocol `draws`); Add entropy next. Then the random source (R4): Seed (through an
     engine of the window's own, matching rands() in Input) and Add
     entropy; Password always System. Help also to cover these.
   - Pick a topic at random from a list; add, remove and import topics

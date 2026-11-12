@@ -62,7 +62,8 @@ come later. Window size and place are remembered too.
   characters. The place is saved, the signature never.
 
 ## Advanced random tab (R3, owner 2026-11-12)
-- Tabs become Simple random (was Numbers), Advanced random, Password.
+- Tabs become Simple (was Numbers), Advanced, Password (owner: the
+  window is already called Random).
 - Shape list (13): Flat, Bell, Narrow bell, Right skew, Left skew,
   Triangle, U shape, Two peaks, Rising, Falling, Decay, Growth, Custom
   (Beta a, b). One Strength control (bell sharpness, skew, peak gap),
@@ -96,8 +97,17 @@ come later. Window size and place are remembered too.
 - Password tab: always System; Seed is disabled there.
 - Seed mode draws through an engine of the window's own (option 1),
   so the window's results match the same `rands(seed)` and calls typed
-  in Input, at the same precision and in the same order. Insert
-  Command then puts `rands(seed)` first.
+  in Input, at the same precision and in the same order.
+- Seed done 2026-11-12: a Source row above the tabs (System | Seed
+  [number]); typing a seed picks Seed; the Password tab switches to
+  System and greys Seed out, and gives it back on the other tabs.
+  `Engine/SeedEngine.cs` starts the window's engine on the first
+  seeded Generate (protocol `draws`: rands(seed), then the tab's
+  Insert Command line count times; unique for No repeats). Each
+  Generate starts again from the seed, so the same seed gives the
+  same list. Insert Command inserts only the line (Input takes one
+  line); the note after Generate says to type rands(seed) first.
+- Add entropy: still to do.
 
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so

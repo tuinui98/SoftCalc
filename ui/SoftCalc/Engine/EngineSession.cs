@@ -40,6 +40,7 @@ internal sealed class EngineSession : IDisposable
 {
 	private static readonly TimeSpan EvalTimeout = TimeSpan.FromSeconds(30);
 	private static readonly TimeSpan QuickTimeout = TimeSpan.FromSeconds(10);
+	private static readonly TimeSpan DrawsTimeout = TimeSpan.FromSeconds(120);    // 10000 shaped draws take a few seconds
 
 	private readonly ProcessStartInfo _startInfo;
 	private readonly SemaphoreSlim _gate = new(1, 1);
@@ -280,6 +281,30 @@ internal sealed class EngineSession : IDisposable
 	public async Task DeleteResultAsync(int n)
 	{
 		await GuardedAsync("delete_result", new JsonObject { ["n"] = n });
+	}
+
+	// The engine's start info, for a window that runs an engine of its own (Random's Seed)
+	internal ProcessStartInfo StartInfo => _startInfo;
+
+	// Random window's Seed (protocol `draws`): rands(seed), then line count
+	// times; the texts, or null and the engine's reason
+	public async Task<(List<string>? Texts, string? Error)> DrawsAsync(string seed, string line, int count, bool unique)
+	{
+		var request = new JsonObject { ["seed"] = seed, ["line"] = line, ["count"] = count, ["unique"] = unique };
+		try
+		{
+			var reply = await RequestAsync("draws", request, DrawsTimeout);
+			return (reply["texts"]?.AsArray().Select(t => (string?)t ?? "").ToList() ?? new List<string>(), null);
+		}
+		catch (EngineRequestException ex)
+		{
+			return (null, ex.Message);
+		}
+		catch (EngineLostException ex)
+		{
+			await RestartAsync(ex.Message);
+			return (null, "The engine stopped and was restarted; try again.");
+		}
 	}
 
 	// One number literal in the output base for the hint line, or null (protocol `literal`)
