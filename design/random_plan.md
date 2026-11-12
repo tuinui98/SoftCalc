@@ -107,7 +107,30 @@ come later. Window size and place are remembered too.
   Generate starts again from the seed, so the same seed gives the
   same list. Insert Command inserts only the line (Input takes one
   line); the note after Generate says to type rands(seed) first.
-- Add entropy: still to do.
+- New seed (owner 2026-11-12): a button beside the Seed box fills it
+  with 128 bits (39 digits) from the system generator.
+
+## Entropy tab (R5, owner 2026-11-12)
+- Replaces the planned Add entropy window. To try sources and
+  standards side by side: System (CNG), TPM 2.0 (TPM2_GetRandom via
+  tbs.dll; works as a standard user here), CPU jitter (1024 timings,
+  min-entropy by the most common step, SP 800-90B 6.3.1), Clock (the
+  weak classic), GUID v4, Mouse, Keys, Dice (1-6), NIST Randomness
+  Beacon and drand (public: 0 secret bits; Get x10 fetches the last
+  10 pulses/rounds; a GET with no user data).
+- Each row: raw value, 128-bit seed (SHA-256 cut to 128 bits), change
+  from the row before (clock), raw bits changed, seed bits changed,
+  estimated bits. Get x10 adds a summary (mean bits changed; 64 of 128
+  is chance). Mouse, Keys and Dice give one sample from what was put in.
+- Use as Seed puts a row's seed in the Seed box. Mix into System
+  hashes the chosen rows (all when none) into a key: each draw is then
+  HMAC-SHA256(key, 32 system bytes + counter) (`MixedRandom`), for every
+  tab, Password too, until Clear mix or the window closes; the Source
+  row says "System + entropy (N bits)". Nothing here is saved but the
+  source shown.
+- Code: `Logic/Entropy.cs`, `Logic/TpmRandom.cs`,
+  `Engine/RandomBeacons.cs`, `UI/RandomWindow.Entropy.cs`; EntropyTests
+  (network only with SOFTCALC_NET_TESTS=1).
 
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so

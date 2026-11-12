@@ -8,6 +8,7 @@
 
 using System.Text.RegularExpressions;
 using SoftCalc.Engine;
+using SoftCalc.Logic;
 
 namespace SoftCalc.UI;
 
@@ -17,6 +18,8 @@ internal sealed partial class RandomWindow
 	private readonly RadioButton _system = new() { Text = "S&ystem", AutoSize = true, Checked = true, Margin = new Padding(3, 5, 6, 3) };
 	private readonly RadioButton _seeded = new() { Text = "&Seed", AutoSize = true, Margin = new Padding(3, 5, 3, 3) };
 	private readonly TextBox _seed = new() { Width = 120, PlaceholderText = "e.g. 42" };
+	private readonly Button _newSeed = new() { Text = "&New seed", AutoSize = true, Margin = new Padding(6, 2, 3, 3) };
+	private readonly Label _mixed = new() { AutoSize = true, Margin = new Padding(12, 7, 3, 3), Visible = false };
 	private readonly SeedEngine? _seeds;
 	private bool _seededBeforePassword;
 	private bool _drawing;
@@ -25,10 +28,12 @@ internal sealed partial class RandomWindow
 	{
 		var row = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = false, Padding = new Padding(6, 6, 6, 0) };
 		row.Controls.Add(new Label { Text = "Source", AutoSize = true, Margin = new Padding(3, 7, 6, 3) });
-		row.Controls.AddRange(new Control[] { _system, _seeded, _seed });
+		row.Controls.AddRange(new Control[] { _system, _seeded, _seed, _newSeed, _mixed });
+		_newSeed.Click += (_, _) => _seed.Text = Entropy.NewSeed();    // 128 bits from the system generator
 		var tips = new ToolTip();
 		tips.SetToolTip(_system, "The system's secure random generator: different every time");
 		tips.SetToolTip(_seeded, "The same seed gives the same values, like rands(seed) in Input");
+		tips.SetToolTip(_newSeed, "A 128-bit seed from the system generator; note it down to draw the same values again");
 		_seed.TextChanged += (_, _) =>
 		{
 			if (_seed.Text.Length > 0)
@@ -40,6 +45,7 @@ internal sealed partial class RandomWindow
 		{
 			_seeded.Enabled = false;    // no engine to draw with (tests)
 			_seed.Enabled = false;
+			_newSeed.Enabled = false;
 		}
 		_tabs.SelectedIndexChanged += (_, _) => SourceForTab();
 		return row;
@@ -56,6 +62,7 @@ internal sealed partial class RandomWindow
 		}
 		_seeded.Enabled = !password && _seeds != null;
 		_seed.Enabled = _seeded.Enabled;
+		_newSeed.Enabled = _seeded.Enabled;
 		if (!password && _seeded.Enabled && _seededBeforePassword)
 		{
 			_seeded.Checked = true;
@@ -98,6 +105,13 @@ internal sealed partial class RandomWindow
 			_drawing = false;
 			UseWaitCursor = false;
 		}
+	}
+
+	// "+ entropy" beside the source while something is mixed into System
+	private void ShowMix()
+	{
+		_mixed.Visible = _secure.Mixes > 0;
+		_mixed.Text = $"System + entropy ({_secure.Bits:0} bits)";
 	}
 
 	private static string SeedNote(string seed)
