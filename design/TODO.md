@@ -391,6 +391,13 @@ ends 1:1, the drag insert line is visible enough on dark.
     strength counts the random part). Help waits until the
     Random work is finished (owner): 17-random still describes the old
     Sort tick and lacks the symbol groups.
+  - Owner 2026-11-12: Advanced random tab with a shape list (13 shapes,
+    drawn, with a histogram of the results), whole or decimal ranges,
+    no "no repeats"; first tab renamed Simple random. Engine functions
+    randbeta/randtri/randexp/randpeaks done (R3 in random_plan.md);
+    the tab is next. Then the random source (R4): Seed (through an
+    engine of the window's own, matching rands() in Input) and Add
+    entropy; Password always System. Help also to cover these.
   - Pick a topic at random from a list; add, remove and import topics
     (text file, one per line); then pick one of that topic's options.
   - Plain 50/50 or weighted picks (a bias per item).
