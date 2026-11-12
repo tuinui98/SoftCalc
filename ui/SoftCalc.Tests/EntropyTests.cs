@@ -161,6 +161,28 @@ public sealed class EntropyTests(ITestOutputHelper output)
 	}
 
 	[Fact]
+	public async Task NewSeedFollowsTheEntropyTabOnlyThere()
+	{
+		using var window = new RandomWindow(new RandomPrefs { EntropySource = "clock" }, _ => { });
+		var tabs = Field<TabControl>(window, "_tabs");
+		_ = tabs.Handle;
+		var seed = Field<TextBox>(window, "_seed");
+		var rows = Field<ListView>(window, "_entropyRows");
+		await (Task)Call(window, "NewSeed")!;    // Simple tab: the system generator, no row
+		Assert.Matches(@"^[0-9]{1,39}$", seed.Text);
+		Assert.Empty(rows.Items);
+		tabs.SelectedIndex = 3;
+		await (Task)Call(window, "NewSeed")!;    // Entropy tab: Get from the clock, then Use as Seed
+		Assert.Single(rows.Items);
+		Assert.Equal(rows.Items[0].SubItems[2].Text, seed.Text);
+		Field<ComboBox>(window, "_entropySource").SelectedIndex = Array.FindIndex(Entropy.Sources, s => s.Id == "dice");
+		string kept = seed.Text;
+		await (Task)Call(window, "NewSeed")!;    // no dice typed: the seed stays
+		Assert.Equal(kept, seed.Text);
+		Assert.Contains("dice", Field<Label>(window, "_entropyNote").Text);
+	}
+
+	[Fact]
 	public void EntropyPrefsAreSanitized()
 	{
 		string path = Path.Combine(Path.GetTempPath(), "softcalc-entropy-" + Guid.NewGuid().ToString("N") + ".json");

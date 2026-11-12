@@ -26,14 +26,15 @@ internal sealed partial class RandomWindow
 
 	private Control SourceRow()
 	{
-		var row = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = false, Padding = new Padding(6, 6, 6, 0) };
+		var row = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = false, Padding = new Padding(6, 6, 6, 8) };    // owner: room above the tabs
 		row.Controls.Add(new Label { Text = "Source", AutoSize = true, Margin = new Padding(3, 7, 6, 3) });
 		row.Controls.AddRange(new Control[] { _system, _seeded, _seed, _newSeed, _mixed });
-		_newSeed.Click += (_, _) => _seed.Text = Entropy.NewSeed();    // 128 bits from the system generator
+		_newSeed.Click += async (_, _) => await NewSeed();
 		var tips = new ToolTip();
 		tips.SetToolTip(_system, "The system's secure random generator: different every time");
 		tips.SetToolTip(_seeded, "The same seed gives the same values, like rands(seed) in Input");
-		tips.SetToolTip(_newSeed, "A 128-bit seed from the system generator; note it down to draw the same values again");
+		tips.SetToolTip(_newSeed, "A 128-bit seed: from the source chosen on the Entropy tab while it is open, "
+			+ "else from the system generator. Note it down to draw the same values again");
 		_seed.TextChanged += (_, _) =>
 		{
 			if (_seed.Text.Length > 0)
@@ -104,6 +105,24 @@ internal sealed partial class RandomWindow
 		{
 			_drawing = false;
 			UseWaitCursor = false;
+		}
+	}
+
+	// Owner 2026-11-13: on the Entropy tab, Get from its source and Use as Seed;
+	// on the other tabs, 128 bits from the system generator
+	private async Task NewSeed()
+	{
+		if (_tabs.SelectedIndex != Array.IndexOf(TabIds, "entropy"))
+		{
+			_seed.Text = Entropy.NewSeed();
+			return;
+		}
+		int before = _entropyList.Count;
+		await GetEntropy(1);
+		if (!IsDisposed && _entropyList.Count > before)
+		{
+			_entropyRows.SelectedIndices.Clear();
+			UseAsSeed();
 		}
 	}
 
