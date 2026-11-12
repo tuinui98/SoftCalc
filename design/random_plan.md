@@ -11,8 +11,24 @@ Draft for the owner; nothing is built. Custom list tabs come later.
 - F1: a new help topic `17-random.md`, pictures from HelpShots.
 - Randomness: `System.Security.Cryptography.RandomNumberGenerator`
   (`GetInt32` is unbiased) for everything, not `System.Random`.
-- The engine gets nothing: no `rand()` in expressions, since History,
-  hints and replays expect a line to give the same answer each time.
+- Owner 2026-11-12: `rand()` in expressions after all (R0 below).
+
+## rand() in the calculator (R0, owner 2026-11-12)
+- `rand()`: a decimal from 0 to 1; `rand(n)`: 0 to n; `rand(a, b)`: a
+  to b. To decide: integer arguments give whole numbers with both ends
+  included (dice: `rand(1, 6)`), others a decimal.
+- `rands(seed)` sets the seed, so the next draws repeat; `rands()`
+  goes back to an unpredictable seed. Engine side, per window; an
+  engine restart reseeds. Not for passwords (the Password tab uses the
+  system's secure source).
+- History: the line as typed, and on the right, faint, the line with
+  each draw written in (`rand(1,6)+1` shows `4+1`), like `answer/2`
+  shows `42/2`. Use Expression takes `rand(...)` (draws again), Insert
+  Result takes the drawn value. The help says so.
+- The hint line only shows signatures (`rand([a], [b])`), it never
+  draws. History restore keeps the drawn values; nothing is drawn again.
+- A user function may call it (`dice()=rand(1,6)`); a graph of it is
+  noise.
 
 ## Numbers tab (R1)
 - Integer from Min to Max (both included), Count, "No repeats" (draw
