@@ -87,7 +87,6 @@ internal sealed class RandomPrefs
 	public decimal To { get; set; } = 100;
 	public int Count { get; set; } = 1;
 	public bool NoRepeats { get; set; }
-	public bool Sort { get; set; }
 	public int Places { get; set; } = 2;
 	public decimal HeadsPercent { get; set; } = 50;
 	public int Sides { get; set; } = 6;

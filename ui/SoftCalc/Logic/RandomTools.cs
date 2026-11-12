@@ -64,7 +64,19 @@ internal static class RandomTools
 	public const string UpperSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	public const string LowerSet = "abcdefghijklmnopqrstuvwxyz";
 	public const string DigitSet = "0123456789";
-	public const string DefaultSymbols = "!@#$%^&*()-_=+[]{};:,.?/";
+	// Symbol groups for the Password tab (owner 2026-11-12); the last two are
+	// the ones sites most often refuse, so they start unticked
+	public static readonly (string Name, string Chars)[] SymbolGroups =
+	{
+		("Common", "!@#$%&*?"),
+		("Dash", "-_"),
+		("Maths", "+=^~"),
+		("Brackets", "()[]{}<>"),
+		("Punctuation", ".,:;"),
+		("Quotes", "'\"`"),
+		("Slashes", "/\\|"),
+	};
+	public static readonly string DefaultSymbols = string.Concat(SymbolGroups.Take(5).Select(g => g.Chars));
 	public const string LookAlikes = "Il1O0o";
 	public const string DefaultHead = "Head";    // owner 2026-11-12
 	public const string DefaultTail = "Tail";
@@ -228,6 +240,14 @@ internal static class RandomTools
 	//==================================================================
 	//  Password tab
 	//==================================================================
+	// A group ticked or unticked: its symbols are taken out of the text, then
+	// put back at the end when ticked, so a hand-edited box never doubles them
+	public static string ToggleSymbols(string text, string chars, bool on)
+	{
+		string kept = new string(text.Where(c => !chars.Contains(c)).ToArray());
+		return on ? kept + chars : kept;
+	}
+
 	// The character sets chosen, look-alikes and doubles left out
 	public static List<string> Kinds(PasswordOptions options)
 	{

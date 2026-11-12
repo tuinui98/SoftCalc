@@ -383,6 +383,12 @@ ends 1:1, the drag insert line is visible enough on dark.
     tabs (Logic/RandomTools.cs, UI/RandomWindow.cs, RandomToolsTests),
     help 17-random and 03-functions Rounding. Owner to try it. Custom
     list tabs still to plan.
+  - Owner 2026-11-12: coin words (Head/Tail default) and Insert Command
+    done; Sort is now a button; Password symbol groups as tick boxes
+    (tick appends the group after taking its symbols out, untick takes
+    them out; Quotes and Slashes start unticked). Help waits until the
+    Random work is finished (owner): 17-random still describes the old
+    Sort tick and lacks the symbol groups.
   - Pick a topic at random from a list; add, remove and import topics
     (text file, one per line); then pick one of that topic's options.
   - Plain 50/50 or weighted picks (a bias per item).
