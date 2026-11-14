@@ -44,7 +44,7 @@ internal sealed class DrawSetup
 {
 	public string Id { get; set; } = "";
 	public string Name { get; set; } = "";
-	public string Theme { get; set; } = "slot";    // list, slot, dart; new tabs start on slot (owner 2026-11-14)
+	public string Theme { get; set; } = "slot";    // list, slot, dart, spin; new tabs start on slot (owner 2026-11-14)
 	public int Count { get; set; } = 1;
 	public bool Effects { get; set; } = true;
 	public List<DrawStep> Steps { get; set; } = new();
@@ -158,8 +158,8 @@ internal static class CardDraws
 	public const string SubJoiner = " → ";
 	public const string SubCards = " + ";
 	public const int StageLines = 5;    // the slot machine plays at most this many lines
-	public static readonly string[] Themes = { "list", "slot", "dart" };
-	public static readonly string[] ThemeNames = { "List", "Slot machine", "Dartboard" };
+	public static readonly string[] Themes = { "list", "slot", "dart", "spin" };
+	public static readonly string[] ThemeNames = { "List", "Slot machine", "Dartboard", "Spin wheel" };
 
 	public static string Key(string source, Card card)
 	{

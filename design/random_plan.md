@@ -195,9 +195,14 @@ come later. Window size and place are remembered too.
   machine): List (lines roll in Results, slowing down), Slot machine
   (a reel per step, stopping one by one),
   Dartboard (a board per step, sectors sized by chance; owner
-  2026-11-14: the board spins 2-4 s, random; the dart is thrown 2-3 s in,
-  maybe before the board stops, lands in the drawn card's sector and
-  turns with the board; the dart's point goes into the board).
+  2026-11-14: the board spins 2-4 s and the dart is thrown 1-3 s in, each
+  random; it flies 0.5 s, lands in the drawn card's sector and turns with
+  the board if it still turns; the dart's point goes into the board),
+  Spin wheel (owner 2026-11-14, design X: up to three rings, a card each,
+  turning clockwise, anticlockwise, clockwise for 3-5 s and stopping
+  outside in; a marker at the top points down, one on the hub points up,
+  each ring's card is on that line, framed; the top marker flicks as
+  edges pass; 4-6 cards spin 2 wheels in turn, shared out evenly).
   Slot machine with Count 2-5 (owner 2026-11-14, layout A): one card a
   line gives reels side by side, else a row of reels per line, top to
   bottom, each row stopping left to right; more lines show the last one
@@ -220,7 +225,7 @@ come later. Window size and place are remembered too.
 - Code: `Logic/Cards.cs`, `Logic/ReadyDecks.cs`, `Logic/CardDraws.cs`,
   `Persistence/CardStore.cs`, `UI/RandomWindow.Cards.cs`,
   `UI/RandomWindow.Draws.cs`, `UI/DeckEditor.cs`, `UI/DrawEditor.cs`,
-  `UI/DrawPage.cs`, `UI/DrawStages.cs`, `UI/CardPictures.cs`;
+  `UI/DrawPage.cs`, `UI/DrawStages.cs`, `UI/SpinStage.cs`, `UI/CardPictures.cs`;
   CardsTests. Seed asks the engine for the most picks a line can need
   (a card per step plus its conditions' cards).
 

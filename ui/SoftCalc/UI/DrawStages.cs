@@ -195,11 +195,11 @@ internal sealed class SlotStage : DrawStage
 //==================================================================
 internal sealed class DartStage : DrawStage
 {
-	private const double Flight = 0.7;    // seconds for the dart to fly to a board
+	private const double Flight = 0.5;    // seconds for the dart to fly to a board (owner 2026-11-14)
 	private const double Pause = 0.5;    // seconds at rest before the next board
 	private readonly List<PointF> _hits = new();    // where each dart lands on the board: angle (degrees) and radius (0-1)
 	private readonly List<double> _spins = new();    // seconds each board spins (owner 2026-11-14: 2-4 s, random)
-	private readonly List<double> _throws = new();    // seconds into the spin the dart is thrown (owner: 2-3 s, may be before the board stops)
+	private readonly List<double> _throws = new();    // seconds into the spin the dart is thrown (owner: 1-3 s, may be before the board stops)
 	private readonly List<double> _turns = new();    // degrees each board has turned when it stops
 
 	protected override double Duration => Enumerable.Range(0, Steps.Count).Sum(Length) + 0.2;
@@ -220,9 +220,9 @@ internal sealed class DartStage : DrawStage
 			var (start, sweep) = Sector(step, step.Drawn);
 			float angle = (float)(start + sweep * (0.15 + 0.7 * Look.NextDouble()));
 			_hits.Add(new PointF(angle, (float)(0.25 + 0.6 * Look.NextDouble())));
-			_throws.Add(2 + Look.NextDouble());
-			// owner 2026-11-14: 2-4 s, and long enough that the dart lands while the board still turns
-			_spins.Add(Math.Max(2 + 2 * Look.NextDouble(), _throws[^1] + Flight + 0.6 + 0.6 * Look.NextDouble()));
+			// owner 2026-11-14: the board spins 2-4 s; the dart is thrown 1-3 s after it starts, each random
+			_spins.Add(2 + 2 * Look.NextDouble());
+			_throws.Add(1 + 2 * Look.NextDouble());
 			_turns.Add(360 * (_spins[^1] + Look.NextDouble()));    // about a turn a second, slowing down
 		}
 	}
@@ -257,7 +257,7 @@ internal sealed class DartStage : DrawStage
 	}
 
 	// The angles (degrees, clockwise from the top) of a card's sector
-	private static (double Start, double Sweep) Sector(StageStep step, PoolCard card)
+	internal static (double Start, double Sweep) Sector(StageStep step, PoolCard card)
 	{
 		double total = step.Live.Sum(p => step.Weights ? p.Card.Weight : 1);
 		double start = 0;
