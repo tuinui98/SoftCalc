@@ -208,7 +208,8 @@ come later. Window size and place are remembered too.
   line gives reels side by side, else a row of reels per line, top to
   bottom, each row stopping left to right; more lines show the last one
   still. Dartboard plays the last line only.
-  A bar under the theme's area drags it taller, Results shorter (owner
+  A bar under the theme's area drags it taller, Results shorter, live as it
+  moves (owner
   2026-11-14); the height is kept per tab until the theme changes.
   No spoilers (owner 2026-11-14): Results and History fill only after
   the reels or the dart. Effects play only for one line; the cards
