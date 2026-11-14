@@ -51,6 +51,7 @@ internal sealed class DrawPage : TabPage
 	};
 	private readonly Label _statsNote = new() { AutoSize = true, Dock = DockStyle.Bottom, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 4, 0, 0) };
 	private bool _busy;
+	private List<StageStep>? _lastStage;    // the theme's last result, shown again in the new order after Shuffle
 	private bool _skip;    // a click on Results ends the List effect
 
 	public DrawSetup Setup { get; }
@@ -276,8 +277,9 @@ internal sealed class DrawPage : TabPage
 				bool rows = Setup.Theme == "slot" && lines.Count <= CardDraws.StageLines;
 				var shown = rows ? lines : lines.GetRange(lines.Count - 1, 1);
 				bool single = shown.All(l => l.Count == 1);
-				var stageSteps = shown.SelectMany((l, row) => l.Select(p =>
-					new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card, single ? 0 : row))).ToList();
+				var stageSteps = shown.SelectMany((l, row) => l.Select(p => new StageStep(
+					CardDraws.Arranged(Setup.Steps[p.Step], p.Live ?? new List<PoolCard> { p.Card }), p.Weights, p.Card, single ? 0 : row, p.Step))).ToList();
+				_lastStage = stageSteps;
 				var stage = Setup.Theme switch { "slot" => (DrawStage)_slot, "spin" => _spin, _ => _dart };
 				if (Setup.Theme == "slot")
 				{
@@ -342,15 +344,25 @@ internal sealed class DrawPage : TabPage
 
 	private void Shuffle()
 	{
+		// owner 2026-11-14: Shuffle also mixes where the cards sit on the dartboard and the spin wheel
+		var look = new Random();
 		foreach (var step in Setup.Steps)
 		{
 			step.Drawn.Clear();
 			step.SubDrawn.Clear();
+			CardDraws.MixBoard(step, _store.Find, _store.Named, look);
 		}
 		_save();
 		ShowPiles();
+		if (_lastStage != null && Setup.Theme is "dart" or "spin" && !_busy)
+		{
+			var stage = Setup.Theme == "spin" ? (DrawStage)_spin : _dart;
+			_lastStage = _lastStage.Where(s => s.Step < Setup.Steps.Count)
+				.Select(s => s with { Live = CardDraws.Arranged(Setup.Steps[s.Step], s.Live) }).ToList();
+			stage.ShowStill(_lastStage);
+		}
 		_note.ForeColor = SystemColors.GrayText;
-		_note.Text = "Shuffled: every card is back in the piles.";
+		_note.Text = "Shuffled: every card is back in the piles, and the boards are mixed.";
 	}
 
 	private void ClearDraw()
@@ -359,6 +371,7 @@ internal sealed class DrawPage : TabPage
 		_slot.Clear();
 		_dart.Clear();
 		_spin.Clear();
+		_lastStage = null;
 		_note.ForeColor = SystemColors.GrayText;
 		_note.Text = "Results cleared; History and Stats stay.";
 	}

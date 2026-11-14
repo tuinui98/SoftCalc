@@ -32,6 +32,7 @@ internal sealed class DrawStep
 	public Dictionary<string, string> Then { get; set; } = new();    // deck card key -> its condition (the ">>" text)
 	public Dictionary<string, List<string>> SubDrawn { get; set; } = new();    // deck id -> keys drawn through a condition (No repeat)
 	public Dictionary<string, Dictionary<string, int>> SubCounts { get; set; } = new();    // deck id -> key -> times drawn
+	public List<string> Order { get; set; } = new();    // keys in the order shown on a board, mixed by Shuffle; draws do not use it
 }
 
 internal sealed class DrawRecord
@@ -572,6 +573,31 @@ internal static class CardDraws
 		return ticked.Select(p => (p.Card.Shown(language), counts.GetValueOrDefault(p.Key),
 				100.0 * counts.GetValueOrDefault(p.Key) / drawn, 100.0 * (weights ? p.Card.Weight : 1) / total))
 			.OrderByDescending(r => r.Item2).ToList();
+	}
+
+	// The cards in the step's board order (owner 2026-11-14: Shuffle mixes the board); cards not in it keep their place after
+	public static List<PoolCard> Arranged(DrawStep step, List<PoolCard> cards)
+	{
+		if (step.Order.Count == 0)
+		{
+			return cards;
+		}
+		var place = new Dictionary<string, int>();
+		for (int i = 0; i < step.Order.Count; i++)
+		{
+			place.TryAdd(step.Order[i], i);
+		}
+		return cards.Select((p, i) => (p, i)).OrderBy(x => place.TryGetValue(x.p.Key, out int at) ? at : step.Order.Count + x.i)
+			.Select(x => x.p).ToList();
+	}
+
+	// A new board order: the step's cards and its conditions' decks, mixed (for show only)
+	public static void MixBoard(DrawStep step, Func<string, Deck?> find, Func<string, Deck?> named, Random look)
+	{
+		var keys = Pool(step, find).Select(p => p.Key).Concat(SubDecks(step, find, named).SelectMany(d => SubPool(d)).Select(p => p.Key))
+			.Distinct().ToArray();
+		look.Shuffle(keys);
+		step.Order = keys.ToList();
 	}
 
 	public static string Time(DateTime time)

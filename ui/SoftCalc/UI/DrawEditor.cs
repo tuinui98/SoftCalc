@@ -226,7 +226,7 @@ internal sealed class DrawEditor : Form
 		{
 			Decks = s.Decks.ToList(), Extra = s.Extra, Off = s.Off.ToList(), Weights = s.Weights, NoRepeat = s.NoRepeat,
 			Drawn = s.Drawn.ToList(), Counts = new Dictionary<string, int>(s.Counts), Then = new Dictionary<string, string>(s.Then),
-			SubDrawn = s.SubDrawn.ToDictionary(kv => kv.Key, kv => kv.Value.ToList()),
+			SubDrawn = s.SubDrawn.ToDictionary(kv => kv.Key, kv => kv.Value.ToList()), Order = s.Order.ToList(),
 			SubCounts = s.SubCounts.ToDictionary(kv => kv.Key, kv => new Dictionary<string, int>(kv.Value)),
 		};
 	}

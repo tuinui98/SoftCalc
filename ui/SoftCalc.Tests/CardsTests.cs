@@ -211,6 +211,25 @@ public sealed class CardsTests
 	}
 
 	[Fact]
+	public void ShuffleMixesTheBoardOnly()
+	{
+		// owner 2026-11-14: Shuffle mixes where cards sit; the draw itself does not use the order
+		var step = new DrawStep { Extra = "[1,20]" };
+		var pool = CardDraws.Pool(step, _ => null);
+		Assert.Same(pool, CardDraws.Arranged(step, pool));
+		CardDraws.MixBoard(step, _ => null, _ => null, new Random(7));
+		var arranged = CardDraws.Arranged(step, pool);
+		Assert.Equal(pool.Select(p => p.Key).Order(), arranged.Select(p => p.Key).Order());
+		Assert.NotEqual(pool.Select(p => p.Key), arranged.Select(p => p.Key));
+		Assert.Equal(step.Order, arranged.Select(p => p.Key));
+		// a card added later goes after the mixed ones
+		step.Extra += ", new";
+		Assert.Equal("extra/new", CardDraws.Arranged(step, CardDraws.Pool(step, _ => null))[^1].Key);
+		var setup = new DrawSetup { Steps = { step } };
+		Assert.Equal("1", CardDraws.Draw(setup, _ => null, 1, n => 0, "en", DateTime.UtcNow).Lines[0][0].Card.Card.Name);
+	}
+
+	[Fact]
 	public void CsvKeepsTheColour()
 	{
 		var (rows, error) = CardText.ParseCsv("name,weight,image,color\nA,2,,#c62828\nB");
