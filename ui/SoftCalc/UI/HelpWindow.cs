@@ -172,6 +172,7 @@ internal sealed class HelpWindow : Form
 			h1 { font-size: 16pt; font-weight: 600; margin: 4px 0 10px 0; }
 			h2 { font-size: 12.5pt; font-weight: 600; margin: 18px 0 6px 0; }
 			h3 { font-size: 11pt; font-weight: 600; margin: 14px 0 4px 0; }
+			h4 { font-size: 10pt; font-weight: 600; margin: 10px 0 2px 0; }
 			p, ul, ol { margin: 6px 0; }
 			li { margin: 2px 0; }
 			code { font-family: Consolas, monospace; font-size: 10pt; background: {{box}}; padding: 0 3px; }

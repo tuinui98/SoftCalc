@@ -8,6 +8,8 @@ Icons: IconMCP (https://iconmcp.com/), MIT
 Icons in this folder (and the program icon drawn from calculator.svg by
 tools/IconMaker) come from IconMCP, https://iconmcp.com/ , downloaded
 2026-11-06. Licence page: https://iconmcp.com/licence
+random, keypad, history, advanced-view and power were added 2026-11-15
+from the owner's ribbon, where they were chosen on iconmcp.com.
 
 IconMCP licence: MIT
 

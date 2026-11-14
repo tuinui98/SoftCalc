@@ -7,12 +7,16 @@ a menu command, so anything you can do from a menu can have a button.
 
 | group | buttons |
 |---|---|
-| Angle | Deg, Rad, Grad |
-| Output | Dec, Hex, Bin, Oct, Word size |
+| Angle | Deg, Rad |
 | Decimals | more, fewer, All |
-| Mode | RPN, Prec (precision) |
+| Tools | Graph, Conversions, Interest, Random |
+| View | Numeric, History, Advanced |
 | History | Clear, Save |
-| Tools | Graph, Interest, On top, Conversions |
+| Window | On top, Exit |
+
+Grad, the output bases (Dec, Hex, Bin, Oct, Word size), RPN and Prec
+are in the menus; Customize Ribbon puts any of them back on the
+ribbon. A ribbon you customized before stays as you made it.
 
 View > Show Ribbon hides or shows it. Numeric Calc never shows it.
 

@@ -1,9 +1,9 @@
 # RPN mode
 
 In RPN (Reverse Polish Notation) you write the numbers first and the
-operator after them. Turn it on with the ribbon's **RPN** button or
-View > Advanced Options > RPN Mode; the Input box title then reads
-`Input - RPN mode`.
+operator after them. Turn it on with View > Advanced Options > RPN Mode
+(Customize Ribbon can add an **RPN** button); the Input box title then
+reads `Input - RPN mode`.
 
 ```rpn
 56 34 +               => 90

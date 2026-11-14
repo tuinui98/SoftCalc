@@ -83,9 +83,10 @@ four (or three) numbers: `2 5 1 10 randbeta`.
 
 ## The Random window
 
-Tools > Random... (it can go on the ribbon too). It has four tabs:
+Tools > Random..., or **Random** on the ribbon. It has four tabs:
 Simple, Advanced, Password and Entropy, then your draw tabs and a
-**...** tab that makes them.
+**...** tab that makes them. On a first run there is one draw tab to
+try, **Spin**: the zodiac signs on a spin wheel.
 
 ### Source
 
@@ -247,7 +248,8 @@ A draw picks from a pile of cards. The **...** tab holds the decks:
 - **My decks**: **New deck...**, **Edit...** (or a double-click),
   **Copy**, **Delete** (it asks first), **Import CSV...** (a new deck
   named after the file) and **Export CSV...**.
-- **Ready-made decks**: playing cards (the two jokers start unticked
+- **Ready-made decks**: playing cards (four colours: spades black,
+  hearts red, diamonds blue, clubs green; the two jokers start unticked
   in a draw), months, days of the week, the provinces of Thailand,
   countries by continent (the UN members, Palestine, Taiwan and the
   Vatican; also all of them), twelve colours, the zodiac signs and the
@@ -257,25 +259,33 @@ A draw picks from a pile of cards. The **...** tab holds the decks:
 
 ![A deck](img/random-deck.light.png)
 
-- Each card has a name, a **Weight** and a **Picture**. A card of
-  weight 2 comes up twice as often as one of weight 1, when the draw
-  uses weights. A picture is shrunk to 128 pixels and kept in the
-  data folder, so the original file can move.
+- Each card has a name, a **Weight**, a **Picture** and a **Colour**.
+  A card of weight 2 comes up twice as often as one of weight 1, when
+  the draw uses weights. A picture is shrunk to 128 pixels and kept in
+  the data folder, so the original file can move.
+- **Colour...** gives the chosen cards a colour (several at once),
+  **No colour** takes it off. The dartboard and spin wheel fill a
+  card's part with it, the slot machine shows a strip, and a card
+  without a picture shows its colour in the list.
 - **Add** takes several cards at once: one per line, or split by
   commas, or by spaces. With **Split** on Auto it uses lines if there
   is a line break, else commas if there is a comma, else spaces; a
-  name with a space in it needs lines or commas.
+  name with a space in it needs lines or commas. A weight can follow a
+  bar (`Fried rice|2`), and a run of numbers makes a card for each
+  (see *Extra cards* below). A condition (`>>`) belongs to a draw tab,
+  so Add leaves it out and says so.
 - **Edit all as text...** shows every card on a line, with the weight
   after a bar: `Fried rice | 2`.
 - **Import CSV...** adds cards from a CSV or text file: a name, then a
-  weight and the path of a picture if you like (`name,weight,image`).
-  Thai text from Excel reads correctly. **Export CSV...** writes the
-  same columns, for Excel too.
+  weight, the path of a picture and a colour if you like
+  (`name,weight,image,color`, the colour as `#RRGGBB`). Thai text from
+  Excel reads correctly. **Export CSV...** writes the same columns, for
+  Excel too.
 
 ### Draw tabs
 
-**New draw...** asks for the tab's name (Custom random to start) and
-its steps:
+**New draw...** asks for the tab's name (Custom random to start), its
+theme and its steps:
 
 ![A draw's steps](img/random-draw-edit.light.png)
 
@@ -288,18 +298,84 @@ its steps:
   until you press Shuffle.
 - One Draw gives a line with a card from each step in turn, such as
   `Friday · Fried rice · Iced tea`.
+- **Save as deck...** makes the Extra cards a deck of your own (the
+  deck editor opens to name it); the step then uses that deck, with
+  the cards' conditions, ticks and counts.
+
+#### Extra cards
+
+| you type | you get |
+|---|---|
+| `Fried rice` | a card |
+| `Fried rice\|2` | a card of weight 2 |
+| `[1,100]` | a card for each number from 1 to 100 |
+| `[0,1,0.25]` | 0.00, 0.25, 0.50, 0.75, 1.00 (the third number is the step) |
+| `[10,1,3]` | 10, 7, 4, 1 |
+| `[01,31]` | 01, 02 ... 31: leading zeros and decimals stay as typed |
+| `Fish [1,3] each` | Fish 1 each, Fish 2 each, Fish 3 each |
+
+A run of numbers takes the weight and condition after it to every
+card: `[1,6]>>stop|2`. Only the first run in a card counts; one that is
+written wrong stays as a card's name.
+
+#### Conditions
+
+A condition after `>>` says what happens once the card is drawn:
+
+| you type | then |
+|---|---|
+| `Run` (none) or `Run>>next` | the next step, as usual |
+| `Rice soup>>stop` | the line ends here |
+| `Lunch>>step 3` | skip to step 3 (only a later step) |
+| `Gym>>Gym` | draw a card from the deck named Gym too, then the next step |
+| `Gym>>Gym*2` | two different cards from Gym |
+| `Gym>>Gym,stop` | a card from Gym, then the line ends |
+| `Rice soup>>stop\|2` | a condition and a weight (`Rice soup\|2>>stop` works too) |
+
+For a card from a deck, choose it in the card list and set the **Then**
+row: Next step, Stop the line, Skip to step, or Draw from deck with how
+many cards and **then stop**. The list shows the condition after the
+card, such as `Gym → Gym`. Conditions belong to the draw tab, not the
+deck. A deck named like a word above is written `deck:stop`. OK checks
+every condition and names a deck or step that is not there.
+
+```
+Step 1:  Run, Badminton, Gym>>Gym|2, Swim>>stop
+Step 2:  30 minutes, 45 minutes, 1 hour
+```
+
+gives lines such as `Run · 45 minutes`, `Gym → Yoga · 1 hour` and
+`Swim`. A deck drawn by a condition goes one level only (its cards'
+own conditions are not used), follows the step's weights and No
+repeat, and has its own rows in Stats, such as `1 → Gym`.
+
+#### Drawing
 
 ![A draw tab with the slot machine](img/random-draw-slot.light.png)
 
 - **Draw** draws **Count** lines. The **Theme** is set in **Edit
-  tab...**: **List**, **Slot machine** (a reel for each step; new tabs
-  start here) or **Dartboard** (a board for each step, each card's part
-  as big as its chance). With **Effects** the names roll in Results,
-  the reels roll or the dart flies while one line is drawn; the cards
-  are drawn first, so the effect never changes them, and a click skips
-  it.
-- **Shuffle** puts the drawn cards back in the No repeat piles. The
-  line under the name shows each step's cards and how many are left.
+  tab...**:
+
+| theme | the effect |
+|---|---|
+| List | the lines roll in Results, slowing down |
+| Slot machine | a reel for each card, stopping one by one from the left; with Count 2 to 5 every line plays, a row each (side by side when each line has one card); new tabs start here |
+| Dartboard | a board for each card, each card's part as big as its chance; the board spins 2 to 4 seconds and the dart is thrown 1 to 3 seconds in, so it may land while the board still turns and turn with it |
+| Spin wheel | up to three rings a wheel, a card each, turning in turn the other way and stopping from the outside in; the card under the marker at the top (and the one on the hub) is drawn; more cards spin more wheels |
+
+- With **Effects** on, Results and History wait until the reels stop or
+  the dart lands, so nothing gives the result away. The cards are drawn
+  first, so the effect never changes them; a click skips it.
+- A dartboard with more than 36 cards gets rings, up to four: every
+  card's part keeps its share of the board, the heaviest cards go in
+  the middle, and the parts stay 10 degrees wide or more where they can
+  (77 cards: 7, 15, 23 and 32 from the middle out).
+- Drag the bar under the theme to make it taller (Results gets
+  shorter); the tab keeps the height.
+- **Shuffle** puts the drawn cards back in the No repeat piles and
+  mixes where the cards sit on the dartboard and spin wheel; this is
+  for show only, draws and seeds do not use it. The line under the
+  name shows each step's cards and how many are left.
 - **Results** shows the last Draw, **History** every line with its
   date and time (newest first, the last 1000), **Stats** how often each
   card came up, its share, and the share its weight gives.
@@ -309,12 +385,14 @@ its steps:
   (all when none is chosen).
 - Right-click Results, History or Stats for Copy, Copy all and the
   Clear item of that list.
-- **Edit tab...** changes the name and steps; **Delete tab** removes
-  the tab with its History and Stats (its decks stay).
+- **Edit tab...** changes the name, theme, Effects and steps; **Delete
+  tab** removes the tab with its History and Stats (its decks stay).
 - With **Seed** in the Source row, the same seed and the same piles
   give the same cards.
 
 ![The dartboard](img/random-draw-dart.light.png)
+
+![The spin wheel](img/random-draw-spin.light.png)
 
 Decks and draw tabs, with their History and Stats, are kept in
 `cards.json` (and pictures in `cards\`) in the data folder. Nothing

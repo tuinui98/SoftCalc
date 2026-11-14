@@ -368,7 +368,7 @@ ends 1:1, the drag insert line is visible enough on dark.
     (text like the menus do, so History stays expression based),
     resizable keypad, font scaling with Text Size.
 - [x] Random tools (a section or window): built 2026-11-12/13, help
-      updated; not released yet (after 1.3.0).
+      updated; released in 1.4.0 (2026-11-15).
   - Owner 2026-11-12: a window of its own with tabs: Simple random,
     Password generator, and tabs the user makes for own lists (e.g.
     "what to eat": a list to pick from, options such as fried or
@@ -413,19 +413,26 @@ ends 1:1, the drag insert line is visible enough on dark.
       extras, unticked cards, weights, No repeat pile with Shuffle,
       List / Slot machine / Dartboard with effects, Results, History,
       Stats, Clear draw, System or Seed), cards.json; help topic updated.
+      Released in 1.4.0 (2026-11-15).
   - [ ] Ready-made districts (928, English and Thai): needs a data
         source; ask the owner.
   - [x] Conditions (owner 2026-11-14, built 2026-11-14): extra cards
         with "|weight" and ">>condition", Then row for deck cards, Save
         as deck, a card drawing from another deck (random_plan.md R7).
-  - [ ] Help and pictures for the 2026-11-14 fix rounds, once the owner
-        calls the topic done (owner: no help until then): Theme and
+  - [x] Help and pictures for the 2026-11-14 fix rounds (done
+        2026-11-15 when the owner called the topic done): Theme and
         Effects in Edit tab, List effect, Results/History/Stats buttons,
         Clear history, right-click menus, Dartboard spin, conditions
         (>>, |, Then row, Save as deck, Stats rows "1 → deck"), Add box
         weights, no spoilers, dartboard timing, slot rows, Spin wheel,
         drag bar, dartboard rings, card colours, [1,100] runs, Shuffle
         mixes the board.
+- [x] New-user defaults (owner 2026-11-15, released in 1.4.0): the
+      owner's ribbon (Angle Deg/Rad, Decimals, Tools with Random, View,
+      History, Window; its icons built in), degrees, Advanced view at
+      693x728, Samples with a rand line, graph y=sin(x) and y=x/360 over
+      -360..360, a Spin draw tab (zodiac wheel). Existing settings keep
+      theirs; an uncustomized ribbon follows the new default.
 - [ ] Crypto wallet seeds (first: list what SoftCalc could do).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe

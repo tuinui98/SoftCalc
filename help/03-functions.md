@@ -39,14 +39,14 @@ log10(1000)           => 3
 
 `sin`, `cos` and `tan` read their argument in the angle unit, and `asin`,
 `acos`, `atan` answer in it. Pick the unit with the ribbon's **Angle**
-group (Deg / Rad / Grad) or View > Advanced Options > Degrees / Radians /
-Grads. Hyperbolic functions do not use it.
+group (Deg / Rad) or View > Advanced Options > Degrees / Radians /
+Grads. SoftCalc starts in degrees. Hyperbolic functions do not use it.
 
 ```calc
 sin(pi/6)             => 0.5
 ```
 
-The line above is in radians; in degrees write `sin(30)`.
+The line above is in radians; in degrees (the start) write `sin(30)`.
 
 - A pole is an error, not a huge number: `tan(90)` in degrees,
   `ln(0)`, `1/0`.
@@ -65,7 +65,7 @@ twos(300, 8)          => 44
 ```
 
 - Without `bits`, View > Word Size (8, 16, 32 or 64 bits, also on the
-  ribbon's Output group) is used.
+  ribbon, see *Ribbon*) is used.
 - A value outside the word wraps, like hardware: `twos(300, 8)` is 44.
 - History adds the result in hex on the right: `twos(-1)` shows
   `twos(-1, 32) = 0xFFFFFFFF`.
