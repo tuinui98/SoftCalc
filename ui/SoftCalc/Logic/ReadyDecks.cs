@@ -16,6 +16,12 @@ internal static class ReadyDecks
 	public const string Prefix = "ready:";
 	public static readonly string[] Suits = { "♠", "♥", "♦", "♣" };
 	public static readonly string[] Ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+	// Four-colour pack (owner 2026-11-14): spades black, hearts red, diamonds blue, clubs green,
+	// two shades in turn so cards side by side on a board stay apart
+	public static readonly string[][] SuitShades =
+	{
+		new[] { "#202020", "#4A4A4A" }, new[] { "#C62828", "#E05353" }, new[] { "#1E5AA8", "#4A86D0" }, new[] { "#2E7D32", "#55A35A" },
+	};
 
 	private static readonly (string File, string Id, string English, string Thai, bool Alphabetical)[] Lists =
 	{
@@ -69,9 +75,10 @@ internal static class ReadyDecks
 	// 52 cards, ace to king in each suit, and two jokers that start unticked
 	private static Deck PlayingCards()
 	{
-		var cards = Suits.SelectMany(s => Ranks.Select(r => new Card { Name = r + s })).ToList();
-		cards.Add(new Card { Name = "Joker (black)", Thai = "โจ๊กเกอร์ดำ", Off = true });
-		cards.Add(new Card { Name = "Joker (red)", Thai = "โจ๊กเกอร์แดง", Off = true });
+		var cards = Suits.SelectMany((s, suit) => Ranks.Select((r, rank) => new Card { Name = r + s, Color = SuitShades[suit][rank % 2] }))
+			.ToList();
+		cards.Add(new Card { Name = "Joker (black)", Thai = "โจ๊กเกอร์ดำ", Off = true, Color = SuitShades[0][0] });
+		cards.Add(new Card { Name = "Joker (red)", Thai = "โจ๊กเกอร์แดง", Off = true, Color = SuitShades[1][0] });
 		return new Deck { Id = Prefix + "playing-cards", Name = "Playing cards", Thai = "ไพ่ 1 สำรับ", Cards = cards };
 	}
 

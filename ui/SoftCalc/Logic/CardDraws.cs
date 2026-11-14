@@ -170,10 +170,17 @@ internal static class CardDraws
 	//==================================================================
 	//  Extra cards: "name", "name|2", "name>>stop", "name>>stop|2", "name|2>>stop"
 	//==================================================================
-	public static List<string> ExtraEntries(string extra, string mode = "auto")
+	// The entries typed, split as the mode says; a run of numbers ("[1,100]") is made into its cards unless expand is false
+	public static List<string> ExtraEntries(string extra, string mode = "auto", bool expand = true)
 	{
+		// commas and spaces inside [ ] are part of the run, not splits
+		string guarded = Brackets.Replace(extra, m => m.Value.Replace(',', CommaMark).Replace(' ', SpaceMark));
+		if (mode == "auto" && !guarded.Contains('\n') && !guarded.Contains(',') && guarded.Contains('['))
+		{
+			mode = "lines";    // "fish [1,100] each" alone is one entry, not three
+		}
 		var entries = new List<string>();
-		foreach (string piece in CardText.Split(extra, mode))
+		foreach (string piece in CardText.Split(guarded, mode))
 		{
 			// "Gym>>Gym,stop" split by commas, and "x>>step 3" split by spaces, join up again
 			if (entries.Count > 0 && entries[^1].Contains(">>"))
@@ -192,7 +199,52 @@ internal static class CardDraws
 			}
 			entries.Add(piece);
 		}
-		return entries;
+		entries = entries.Select(e => e.Replace(CommaMark, ',').Replace(SpaceMark, ' ')).ToList();
+		return expand ? entries.SelectMany(e => Expand(e).Entries).ToList() : entries;
+	}
+
+	private const char CommaMark = '\u0001', SpaceMark = '\u0002';
+	private static readonly Regex Brackets = new(@"\[[^\[\]\r\n]*\]", RegexOptions.CultureInvariant);
+	private static readonly Regex Run = new(@"\[\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*(?:,\s*(-?\d+(?:\.\d+)?)\s*)?\]",
+		RegexOptions.CultureInvariant);
+
+	// Owner 2026-11-14: [from,to] or [from,to,step] (step 1 if left out, decimals allowed) gives a card for
+	// each number, the words around it on each: "fish [1,3] each" is "fish 1 each" ... "fish 3 each".
+	// Leading zeros and decimals are kept as typed: [01,10] gives 01 ... 10, [0,1,0.25] gives 0.00 ... 1.00.
+	// Only the first run in an entry counts; a run that is not right stays as typed, with the reason.
+	public static (List<string> Entries, string? Error) Expand(string entry)
+	{
+		if (Run.Match(entry) is not { Success: true } run)
+		{
+			return (new List<string> { entry }, null);
+		}
+		decimal Number(int group) => decimal.Parse(run.Groups[group].Value, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint,
+			CultureInfo.InvariantCulture);
+		decimal from = Number(1), to = Number(2), step = run.Groups[3].Success ? Math.Abs(Number(3)) : 1;
+		if (step == 0)
+		{
+			return (new List<string> { entry }, $"'{run.Value}': the step must not be 0.");
+		}
+		decimal count = Math.Floor(Math.Abs(to - from) / step) + 1;
+		if (count > CardText.MaxCards)
+		{
+			return (new List<string> { entry }, $"'{run.Value}' gives {count:0} cards; at most {CardText.MaxCards}.");
+		}
+		int places = Enumerable.Range(1, 3).Where(g => run.Groups[g].Success)
+			.Max(g => run.Groups[g].Value.Contains('.') ? run.Groups[g].Value.Length - run.Groups[g].Value.IndexOf('.') - 1 : 0);
+		// a typed leading zero sets the width of the whole number part
+		int width = new[] { 1, 2 }.Select(g => run.Groups[g].Value.TrimStart('-').Split('.')[0])
+			.Where(w => w.Length > 1 && w[0] == '0').Select(w => w.Length).DefaultIfEmpty(1).Max();
+		var entries = new List<string>();
+		for (int i = 0; i < count; i++)
+		{
+			decimal value = from + (to >= from ? i : -i) * step;
+			string text = Math.Abs(value).ToString("F" + places, CultureInfo.InvariantCulture);
+			int point = text.IndexOf('.');
+			text = text.PadLeft(text.Length + Math.Max(0, width - (point < 0 ? text.Length : point)), '0');
+			entries.Add(entry[..run.Index] + (value < 0 ? "-" : "") + text + entry[(run.Index + run.Length)..]);
+		}
+		return (entries, null);
 	}
 
 	// Joins a piece to an entry, keeping a weight on the entry ("a|2>>b" + ",stop") before the flow
@@ -266,6 +318,13 @@ internal static class CardDraws
 	public static string? Check(List<DrawStep> steps, int index, Func<string, Deck?> find, Func<string, Deck?> named, string language)
 	{
 		var step = steps[index];
+		foreach (string typed in ExtraEntries(step.Extra, expand: false))
+		{
+			if (Expand(typed).Error is { } runError)
+			{
+				return $"Step {index + 1}, extra: {runError}";
+			}
+		}
 		foreach (string entry in ExtraEntries(step.Extra))
 		{
 			var (name, _, _, error) = ParseExtra(entry);
