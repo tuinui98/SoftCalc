@@ -192,12 +192,20 @@ internal sealed class SlotStage : DrawStage
 //==================================================================
 internal sealed class DartStage : DrawStage
 {
-	private const double Flight = 0.9;    // seconds for the dart to fly to a board
+	private const double Flight = 0.7;    // seconds for the dart to fly to a board
+	private const double Pause = 0.5;    // seconds at rest before the next board
 	private readonly List<PointF> _hits = new();    // where each dart lands on the board: angle (degrees) and radius (0-1)
-	private readonly List<double> _spins = new();    // seconds each board spins before the dart (owner: 1-2 s, random)
+	private readonly List<double> _spins = new();    // seconds each board spins (owner 2026-11-14: 2-4 s, random)
+	private readonly List<double> _throws = new();    // seconds into the spin the dart is thrown (owner: 2-3 s, may be before the board stops)
 	private readonly List<double> _turns = new();    // degrees each board has turned when it stops
 
-	protected override double Duration => _spins.Sum() + Flight * Steps.Count + 0.2;
+	protected override double Duration => Enumerable.Range(0, Steps.Count).Sum(Length) + 0.2;
+
+	// One board's time: its spin, or the dart's flight if that ends later, and a pause between boards
+	private double Length(int board)
+	{
+		return Math.Max(_spins[board], _throws[board] + Flight) + (board < Steps.Count - 1 ? Pause : 0);
+	}
 
 	protected override void Prepare()
 	{
@@ -209,34 +217,39 @@ internal sealed class DartStage : DrawStage
 			var (start, sweep) = Sector(step, step.Drawn);
 			float angle = (float)(start + sweep * (0.15 + 0.7 * Look.NextDouble()));
 			_hits.Add(new PointF(angle, (float)(0.25 + 0.6 * Look.NextDouble())));
-			_spins.Add(1 + Look.NextDouble());
-			_turns.Add(720 + 360 * Look.NextDouble());
+			_spins.Add(2 + 2 * Look.NextDouble());
+			_throws.Add(2 + Look.NextDouble());
+			_turns.Add(360 * (_spins[^1] + Look.NextDouble()));    // about a turn a second, slowing down
 		}
 	}
 
-	// The board in play, how far it has turned (degrees), and how far the dart has flown (0-1)
-	private (int Board, double Turn, double Flown) Phase()
+	// The board in play, how far it has turned (degrees), how far the dart has flown (0-1),
+	// the turn at the moment the dart lands, and whether the board has stopped
+	private (int Board, double Turn, double Flown, double Landing, bool Still) Phase()
 	{
 		int last = Steps.Count - 1;
 		if (Elapsed == double.MaxValue)
 		{
-			return (last, _turns[last], 1);
+			return (last, _turns[last], 1, _turns[last], true);
 		}
 		double t = Elapsed;
 		for (int i = 0; i < Steps.Count; i++)
 		{
-			if (t < _spins[i])
+			if (t < Length(i) || i == last)
 			{
-				return (i, _turns[i] * EaseOut(t / _spins[i]), 0);
+				double landing = Turn(i, _throws[i] + Flight);
+				double flown = t < _throws[i] ? 0 : Math.Clamp((t - _throws[i]) / Flight, 0, 1);
+				return (i, Turn(i, t), flown, landing, t >= _spins[i]);
 			}
-			t -= _spins[i];
-			if (t < Flight || i == last)
-			{
-				return (i, _turns[i], Math.Clamp(t / (Flight * 0.8), 0, 1));
-			}
-			t -= Flight;
+			t -= Length(i);
 		}
-		return (last, _turns[last], 1);
+		return (last, _turns[last], 1, _turns[last], true);
+	}
+
+	// How far board i has turned t seconds into its spin
+	private double Turn(int board, double t)
+	{
+		return _turns[board] * EaseOut(t / _spins[board]);
 	}
 
 	// The angles (degrees, clockwise from the top) of a card's sector
@@ -268,14 +281,14 @@ internal sealed class DartStage : DrawStage
 			return;
 		}
 		// the board in play: during the effect the one the dart flies to, at rest the last
-		var (board, turn, flight) = Phase();
+		var (board, turn, flight, landing, still) = Phase();
 		var step = Steps[board];
 
 		// the results so far, on the left, when there are several steps
 		int listWidth = Steps.Count > 1 ? Math.Min(200, ClientSize.Width / 3) : 0;
 		if (listWidth > 0)
 		{
-			var done = Steps.Take(flight >= 1 ? board + 1 : board).Select(s => s.Drawn.Card.Shown(Language));
+			var done = Steps.Take(flight >= 1 && still ? board + 1 : board).Select(s => s.Drawn.Card.Shown(Language));
 			TextRenderer.DrawText(g, $"Step {board + 1} of {Steps.Count}\n\n" + string.Join("\n", done), Font,
 				new Rectangle(8, 8, listWidth - 8, ClientSize.Height - 16), SystemColors.ControlText,
 				TextFormatFlags.Left | TextFormatFlags.Top | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
@@ -289,13 +302,14 @@ internal sealed class DartStage : DrawStage
 		var rect = new Rectangle(listWidth + (ClientSize.Width - listWidth - diameter) / 2, (ClientSize.Height - diameter) / 2, diameter, diameter);
 		DrawBoard(g, step, rect, turn);
 
-		// the dart: once the board stops, flies in from the lower right and lands on its spot
+		// the dart flies in from the lower right towards where its spot will be when it lands,
+		// then sticks and turns with the board (owner 2026-11-14: it may land before the board stops)
 		if (flight <= 0)
 		{
 			return;
 		}
 		var hit = _hits[board];
-		double radians = (hit.X + turn - 90) * Math.PI / 180;
+		double radians = (hit.X + (flight >= 1 ? turn : landing) - 90) * Math.PI / 180;
 		var target = new PointF(rect.Left + rect.Width / 2f + (float)(Math.Cos(radians) * hit.Y * rect.Width / 2),
 			rect.Top + rect.Height / 2f + (float)(Math.Sin(radians) * hit.Y * rect.Height / 2));
 		double t = EaseOut(flight);
@@ -309,7 +323,7 @@ internal sealed class DartStage : DrawStage
 		using var flights = new SolidBrush(Theme.Series(1));
 		g.FillPolygon(flights, new[] { new PointF(tip.X + 22, tip.Y + 22), new PointF(tip.X + 40, tip.Y + 30),
 			new PointF(tip.X + 36, tip.Y + 36), new PointF(tip.X + 30, tip.Y + 40) });
-		if (flight >= 1)
+		if (flight >= 1 && still)
 		{
 			g.FillEllipse(Brushes.Black, target.X - 3, target.Y - 3, 6, 6);
 			var name = step.Drawn.Card.Shown(Language);

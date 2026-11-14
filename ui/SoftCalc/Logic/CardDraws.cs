@@ -168,10 +168,10 @@ internal static class CardDraws
 	//==================================================================
 	//  Extra cards: "name", "name|2", "name>>stop", "name>>stop|2", "name|2>>stop"
 	//==================================================================
-	public static List<string> ExtraEntries(string extra)
+	public static List<string> ExtraEntries(string extra, string mode = "auto")
 	{
 		var entries = new List<string>();
-		foreach (string piece in CardText.Split(extra, "auto"))
+		foreach (string piece in CardText.Split(extra, mode))
 		{
 			// "Gym>>Gym,stop" split by commas, and "x>>step 3" split by spaces, join up again
 			if (entries.Count > 0 && entries[^1].Contains(">>"))

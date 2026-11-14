@@ -130,7 +130,7 @@ internal sealed class DeckEditor : Form
 		addRow.Controls.Add(new Label { Text = "Add", AutoSize = true, Margin = new Padding(3, 7, 6, 3) });
 		addRow.Controls.AddRange(new Control[] { _add, new Label { Text = "Split", AutoSize = true, Margin = new Padding(6, 7, 3, 3) }, _split, addButton });
 		new ToolTip().SetToolTip(_add, "Several cards at once: one per line, or split by commas or spaces. "
-			+ "A name with a space needs lines or commas.");
+			+ "A name with a space needs lines or commas. name|2: a weight of 2.");
 
 		var fileRow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Bottom, WrapContents = true };
 		var asText = new Button { Text = "Edit all as &text...", AutoSize = true };
@@ -287,22 +287,31 @@ internal sealed class DeckEditor : Form
 	//==================================================================
 	private void AddTyped()
 	{
-		var names = CardText.Split(_add.Text, CardText.Splits[Math.Max(0, _split.SelectedIndex)]);
+		// owner 2026-11-14: "name|2" takes a weight as in a draw's Extra; a ">>" condition
+		// is cut off, since conditions belong to a draw tab, not to the deck
+		var entries = CardDraws.ExtraEntries(_add.Text, CardText.Splits[Math.Max(0, _split.SelectedIndex)]);
 		var made = new List<Card>();
-		foreach (string name in names)
+		bool cut = false;
+		foreach (string entry in entries)
 		{
-			var (card, error) = CardText.Make(name, 1);
+			var (name, weight, _, weightError) = CardDraws.ParseExtra(entry);
+			var (card, error) = weightError == null ? CardText.Make(name, weight) : (null, weightError);
 			if (card == null)
 			{
-				Say($"'{Short(name)}': {error}");
+				Say($"'{Short(entry)}': {error}");
 				return;
 			}
+			cut |= entry.Contains(">>");
 			made.Add(card);
 		}
 		int skipped = CardText.AddNew(_deck.Cards, made);
 		_add.Clear();
 		FillList(_deck.Cards.Count - 1);
 		SayAdded(made.Count - skipped, skipped);
+		if (cut)
+		{
+			_note.Text += " Conditions (>>) were left out: set them in a draw tab's Edit tab.";
+		}
 	}
 
 	private void EditAsText()
