@@ -30,9 +30,14 @@ internal sealed class DrawPage : TabPage
 	private readonly Button _draw = new() { Text = "&Draw", AutoSize = true, MinimumSize = new Size(90, 0) };
 	private readonly NumericUpDown _count = new() { Minimum = 1, Maximum = CardDraws.MaxCount, Width = 70 };
 	private readonly Label _note = new() { AutoSize = true, Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 4, 0, 4) };
-	private readonly TabControl _views = new() { Dock = DockStyle.Fill };
-	private readonly ListBox _results = new() { Dock = DockStyle.Fill, IntegralHeight = false, SelectionMode = SelectionMode.MultiExtended };
-	private readonly ListBox _history = new() { Dock = DockStyle.Fill, IntegralHeight = false, SelectionMode = SelectionMode.MultiExtended };
+	// Results, History and Stats: a row of toggle buttons over three panels (a nested TabControl's frame is white in dark mode)
+	private readonly Panel[] _views = { ViewPanel(true), ViewPanel(false), ViewPanel(false) };
+	private readonly Button[] _viewButtons = new Button[3];
+	private int _view;    // 0 Results, 1 History, 2 Stats
+	private Font? _boldFont;
+	private Font _bold => _boldFont ??= new Font(Font, FontStyle.Bold);
+	private readonly ListBox _results = new() { Dock = DockStyle.Fill, IntegralHeight = false, BorderStyle = BorderStyle.FixedSingle, SelectionMode = SelectionMode.MultiExtended };
+	private readonly ListBox _history = new() { Dock = DockStyle.Fill, IntegralHeight = false, BorderStyle = BorderStyle.FixedSingle, SelectionMode = SelectionMode.MultiExtended };
 	private readonly ListView _stats = new()
 	{
 		Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HeaderStyle = ColumnHeaderStyle.Nonclickable,
@@ -89,9 +94,8 @@ internal sealed class DrawPage : TabPage
 		//==================================================================
 		_results.Font = new Font(Font.FontFamily, 11f);
 		_results.MouseDown += (_, _) => _skip = true;
-		var resultsPage = new TabPage("Results");
+		var (resultsPage, historyPage, statsPage) = (_views[0], _views[1], _views[2]);
 		resultsPage.Controls.Add(_results);
-		var historyPage = new TabPage("History");
 		historyPage.Controls.Add(_history);
 		var clearHistory = new Button { Text = "Clear &history...", AutoSize = true, Dock = DockStyle.Bottom };
 		clearHistory.Click += (_, _) => ClearHistory();
@@ -103,27 +107,31 @@ internal sealed class DrawPage : TabPage
 		_stats.Columns.Add("Expected", 70, HorizontalAlignment.Right);
 		var clearStats = new Button { Text = "Clear s&tats...", AutoSize = true, Dock = DockStyle.Bottom };
 		clearStats.Click += (_, _) => ClearStats();
-		var statsPage = new TabPage("Stats");
 		statsPage.Controls.Add(_stats);
 		statsPage.Controls.Add(_statsNote);
 		statsPage.Controls.Add(clearStats);
-		_views.TabPages.AddRange(new[] { resultsPage, historyPage, statsPage });
+		var viewRow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = false, Margin = Padding.Empty };
+		string[] names = { "Results", "History", "Stats" };
+		for (int i = 0; i < 3; i++)
+		{
+			int view = i;
+			_viewButtons[i] = new Button { Text = names[i], AutoSize = true, MinimumSize = new Size(76, 0), Margin = new Padding(0, 3, 2, 3) };
+			_viewButtons[i].Click += (_, _) => ShowView(view);
+			viewRow.Controls.Add(_viewButtons[i]);
+		}
 		_results.ContextMenuStrip = Menu(("&Copy", () => Copy(_results, all: false)), ("Copy &all", () => Copy(_results, all: true)),
 			("C&lear draw", ClearDraw));
 		_history.ContextMenuStrip = Menu(("&Copy", () => Copy(_history, all: false)), ("Copy &all", () => Copy(_history, all: true)),
 			("Clear &history...", ClearHistory));
 		_stats.ContextMenuStrip = Menu(("Copy &all", CopyStats), ("Clear s&tats...", ClearStats));
-		_views.SelectedIndexChanged += (_, _) =>
-		{
-			if (_views.SelectedTab == statsPage)
-			{
-				FillStats();
-			}
-		};
 
 		_stageHolder.Controls.Add(_slot);
 		_stageHolder.Controls.Add(_dart);
-		Controls.Add(_views);
+		var views = new Panel { Dock = DockStyle.Fill };
+		views.Controls.AddRange(_views);
+		views.Controls.Add(viewRow);
+		Controls.Add(views);
+		_viewButtons[0].Font = _bold;    // Results shows first; toggling Visible here would make its handle early
 		Controls.Add(_note);
 		Controls.Add(buttons);
 		Controls.Add(_stageHolder);
@@ -202,7 +210,7 @@ internal sealed class DrawPage : TabPage
 			}
 			var (lines, error) = CardDraws.Draw(Setup, _store.Find, count, below, Language, DateTime.UtcNow);
 			_save();
-			_views.SelectedIndex = 0;
+			ShowView(0);
 			if (Setup.Theme == "list" && Setup.Effects && lines.Count == 1)
 			{
 				await RollAsync(live);
@@ -319,7 +327,7 @@ internal sealed class DrawPage : TabPage
 
 	private void CopyLines()
 	{
-		Copy(_views.SelectedIndex == 1 ? _history : _results, all: false);
+		Copy(_view == 1 ? _history : _results, all: false);
 	}
 
 	// The selected lines, or all of them when none is selected or all is asked
@@ -341,6 +349,30 @@ internal sealed class DrawPage : TabPage
 		{
 			Clipboard.SetText(string.Join(Environment.NewLine, lines));
 		}
+	}
+
+	private void ShowView(int view)
+	{
+		if (view == _view)
+		{
+			return;
+		}
+		_view = view;
+		for (int i = 0; i < _views.Length; i++)
+		{
+			_views[i].Visible = i == view;
+			// the chosen view: a flat button with a coloured frame
+			_viewButtons[i].Font = i == view ? _bold : Font;
+		}
+		if (view == 2)
+		{
+			FillStats();
+		}
+	}
+
+	private static Panel ViewPanel(bool shown)
+	{
+		return new Panel { Dock = DockStyle.Fill, Visible = shown, Padding = new Padding(0, 2, 0, 0) };
 	}
 
 	private static ContextMenuStrip Menu(params (string Text, Action Click)[] items)
