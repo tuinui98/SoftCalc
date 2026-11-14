@@ -70,6 +70,7 @@ internal sealed class DataFolder
 	public string DefinitionsPath => Path.Combine(Root, "definitions.pcf");
 	public string HistoryPath => Path.Combine(Root, "history.jsonl");
 	public string RatesPath => Path.Combine(Root, "rates.xml");
+	public string PricesPath => Path.Combine(Root, "prices.json");    // coin prices (CoinGecko), crypto_plan C1
 	private string LockPath => Path.Combine(Root, "softcalc.lock");
 
 	// Runs action while holding the folder lock; other windows wait briefly

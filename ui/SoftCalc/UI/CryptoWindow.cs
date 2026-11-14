@@ -1,22 +1,26 @@
-// CryptoWindow.cs - Tools > Crypto: address checks and fee sums, offline (design/crypto_plan.md C0)
+// CryptoWindow.cs - Tools > Crypto: address checks, balances and fee sums (design/crypto_plan.md C0-C1)
 //
 // Owner 2026-11-15: SoftCalc only checks addresses and (later, C1-C2)
 // balances: no seed, no private key, no signing. The Address tab checks
 // a Bitcoin, Ethereum or Tron address as you type and refuses text that
 // looks like a secret (the box is emptied at once). The Fees tab works
-// out a Bitcoin or Ethereum fee and can put the line in Input. Nothing
-// here uses the network.
+// out a Bitcoin or Ethereum fee and can put the line in Input. Those two
+// are offline; the Balance tab (CryptoWindow.Balance.cs) asks a service
+// only when Check is pressed.
 
 using System.Globalization;
+using SoftCalc.Engine;
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
 
 namespace SoftCalc.UI;
 
-internal sealed class CryptoWindow : Form
+internal sealed partial class CryptoWindow : Form
 {
+	private static readonly string[] TabIds = { "address", "balance", "fees" };
 	private readonly CryptoPrefs _prefs;
 	private readonly Action<string> _insert;
+	private readonly Func<Task<CoinPrices?>> _prices;
 	private readonly TabControl _tabs = new() { Dock = DockStyle.Fill };
 	private readonly TextBox _address = new() { Dock = DockStyle.Top, Font = new Font("Consolas", 11f) };
 	private readonly Label _verdict = new() { AutoSize = true, Dock = DockStyle.Top, Padding = new Padding(0, 10, 0, 6) };
@@ -31,16 +35,17 @@ internal sealed class CryptoWindow : Form
 	private readonly Label _btcFee = new() { AutoSize = true, Margin = new Padding(3, 8, 3, 3) };
 	private readonly Label _ethFee = new() { AutoSize = true, Margin = new Padding(3, 8, 3, 3) };
 
-	public CryptoWindow(CryptoPrefs prefs, Action<string> insert)
+	public CryptoWindow(CryptoPrefs prefs, Action<string> insert, Func<Task<CoinPrices?>>? prices = null)
 	{
 		_prefs = prefs;
 		_insert = insert;
+		_prices = prices ?? (() => Task.FromResult<CoinPrices?>(null));
 		Text = "Crypto";
 		Icon = SvgIcon.ProgramIcon();
 		ShowInTaskbar = false;
 		MinimizeBox = false;
 		AutoScaleMode = AutoScaleMode.Dpi;
-		Size = new Size(640, 460);
+		Size = new Size(700, 520);
 		MinimumSize = new Size(520, 380);
 		StartPosition = FormStartPosition.CenterParent;
 		if (prefs.Window is { HasPosition: true } w)
@@ -50,20 +55,25 @@ internal sealed class CryptoWindow : Form
 				Screen.AllScreens.Select(s => s.WorkingArea).ToList());
 		}
 		_tabs.TabPages.Add(AddressTab());
+		_tabs.TabPages.Add(BalanceTab());
 		_tabs.TabPages.Add(FeesTab());
-		_tabs.SelectedIndex = prefs.Tab == "fees" ? 1 : 0;
+		_tabs.SelectedIndex = Math.Max(0, Array.IndexOf(TabIds, prefs.Tab));
 		Controls.Add(_tabs);
 		var note = new Label
 		{
-			Dock = DockStyle.Bottom, AutoSize = true, ForeColor = SystemColors.GrayText, Padding = new Padding(8, 4, 8, 6),
-			Text = "Offline: nothing here goes to the internet. SoftCalc never asks for seed words or private keys.",
+			Dock = DockStyle.Bottom, AutoSize = true, MaximumSize = new Size(660, 0), ForeColor = SystemColors.GrayText,
+			Padding = new Padding(8, 4, 8, 6),
+			Text = "Address and Fees are offline; Balance asks a service only when you press Check. "
+				+ "SoftCalc never asks for seed words or private keys.",
 		};
 		Controls.Add(note);
 		FormClosing += (_, _) => SavePrefs();
 		FormClosed += (_, _) =>
 		{
+			_checking?.Cancel();
 			_address.Clear();
 			_normal.Clear();
+			_balanceInput.Clear();
 		};
 		ShowCheck();
 		ShowFees();
@@ -196,7 +206,7 @@ internal sealed class CryptoWindow : Form
 
 	private void SavePrefs()
 	{
-		_prefs.Tab = _tabs.SelectedIndex == 1 ? "fees" : "address";
+		_prefs.Tab = TabIds[Math.Clamp(_tabs.SelectedIndex, 0, TabIds.Length - 1)];
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		_prefs.Window = new WindowPlacement { X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height };
 	}
