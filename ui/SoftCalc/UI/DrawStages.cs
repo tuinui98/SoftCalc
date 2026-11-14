@@ -103,6 +103,52 @@ internal abstract class DrawStage : Control
 			| TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping);
 	}
 
+	// A sector of a ring between two radii, angles clockwise from the top; whole: the full ring
+	protected static GraphicsPath RingPath(PointF centre, float outer, float inner, double start, double sweep, bool whole)
+	{
+		var outerBox = new RectangleF(centre.X - outer, centre.Y - outer, 2 * outer, 2 * outer);
+		var innerBox = new RectangleF(centre.X - inner, centre.Y - inner, 2 * inner, 2 * inner);
+		var path = new GraphicsPath();
+		if (whole)
+		{
+			path.AddEllipse(outerBox);
+			path.AddEllipse(innerBox);
+		}
+		else
+		{
+			path.AddArc(outerBox, (float)(start - 90), (float)sweep);
+			path.AddArc(innerBox, (float)(start - 90 + sweep), (float)-sweep);
+			path.CloseFigure();
+		}
+		return path;
+	}
+
+	// A card's name in its sector where there is room: along the radius in a wide ring, along the arc in a narrow one
+	protected void RingLabel(Graphics g, PointF centre, float outer, float inner, double start, double sweep, Card card, Color back, Font font)
+	{
+		float middle = (outer + inner) / 2;
+		double arc = sweep * Math.PI / 180 * middle, across = outer - inner;
+		bool along = arc > across * 1.3;
+		if (!(along ? across >= 14 && arc >= 24 : arc >= 13 && across >= 24))
+		{
+			return;
+		}
+		double degrees = start + sweep / 2 - 90;
+		double radians = degrees * Math.PI / 180;
+		var state = g.Save();
+		g.TranslateTransform(centre.X + (float)(Math.Cos(radians) * middle), centre.Y + (float)(Math.Sin(radians) * middle));
+		double rotate = along ? degrees + 90 : degrees;
+		double facing = (rotate % 360 + 360) % 360;
+		g.RotateTransform((float)(facing > 90 && facing < 270 ? rotate + 180 : rotate));
+		string name = card.Shown(Language);
+		int room = Math.Max(3, (int)(((along ? arc : across) - 6) / 6));
+		name = name.Length > room ? name[..(room - 1)] + "…" : name;
+		var size = g.MeasureString(name, font);
+		using var text = new SolidBrush(SuitColour(card, back.GetBrightness() > 0.55 ? Color.Black : Color.White));
+		g.DrawString(name, font, text, -size.Width / 2, -size.Height / 2);
+		g.Restore(state);
+	}
+
 	// Hearts and diamonds in red
 	protected static Color SuitColour(Card card, Color text)
 	{
@@ -201,6 +247,7 @@ internal sealed class DartStage : DrawStage
 	private readonly List<double> _spins = new();    // seconds each board spins (owner 2026-11-14: 2-4 s, random)
 	private readonly List<double> _throws = new();    // seconds into the spin the dart is thrown (owner: 1-3 s, may be before the board stops)
 	private readonly List<double> _turns = new();    // degrees each board has turned when it stops
+	private readonly List<List<BoardRings.Ring>> _rings = new();    // each board's rings (owner 2026-11-14: over 24 cards)
 
 	protected override double Duration => Enumerable.Range(0, Steps.Count).Sum(Length) + 0.2;
 
@@ -215,11 +262,20 @@ internal sealed class DartStage : DrawStage
 		_hits.Clear();
 		_spins.Clear();
 		_turns.Clear();
+		_rings.Clear();
 		foreach (var step in Steps)
 		{
-			var (start, sweep) = Sector(step, step.Drawn);
+			var rings = BoardRings.Layout(step.Live.Select(p => Weight(step, p)).ToList());
+			_rings.Add(rings);
+			// the dart's spot: inside the drawn card's sector of its ring, away from the edges
+			int drawn = Math.Max(0, step.Live.FindIndex(p => p.Key == step.Drawn.Key));
+			var ring = rings.FirstOrDefault(r => r.Cards.Contains(drawn)) ?? new BoardRings.Ring(new List<int> { drawn }, BoardRings.Hub, 1);
+			double ringTotal = ring.Cards.Sum(i => Weight(step, step.Live[i]));
+			double start = 360 * ring.Cards.TakeWhile(i => i != drawn).Sum(i => Weight(step, step.Live[i])) / ringTotal;
+			double sweep = 360 * Weight(step, step.Live[drawn]) / ringTotal;
 			float angle = (float)(start + sweep * (0.15 + 0.7 * Look.NextDouble()));
-			_hits.Add(new PointF(angle, (float)(0.25 + 0.6 * Look.NextDouble())));
+			double inner = ring.Inner * ring.Inner, outer = ring.Outer * ring.Outer;
+			_hits.Add(new PointF(angle, (float)Math.Sqrt(inner + (outer - inner) * (0.2 + 0.6 * Look.NextDouble()))));
 			// owner 2026-11-14: the board spins 2-4 s; the dart is thrown 1-3 s after it starts, each random
 			_spins.Add(2 + 2 * Look.NextDouble());
 			_throws.Add(1 + 2 * Look.NextDouble());
@@ -256,7 +312,12 @@ internal sealed class DartStage : DrawStage
 		return _turns[board] * EaseOut(t / _spins[board]);
 	}
 
-	// The angles (degrees, clockwise from the top) of a card's sector
+	private static double Weight(StageStep step, PoolCard card)
+	{
+		return step.Weights ? card.Card.Weight : 1;
+	}
+
+	// The angles (degrees, clockwise from the top) of a card's sector on a one-ring wheel
 	internal static (double Start, double Sweep) Sector(StageStep step, PoolCard card)
 	{
 		double total = step.Live.Sum(p => step.Weights ? p.Card.Weight : 1);
@@ -304,7 +365,7 @@ internal sealed class DartStage : DrawStage
 			return;
 		}
 		var rect = new Rectangle(listWidth + (ClientSize.Width - listWidth - diameter) / 2, (ClientSize.Height - diameter) / 2, diameter, diameter);
-		DrawBoard(g, step, rect, turn);
+		DrawBoard(g, board, rect, turn);
 
 		// the dart flies in from the lower right towards where its spot will be when it lands,
 		// then sticks and turns with the board (owner 2026-11-14: it may land before the board stops)
@@ -341,65 +402,53 @@ internal sealed class DartStage : DrawStage
 		}
 	}
 
-	private void DrawBoard(Graphics g, StageStep step, Rectangle rect, double turn)
+	private void DrawBoard(Graphics g, int board, Rectangle rect, double turn)
 	{
-		double start = turn % 360;
-		double total = step.Live.Sum(p => step.Weights ? p.Card.Weight : 1);
+		var step = Steps[board];
+		var centre = new PointF(rect.Left + rect.Width / 2f, rect.Top + rect.Height / 2f);
+		float radius = rect.Width / 2f;
 		bool borders = step.Live.Count <= 200;
+		using var font = new Font(Font.FontFamily, 8f);
+		using var wire = new Pen(Color.FromArgb(150, 150, 150), 1.5f);
 		int index = 0;
-		foreach (var p in step.Live)
+		foreach (var ring in _rings[board])
 		{
-			double sweep = 360.0 * (step.Weights ? p.Card.Weight : 1) / total;
-			var colour = p.Card.Color != null ? ColorTranslator.FromHtml(p.Card.Color)
-				: index % 2 == 0 ? Color.FromArgb(40, 40, 40) : Color.FromArgb(238, 226, 196);
-			if (p.Card.Color == null && index % 4 == 1)
+			float outer = (float)(ring.Outer * radius), inner = (float)(ring.Inner * radius);
+			double ringTotal = ring.Cards.Sum(i => Weight(step, step.Live[i]));
+			double start = turn % 360;
+			foreach (int i in ring.Cards)
 			{
-				colour = Color.FromArgb(200, 50, 50);
-			}
-			else if (p.Card.Color == null && index % 4 == 3)
-			{
-				colour = Color.FromArgb(40, 140, 70);
-			}
-			using (var fill = new SolidBrush(colour))
-			{
-				if (step.Live.Count == 1)
+				var p = step.Live[i];
+				double sweep = 360 * Weight(step, p) / ringTotal;
+				var colour = p.Card.Color != null ? ColorTranslator.FromHtml(p.Card.Color) : (index % 4) switch
 				{
-					g.FillEllipse(fill, rect);
-				}
-				else
+					0 => Color.FromArgb(40, 40, 40),
+					1 => Color.FromArgb(200, 50, 50),
+					2 => Color.FromArgb(238, 226, 196),
+					_ => Color.FromArgb(40, 140, 70),
+				};
+				using (var path = RingPath(centre, outer, inner, start, sweep, ring.Cards.Count == 1))
 				{
-					g.FillPie(fill, rect, (float)(start - 90), (float)sweep);
+					using (var fill = new SolidBrush(colour))
+					{
+						g.FillPath(fill, path);
+					}
+					if (borders && ring.Cards.Count > 1)
+					{
+						g.DrawPath(Pens.Silver, path);
+					}
 				}
+				RingLabel(g, centre, outer, inner, start, sweep, p.Card, colour, font);
+				start += sweep;
+				index++;
 			}
-			if (borders && step.Live.Count > 1)
-			{
-				g.DrawPie(Pens.Silver, rect, (float)(start - 90), (float)sweep);
-			}
-			// the name along the middle of a sector that has room for it
-			if (sweep >= 9 && rect.Width > 120)
-			{
-				double middle = (start + sweep / 2 - 90) * Math.PI / 180;
-				float r = rect.Width * 0.33f;
-				var at = new PointF(rect.Left + rect.Width / 2f + (float)(Math.Cos(middle) * r), rect.Top + rect.Height / 2f + (float)(Math.Sin(middle) * r));
-				var state = g.Save();
-				g.TranslateTransform(at.X, at.Y);
-				double degrees = start + sweep / 2 - 90;
-				g.RotateTransform((float)(degrees > 90 && degrees < 270 ? degrees + 180 : degrees));
-				string name = p.Card.Shown(Language);
-				name = name.Length > 14 ? name[..13] + "…" : name;
-				using var font = new Font(Font.FontFamily, 8f);
-				var size = g.MeasureString(name, font);
-				using var text = new SolidBrush(colour.GetBrightness() > 0.55 ? Color.Black : Color.White);
-				g.DrawString(name, font, text, -size.Width / 2, -size.Height / 2);
-				g.Restore(state);
-			}
-			start += sweep;
-			index++;
+			index += 1;    // the next ring starts on another colour
+			g.DrawEllipse(wire, centre.X - outer, centre.Y - outer, 2 * outer, 2 * outer);
 		}
 		// the bull and the rim
-		int bull = Math.Max(6, rect.Width / 14);
-		g.FillEllipse(Brushes.ForestGreen, rect.Left + rect.Width / 2 - bull, rect.Top + rect.Height / 2 - bull, bull * 2, bull * 2);
-		g.FillEllipse(Brushes.Firebrick, rect.Left + rect.Width / 2 - bull / 2, rect.Top + rect.Height / 2 - bull / 2, bull, bull);
+		float bull = Math.Max(6, radius * (float)BoardRings.Hub);
+		g.FillEllipse(Brushes.ForestGreen, centre.X - bull, centre.Y - bull, bull * 2, bull * 2);
+		g.FillEllipse(Brushes.Firebrick, centre.X - bull / 2, centre.Y - bull / 2, bull, bull);
 		using var rim = new Pen(Color.FromArgb(30, 30, 30), 3f);
 		g.DrawEllipse(rim, rect);
 	}

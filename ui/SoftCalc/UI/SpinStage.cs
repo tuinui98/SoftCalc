@@ -218,8 +218,6 @@ internal sealed class SpinStage : DrawStage
 		double total = step.Live.Sum(p => step.Weights ? p.Card.Weight : 1);
 		double start = turn;
 		bool borders = step.Live.Count <= 200;
-		var outerBox = new RectangleF(centre.X - outer, centre.Y - outer, 2 * outer, 2 * outer);
-		var innerBox = new RectangleF(centre.X - inner, centre.Y - inner, 2 * inner, 2 * inner);
 		GraphicsPath? won = null;
 		int index = 0;
 		foreach (var p in step.Live)
@@ -230,18 +228,7 @@ internal sealed class SpinStage : DrawStage
 			{
 				colour = Pastels[1];    // the last sector never matches the first one beside it
 			}
-			var path = new GraphicsPath();
-			if (step.Live.Count == 1)
-			{
-				path.AddEllipse(outerBox);
-				path.AddEllipse(innerBox);
-			}
-			else
-			{
-				path.AddArc(outerBox, (float)(start - 90), (float)sweep);
-				path.AddArc(innerBox, (float)(start - 90 + sweep), (float)-sweep);
-				path.CloseFigure();
-			}
+			var path = RingPath(centre, outer, inner, start, sweep, step.Live.Count == 1);
 			using (var fill = new SolidBrush(colour))
 			{
 				g.FillPath(fill, path);
@@ -258,28 +245,7 @@ internal sealed class SpinStage : DrawStage
 			{
 				path.Dispose();
 			}
-			// the name across the ring, where the sector has room for it
-			// along the radius in a wide ring, along the arc in a narrow one
-			float middle = (outer + inner) / 2;
-			double arc = sweep * Math.PI / 180 * middle, across = outer - inner;
-			bool along = arc > across * 1.3;
-			if (along ? across >= 14 && arc >= 24 : arc >= 13 && across >= 24)
-			{
-				double degrees = start + sweep / 2 - 90;
-				double radians = degrees * Math.PI / 180;
-				var state = g.Save();
-				g.TranslateTransform(centre.X + (float)(Math.Cos(radians) * middle), centre.Y + (float)(Math.Sin(radians) * middle));
-				double rotate = along ? degrees + 90 : degrees;
-				double facing = Mod(rotate);
-				g.RotateTransform((float)(facing > 90 && facing < 270 ? rotate + 180 : rotate));
-				string name = p.Card.Shown(Language);
-				int room = Math.Max(3, (int)(((along ? arc : across) - 6) / 6));
-				name = name.Length > room ? name[..(room - 1)] + "…" : name;
-				var size = g.MeasureString(name, font);
-				using var text = new SolidBrush(SuitColour(p.Card, colour.GetBrightness() > 0.55 ? Color.Black : Color.White));
-				g.DrawString(name, font, text, -size.Width / 2, -size.Height / 2);
-				g.Restore(state);
-			}
+			RingLabel(g, centre, outer, inner, start, sweep, p.Card, colour, font);
 			start += sweep;
 			index++;
 		}
