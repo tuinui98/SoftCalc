@@ -301,9 +301,12 @@ its steps:
 - **Results** shows the last Draw, **History** every line with its
   date and time (newest first, the last 1000), **Stats** how often each
   card came up, its share, and the share its weight gives.
-- **Clear draw** empties Results and History but keeps Stats; **Clear
-  stats** starts the counts again. **Copy** copies the chosen lines
+- **Clear draw** empties Results; History and Stats stay. **Clear
+  history...** (on the History tab) and **Clear stats...** (on the Stats
+  tab) ask first, then empty that list. **Copy** copies the chosen lines
   (all when none is chosen).
+- Right-click Results, History or Stats for Copy, Copy all and the
+  Clear item of that list.
 - **Edit tab...** changes the name and steps; **Delete tab** removes
   the tab with its History and Stats (its decks stay).
 - With **Seed** in the Source row, the same seed and the same piles

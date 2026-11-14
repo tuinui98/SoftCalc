@@ -90,7 +90,7 @@ internal sealed class DrawPage : TabPage
 		new ToolTip().SetToolTip(shuffle, "Put the drawn cards back in the No repeat piles");
 		shuffle.Click += (_, _) => Shuffle();
 		var clearDraw = new Button { Text = "C&lear draw", AutoSize = true };
-		new ToolTip().SetToolTip(clearDraw, "Clear the results and History; Stats stay");
+		new ToolTip().SetToolTip(clearDraw, "Clear the results on screen; History and Stats stay");
 		clearDraw.Click += (_, _) => ClearDraw();
 		var copy = new Button { Text = "Cop&y", AutoSize = true };
 		copy.Click += (_, _) => CopyLines();
@@ -105,18 +105,26 @@ internal sealed class DrawPage : TabPage
 		resultsPage.Controls.Add(_results);
 		var historyPage = new TabPage("History");
 		historyPage.Controls.Add(_history);
+		var clearHistory = new Button { Text = "Clear &history...", AutoSize = true, Dock = DockStyle.Bottom };
+		clearHistory.Click += (_, _) => ClearHistory();
+		historyPage.Controls.Add(clearHistory);
 		_stats.Columns.Add("Step", 44);
 		_stats.Columns.Add("Card", 200);
 		_stats.Columns.Add("Times", 60, HorizontalAlignment.Right);
 		_stats.Columns.Add("Share", 70, HorizontalAlignment.Right);
 		_stats.Columns.Add("Expected", 70, HorizontalAlignment.Right);
-		var clearStats = new Button { Text = "Clear s&tats", AutoSize = true, Dock = DockStyle.Bottom };
+		var clearStats = new Button { Text = "Clear s&tats...", AutoSize = true, Dock = DockStyle.Bottom };
 		clearStats.Click += (_, _) => ClearStats();
 		var statsPage = new TabPage("Stats");
 		statsPage.Controls.Add(_stats);
 		statsPage.Controls.Add(_statsNote);
 		statsPage.Controls.Add(clearStats);
 		_views.TabPages.AddRange(new[] { resultsPage, historyPage, statsPage });
+		_results.ContextMenuStrip = Menu(("&Copy", () => Copy(_results, all: false)), ("Copy &all", () => Copy(_results, all: true)),
+			("C&lear draw", ClearDraw));
+		_history.ContextMenuStrip = Menu(("&Copy", () => Copy(_history, all: false)), ("Copy &all", () => Copy(_history, all: true)),
+			("Clear &history...", ClearHistory));
+		_stats.ContextMenuStrip = Menu(("Copy &all", CopyStats), ("Clear s&tats...", ClearStats));
 		_views.SelectedIndexChanged += (_, _) =>
 		{
 			if (_views.SelectedTab == statsPage)
@@ -259,14 +267,23 @@ internal sealed class DrawPage : TabPage
 
 	private void ClearDraw()
 	{
-		Setup.History.Clear();
-		_save();
 		_results.Items.Clear();
 		_slot.Clear();
 		_dart.Clear();
-		FillHistory();
 		_note.ForeColor = SystemColors.GrayText;
-		_note.Text = "Results and History cleared; Stats stay.";
+		_note.Text = "Results cleared; History and Stats stay.";
+	}
+
+	private void ClearHistory()
+	{
+		if (MessageBox.Show(FindForm(), $"Clear the History of '{Setup.Name}'? This cannot be undone. Stats stay.", "Clear history",
+			MessageBoxButtons.OKCancel, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.OK)
+		{
+			return;
+		}
+		Setup.History.Clear();
+		_save();
+		FillHistory();
 	}
 
 	private void ClearStats()
@@ -287,12 +304,38 @@ internal sealed class DrawPage : TabPage
 
 	private void CopyLines()
 	{
-		var list = _views.SelectedIndex == 1 ? _history : _results;
-		var lines = (list.SelectedItems.Count > 0 ? list.SelectedItems.Cast<string>() : list.Items.Cast<string>()).ToList();
+		Copy(_views.SelectedIndex == 1 ? _history : _results, all: false);
+	}
+
+	// The selected lines, or all of them when none is selected or all is asked
+	private static void Copy(ListBox list, bool all)
+	{
+		var lines = (!all && list.SelectedItems.Count > 0 ? list.SelectedItems.Cast<string>() : list.Items.Cast<string>()).ToList();
 		if (lines.Count > 0)
 		{
 			Clipboard.SetText(string.Join(Environment.NewLine, lines));
 		}
+	}
+
+	// The stats as tab-separated lines, with the column names
+	private void CopyStats()
+	{
+		var lines = new List<string> { string.Join('\t', _stats.Columns.Cast<ColumnHeader>().Select(c => c.Text)) };
+		lines.AddRange(_stats.Items.Cast<ListViewItem>().Select(i => string.Join('\t', i.SubItems.Cast<ListViewItem.ListViewSubItem>().Select(s => s.Text))));
+		if (lines.Count > 1)
+		{
+			Clipboard.SetText(string.Join(Environment.NewLine, lines));
+		}
+	}
+
+	private static ContextMenuStrip Menu(params (string Text, Action Click)[] items)
+	{
+		var menu = new ContextMenuStrip();
+		foreach (var (text, click) in items)
+		{
+			menu.Items.Add(text, null, (_, _) => click());
+		}
+		return menu;
 	}
 
 	//==================================================================
