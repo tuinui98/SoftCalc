@@ -13,8 +13,9 @@ districts (878 amphoe and 50 khet), owner 2026-11-15:
   Sakon Nakhon; Maha Pho, now Kao Liao, Nakhon Sawan);
 - swaps the romanized names of Nong Chok and Nong Khaem (Bangkok);
 - trims doubled spaces;
-- writes the code after a romanized name two districts of one province
-  share (Bang Sai (1404) and Bang Sai (1413), Ayutthaya).
+- writes บางซ้าย (Ayutthaya) as Bang Saai, as Wikipedia does, to tell it
+  from บางไทร, Bang Sai (owner 2026-11-15); any other romanized name two
+  districts of one province share would get the district code after it.
 
     python tools/make_districts.py path/to/orst_0102.csv
 """
@@ -34,7 +35,7 @@ ADDED = [
     ("80", "8023", "เฉลิมพระเกียรติ", "Chaloem Phra Kiat"),
 ]
 DROPPED = {("4710", "ม่วง"), ("6006", "มหาโพธิ")}
-ROMAN_FIX = {"1003": "Nong Chok", "1023": "Nong Khaem"}
+ROMAN_FIX = {"1003": "Nong Chok", "1023": "Nong Khaem", "1413": "Bang Saai"}
 
 
 def clean(text):

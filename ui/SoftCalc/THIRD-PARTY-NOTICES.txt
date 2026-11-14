@@ -56,8 +56,8 @@ SoftCalc corrects the file to the 928 districts (tools/make_districts.py):
 four Chaloem Phra Kiat districts added (Nakhon Ratchasima, Buri Ram, Nan,
 Nakhon Si Thammarat), two old names dropped (Muang, Sakon Nakhon; Maha Pho,
 Nakhon Sawan), the romanized names of Nong Chok and Nong Khaem swapped back,
-doubled spaces trimmed, and the district code added to the two Bang Sai
-districts of Ayutthaya.
+doubled spaces trimmed, and Bang Sai (บางซ้าย, Ayutthaya) written Bang Saai,
+as Wikipedia does, to tell it from Bang Sai (บางไทร).
 
 ========================================================================
 mpmath (https://mpmath.org/), BSD 3-Clause

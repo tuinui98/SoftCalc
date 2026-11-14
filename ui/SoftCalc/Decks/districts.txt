@@ -76,7 +76,7 @@ Pathum Thani|Sam Khok|สามโคก
 Phra Nakhon Si Ayutthaya|Phra Nakhon Si Ayutthaya|พระนครศรีอยุธยา
 Phra Nakhon Si Ayutthaya|Tha Ruea|ท่าเรือ
 Phra Nakhon Si Ayutthaya|Nakhon Luang|นครหลวง
-Phra Nakhon Si Ayutthaya|Bang Sai (1404)|บางไทร
+Phra Nakhon Si Ayutthaya|Bang Sai|บางไทร
 Phra Nakhon Si Ayutthaya|Bang Ban|บางบาล
 Phra Nakhon Si Ayutthaya|Bang Pa-in|บางปะอิน
 Phra Nakhon Si Ayutthaya|Bang Pahan|บางปะหัน
@@ -85,7 +85,7 @@ Phra Nakhon Si Ayutthaya|Phachi|ภาชี
 Phra Nakhon Si Ayutthaya|Lat Bua Luang|ลาดบัวหลวง
 Phra Nakhon Si Ayutthaya|Wang Noi|วังน้อย
 Phra Nakhon Si Ayutthaya|Sena|เสนา
-Phra Nakhon Si Ayutthaya|Bang Sai (1413)|บางซ้าย
+Phra Nakhon Si Ayutthaya|Bang Saai|บางซ้าย
 Phra Nakhon Si Ayutthaya|Uthai|อุทัย
 Phra Nakhon Si Ayutthaya|Maha Rat|มหาราช
 Phra Nakhon Si Ayutthaya|Ban Phraek|บ้านแพรก
