@@ -198,6 +198,10 @@ come later. Window size and place are remembered too.
   2026-11-14: the board spins 2-4 s, random; the dart is thrown 2-3 s in,
   maybe before the board stops, lands in the drawn card's sector and
   turns with the board; the dart's point goes into the board).
+  Slot machine with Count 2-5 (owner 2026-11-14, layout A): one card a
+  line gives reels side by side, else a row of reels per line, top to
+  bottom, each row stopping left to right; more lines show the last one
+  still. Dartboard plays the last line only.
   No spoilers (owner 2026-11-14): Results and History fill only after
   the reels or the dart. Effects play only for one line; the cards
   are drawn first and the effect plays towards them (System.Random for

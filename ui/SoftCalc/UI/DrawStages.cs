@@ -14,8 +14,8 @@ using SoftCalc.Logic;
 
 namespace SoftCalc.UI;
 
-// One step's part of a draw: the cards it could give and the one it gave
-internal sealed record StageStep(List<PoolCard> Live, bool Weights, PoolCard Drawn);
+// One step's part of a draw: the cards it could give and the one it gave; Row: its line on the slot machine
+internal sealed record StageStep(List<PoolCard> Live, bool Weights, PoolCard Drawn, int Row = 0);
 
 internal abstract class DrawStage : Control
 {
@@ -142,13 +142,16 @@ internal sealed class SlotStage : DrawStage
 				TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
 			return;
 		}
-		int gap = 8, count = Steps.Count;
-		int width = (ClientSize.Width - gap * (count + 1)) / count, height = ClientSize.Height - 2 * gap;
+		// owner 2026-11-14: several lines are rows of reels, top to bottom, each stopping left to right
+		int gap = 8, rows = Steps.Max(s => s.Row) + 1;
+		int height = (ClientSize.Height - gap * (rows + 1)) / rows;
 		using var big = new Font(Font.FontFamily, Math.Max(9f, Math.Min(15f, height / 8f)), FontStyle.Bold);
-		using var small = new Font(Font.FontFamily, 9f);
-		for (int i = 0; i < count; i++)
+		using var small = new Font(Font.FontFamily, Math.Min(9f, Math.Max(7f, height / 10f)));
+		for (int i = 0; i < Steps.Count; i++)
 		{
-			var reel = new Rectangle(gap + i * (width + gap), gap, width, height);
+			int row = Steps[i].Row, count = Steps.Count(s => s.Row == row), column = Steps.Take(i).Count(s => s.Row == row);
+			int width = (ClientSize.Width - gap * (count + 1)) / count;
+			var reel = new Rectangle(gap + column * (width + gap), gap + row * (height + gap), width, height);
 			using (var window = new SolidBrush(SystemColors.Window))
 			{
 				g.FillRectangle(window, reel);
@@ -156,13 +159,13 @@ internal sealed class SlotStage : DrawStage
 			// position along the reel: 0 = first filler, Filler = the drawn card
 			double stop = 0.7 + 0.35 * i;
 			double position = Elapsed == double.MaxValue ? Filler : Filler * EaseOut(Elapsed / stop);
-			int row = (int)Math.Floor(position);
-			double fraction = position - row;
+			int at = (int)Math.Floor(position);
+			double fraction = position - at;
 			int cell = height / 2;
 			g.SetClip(reel);
 			for (int k = -1; k <= 1; k++)
 			{
-				int index = Math.Clamp(row + k, 0, _reels[i].Count - 1);
+				int index = Math.Clamp(at + k, 0, _reels[i].Count - 1);
 				int top = reel.Top + cell / 2 + (int)((k - fraction) * cell);
 				var box = new Rectangle(reel.Left + 2, top, reel.Width - 4, cell);
 				// at rest the cards above and below are small and faint; while rolling all look alike
@@ -217,8 +220,9 @@ internal sealed class DartStage : DrawStage
 			var (start, sweep) = Sector(step, step.Drawn);
 			float angle = (float)(start + sweep * (0.15 + 0.7 * Look.NextDouble()));
 			_hits.Add(new PointF(angle, (float)(0.25 + 0.6 * Look.NextDouble())));
-			_spins.Add(2 + 2 * Look.NextDouble());
 			_throws.Add(2 + Look.NextDouble());
+			// owner 2026-11-14: 2-4 s, and long enough that the dart lands while the board still turns
+			_spins.Add(Math.Max(2 + 2 * Look.NextDouble(), _throws[^1] + Flight + 0.6 + 0.6 * Look.NextDouble()));
 			_turns.Add(360 * (_spins[^1] + Look.NextDouble()));    // about a turn a second, slowing down
 		}
 	}

@@ -219,10 +219,20 @@ internal sealed class DrawPage : TabPage
 			}
 			if (lines.Count > 0 && Setup.Theme != "list")
 			{
-				// a reel or board for each card of the last line, a condition's cards too
-				var stageSteps = lines[^1].Select(p => new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card)).ToList();
+				// a reel or board for each card of the last line, a condition's cards too; the slot
+				// machine shows up to 5 lines (owner 2026-11-14): one card each side by side, else a row each
+				bool rows = Setup.Theme == "slot" && lines.Count <= CardDraws.StageLines;
+				var shown = rows ? lines : lines.GetRange(lines.Count - 1, 1);
+				bool single = shown.All(l => l.Count == 1);
+				var stageSteps = shown.SelectMany((l, row) => l.Select(p =>
+					new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card, single ? 0 : row))).ToList();
 				var stage = Setup.Theme == "slot" ? (DrawStage)_slot : _dart;
-				if (Setup.Effects && lines.Count == 1)
+				if (Setup.Theme == "slot")
+				{
+					int rowCount = stageSteps.Max(s => s.Row) + 1;
+					_stageHolder.Height = rowCount == 1 ? 160 : 16 + 72 * rowCount;
+				}
+				if (Setup.Effects && (lines.Count == 1 || rows))
 				{
 					// owner 2026-11-14: no spoilers, Results and History wait for the reels or the dart
 					_results.Items.Clear();

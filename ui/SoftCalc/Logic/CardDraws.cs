@@ -157,6 +157,7 @@ internal static class CardDraws
 	public const string Joiner = " · ";
 	public const string SubJoiner = " → ";
 	public const string SubCards = " + ";
+	public const int StageLines = 5;    // the slot machine plays at most this many lines
 	public static readonly string[] Themes = { "list", "slot", "dart" };
 	public static readonly string[] ThemeNames = { "List", "Slot machine", "Dartboard" };
 
@@ -356,7 +357,7 @@ internal static class CardDraws
 		}
 		for (int n = 0; n < count; n++)
 		{
-			bool last = n == count - 1;
+			bool last = n >= count - StageLines;    // keeps the cards drawn from, for the theme
 			var line = new List<DrawPick>();
 			for (int i = 0; i < setup.Steps.Count;)
 			{
