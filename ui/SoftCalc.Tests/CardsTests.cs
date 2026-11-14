@@ -132,7 +132,7 @@ public sealed class CardsTests
 		var mixed = new MixedRandom();
 		var (lines, error) = CardDraws.Draw(setup, _ => null, 3, n => (long)mixed.Below((ulong)n), "en", DateTime.UtcNow);
 		Assert.Null(error);
-		Assert.Equal(new[] { "a", "b", "c" }, lines.Select(l => l[0].Card.Name).Order());
+		Assert.Equal(new[] { "a", "b", "c" }, lines.Select(l => l[0].Card.Card.Name).Order());
 		var (more, why) = CardDraws.Draw(setup, _ => null, 1, n => 0, "en", DateTime.UtcNow);
 		Assert.Empty(more);
 		Assert.Contains("Shuffle", why);
@@ -169,6 +169,116 @@ public sealed class CardsTests
 		CardDraws.Draw(setup, _ => deck, 1000, n => (long)mixed.Below((ulong)n), "en", DateTime.UtcNow);
 		Assert.InRange(setup.Steps[0].Counts["d/A"], 680, 820);    // 750 expected
 		Assert.Equal(CardDraws.MaxHistory, setup.History.Count);
+	}
+
+	[Fact]
+	public void ExtraCardsTakeWeightsAndConditions()
+	{
+		// owner 2026-11-14: "ราดหน้า>>stop|2", also written "ราดหน้า|2>>stop"
+		Assert.Equal(("ราดหน้า", 2, "stop", (string?)null), CardDraws.ParseExtra("ราดหน้า>>stop|2"));
+		Assert.Equal(("ราดหน้า", 2, "stop", (string?)null), CardDraws.ParseExtra("ราดหน้า|2>>stop"));
+		Assert.Equal(("rice", 3, "", (string?)null), CardDraws.ParseExtra("rice | 3"));
+		Assert.NotNull(CardDraws.ParseExtra("rice|x").Error);
+		// "Gym,stop" and "step 3" split by commas or spaces join up again
+		Assert.Equal(new[] { "a", "Gym>>ยิม,stop|2", "b" }, CardDraws.ExtraEntries("a, Gym>>ยิม|2, stop, b"));
+		Assert.Equal(new[] { "a>>step 3", "b" }, CardDraws.ExtraEntries("a>>step 3 b"));
+		var pool = CardDraws.Pool(new DrawStep { Extra = "Run, Gym>>ยิม|2, Swim>>stop" }, _ => null);
+		Assert.Equal(new[] { 1, 2, 1 }, pool.Select(p => p.Card.Weight));
+		Assert.Equal(new[] { "", "ยิม", "stop" }, pool.Select(p => p.Then));
+		Assert.Equal("extra/Gym", pool[1].Key);
+	}
+
+	[Fact]
+	public void ConditionsParseAndFormat()
+	{
+		Assert.Equal(CardThen.Next, CardThen.Parse("").Then);
+		Assert.Equal(new CardThen(null, 1, ThenFlow.Stop, 0), CardThen.Parse("STOP").Then);
+		Assert.Equal(new CardThen(null, 1, ThenFlow.Step, 3), CardThen.Parse("step3").Then);
+		Assert.Equal(new CardThen("ยิม", 2, ThenFlow.Stop, 0), CardThen.Parse("ยิม*2,stop").Then);
+		Assert.Equal(new CardThen("stop", 1, ThenFlow.Next, 0), CardThen.Parse("deck:stop").Then);
+		Assert.Equal(new CardThen("a,b", 1, ThenFlow.Next, 0), CardThen.Parse("a,b").Then);
+		Assert.Null(CardThen.Parse("ยิม*0").Then);
+		Assert.Null(CardThen.Parse("step 0").Then);
+		foreach (string text in new[] { "stop", "step 2", "ยิม", "ยิม*2", "ยิม,stop", "deck:stop*3,step 4" })
+		{
+			Assert.Equal(text, CardThen.Parse(text).Then!.Format());
+		}
+	}
+
+	private static (DrawSetup Setup, Func<string, Deck?> Named) Sports()
+	{
+		var gym = new Deck { Id = "g", Name = "ยิม", Cards = { new Card { Name = "ยกเวท" }, new Card { Name = "โยคะ" }, new Card { Name = "ลู่วิ่ง" } } };
+		var setup = new DrawSetup
+		{
+			Steps =
+			{
+				new DrawStep { Extra = "วิ่ง, เข้ายิม>>ยิม*2, ว่ายน้ำ>>stop, แบดมินตัน>>step 3" },
+				new DrawStep { Extra = "30 นาที, 1 ชม." },
+				new DrawStep { Extra = "เช้า" },
+			},
+		};
+		return (setup, name => name == "ยิม" ? gym : null);
+	}
+
+	[Fact]
+	public void ConditionsDrawFromADeckStopAndSkip()
+	{
+		var (setup, named) = Sports();
+		// below gives the point of each pick: Gym, then Yoga and Weights from the deck, 1 hour, morning
+		Assert.Equal(5, CardDraws.MostPicks(setup, _ => null));    // 1 + 2 from the deck, 1, 1
+		var picks = new Queue<long>(new long[] { 1, 1, 0, 1, 0 });
+		var (lines, error) = CardDraws.Draw(setup, _ => null, 1, n => picks.Dequeue(), "th", DateTime.UtcNow, named);
+		Assert.Null(error);
+		Assert.Equal("เข้ายิม → โยคะ + ยกเวท · 1 ชม. · เช้า", setup.History[0].Text);
+		Assert.Equal(2, setup.Steps[0].SubCounts["g"].Values.Sum());
+		Assert.Equal("g", lines[0][1].Sub);
+		Assert.Equal(3, lines[0][1].Live!.Count);
+		Assert.Equal(2, lines[0][2].Live!.Count);    // the second card from the deck is a different one
+
+		CardDraws.Draw(setup, _ => null, 1, n => 2, "th", DateTime.UtcNow, named);
+		Assert.Equal("ว่ายน้ำ", setup.History[0].Text);
+		CardDraws.Draw(setup, _ => null, 1, n => n == 4 ? 3 : 0, "th", DateTime.UtcNow, named);
+		Assert.Equal("แบดมินตัน · เช้า", setup.History[0].Text);
+		Assert.Contains("no deck named", CardDraws.Draw(setup, _ => null, 1, n => 1, "th", DateTime.UtcNow, _ => null).Error);
+
+		var rows = CardDraws.SubStats(setup.Steps[0], named("ยิม")!, "th");
+		Assert.Equal(3, rows.Count);
+		Assert.Equal(2, rows.Sum(r => r.Times));
+	}
+
+	[Fact]
+	public void ConditionDeckKeepsItsOwnPileForNoRepeat()
+	{
+		var (setup, named) = Sports();
+		setup.Steps[0].Extra = "เข้ายิม>>ยิม";
+		setup.Steps[0].NoRepeat = true;
+		setup.Steps.RemoveRange(1, 2);
+		var (lines, error) = CardDraws.Draw(setup, _ => null, 1, n => 0, "th", DateTime.UtcNow, named);
+		Assert.Null(error);
+		setup.Steps[0].Drawn.Clear();
+		CardDraws.Draw(setup, _ => null, 1, n => 0, "th", DateTime.UtcNow, named);
+		setup.Steps[0].Drawn.Clear();
+		CardDraws.Draw(setup, _ => null, 1, n => 0, "th", DateTime.UtcNow, named);
+		Assert.Equal(3, setup.Steps[0].SubDrawn["g"].Distinct().Count());
+		setup.Steps[0].Drawn.Clear();
+		Assert.Contains("Shuffle", CardDraws.Draw(setup, _ => null, 1, n => 0, "th", DateTime.UtcNow, named).Error);
+	}
+
+	[Fact]
+	public void CheckFindsBadConditions()
+	{
+		var (setup, named) = Sports();
+		Assert.Null(CardDraws.Check(setup.Steps, 0, _ => null, named, "th"));
+		setup.Steps[0].Extra = "a>>ไม่มี";
+		Assert.Contains("no deck named", CardDraws.Check(setup.Steps, 0, _ => null, named, "th"));
+		setup.Steps[0].Extra = "a>>step 1";
+		Assert.Contains("later step", CardDraws.Check(setup.Steps, 0, _ => null, named, "th"));
+		setup.Steps[0].Extra = "a|0";
+		Assert.Contains("weight", CardDraws.Check(setup.Steps, 0, _ => null, named, "th"));
+		// a deck card's condition is set in Edit tab
+		var deck = new Deck { Id = "d", Cards = { new Card { Name = "x" } } };
+		var step = new DrawStep { Decks = { "d" }, Then = { ["d/x"] = "step 9" } };
+		Assert.Contains("later step", CardDraws.Check(new List<DrawStep> { step }, 0, _ => deck, named, "en"));
 	}
 
 	[Fact]

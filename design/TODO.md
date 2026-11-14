@@ -415,12 +415,14 @@ ends 1:1, the drag insert line is visible enough on dark.
       Stats, Clear draw, System or Seed), cards.json; help topic updated.
   - [ ] Ready-made districts (928, English and Thai): needs a data
         source; ask the owner.
-  - [ ] Later (owner 2026-11-14): a card may choose the deck of the
-        next step ("Then draw from").
+  - [x] Conditions (owner 2026-11-14, built 2026-11-14): extra cards
+        with "|weight" and ">>condition", Then row for deck cards, Save
+        as deck, a card drawing from another deck (random_plan.md R7).
   - [ ] Help and pictures for the 2026-11-14 fix rounds, once the owner
         calls the topic done (owner: no help until then): Theme and
         Effects in Edit tab, List effect, Results/History/Stats buttons,
-        Clear history, right-click menus, Dartboard spin.
+        Clear history, right-click menus, Dartboard spin, conditions
+        (>>, |, Then row, Save as deck, Stats rows "1 → deck").
 - [ ] Crypto wallet seeds (first: list what SoftCalc could do).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe

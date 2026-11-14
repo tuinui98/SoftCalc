@@ -168,8 +168,25 @@ come later. Window size and place are remembered too.
   (not saved as a deck); any card can be unticked (Days + "end of the
   month, payday" = 9 cards; untick Saturday and Sunday). Use weights,
   No repeat per step. One Draw gives one line, a card from each step
-  in turn (fixed decks per step; a card choosing the next deck may
-  come later, owner).
+  in turn.
+- Conditions (owner 2026-11-14): an extra card takes a weight after
+  "|" and a condition after ">>": `Rice soup>>stop|2` (also
+  `Rice soup|2>>stop`). A deck card gets its condition in Edit tab
+  (the Then row: Next step, Stop the line, Skip to step, Draw from
+  deck with a count and "then stop"); conditions belong to the draw
+  tab, not the deck. Conditions: `next` (default), `stop`, `step 3`
+  (later steps only), `Gym` (a card from the deck named Gym, then the
+  next step), `Gym*2` (two different cards), `Gym,stop`,
+  `deck:stop` for a deck named like a keyword. Splitting extras by
+  commas or spaces keeps `Gym,stop` and `step 3` whole. The deck a
+  condition draws from is one level only (its cards' own conditions
+  are not used), follows the step's weights and No repeat (its own
+  pile, back on Shuffle; its jokers stay out), and shows as
+  `Gym → Yoga + Weights · 1 hour`, an extra reel or board, and Stats
+  rows `1 → Gym`. Edit tab checks conditions on OK (unknown deck,
+  step not later). Save as deck turns the extra cards into a deck
+  of my own (opens the deck editor) and moves their conditions,
+  ticks, pile and counts to it.
 - No repeat works like a pile (owner): a drawn card stays out until
   Shuffle, also across closing the window.
 - Theme (set in Edit tab, owner 2026-11-14; new tabs start on Slot
@@ -195,7 +212,8 @@ come later. Window size and place are remembered too.
   `Persistence/CardStore.cs`, `UI/RandomWindow.Cards.cs`,
   `UI/RandomWindow.Draws.cs`, `UI/DeckEditor.cs`, `UI/DrawEditor.cs`,
   `UI/DrawPage.cs`, `UI/DrawStages.cs`, `UI/CardPictures.cs`;
-  CardsTests.
+  CardsTests. Seed asks the engine for the most picks a line can need
+  (a card per step plus its conditions' cards).
 
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so

@@ -7,6 +7,8 @@
 // empties the results; Clear history and Clear stats ask first. Results, History
 // (with the time) and Stats are on tabs below. Draws come from the
 // Source row: System, or Seed through the window's engine.
+// A card's condition may stop the line, skip to a step, or draw from a
+// deck too: "Gym → Yoga", with its own reel or board and Stats rows.
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -203,12 +205,12 @@ internal sealed class DrawPage : TabPage
 			int count = (int)_count.Value;
 			// before the draw: what each step can give, for the effect
 			var live = Setup.Steps.Select(s => CardDraws.Live(s, CardDraws.Pool(s, _store.Find))).ToList();
-			var below = await _picker(count * Setup.Steps.Count, _note);
+			var below = await _picker(count * CardDraws.MostPicks(Setup, _store.Find), _note);
 			if (below == null || IsDisposed)
 			{
 				return;
 			}
-			var (lines, error) = CardDraws.Draw(Setup, _store.Find, count, below, Language, DateTime.UtcNow);
+			var (lines, error) = CardDraws.Draw(Setup, _store.Find, count, below, Language, DateTime.UtcNow, _store.Named);
 			_save();
 			ShowView(0);
 			if (Setup.Theme == "list" && Setup.Effects && lines.Count == 1)
@@ -232,10 +234,8 @@ internal sealed class DrawPage : TabPage
 			}
 			if (lines.Count > 0 && Setup.Theme != "list")
 			{
-				var last = lines[^1];
-				var stageSteps = last.Select((card, i) =>
-					new StageStep(lines.Count == 1 ? live[i] : CardDraws.Live(new DrawStep { Off = Setup.Steps[i].Off },
-						CardDraws.Pool(Setup.Steps[i], _store.Find)), Setup.Steps[i].Weights, card)).ToList();
+				// a reel or board for each card of the last line, a condition's cards too
+				var stageSteps = lines[^1].Select(p => new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card)).ToList();
 				var stage = Setup.Theme == "slot" ? (DrawStage)_slot : _dart;
 				if (Setup.Effects && lines.Count == 1)
 				{
@@ -281,6 +281,7 @@ internal sealed class DrawPage : TabPage
 		foreach (var step in Setup.Steps)
 		{
 			step.Drawn.Clear();
+			step.SubDrawn.Clear();
 		}
 		_save();
 		ShowPiles();
@@ -319,6 +320,7 @@ internal sealed class DrawPage : TabPage
 		foreach (var step in Setup.Steps)
 		{
 			step.Counts.Clear();
+			step.SubCounts.Clear();
 		}
 		Setup.Draws = 0;
 		_save();
@@ -396,6 +398,19 @@ internal sealed class DrawPage : TabPage
 		_history.EndUpdate();
 	}
 
+	private void AddStats(string step, List<(string Name, int Times, double Share, double Expected)> rows)
+	{
+		foreach (var (name, times, share, expected) in rows)
+		{
+			var item = new ListViewItem(step);
+			item.SubItems.Add(name);
+			item.SubItems.Add(times.ToString());
+			item.SubItems.Add($"{share:0.0}%");
+			item.SubItems.Add($"{expected:0.0}%");
+			_stats.Items.Add(item);
+		}
+	}
+
 	private void FillStats()
 	{
 		_stats.BeginUpdate();
@@ -403,17 +418,15 @@ internal sealed class DrawPage : TabPage
 		for (int i = 0; i < Setup.Steps.Count; i++)
 		{
 			var step = Setup.Steps[i];
-			foreach (var (name, times, share, expected) in CardDraws.Stats(step, CardDraws.Pool(step, _store.Find), Language))
+			AddStats((i + 1).ToString(), CardDraws.Stats(step, CardDraws.Pool(step, _store.Find), Language));
+			// the decks its conditions draw from: "1 → Gym"
+			foreach (var deck in CardDraws.SubDecks(step, _store.Find, _store.Named))
 			{
-				var item = new ListViewItem((i + 1).ToString());
-				item.SubItems.Add(name);
-				item.SubItems.Add(times.ToString());
-				item.SubItems.Add($"{share:0.0}%");
-				item.SubItems.Add($"{expected:0.0}%");
-				_stats.Items.Add(item);
+				AddStats($"{i + 1}{CardDraws.SubJoiner}{deck.Shown(Language)}", CardDraws.SubStats(step, deck, Language));
 			}
 		}
 		_stats.EndUpdate();
+		_stats.Columns[0].Width = _stats.Items.Cast<ListViewItem>().Any(it => it.Text.Length > 3) ? 110 : 44;
 		_statsNote.Text = $"{Setup.Draws} draws since the stats were cleared. Expected: the share each card's weight gives "
 			+ "(No repeat changes it within a pile).";
 	}
