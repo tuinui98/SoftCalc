@@ -301,10 +301,14 @@ internal sealed class DartStage : DrawStage
 		double t = EaseOut(flight);
 		var from = new PointF(ClientSize.Width + 40, ClientSize.Height + 40);
 		var tip = new PointF((float)(from.X + (target.X - from.X) * t), (float)(from.Y + (target.Y - from.Y) * t));
-		using var shaft = new Pen(SystemColors.ControlText, 3f) { EndCap = LineCap.Round };
-		g.DrawLine(shaft, tip, new PointF(tip.X + 26, tip.Y + 26));
+		// owner 2026-11-14: the point goes into the board; the flights spread out behind
+		using var point = new Pen(Color.Silver, 1.5f);
+		g.DrawLine(point, tip, new PointF(tip.X + 8, tip.Y + 8));
+		using var shaft = new Pen(SystemColors.ControlText, 3f) { StartCap = LineCap.Triangle, EndCap = LineCap.Round };
+		g.DrawLine(shaft, new PointF(tip.X + 7, tip.Y + 7), new PointF(tip.X + 30, tip.Y + 30));
 		using var flights = new SolidBrush(Theme.Series(1));
-		g.FillPolygon(flights, new[] { new PointF(tip.X + 22, tip.Y + 30), new PointF(tip.X + 34, tip.Y + 34), new PointF(tip.X + 30, tip.Y + 22) });
+		g.FillPolygon(flights, new[] { new PointF(tip.X + 22, tip.Y + 22), new PointF(tip.X + 40, tip.Y + 30),
+			new PointF(tip.X + 36, tip.Y + 36), new PointF(tip.X + 30, tip.Y + 40) });
 		if (flight >= 1)
 		{
 			g.FillEllipse(Brushes.Black, target.X - 3, target.Y - 3, 6, 6);
