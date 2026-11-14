@@ -1,13 +1,13 @@
 // BoardRings.cs - How a dartboard shares its cards out over rings (design/random_plan.md R7)
 //
-// Owner 2026-11-14: when sectors would be narrower than 15 degrees, the
+// Owner 2026-11-14: when sectors would be narrower than 10 degrees, the
 // board gets rings, at most 4. Every card's area stays its share of the
 // chances (equal weights: equal areas). The rings start equally wide;
 // each boundary then moves (at most 5% of its radius) so a whole number
 // of cards fills each ring. The most important cards (the heaviest, then
 // the first listed) go in the middle. The fewest rings whose sectors are
-// all 15 degrees or more are used; with 4 rings the outer ones may be
-// narrower (77 cards: 7/15/23/32, outer 11.2 degrees).
+// all 10 degrees or more are used; with 4 rings the outer ones may be
+// narrower, about 7 degrees at 125 cards (77 cards: 7/15/23/32).
 
 namespace SoftCalc.Logic;
 
@@ -15,7 +15,7 @@ internal static class BoardRings
 {
 	public const double Hub = 1.0 / 14;    // the bull's radius, the board's radius being 1
 	public const int MaxRings = 4;
-	public const double MinAngle = 15;
+	public const double MinAngle = 10;    // owner 2026-11-14: was 15; outer sectors may go to about 7 degrees
 	public const double MaxShift = 0.05;
 
 	// A ring: its cards (indices, in their listed order) and its radii (0-1)
