@@ -2,7 +2,7 @@
 # Source: Office of the Royal Society, district names in Thai and romanized (data.go.th orst_0102,
 # 2022-05-01), under the Terms and Conditions for DGA Open Government License v1.0; corrected by
 # tools/make_districts.py (four Chaloem Phra Kiat added, two old names dropped, Nong Chok and
-# Nong Khaem romanized names swapped back)
+# Nong Khaem romanized names swapped back, บางซ้าย written Bang Saai as Wikipedia does)
 # province (English)|English|Thai
 Bangkok|Phra Nakhon|พระนคร
 Bangkok|Dusit|ดุสิต
