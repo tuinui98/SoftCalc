@@ -458,6 +458,9 @@ ends 1:1, the drag insert line is visible enough on dark.
     wallet that imports the same words.
   - Owner 2026-11-15: scope narrowed to **checking balances and checking
     that an address is valid** (no keys, no seeds, no signing in
-    SoftCalc). Monitor ideas proposed, waiting for the owner's choice.
+    SoftCalc). Owner 2026-11-15: BTC, ETH, USDT on ERC-20 and TRC-20;
+    CoinGecko prices; public APIs with endpoints that can point at an
+    own node. Plan: design/crypto_plan.md (C0 offline address checks,
+    C1 balances on demand, C2 monitor); open questions in it.
     The hardware-wallet discussion went to
     D:\Projects\esp32-hardware-wallet\NOTES.md (a separate project).
