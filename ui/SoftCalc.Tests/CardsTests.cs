@@ -282,6 +282,38 @@ public sealed class CardsTests
 		Assert.Contains("later step", CardDraws.Check(new List<DrawStep> { step }, 0, _ => deck, named, "en"));
 	}
 
+	[Theory]
+	[InlineData(12, "12")]
+	[InlineData(24, "24")]
+	[InlineData(25, "7/18")]
+	[InlineData(35, "5/12/18")]
+	[InlineData(47, "4/9/15/19")]
+	[InlineData(77, "7/15/23/32")]    // owner 2026-11-14: the 77 provinces
+	[InlineData(100, "9/19/31/41")]
+	public void BoardRingsMatchTheAgreedTable(int cards, string rings)
+	{
+		var layout = BoardRings.Layout(Enumerable.Repeat(1.0, cards).ToList());
+		Assert.Equal(rings, string.Join("/", layout.Select(r => r.Cards.Count)));
+		Assert.Equal(1.0, layout[^1].Outer);
+		// every card has the same area
+		foreach (var ring in layout)
+		{
+			double area = (ring.Outer * ring.Outer - ring.Inner * ring.Inner) / ring.Cards.Count;
+			Assert.Equal((1 - BoardRings.Hub * BoardRings.Hub) / cards, area, 9);
+		}
+	}
+
+	[Fact]
+	public void BoardRingsPutTheHeaviestCardsInTheMiddle()
+	{
+		var weights = Enumerable.Repeat(1.0, 40).ToList();
+		weights[30] = 3;
+		var layout = BoardRings.Layout(weights);
+		Assert.Contains(30, layout[0].Cards);
+		Assert.Contains(0, layout[0].Cards);
+		Assert.Equal(Enumerable.Range(0, 40), layout.SelectMany(r => r.Cards).Order());
+	}
+
 	[Fact]
 	public void StoreSavesLoadsAndSanitizes()
 	{
