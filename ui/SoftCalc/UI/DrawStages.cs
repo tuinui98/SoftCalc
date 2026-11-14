@@ -14,8 +14,8 @@ using SoftCalc.Logic;
 
 namespace SoftCalc.UI;
 
-// One step's part of a draw: the cards it could give and the one it gave; Row: its line on the slot machine
-internal sealed record StageStep(List<PoolCard> Live, bool Weights, PoolCard Drawn, int Row = 0);
+// One step's part of a draw: the cards it could give and the one it gave; Row: its line on the slot machine; Step: its step
+internal sealed record StageStep(List<PoolCard> Live, bool Weights, PoolCard Drawn, int Row = 0, int Step = 0);
 
 internal abstract class DrawStage : Control
 {

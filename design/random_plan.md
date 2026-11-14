@@ -194,7 +194,9 @@ come later. Window size and place are remembered too.
   "|weight" too and cuts off any ">>" condition, with a note (owner
   2026-11-14).
 - No repeat works like a pile (owner): a drawn card stays out until
-  Shuffle, also across closing the window.
+  Shuffle, also across closing the window. Shuffle also mixes where the
+  cards sit on the dartboard and spin wheel (owner 2026-11-14; kept per
+  step, for show only: draws and seeds do not use it).
 - Card colours (owner 2026-11-14): Colour... / No colour in the deck
   editor (several cards at once), a colour column in CSV; the
   dartboard and spin wheel fill sectors with it, the slot machine shows

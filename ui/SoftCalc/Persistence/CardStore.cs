@@ -239,6 +239,7 @@ internal sealed class CardStore
 				step.Off = (step.Off ?? new()).Where(k => k != null).ToList();
 				step.Drawn = (step.Drawn ?? new()).Where(k => k != null).ToList();
 				step.Counts = (step.Counts ?? new()).Where(kv => kv.Key != null && kv.Value > 0).ToDictionary();
+				step.Order = (step.Order ?? new()).Where(k => k != null).Take(2 * CardText.MaxCards).ToList();
 				step.Then = (step.Then ?? new()).Where(kv => kv.Key != null && !string.IsNullOrWhiteSpace(kv.Value)).ToDictionary();
 				step.SubDrawn = (step.SubDrawn ?? new()).Where(kv => kv.Key != null && kv.Value != null)
 					.ToDictionary(kv => kv.Key, kv => kv.Value.Where(k => k != null).ToList());
