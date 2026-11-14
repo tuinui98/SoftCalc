@@ -70,6 +70,7 @@ internal sealed partial class RandomWindow : Form
 		Text = "Random";
 		Icon = SvgIcon.ProgramIcon();
 		ShowInTaskbar = false;
+		MinimizeBox = false;    // owner 2026-11-14: minimized, an owned window sat as a strip above the taskbar
 		AutoScaleMode = AutoScaleMode.Dpi;
 		Size = new Size(560, 520);
 		MinimumSize = new Size(460, 440);

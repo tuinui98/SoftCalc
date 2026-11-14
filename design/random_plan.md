@@ -179,8 +179,10 @@ come later. Window size and place are remembered too.
   the show only); a click skips.
 - Results, History (newest first, with the time, at most 1000) and
   Stats (times, share, the share the weights give) per tab, saved.
-  Clear draw (owner) empties the results and History, not Stats;
-  Clear stats empties the counts. Nothing goes to the calculator's
+  Clear draw (owner) empties the results only; Clear history and
+  Clear stats (owner 2026-11-14: buttons and a right-click menu, both
+  ask first) empty their list. The window has no Minimize button
+  (owner 2026-11-14). Nothing goes to the calculator's
   History.
 - Source row as on the other tabs: System (with any Entropy mix), or
   Seed: the window's engine draws rand() once per pick after
