@@ -1,7 +1,7 @@
 // HelpMarkdown.cs - The Markdown of help/*.md as HTML for the Help window (owner 2026-11-10)
 //
-// Only what the topics use: # headings, paragraphs, - and 1. lists with
-// indented continuation lines, | tables |, ![pictures](img/x.light.png),
+// Only what the topics use: # to #### headings, paragraphs, - and 1. lists with
+// indented continuation lines, | tables | (\| is a bar inside a cell), ![pictures](img/x.light.png),
 // ``` fences, and inline `code`, **bold** and *italic*. A ```calc or
 // ```rpn fence becomes clickable example rows; `line => result` shows
 // the result faint after the line. An *italic* text that is a topic's
@@ -123,7 +123,7 @@ internal static partial class HelpMarkdown
 		bool head = true;
 		while (i < lines.Length && lines[i].StartsWith('|'))
 		{
-			var cells = lines[i].Trim().Trim('|').Split('|').Select(cell => cell.Trim()).ToList();
+			var cells = CellRegex().Split(lines[i].Trim().Trim('|')).Select(cell => cell.Trim().Replace("\\|", "|")).ToList();
 			i++;
 			if (cells.All(cell => cell.Length > 0 && cell.All(c => c is '-' or ':')))
 			{
@@ -196,7 +196,10 @@ internal static partial class HelpMarkdown
 		return WebUtility.HtmlEncode(text);
 	}
 
-	[GeneratedRegex(@"^(#{1,3})\s+(.*)$")]
+	[GeneratedRegex(@"(?<!\\)\|")]
+	private static partial Regex CellRegex();    // a bar not written \|
+
+	[GeneratedRegex(@"^(#{1,4})\s+(.*)$")]
 	private static partial Regex HeadingRegex();
 
 	[GeneratedRegex(@"^!\[([^\]]*)\]\(([^)]+)\)$")]

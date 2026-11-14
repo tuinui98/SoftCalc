@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-11: version 1.3.0 released (TODO sections 8 and 9). Everything below is committed on `main` and
+Updated 2026-11-15: version 1.4.0 released (Random window, TODO section 11). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -99,7 +99,16 @@ Graph window's range at the window's scale (no more fitted Y).
 `publish.ps1`'s rates-seed path had a stray line break from
 2026-11-10; fixed in the 1.3.0 release.
 
-Tests: engine `pytest` 538 passed (frozen-exe test included); UI `dotnet test` 300 passed.
+Version 1.4.0 (2026-11-12/15, TODO section 11, design/random_plan.md):
+`rand`/`rands` and shaped draws in the engine; the Random window
+(Simple, Advanced, Password, Entropy, Seed source); card decks and draw
+tabs with weights, conditions (`>>`), number runs (`[1,100]`), colours,
+and List / Slot machine / Dartboard (rings past 36 cards) / Spin wheel
+themes; new-user defaults (owner's ribbon, degrees, Advanced view, a
+Spin tab). Help 17-random rewritten, all pictures regenerated; the help
+renderer reads `####` and `\|` in tables.
+
+Tests: engine `pytest` 586 passed; UI `dotnet test` 414 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

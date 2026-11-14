@@ -8,8 +8,8 @@ Two separate things decide what a result looks like:
 
 ## Precision
 
-View > Advanced Options, or the ribbon's **Prec** button in the Mode
-group:
+View > Advanced Options (Customize Ribbon can add a **Prec** button,
+see *Ribbon*):
 
 | choice | digits |
 |---|---|
@@ -24,7 +24,7 @@ scientific form: `2^200` at 32 digits is
 
 ## Decimal places
 
-![The ribbon: Angle, Output, Decimals, Mode, History and Tools groups](img/ribbon.light.png)
+![The ribbon: Angle, Decimals, Tools, View, History and Window groups](img/ribbon.light.png)
 
 Ribbon **Decimals** group, or View > Decimal Places:
 
@@ -39,8 +39,8 @@ only.
 
 ## Output base
 
-Ribbon **Output** group, or View > Hexadecimal / Decimal / Octal /
-Binary Output:
+View > Hexadecimal / Decimal / Octal / Binary Output (Customize Ribbon
+can add Dec, Hex, Bin and Oct buttons):
 
 ```calc
 255                   => 255

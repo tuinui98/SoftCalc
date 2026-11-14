@@ -7,8 +7,8 @@
 | view | shows |
 |---|---|
 | Numeric Calc | History, Input and a keypad |
-| History View | History, Samples and Input (the default) |
-| Advanced View | as History View, plus the Graph and Variables panels on the left |
+| History View | History, Samples and Input |
+| Advanced View | as History View, plus the Graph and Variables panels on the left (the start) |
 
 Advanced View widens the window to the left, so History and Input stay
 where they are.

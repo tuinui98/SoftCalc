@@ -63,8 +63,9 @@ internal static partial class Program
 		File.WriteAllText(Path.Combine(data, "settings.json"), JsonSerializer.Serialize(new
 		{
 			theme,
-			view = "History",
-			window = new { x = 60, y = 60, width = 400, height = 651, maximized = false },
+			view = "Advanced",    // a first run's view, size and angle (owner 2026-11-15)
+			angle = "deg",
+			window = new { x = 60, y = 60, width = 693, height = 728, maximized = false },
 			compound = new { principal = "10000", rate = "5", years = "10", compounding = "monthly", contribution = "500", contribution_freq = "monthly", at_start = false },
 			graph = new
 			{
@@ -406,6 +407,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			Directory.Delete(folder, true);
 		}
 		var cards = new CardStore(new DataFolder(folder));
+		cards.File.Draws.Clear();    // no first-run Spin tab: the pictures set up their own
 		var food = new Deck { Id = "food01", Name = "Food", Cards = CardText.ParseLines(
 			"Fried rice | 2\nNoodles\nSom tam\nPad thai\nGreen curry\nTom yum").Cards! };
 		var tints = new[] { Color.Goldenrod, Color.Peru, Color.YellowGreen, Color.Coral, Color.SeaGreen, Color.Tomato };
@@ -431,14 +433,17 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			Id = "lunch1", Name = "What to eat", Theme = "slot", Effects = false,
 			Steps =
 			{
-				new DrawStep { Decks = { days }, Extra = "End of the month, Payday", Off = { days + "/Saturday", days + "/Sunday" } },
+				new DrawStep { Decks = { days }, Extra = "End of the month, Payday>>Drinks*2", Off = { days + "/Saturday", days + "/Sunday" } },
 				new DrawStep { Decks = { "food01" } },
 				new DrawStep { Decks = { "drink1" }, NoRepeat = true },
 			},
 		};
-		var signs = new DrawSetup { Id = "sign01", Name = "Zodiac", Theme = "dart", Effects = false,
-			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "zodiac" } } } };
-		cards.File.Draws.AddRange(new[] { lunch, signs });
+		// the dartboard with rings (77 provinces) and a two-ring spin wheel
+		var provinces = new DrawSetup { Id = "prov01", Name = "Provinces", Theme = "dart", Effects = false, StageHeight = 290,
+			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "provinces" } } } };
+		var spin = new DrawSetup { Id = "spin01", Name = "Spin", Theme = "spin", Effects = false, StageHeight = 300,
+			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "zodiac" } }, new DrawStep { Decks = { ReadyDecks.Prefix + "animal-years" } } } };
+		cards.File.Draws.AddRange(new[] { lunch, provinces, spin });
 		using var random = new RandomWindow(new RandomPrefs { Tab = "cards" }, _ => { }, null, cards);
 		random.StartPosition = FormStartPosition.Manual;
 		random.Location = new Point(form.Right + 20, form.Top);
@@ -455,7 +460,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		var steps = ModalShotAsync("random-draw-edit", "Edit tab", 800);
 		Program.Call(random, "EditDraw", pages[0]);
 		await steps;
-		foreach (var (page, name) in new[] { (pages[0], "random-draw-slot"), (pages[1], "random-draw-dart") })
+		foreach (var (page, name) in new[] { (pages[0], "random-draw-slot"), (pages[1], "random-draw-dart"), (pages[2], "random-draw-spin") })
 		{
 			tabs.SelectedTab = page;
 			for (int i = 0; i < 4; i++)

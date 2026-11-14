@@ -77,6 +77,14 @@ public sealed class HelpTests
 	}
 
 	[Fact]
+	public void TableCellsTakeEscapedBarsAndFourthLevelHeadings()
+	{
+		string html = Html("#### Extra cards\n\n| you type | you get |\n|---|---|\n| `Fried rice\\|2` | weight 2 |\n");
+		Assert.Contains("<h4>Extra cards</h4>", html);
+		Assert.Contains("<td><code>Fried rice|2</code></td><td>weight 2</td>", html);
+	}
+
+	[Fact]
 	public void ExampleFenceBecomesClickableRows()
 	{
 		string html = Html("```calc\n1 [ft->in]   => 12\nnow [longdatetime]\n```\n");

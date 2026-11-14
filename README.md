@@ -41,6 +41,13 @@ fv(0.05/12, 120, -100)    15528.227944566792820456167703351
   constants explained.
 - Views: Numeric Calc, History View, Advanced View (with Graph and
   Variables panels); light and dark theme; text size.
+- Random: `rand()` and seeds in any line, numbers in a shape
+  (`randbeta`, `randtri`, ...), and a Random window with lists, coins,
+  dice, shaped draws, passwords, an entropy lab (system, TPM, timing,
+  mouse, dice, and two public beacons fetched only when you ask), and
+  draws from card decks of your own or ready-made ones (playing cards,
+  months, provinces of Thailand, countries...): weights, conditions
+  between steps, and a slot machine, dartboard or spin wheel to watch.
 - Customize Ribbon: put any menu command on the ribbon, with your own
   SVG icons, spaces and separators.
 - Help inside the program (File > Help, or F1 in any window).

@@ -38,6 +38,8 @@ input. Change the numbers if you like, then OK adds the line.
 
 The pictures are drawn in radians. In Degrees or Grads, sin, cos and
 tan draw differently in the graph; the gallery and the hint say so.
+SoftCalc starts in degrees, so on a first run the graph shows
+`y=sin(x)` and `y=x/360` from -360 to 360: a full sine wave each way.
 
 In the narrow Graph panel of Advanced View the three are under one
 button: **Add** adds a function, its arrow has **Equation...** and
