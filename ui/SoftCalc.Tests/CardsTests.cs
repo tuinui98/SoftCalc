@@ -47,6 +47,7 @@ public sealed class CardsTests
 		Assert.Equal(50, Find("districts-bangkok").Cards.Count);
 		Assert.Equal(5, byProvince.Count(d => d.Cards.Any(c => c.Name == "Chaloem Phra Kiat")));
 		Assert.Contains(Find("districts-bangkok").Cards, c => c.Name == "Nong Chok" && c.Thai == "หนองจอก");
+		Assert.Contains(Find("districts").Cards, c => c.Name == "Bang Saai" && c.Thai == "บางซ้าย");
 		Assert.Contains(Find("districts").Cards, c => c.Name == "Chom Thong (Chiang Mai)" && c.Thai == "จอมทอง (เชียงใหม่)");
 		Assert.Equal("อำเภอ: เชียงใหม่", Find("districts-chiang-mai").Thai);
 		Assert.All(ReadyDecks.All, d =>
