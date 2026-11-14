@@ -39,6 +39,16 @@ public sealed class CardsTests
 		Assert.Equal(6, continents.Count);
 		Assert.Equal(196, continents.Sum(d => d.Cards.Count));
 		Assert.Contains(Find("countries").Cards, c => c.Name == "Taiwan" && c.Thai == "ไต้หวัน");
+		// owner 2026-11-15: 878 amphoe and 50 khet, all and by province, with the source's slips corrected
+		Assert.Equal(928, Find("districts").Cards.Count);
+		var byProvince = ReadyDecks.All.Where(d => d.Id.StartsWith(ReadyDecks.Prefix + "districts-")).ToList();
+		Assert.Equal(77, byProvince.Count);
+		Assert.Equal(928, byProvince.Sum(d => d.Cards.Count));
+		Assert.Equal(50, Find("districts-bangkok").Cards.Count);
+		Assert.Equal(5, byProvince.Count(d => d.Cards.Any(c => c.Name == "Chaloem Phra Kiat")));
+		Assert.Contains(Find("districts-bangkok").Cards, c => c.Name == "Nong Chok" && c.Thai == "หนองจอก");
+		Assert.Contains(Find("districts").Cards, c => c.Name == "Chom Thong (Chiang Mai)" && c.Thai == "จอมทอง (เชียงใหม่)");
+		Assert.Equal("อำเภอ: เชียงใหม่", Find("districts-chiang-mai").Thai);
 		Assert.All(ReadyDecks.All, d =>
 		{
 			Assert.False(string.IsNullOrEmpty(d.Thai));

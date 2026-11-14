@@ -2,7 +2,8 @@
 
 The published SoftCalc.exe carries the .NET runtime, a frozen Python with
 mpmath, the PyInstaller bootloader and IconMCP icons; their licences ask
-for their notices to travel with the binary. The texts are read from the
+for their notices to travel with the binary. The ready-made district deck
+comes from Thai open government data, whose terms ask for the source. The texts are read from the
 installed packages, so rerun this after upgrading any of them:
 
     engine/.venv/Scripts/python tools/make_notices.py
@@ -15,6 +16,23 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = ROOT / "engine" / ".venv" / "Lib" / "site-packages"
 DOTNET = pathlib.Path(r"C:\Program Files\dotnet")
 OUT = ROOT / "ui" / "SoftCalc" / "THIRD-PARTY-NOTICES.txt"
+
+DISTRICTS = """The ready-made district decks (Random window) are made from "ชื่ออำเภอ",
+district names of Thailand in Thai script and romanized, published by the
+Office of the Royal Society (สำนักงานราชบัณฑิตยสภา) at
+https://data.go.th/dataset/orst_0102 (file orst_0102.csv, 2022-05-01).
+
+The right to use the data is subject to the Terms and Conditions for DGA
+Open Government License (version 1.0, 10 June 2021):
+https://data.go.th/pages/dga-open-government-license
+
+SoftCalc corrects the file to the 928 districts (tools/make_districts.py):
+four Chaloem Phra Kiat districts added (Nakhon Ratchasima, Buri Ram, Nan,
+Nakhon Si Thammarat), two old names dropped (Muang, Sakon Nakhon; Maha Pho,
+Nakhon Sawan), the romanized names of Nong Chok and Nong Khaem swapped back,
+doubled spaces trimmed, and the district code added to the two Bang Sai
+districts of Ayutthaya.
+"""
 
 DOTNET_MIT = """The MIT License (MIT)
 
@@ -58,10 +76,11 @@ def section(title, body):
 def main():
     base_python = pathlib.Path(sys.base_prefix)
     parts = [
-        "SoftCalc includes software from the projects below. Their notices\n"
-        "and licences follow.\n\n",
+        "SoftCalc includes software and data from the projects below. Their\n"
+        "notices and licences follow.\n\n",
         section("Icons: IconMCP (https://iconmcp.com/), MIT",
                 (ROOT / "ui" / "SoftCalc" / "Icons" / "LICENSE.txt").read_text(encoding="utf-8")),
+        section("District names: Office of the Royal Society, DGA Open Government License", DISTRICTS),
         section("mpmath (https://mpmath.org/), BSD 3-Clause", one("mpmath-*.dist-info/licenses/LICENSE")),
         section(f"Python {sys.version.split()[0]} (https://www.python.org/), PSF License "
                 "and the licences of the libraries in its Windows build",
