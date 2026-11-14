@@ -1,10 +1,10 @@
 // DrawPage.cs - A draw tab of the Random window (design/random_plan.md R7)
 //
 // Owner 2026-11-14: Draw gives a line, a card from each step; Count
-// draws several lines. Theme: List, Slot machine or Dartboard, with
-// Effects while drawing (one line at a time). Shuffle puts the drawn
-// cards back in the No repeat piles. Clear draw empties the results and
-// History, not Stats; Clear stats empties the counts. Results, History
+// draws several lines. The theme (List, Slot machine or Dartboard) and
+// Effects are set in Edit tab; effects play when drawing one line.
+// Shuffle puts the drawn cards back in the No repeat piles. Clear draw
+// empties the results; Clear history and Clear stats ask first. Results, History
 // (with the time) and Stats are on tabs below. Draws come from the
 // Source row: System, or Seed through the window's engine.
 
@@ -23,14 +23,12 @@ internal sealed class DrawPage : TabPage
 	private readonly Picker _picker;
 	private readonly Action _save;
 	private readonly Label _title = new() { AutoSize = true, Margin = new Padding(3, 6, 12, 3) };
-	private readonly ComboBox _theme = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120 };
 	private readonly Label _piles = new() { AutoSize = true, Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 2, 0, 4) };
 	private readonly Panel _stageHolder = new() { Dock = DockStyle.Top, Height = 150 };
 	private readonly SlotStage _slot = new() { Dock = DockStyle.Fill };
 	private readonly DartStage _dart = new() { Dock = DockStyle.Fill };
 	private readonly Button _draw = new() { Text = "&Draw", AutoSize = true, MinimumSize = new Size(90, 0) };
 	private readonly NumericUpDown _count = new() { Minimum = 1, Maximum = CardDraws.MaxCount, Width = 70 };
-	private readonly CheckBox _effects = new() { Text = "E&ffects", AutoSize = true, Margin = new Padding(6, 6, 6, 3) };
 	private readonly Label _note = new() { AutoSize = true, Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 4, 0, 4) };
 	private readonly TabControl _views = new() { Dock = DockStyle.Fill };
 	private readonly ListBox _results = new() { Dock = DockStyle.Fill, IntegralHeight = false, SelectionMode = SelectionMode.MultiExtended };
@@ -41,6 +39,7 @@ internal sealed class DrawPage : TabPage
 	};
 	private readonly Label _statsNote = new() { AutoSize = true, Dock = DockStyle.Bottom, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 4, 0, 0) };
 	private bool _busy;
+	private bool _skip;    // a click on Results ends the List effect
 
 	public DrawSetup Setup { get; }
 
@@ -57,24 +56,15 @@ internal sealed class DrawPage : TabPage
 		_dart.Pictures = pictures;
 
 		//==================================================================
-		//  Top: name, theme, Edit tab, Delete tab
+		//  Top: name, Edit tab, Delete tab
 		//==================================================================
 		var top = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true };
 		_title.Font = new Font(Font, FontStyle.Bold);
-		_theme.Items.AddRange(CardDraws.ThemeNames);
-		_theme.SelectedIndex = Math.Max(0, Array.IndexOf(CardDraws.Themes, setup.Theme));
-		_theme.SelectedIndexChanged += (_, _) =>
-		{
-			Setup.Theme = CardDraws.Themes[_theme.SelectedIndex];
-			ShowTheme();
-			_save();
-		};
 		var editTab = new Button { Text = "&Edit tab...", AutoSize = true };
 		editTab.Click += (_, _) => edit(this);
 		var deleteTab = new Button { Text = "Delete ta&b", AutoSize = true };
 		deleteTab.Click += (_, _) => delete(this);
-		top.Controls.AddRange(new Control[] { _title, new Label { Text = "T&heme", AutoSize = true, Margin = new Padding(3, 6, 3, 3) },
-			_theme, _effects, editTab, deleteTab });
+		top.Controls.AddRange(new Control[] { _title, editTab, deleteTab });
 
 		//==================================================================
 		//  Draw buttons
@@ -82,9 +72,6 @@ internal sealed class DrawPage : TabPage
 		var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = true, Margin = new Padding(0, 6, 0, 0) };
 		_count.Value = Math.Clamp(setup.Count, 1, CardDraws.MaxCount);
 		_count.ValueChanged += (_, _) => Setup.Count = (int)_count.Value;
-		_effects.Checked = setup.Effects;
-		_effects.CheckedChanged += (_, _) => Setup.Effects = _effects.Checked;
-		new ToolTip().SetToolTip(_effects, "Slot machine and Dartboard play while drawing one line; click the picture to skip");
 		_draw.Click += async (_, _) => await DrawAsync();
 		var shuffle = new Button { Text = "&Shuffle", AutoSize = true };
 		new ToolTip().SetToolTip(shuffle, "Put the drawn cards back in the No repeat piles");
@@ -101,6 +88,7 @@ internal sealed class DrawPage : TabPage
 		//  Results, History, Stats
 		//==================================================================
 		_results.Font = new Font(Font.FontFamily, 11f);
+		_results.MouseDown += (_, _) => _skip = true;
 		var resultsPage = new TabPage("Results");
 		resultsPage.Controls.Add(_results);
 		var historyPage = new TabPage("History");
@@ -214,11 +202,19 @@ internal sealed class DrawPage : TabPage
 			}
 			var (lines, error) = CardDraws.Draw(Setup, _store.Find, count, below, Language, DateTime.UtcNow);
 			_save();
+			_views.SelectedIndex = 0;
+			if (Setup.Theme == "list" && Setup.Effects && lines.Count == 1)
+			{
+				await RollAsync(live);
+			}
+			if (IsDisposed)
+			{
+				return;
+			}
 			_results.BeginUpdate();
 			_results.Items.Clear();
 			_results.Items.AddRange(lines.Select(l => (object)CardDraws.Text(l, Language)).ToArray());
 			_results.EndUpdate();
-			_views.SelectedIndex = 0;
 			FillHistory();
 			ShowPiles();
 			if (error != null)
@@ -250,6 +246,25 @@ internal sealed class DrawPage : TabPage
 			{
 				_draw.Enabled = true;
 			}
+		}
+	}
+
+	// The List effect: random lines from the piles roll in Results, slowing down, before the drawn one
+	private async Task RollAsync(List<List<PoolCard>> live)
+	{
+		if (live.Any(l => l.Count == 0))
+		{
+			return;
+		}
+		_skip = false;
+		var look = new Random();
+		double wait = 30;
+		for (var clock = System.Diagnostics.Stopwatch.StartNew(); !_skip && !IsDisposed && clock.Elapsed.TotalSeconds < 1.2; wait *= 1.12)
+		{
+			var line = live.Select(l => l[look.Next(l.Count)]).ToList();
+			_results.Items.Clear();
+			_results.Items.Add(CardDraws.Text(line, Language));
+			await Task.Delay((int)wait);
 		}
 	}
 

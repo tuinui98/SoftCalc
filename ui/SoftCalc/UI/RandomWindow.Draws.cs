@@ -40,13 +40,19 @@ internal sealed partial class RandomWindow
 			Tell(_cardsNote, $"At most {CardStore.MaxDraws} draw tabs.", error: true);
 			return;
 		}
-		using var editor = new DrawEditor("New draw", DefaultDrawName, Array.Empty<DrawStep>(), _cards, Language, NewDeck);
+		var fresh = new DrawSetup();
+		using var editor = new DrawEditor("New draw", DefaultDrawName, Array.Empty<DrawStep>(), _cards, Language, NewDeck,
+			fresh.Theme, fresh.Effects);
 		if (editor.ShowDialog(this) != DialogResult.OK)
 		{
 			FillDecks();
 			return;
 		}
-		var setup = new DrawSetup { Id = CardStore.NewId(), Name = editor.ResultName, Steps = editor.ResultSteps };
+		var setup = new DrawSetup
+		{
+			Id = CardStore.NewId(), Name = editor.ResultName, Steps = editor.ResultSteps, Theme = editor.ResultTheme,
+			Effects = editor.ResultEffects,
+		};
 		_cards.File.Draws.Add(setup);
 		SaveCards();
 		FillDecks();
@@ -57,11 +63,14 @@ internal sealed partial class RandomWindow
 
 	private void EditDraw(DrawPage page)
 	{
-		using var editor = new DrawEditor("Edit tab", page.Setup.Name, page.Setup.Steps, _cards, Language, NewDeck);
+		using var editor = new DrawEditor("Edit tab", page.Setup.Name, page.Setup.Steps, _cards, Language, NewDeck,
+			page.Setup.Theme, page.Setup.Effects);
 		if (editor.ShowDialog(this) == DialogResult.OK)
 		{
 			page.Setup.Name = editor.ResultName;
 			page.Setup.Steps = editor.ResultSteps;
+			page.Setup.Theme = editor.ResultTheme;
+			page.Setup.Effects = editor.ResultEffects;
 			SaveCards();
 			page.Reload(changed: true);
 		}

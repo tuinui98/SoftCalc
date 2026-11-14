@@ -172,7 +172,9 @@ come later. Window size and place are remembered too.
   come later, owner).
 - No repeat works like a pile (owner): a drawn card stays out until
   Shuffle, also across closing the window.
-- Theme: List, Slot machine (a reel per step, stopping one by one),
+- Theme (set in Edit tab, owner 2026-11-14; new tabs start on Slot
+  machine): List (lines roll in Results, slowing down), Slot machine
+  (a reel per step, stopping one by one),
   Dartboard (a board per step, sectors sized by chance, a dart lands in
   the drawn card's sector). Effects play only for one line; the cards
   are drawn first and the effect plays towards them (System.Random for
