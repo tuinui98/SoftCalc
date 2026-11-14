@@ -461,6 +461,13 @@ ends 1:1, the drag insert line is visible enough on dark.
     SoftCalc). Owner 2026-11-15: BTC, ETH, USDT on ERC-20 and TRC-20;
     CoinGecko prices; public APIs with endpoints that can point at an
     own node. Plan: design/crypto_plan.md (C0 offline address checks,
-    C1 balances on demand, C2 monitor); open questions in it.
+    C1 balances on demand, C2 monitor); owner's answers in it.
+  - [x] C0 built 2026-11-15: Tools > Crypto... (Address, Fees), coin
+        units in lines. Not released.
+  - [ ] C1 balances, prices (CoinGecko, also `[btc->thb]` in lines),
+        a key-free public Ethereum RPC to find.
+  - [ ] C2 Watch with Windows toast notifications.
+  - [ ] Help for the crypto window and the coin units, once the owner
+        calls the topic done.
     The hardware-wallet discussion went to
     D:\Projects\esp32-hardware-wallet\NOTES.md (a separate project).

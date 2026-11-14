@@ -74,6 +74,7 @@ internal sealed partial class MainForm : Form
 	private GraphWindow? _graphWindow;
 	private CompoundWindow? _compoundWindow;
 	private RandomWindow? _randomWindow;
+	private CryptoWindow? _cryptoWindow;
 
 	// Set when the window closes to come back with a new theme (Program restarts)
 	public bool RestartRequested { get; private set; }
@@ -237,6 +238,20 @@ internal sealed partial class MainForm : Form
 		else
 		{
 			_randomWindow.Activate();
+		}
+	}
+
+	// Tools > Crypto: address checks and fees, offline (design/crypto_plan.md C0)
+	private void OpenCryptoWindow()
+	{
+		if (_cryptoWindow == null || _cryptoWindow.IsDisposed)
+		{
+			_cryptoWindow = new CryptoWindow(_prefs.Crypto, InsertValue);
+			_cryptoWindow.Show(this);
+		}
+		else
+		{
+			_cryptoWindow.Activate();
 		}
 	}
 
@@ -498,6 +513,7 @@ internal sealed partial class MainForm : Form
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Graph...", null, (_, _) => OpenGraphWindow()));
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Compound Interest...", null, (_, _) => OpenCompoundWindow()));
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Random...", null, (_, _) => OpenRandomWindow()));
+		tools.DropDownItems.Add(new ToolStripMenuItem("Cr&ypto...", null, (_, _) => OpenCryptoWindow()));
 
 		_menu.Items.AddRange(new ToolStripItem[] { file, view, _functionsMenu, _conversionsMenu, tools });
 	}

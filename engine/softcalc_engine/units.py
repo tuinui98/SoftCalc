@@ -8,6 +8,9 @@ year is not exactly 12 months. Long names (`year`, `hours`, ...) are aliases of 
 Area [EXT, owner 2026-11-08] goes through m2 and includes the Thai units
 rai (1600 m2), ngan (400 m2) and square wa (4 m2); `rnw` is rai-ngan-wa:
 as a number it is rai, typed as `4-1-50 [rnw]` and shown as `4-1-50`.
+Crypto amounts [EXT, owner 2026-11-15, design/crypto_plan.md C0]: bitcoin
+(btc, sat = 1e-8 btc), ether (eth, gwei = 1e-9 eth, wei = 1e-18 eth) and
+tron (trx, sun = 1e-6 trx); each coin is its own category.
 """
 
 import mpmath
@@ -32,6 +35,9 @@ LINEAR = {
     "in2": ("area", "0.00064516"), "ft2": ("area", "0.09290304"), "yd2": ("area", "0.83612736"),
     "acre": ("area", "4046.8564224"), "mi2": ("area", "2589988.110336"),
     "wa2": ("area", "4"), "ngan": ("area", "400"), "rai": ("area", "1600"), "rnw": ("area", "1600"),
+    "btc": ("bitcoin", "1"), "sat": ("bitcoin", "0.00000001"),
+    "eth": ("ether", "1"), "gwei": ("ether", "0.000000001"), "wei": ("ether", "0.000000000000000001"),
+    "trx": ("tron", "1"), "sun": ("tron", "0.000001"),
 }
 TEMPERATURE = ("c", "f", "k")
 ALIASES = {
@@ -44,6 +50,7 @@ ALIASES = {
     "in^2": "in2", "sqin": "in2", "ft^2": "ft2", "sqft": "ft2", "yd^2": "yd2", "sqyd": "yd2",
     "acres": "acre", "ac": "acre", "mi^2": "mi2", "sqmi": "mi2",
     "wa^2": "wa2", "sqwa": "wa2", "rai-ngan-wa": "rnw",
+    "sats": "sat", "satoshi": "sat", "satoshis": "sat",
 }
 RNW_NAMES = ("rnw", "rai-ngan-wa")
 
@@ -55,6 +62,9 @@ MENU = {
     "Velocity": ["mi/h", "m/s", "ft/h", "km/h", "knot"],
     "Area": ["mm2", "cm2", "m2", "ha", "km2", "in2", "ft2", "yd2", "acre", "mi2", "wa2", "ngan", "rai", "rnw"],
     "Temperature": ["c", "f", "k"],
+    "Bitcoin": ["btc", "sat"],
+    "Ethereum": ["eth", "gwei", "wei"],
+    "Tron": ["trx", "sun"],
 }
 
 

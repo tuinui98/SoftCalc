@@ -50,5 +50,9 @@
 	<ItemGroup Condition="'$(EngineZip)' != ''">
 		<EmbeddedResource Include="$(EngineZip)" LogicalName="engine.zip" />
 	</ItemGroup>
+	<!-- Crypto address checks (design/crypto_plan.md); MIT, in THIRD-PARTY-NOTICES; a version some weeks old -->
+	<ItemGroup>
+		<PackageReference Include="NBitcoin" Version="10.0.19" />
+	</ItemGroup>
 
 </Project>
