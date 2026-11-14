@@ -1,4 +1,4 @@
-# Crypto watch - plan (owner 2026-11-15, not started)
+# Crypto watch - plan (owner 2026-11-15; C0 built 2026-11-15)
 
 Scope (owner 2026-11-15): **check balances and check addresses**. No
 seeds, no private keys, no signing in SoftCalc. Networks: **BTC, ETH,
@@ -97,10 +97,28 @@ C0 (offline, smallest risk), then C1 for BTC, ETH + USDT-ERC20, Tron +
 USDT-TRC20, then C2. Each phase ends with tests, help and the owner
 trying it.
 
-## Open questions for the owner
+## Owner's answers (2026-11-15)
 
-1. Window name and place: Tools > Crypto...? Separate window like
-   Random?
-2. Notifications: Windows toast, or only inside the window?
-3. Should balances or prices also be usable in lines (`[btc->thb]`)?
-4. Which public Ethereum RPC provider to start with (some need keys)?
+1. Tools > Crypto..., a window of its own like Random.
+2. Notifications: Windows toast.
+3. Prices in lines too: `0.05 [btc->thb]`.
+4. Ethereum RPC: find a public one that needs no key (to do in C1).
+
+## C0 as built (2026-11-15)
+
+- Engine units: `btc`/`sat` (`sats`, `satoshi`), `eth`/`gwei`/`wei`,
+  `trx`/`sun`, one category per coin; Conversions menu groups Bitcoin,
+  Ethereum, Tron (tests/test_crypto_units.py).
+- `Logic/CryptoAddress.cs`: Bitcoin through NBitcoin 10.0.19 (a version
+  some weeks old on purpose); EIP-55 with an own Keccak-256 (checked
+  against the empty-string and "abc" hashes and the EIP-55 examples);
+  Tron Base58Check and its 41... hex form; payment URIs
+  (`bitcoin:...?amount=`); xpub/ypub/zpub recognised as watch-only;
+  recovery phrases, WIF keys, 64-hex keys and xprv refused.
+- `UI/CryptoWindow.cs`: Tools > Crypto... with Address (checked as you
+  type; a secret empties the box at once; the wallet form with Copy)
+  and Fees (BTC vB x sat/vB, ETH gas x gwei, Insert puts the sum in
+  Input). Remembers its tab and place, never an address.
+- NBitcoin, Newtonsoft.Json (its dependency) and
+  Microsoft.Extensions.Logging.Abstractions credited in
+  THIRD-PARTY-NOTICES. Help waits until the crypto topic is done.

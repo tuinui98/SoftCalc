@@ -116,6 +116,13 @@ internal sealed class RandomPrefs
 	public WindowPlacement? Window { get; set; }
 }
 
+// Tools > Crypto (design/crypto_plan.md): the tab and the window; never an address typed in it
+internal sealed class CryptoPrefs
+{
+	public string Tab { get; set; } = "address";    // address or fees
+	public WindowPlacement? Window { get; set; }
+}
+
 internal sealed class AppSettings
 {
 	public int Precision { get; set; } = 32;
@@ -163,6 +170,7 @@ internal sealed class AppSettings
 	public float? TextFontSize { get; set; }
 	public CompoundPrefs Compound { get; set; } = new();
 	public RandomPrefs Random { get; set; } = new();
+	public CryptoPrefs Crypto { get; set; } = new();
 
 	// Customize Ribbon layout; null = the default (design/ribbon_plan.md)
 	public List<RibbonGroup>? Ribbon { get; set; }
@@ -303,6 +311,11 @@ internal static class SettingsStore
 		s.Graph ??= new GraphPrefs();
 		s.Compound ??= new CompoundPrefs();
 		s.Random ??= new RandomPrefs();
+		s.Crypto ??= new CryptoPrefs();
+		if (s.Crypto.Tab is not ("address" or "fees"))
+		{
+			s.Crypto.Tab = "address";
+		}
 		SanitizeRandom(s.Random);
 		if (s.Ribbon != null)
 		{
