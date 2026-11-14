@@ -27,8 +27,10 @@ internal sealed class DrawPage : TabPage
 	private readonly Label _title = new() { AutoSize = true, Margin = new Padding(3, 6, 12, 3) };
 	private readonly Label _piles = new() { AutoSize = true, Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 2, 0, 4) };
 	private readonly Panel _stageHolder = new() { Dock = DockStyle.Top, Height = 150 };
-	// owner 2026-11-14: drag the bar under the theme to make it taller and Results shorter
-	private readonly Splitter _stageSplitter = new() { Dock = DockStyle.Top, Height = 6, MinSize = 80, MinExtra = 60 };
+	// owner 2026-11-14: drag the bar under the theme to make it taller and Results shorter, live
+	private readonly Panel _stageBar = new() { Dock = DockStyle.Top, Height = 7, Cursor = Cursors.HSplit };
+	private readonly Panel _viewsPanel = new() { Dock = DockStyle.Fill };
+	private int _dragFrom = -1, _dragHeight, _dragMax;    // screen y where the drag began, the height then, the most it may grow to
 	private readonly SlotStage _slot = new() { Dock = DockStyle.Fill };
 	private readonly DartStage _dart = new() { Dock = DockStyle.Fill };
 	private readonly SpinStage _spin = new() { Dock = DockStyle.Fill };
@@ -134,20 +136,49 @@ internal sealed class DrawPage : TabPage
 		_stageHolder.Controls.Add(_slot);
 		_stageHolder.Controls.Add(_dart);
 		_stageHolder.Controls.Add(_spin);
-		var views = new Panel { Dock = DockStyle.Fill };
-		views.Controls.AddRange(_views);
-		views.Controls.Add(viewRow);
-		Controls.Add(views);
+		_viewsPanel.Controls.AddRange(_views);
+		_viewsPanel.Controls.Add(viewRow);
+		Controls.Add(_viewsPanel);
 		_viewButtons[0].Font = _bold;    // Results shows first; toggling Visible here would make its handle early
 		Controls.Add(_note);
 		Controls.Add(buttons);
-		Controls.Add(_stageSplitter);
+		Controls.Add(_stageBar);
 		Controls.Add(_stageHolder);
-		_stageSplitter.SplitterMoved += (_, _) =>
+		_stageBar.MouseDown += (_, e) =>
 		{
-			Setup.StageHeight = _stageHolder.Height;
-			_save();
+			if (e.Button == MouseButtons.Left)
+			{
+				_dragFrom = Cursor.Position.Y;
+				_dragHeight = _stageHolder.Height;
+				_dragMax = Math.Max(80, _stageHolder.Height + _viewsPanel.Height - 60);    // Results keeps 60 px
+			}
 		};
+		_stageBar.MouseMove += (_, _) =>
+		{
+			if (_dragFrom >= 0)
+			{
+				_stageHolder.Height = Math.Clamp(_dragHeight + Cursor.Position.Y - _dragFrom, 80, _dragMax);
+				Update();
+			}
+		};
+		_stageBar.MouseUp += (_, _) =>
+		{
+			if (_dragFrom >= 0)
+			{
+				_dragFrom = -1;
+				Setup.StageHeight = _stageHolder.Height;
+				_save();
+			}
+		};
+		_stageBar.Paint += (_, e) =>
+		{
+			// a grip in the middle of the bar
+			int x = _stageBar.Width / 2, y = _stageBar.Height / 2;
+			using var grip = new Pen(SystemColors.ControlDark, 1f);
+			e.Graphics.DrawLine(grip, x - 16, y - 1, x + 16, y - 1);
+			e.Graphics.DrawLine(grip, x - 16, y + 1, x + 16, y + 1);
+		};
+		_stageBar.Resize += (_, _) => _stageBar.Invalidate();
 		Controls.Add(_piles);
 		Controls.Add(top);
 		Reload(changed: true);
@@ -179,7 +210,7 @@ internal sealed class DrawPage : TabPage
 	private void ShowTheme()
 	{
 		_stageHolder.Visible = Setup.Theme != "list";
-		_stageSplitter.Visible = Setup.Theme != "list";
+		_stageBar.Visible = Setup.Theme != "list";
 		_slot.Visible = Setup.Theme == "slot";
 		_dart.Visible = Setup.Theme == "dart";
 		_spin.Visible = Setup.Theme == "spin";
