@@ -24,6 +24,17 @@ internal sealed class CardFile
 	public string Language { get; set; } = "en";    // names of the ready-made cards: en or th
 	public List<Deck> Decks { get; set; } = new();
 	public List<DrawSetup> Draws { get; set; } = new();
+
+	// A first run (owner 2026-11-15): one draw tab to try, the zodiac on a spin wheel
+	public static CardFile ForNewUser()
+	{
+		var spin = new DrawSetup
+		{
+			Id = CardStore.NewId(), Name = "Spin", Theme = "spin",
+			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "zodiac" } } },
+		};
+		return new CardFile { Draws = { spin } };
+	}
 }
 
 internal sealed class CardStore
@@ -57,7 +68,7 @@ internal sealed class CardStore
 	{
 		if (!System.IO.File.Exists(path))
 		{
-			return (new CardFile(), null);
+			return (CardFile.ForNewUser(), null);
 		}
 		try
 		{

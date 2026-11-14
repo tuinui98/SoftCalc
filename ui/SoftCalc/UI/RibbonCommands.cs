@@ -48,6 +48,11 @@ internal sealed class RibbonCommands
 		["View/Decimal Places/More"] = "decimal-increase",
 		["View/Decimal Places/Fewer"] = "decimal-decrease",
 		["Conversions"] = "swap-horizontal",
+		["Tools/Random"] = "random",
+		["View/Numeric Calc"] = "keypad",
+		["View/History View"] = "history",
+		["View/Advanced View"] = "advanced-view",
+		["File/Exit"] = "power",
 	};
 
 	private readonly Dictionary<string, RibbonCommand> _byId = new();

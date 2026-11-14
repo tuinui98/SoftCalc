@@ -135,6 +135,23 @@ internal sealed class AppSettings
 	public bool ShowHints { get; set; } = true;
 	public string Theme { get; set; } = "system";    // system, light or dark; applied at start
 
+	// A first run (owner 2026-11-15): degrees, the Advanced view at the owner's window size, and a
+	// graph with two lines to try, over a full turn each way since the angle is in degrees (a sine
+	// and a gentle line from -1 to 1); files from earlier runs keep their own values
+	public static AppSettings ForNewUser()
+	{
+		var settings = new AppSettings { Angle = "deg", View = "Advanced", ShowSamples = true };
+		settings.Window.Width = 693;
+		settings.Window.Height = 728;
+		settings.Graph.Equations = new List<string> { "y=sin(x)", "y=x/360" };
+		settings.Graph.Shown = new List<string>(settings.Graph.Equations);
+		settings.Graph.Function = "y=sin(x)";
+		(settings.Graph.MinX, settings.Graph.MaxX, settings.Graph.GridX) = (-360, 360, 90);
+		(settings.Graph.MinY, settings.Graph.MaxY, settings.Graph.GridY) = (-2, 2, 0.5);
+		settings.Graph.Window = new WindowPlacement { Width = 839, Height = 730 };
+		return settings;
+	}
+
 	// History and Input text: the Font dialog sets family and base size
 	// (= 100%), View > Text Size scales it (owner 2026-11-06)
 	public string TextFontFamily { get; set; } = "Segoe UI";
@@ -165,7 +182,7 @@ internal static class SettingsStore
 	{
 		if (!File.Exists(path))
 		{
-			return (new AppSettings(), null);    // first run: defaults
+			return (AppSettings.ForNewUser(), null);    // first run: defaults
 		}
 		try
 		{

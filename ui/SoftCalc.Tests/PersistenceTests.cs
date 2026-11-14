@@ -116,7 +116,11 @@ public sealed class PersistenceTests : IDisposable
 	{
 		var (settings, warning) = SettingsStore.Load(Path.Combine(_dir, "none.json"));
 		Assert.Null(warning);
-		Assert.Equal(("History", 400, 651, 1000), (settings.View, settings.Window.Width, settings.Window.Height, settings.HistoryCap));
+		// owner 2026-11-15: a first run opens in degrees on the Advanced view, with two graph lines
+		Assert.Equal(("Advanced", 693, 728, 1000), (settings.View, settings.Window.Width, settings.Window.Height, settings.HistoryCap));
+		Assert.Equal(("deg", true, -360.0), (settings.Angle, settings.ShowSamples, settings.Graph.MinX));
+		Assert.Equal(new[] { "y=sin(x)", "y=x/360" }, settings.Graph.Equations);
+		Assert.Equal("History", new AppSettings().View);    // a file without the key keeps the old default
 	}
 
 	[Fact]

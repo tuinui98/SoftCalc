@@ -374,6 +374,9 @@ public sealed class CardsTests
 		try
 		{
 			var store = new CardStore(new DataFolder(dir));
+			// owner 2026-11-15: a first run has one draw tab to try
+			Assert.Equal(("Spin", "spin"), (store.File.Draws.Single().Name, store.File.Draws[0].Theme));
+			store.File.Draws.Clear();
 			store.File.Language = "th";
 			store.File.Decks.Add(new Deck { Id = "abc", Name = "Food", Cards = { new Card { Name = "Rice", Weight = 2 } } });
 			store.File.Draws.Add(new DrawSetup { Id = "d1", Name = "Lunch", Steps = { new DrawStep { Decks = { "abc" }, Extra = "Egg" } } });
