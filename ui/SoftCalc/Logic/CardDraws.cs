@@ -47,6 +47,7 @@ internal sealed class DrawSetup
 	public string Theme { get; set; } = "slot";    // list, slot, dart, spin; new tabs start on slot (owner 2026-11-14)
 	public int Count { get; set; } = 1;
 	public bool Effects { get; set; } = true;
+	public int StageHeight { get; set; }    // pixels the theme's area was dragged to; 0: the theme's own height
 	public List<DrawStep> Steps { get; set; } = new();
 	public List<DrawRecord> History { get; set; } = new();    // newest first
 	public int Draws { get; set; }    // lines drawn since the counts were cleared (Stats)
