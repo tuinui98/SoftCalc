@@ -195,7 +195,7 @@ internal sealed class SlotStage : DrawStage
 //==================================================================
 internal sealed class DartStage : DrawStage
 {
-	private const double Flight = 0.5;    // seconds for the dart to fly to a board (owner 2026-11-14)
+	private const double Flight = 0.25;    // seconds for the dart to fly to a board (owner 2026-11-14)
 	private const double Pause = 0.5;    // seconds at rest before the next board
 	private readonly List<PointF> _hits = new();    // where each dart lands on the board: angle (degrees) and radius (0-1)
 	private readonly List<double> _spins = new();    // seconds each board spins (owner 2026-11-14: 2-4 s, random)

@@ -196,8 +196,9 @@ come later. Window size and place are remembered too.
   (a reel per step, stopping one by one),
   Dartboard (a board per step, sectors sized by chance; owner
   2026-11-14: the board spins 2-4 s and the dart is thrown 1-3 s in, each
-  random; it flies 0.5 s, lands in the drawn card's sector and turns with
-  the board if it still turns; the dart's point goes into the board),
+  random; it flies 0.25 s (owner), lands in the drawn card's sector and turns with
+  the board if it still turns; the dart's point
+  goes into the board),
   Spin wheel (owner 2026-11-14, design X: up to three rings, a card each,
   turning clockwise, anticlockwise, clockwise for 3-5 s and stopping
   outside in; a marker at the top points down, one on the hub points up,
@@ -207,6 +208,8 @@ come later. Window size and place are remembered too.
   line gives reels side by side, else a row of reels per line, top to
   bottom, each row stopping left to right; more lines show the last one
   still. Dartboard plays the last line only.
+  A bar under the theme's area drags it taller, Results shorter (owner
+  2026-11-14); the height is kept per tab until the theme changes.
   No spoilers (owner 2026-11-14): Results and History fill only after
   the reels or the dart. Effects play only for one line; the cards
   are drawn first and the effect plays towards them (System.Random for

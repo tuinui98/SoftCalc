@@ -230,6 +230,7 @@ internal sealed class CardStore
 				draw.Theme = "list";
 			}
 			draw.Count = Math.Clamp(draw.Count, 1, CardDraws.MaxCount);
+			draw.StageHeight = Math.Clamp(draw.StageHeight, 0, 2000);
 			draw.Steps = (draw.Steps ?? new()).Where(s => s != null).Take(CardDraws.MaxSteps).ToList();
 			foreach (var step in draw.Steps)
 			{

@@ -27,6 +27,8 @@ internal sealed class DrawPage : TabPage
 	private readonly Label _title = new() { AutoSize = true, Margin = new Padding(3, 6, 12, 3) };
 	private readonly Label _piles = new() { AutoSize = true, Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 2, 0, 4) };
 	private readonly Panel _stageHolder = new() { Dock = DockStyle.Top, Height = 150 };
+	// owner 2026-11-14: drag the bar under the theme to make it taller and Results shorter
+	private readonly Splitter _stageSplitter = new() { Dock = DockStyle.Top, Height = 6, MinSize = 80, MinExtra = 60 };
 	private readonly SlotStage _slot = new() { Dock = DockStyle.Fill };
 	private readonly DartStage _dart = new() { Dock = DockStyle.Fill };
 	private readonly SpinStage _spin = new() { Dock = DockStyle.Fill };
@@ -139,7 +141,13 @@ internal sealed class DrawPage : TabPage
 		_viewButtons[0].Font = _bold;    // Results shows first; toggling Visible here would make its handle early
 		Controls.Add(_note);
 		Controls.Add(buttons);
+		Controls.Add(_stageSplitter);
 		Controls.Add(_stageHolder);
+		_stageSplitter.SplitterMoved += (_, _) =>
+		{
+			Setup.StageHeight = _stageHolder.Height;
+			_save();
+		};
 		Controls.Add(_piles);
 		Controls.Add(top);
 		Reload(changed: true);
@@ -171,10 +179,17 @@ internal sealed class DrawPage : TabPage
 	private void ShowTheme()
 	{
 		_stageHolder.Visible = Setup.Theme != "list";
+		_stageSplitter.Visible = Setup.Theme != "list";
 		_slot.Visible = Setup.Theme == "slot";
 		_dart.Visible = Setup.Theme == "dart";
 		_spin.Visible = Setup.Theme == "spin";
-		_stageHolder.Height = Setup.Theme is "dart" or "spin" ? 220 : 160;
+		_stageHolder.Height = StageHeight();
+	}
+
+	// The height dragged to, else the theme's own
+	private int StageHeight()
+	{
+		return Setup.StageHeight > 0 ? Setup.StageHeight : Setup.Theme is "dart" or "spin" ? 220 : 160;
 	}
 
 	// "Step 1: 9 cards, 7 left" per step
@@ -236,7 +251,7 @@ internal sealed class DrawPage : TabPage
 				if (Setup.Theme == "slot")
 				{
 					int rowCount = stageSteps.Max(s => s.Row) + 1;
-					_stageHolder.Height = rowCount == 1 ? 160 : 16 + 72 * rowCount;
+					_stageHolder.Height = Math.Max(StageHeight(), rowCount == 1 ? 0 : 16 + 72 * rowCount);
 				}
 				if (Setup.Effects && (lines.Count == 1 || rows))
 				{

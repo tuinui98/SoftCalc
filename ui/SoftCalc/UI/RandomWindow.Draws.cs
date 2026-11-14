@@ -69,6 +69,10 @@ internal sealed partial class RandomWindow
 		{
 			page.Setup.Name = editor.ResultName;
 			page.Setup.Steps = editor.ResultSteps;
+			if (page.Setup.Theme != editor.ResultTheme)
+			{
+				page.Setup.StageHeight = 0;    // a new theme starts at its own height
+			}
 			page.Setup.Theme = editor.ResultTheme;
 			page.Setup.Effects = editor.ResultEffects;
 			SaveCards();
