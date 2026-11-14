@@ -26,6 +26,7 @@ from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
 from .rpn import parse_rpn
 from .units import RNW_NAMES, canonical, convert, rnw_text, rnw_value
+from . import crypto
 from . import currency
 from . import fastplot
 
@@ -65,7 +66,8 @@ class EvalResult:
     """Outcome of one input line.
 
     kind: "result", "definition", "error", "empty" (nothing to add), or
-    "rates_needed" (fetch currency rates and evaluate again; E8).
+    "rates_needed" (fetch currency rates and evaluate again; E8),
+    "prices_needed" (fetch coin prices and evaluate again; crypto_plan C1).
     input: the line as typed (recalled when a History line is clicked).
     display_input: the line as History shows it, with variables, answer
     and $n replaced by their values (extensions.md E10).
@@ -106,6 +108,8 @@ class Engine:
         self.functions = {}    # lower-case name -> UserFunction
         self.rates = currency.Rates()
         self.used_rates = False
+        self.prices = crypto.Prices()
+        self.used_prices = False
         self.random = random.Random()    # rand(); seeded from the system until rands(seed)
         self.draws = {}    # id of a rand() node in the current line -> its value, for History
         if load_defaults:
@@ -122,10 +126,13 @@ class Engine:
     def evaluate(self, text):
         """Evaluate one input line and record its result."""
         self.used_rates = False
+        self.used_prices = False
         self.draws = {}
         result = self.evaluate_line(text)
-        if self.used_rates and result.kind in ("result", "definition"):
-            result.note = self.rates.note()
+        if result.kind in ("result", "definition"):
+            notes = [self.rates.note()] if self.used_rates else []
+            notes += [self.prices.note()] if self.used_prices else []
+            result.note = "; ".join(notes) if notes else result.note
         return result
 
     def evaluate_line(self, text):
@@ -147,6 +154,8 @@ class Engine:
                            + self.rnw_suffix(text, value))
         except currency.RatesNeeded:
             return EvalResult("rates_needed", text)
+        except crypto.PricesNeeded:
+            return EvalResult("prices_needed", text)
         except CalcError as exc:
             return EvalResult("error", text, f"ERROR:{exc}", text)
         self.answer = value
@@ -561,6 +570,10 @@ class Engine:
                 return convert_zone(value, node[1], node[2])
             if not isinstance(value, mpmath.mpf):
                 raise CalcError("Only real numbers can be converted")
+            if crypto.involved(node[1], node[2]):
+                converted = crypto.convert_price(value, node[1], node[2], self.prices)
+                self.used_prices = True
+                return converted
             if currency.is_currency(node[1], self.rates) or currency.is_currency(node[2], self.rates):
                 converted = currency.convert(value, node[1], node[2], self.rates)
                 self.used_rates = True

@@ -464,8 +464,10 @@ ends 1:1, the drag insert line is visible enough on dark.
     C1 balances on demand, C2 monitor); owner's answers in it.
   - [x] C0 built 2026-11-15: Tools > Crypto... (Address, Fees), coin
         units in lines. Not released.
-  - [ ] C1 balances, prices (CoinGecko, also `[btc->thb]` in lines),
-        a key-free public Ethereum RPC to find.
+  - [x] C1 built 2026-11-15: Balance tab (BTC, xpub/zpub, ETH +
+        USDT-ERC20, TRX + USDT-TRC20), CoinGecko prices also in lines
+        (`[btc->thb]`), default Ethereum RPC ethereum-rpc.publicnode.com.
+        Not released.
   - [ ] C2 Watch with Windows toast notifications.
   - [ ] Help for the crypto window and the coin units, once the owner
         calls the topic done.

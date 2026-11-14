@@ -116,10 +116,13 @@ internal sealed class RandomPrefs
 	public WindowPlacement? Window { get; set; }
 }
 
-// Tools > Crypto (design/crypto_plan.md): the tab and the window; never an address typed in it
+// Tools > Crypto (design/crypto_plan.md): the tab, the services and the window; never an address typed in it
 internal sealed class CryptoPrefs
 {
-	public string Tab { get; set; } = "address";    // address or fees
+	public string Tab { get; set; } = "address";    // address, balance or fees
+	public string Esplora { get; set; } = Logic.CryptoEndpoints.Default.Esplora;
+	public string EthereumRpc { get; set; } = Logic.CryptoEndpoints.Default.EthereumRpc;
+	public string TronGrid { get; set; } = Logic.CryptoEndpoints.Default.TronGrid;
 	public WindowPlacement? Window { get; set; }
 }
 
@@ -312,10 +315,15 @@ internal static class SettingsStore
 		s.Compound ??= new CompoundPrefs();
 		s.Random ??= new RandomPrefs();
 		s.Crypto ??= new CryptoPrefs();
-		if (s.Crypto.Tab is not ("address" or "fees"))
+		if (s.Crypto.Tab is not ("address" or "balance" or "fees"))
 		{
 			s.Crypto.Tab = "address";
 		}
+		static string Url(string? url, string fallback) =>
+			Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https" ? url!.TrimEnd('/') : fallback;
+		s.Crypto.Esplora = Url(s.Crypto.Esplora, Logic.CryptoEndpoints.Default.Esplora);
+		s.Crypto.EthereumRpc = Url(s.Crypto.EthereumRpc, Logic.CryptoEndpoints.Default.EthereumRpc);
+		s.Crypto.TronGrid = Url(s.Crypto.TronGrid, Logic.CryptoEndpoints.Default.TronGrid);
 		SanitizeRandom(s.Random);
 		if (s.Ribbon != null)
 		{

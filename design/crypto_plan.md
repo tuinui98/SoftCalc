@@ -1,4 +1,4 @@
-# Crypto watch - plan (owner 2026-11-15; C0 built 2026-11-15)
+# Crypto watch - plan (owner 2026-11-15; C0 and C1 built 2026-11-15)
 
 Scope (owner 2026-11-15): **check balances and check addresses**. No
 seeds, no private keys, no signing in SoftCalc. Networks: **BTC, ETH,
@@ -122,3 +122,34 @@ trying it.
 - NBitcoin, Newtonsoft.Json (its dependency) and
   Microsoft.Extensions.Logging.Abstractions credited in
   THIRD-PARTY-NOTICES. Help waits until the crypto topic is done.
+
+## C1 as built (2026-11-15)
+
+Services checked live on 2026-11-15 with public addresses:
+mempool.space (Esplora) and api.trongrid.io answer without a key;
+CoinGecko's simple/price answers without a key; for Ethereum,
+ethereum-rpc.publicnode.com (default) and eth.drpc.org answer without a
+key, while eth.llamarpc.com, cloudflare-eth.com and rpc.ankr.com/eth did
+not. The USDT contracts were confirmed: Ethereum
+0xdAC17F958D2ee523a2206206994597C13D831ec7 answers symbol USDT and 6
+decimals; Tron TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t is named TetherToken.
+
+- Engine `crypto.py`: `set_prices` (coin -> currency -> price, time,
+  stale, next_check) and `prices_needed`, like the ECB rates;
+  `[btc->thb]`, `[sat->thb]`, `[thb->btc]`, `[usdt->thb]`,
+  `[gwei->usd]`, coin to coin through usd; `[btc->kg]` is an error
+  without a fetch. The note shows `CoinGecko <time>`.
+- `Engine/PriceSource.cs`: one CoinGecko request for the four coins in
+  the 30 ECB currencies; prices.json cache; fresh 5 minutes, retry in 1
+  after a failure (cached prices shown `, offline`). The request has no
+  address in it.
+- `Logic/CryptoBalance.cs` and the Balance tab: Check sends the
+  address (or every address of an xpub/ypub/zpub, scanned to 20 unused
+  in a row on receive and change; the type can be chosen) to the
+  service named under the box. BTC confirmed and pending with recent
+  payments and confirmations; ETH and USDT-ERC20 balances (no history:
+  plain RPC has none by address); TRX and USDT-TRC20 with their recent
+  transfers. Values in THB and USD from the same prices. Services... sets
+  the three URLs (own node), saved in settings. Testnet addresses need a
+  testnet Esplora URL. Huge spam-token amounts saturate instead of
+  overflowing.

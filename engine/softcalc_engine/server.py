@@ -11,7 +11,7 @@ import sys
 
 import mpmath
 
-from . import __version__, currency, finance, menu, units
+from . import __version__, crypto, currency, finance, menu, units
 from .dates import ZONES
 from .engine import Engine, Settings
 from .errors import CalcError
@@ -90,6 +90,7 @@ class Dispatcher:
             "restore_results": self.op_restore_results,
             "schedule": self.op_schedule,
             "set_rates": self.op_set_rates,
+            "set_prices": self.op_set_prices,
             "draws": self.op_draws,
             "shutdown": lambda request: {},
         }
@@ -261,6 +262,28 @@ class Dispatcher:
         stale = argument(request, "stale", bool, False, required=False)
         next_check = argument(request, "next_check", (int, float))
         self.engine.rates.load(date, rates, stale, float(next_check))
+        return {}
+
+    def op_set_prices(self, request):
+        when = argument(request, "time", (str, type(None)), None, required=False)
+        prices = argument(request, "prices", dict, {}, required=False)
+        for coin, per_currency in prices.items():
+            if coin.lower() not in crypto.COINS or not isinstance(per_currency, dict):
+                raise RequestError("'prices' must map btc, eth, trx or usdt to {currency: price}")
+            for code, value in per_currency.items():
+                if not isinstance(value, (int, float, str)) or isinstance(value, bool) or len(code) != 3:
+                    raise RequestError("prices must map 3-letter codes to numbers")
+                try:
+                    positive = mpmath.mpf(value) > 0
+                except ValueError:
+                    positive = False
+                if not positive:
+                    raise RequestError(f"the price of {coin} in '{code}' must be a positive number")
+        if prices and when is None:
+            raise RequestError("'time' is needed with 'prices'")
+        stale = argument(request, "stale", bool, False, required=False)
+        next_check = argument(request, "next_check", (int, float))
+        self.engine.prices.load(when, prices, stale, float(next_check))
         return {}
 
     def op_pcf_import(self, request):

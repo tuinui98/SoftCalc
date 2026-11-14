@@ -60,6 +60,7 @@ internal sealed partial class MainForm : Form
 	private string _ribbonFunctions = "";    // user function names the ribbon was built with
 	private readonly Dictionary<int, ToolStripMenuItem> _textSizeItems = new();
 	private readonly RatesSource _rates;
+	private readonly PriceSource _prices;
 	private readonly Dictionary<string, ToolStripMenuItem> _viewItems = new();
 	private readonly Dictionary<string, Dictionary<object, ToolStripMenuItem>> _settingItems = new();
 
@@ -92,6 +93,8 @@ internal sealed partial class MainForm : Form
 		_session.DefinitionsChanged += (_, text) => OnDefinitionsChanged(text);
 		_rates = new RatesSource(folder.RatesPath);
 		_session.RatesProvider = FetchRatesAsync;
+		_prices = new PriceSource(folder.PricesPath);
+		_session.PricesProvider = FetchPricesAsync;
 		Text = $"SoftCalc [v{AboutDialog.Version}]";    // owner 2026-11-10
 		Icon = SvgIcon.ProgramIcon();
 		StartPosition = FormStartPosition.CenterScreen;
@@ -246,7 +249,7 @@ internal sealed partial class MainForm : Form
 	{
 		if (_cryptoWindow == null || _cryptoWindow.IsDisposed)
 		{
-			_cryptoWindow = new CryptoWindow(_prefs.Crypto, InsertValue);
+			_cryptoWindow = new CryptoWindow(_prefs.Crypto, InsertValue, PricesForWindowAsync);
 			_cryptoWindow.Show(this);
 		}
 		else
@@ -364,6 +367,28 @@ internal sealed partial class MainForm : Form
 	{
 		_onTopItem.Checked = onTop;
 		TopMost = onTop;    // owned windows (Graph, Compound Interest) stay above it
+	}
+
+	// The Crypto window's values: the same prices the engine uses, handed to it too
+	private async Task<CoinPrices?> PricesForWindowAsync()
+	{
+		var payload = await _prices.FetchAsync();
+		await _session.SetPricesAsync(payload);
+		return _prices.Held;
+	}
+
+	// Coin prices (CoinGecko): only when a line converts a coin to a currency
+	private async Task<JsonObject> FetchPricesAsync()
+	{
+		UseWaitCursor = true;
+		try
+		{
+			return await _prices.FetchAsync();
+		}
+		finally
+		{
+			UseWaitCursor = false;
+		}
 	}
 
 	// The only network access: runs when a currency conversion needs rates

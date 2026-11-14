@@ -52,6 +52,7 @@ internal sealed partial class MainForm
 	private async Task RestoreSessionAsync()
 	{
 		await _session.SetRatesAsync(_rates.LoadCached());    // cached rates; fetched only when a conversion needs them
+		await _session.SetPricesAsync(_prices.LoadCached());    // cached coin prices, due at once
 		await _session.ChangeSettingsAsync(new JsonObject
 		{
 			["precision"] = _prefs.Precision, ["angle"] = _prefs.Angle, ["base"] = _prefs.Base,

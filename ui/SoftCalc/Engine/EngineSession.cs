@@ -48,6 +48,7 @@ internal sealed class EngineSession : IDisposable
 	private JsonObject _settings = new();
 	private string _definitions = "";
 	private JsonObject? _rates;
+	private JsonObject? _prices;
 
 	public event EventHandler<string>? Restarted;
 
@@ -58,6 +59,9 @@ internal sealed class EngineSession : IDisposable
 
 	// Fetches currency rates (a set_rates payload) when an eval needs them
 	public Func<Task<JsonObject>>? RatesProvider { get; set; }
+
+	// Fetches coin prices (a set_prices payload) when an eval needs them (crypto_plan C1)
+	public Func<Task<JsonObject>>? PricesProvider { get; set; }
 
 	public EngineSession(ProcessStartInfo startInfo)
 	{
@@ -92,9 +96,18 @@ internal sealed class EngineSession : IDisposable
 			await RestartAsync(ex.Message);
 			return new EvalReply("error", input, input, "ERROR:The engine stopped and was restarted; try again");
 		}
-		if ((string?)reply["kind"] == "rates_needed")
+		// a line may need rates and prices both: each is fetched once, then the line runs again
+		bool rates = false, prices = false;
+		while ((string?)reply["kind"] is "rates_needed" or "prices_needed")
 		{
-			reply = await EvalWithRatesAsync(input);
+			bool needsRates = (string?)reply["kind"] == "rates_needed";
+			if (needsRates ? rates : prices)
+			{
+				reply = Unavailable(input, needsRates ? "Currency rates unavailable" : "Coin prices unavailable");
+				break;
+			}
+			reply = needsRates ? await EvalWithRatesAsync(input) : await EvalWithPricesAsync(input);
+			(rates, prices) = (rates || needsRates, prices || !needsRates);
 		}
 		var result = new EvalReply(
 			(string?)reply["kind"] ?? "error", (string?)reply["input"] ?? input,
@@ -106,20 +119,36 @@ internal sealed class EngineSession : IDisposable
 		return result;
 	}
 
-	// Fetch once, hand the rates over, evaluate again; never loops
+	// Fetch once, hand the rates over, evaluate again
 	private async Task<JsonObject> EvalWithRatesAsync(string input)
 	{
 		if (RatesProvider == null)
 		{
-			return new JsonObject { ["kind"] = "error", ["input"] = input, ["text"] = "ERROR:Currency rates unavailable" };
+			return Unavailable(input, "Currency rates unavailable");
 		}
 		await SetRatesAsync(await RatesProvider());
-		var reply = await RequestAsync("eval", new JsonObject { ["input"] = input }, EvalTimeout);
-		if ((string?)reply["kind"] == "rates_needed")
+		return await RequestAsync("eval", new JsonObject { ["input"] = input }, EvalTimeout);
+	}
+
+	private async Task<JsonObject> EvalWithPricesAsync(string input)
+	{
+		if (PricesProvider == null)
 		{
-			return new JsonObject { ["kind"] = "error", ["input"] = input, ["text"] = "ERROR:Currency rates unavailable" };
+			return Unavailable(input, "Coin prices unavailable");
 		}
-		return reply;
+		await SetPricesAsync(await PricesProvider());
+		return await RequestAsync("eval", new JsonObject { ["input"] = input }, EvalTimeout);
+	}
+
+	private static JsonObject Unavailable(string input, string why)
+	{
+		return new JsonObject { ["kind"] = "error", ["input"] = input, ["text"] = "ERROR:" + why };
+	}
+
+	public async Task SetPricesAsync(JsonObject payload)
+	{
+		_prices = payload.DeepClone().AsObject();
+		await GuardedAsync("set_prices", payload);
 	}
 
 	public async Task SetRatesAsync(JsonObject payload)
@@ -385,6 +414,10 @@ internal sealed class EngineSession : IDisposable
 		if (_rates != null)
 		{
 			await RequestAsync("set_rates", _rates.DeepClone().AsObject(), QuickTimeout);
+		}
+		if (_prices != null)
+		{
+			await RequestAsync("set_prices", _prices.DeepClone().AsObject(), QuickTimeout);
 		}
 		Restarted?.Invoke(this, reason);
 	}
