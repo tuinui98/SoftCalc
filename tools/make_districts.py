@@ -74,7 +74,7 @@ def main(source):
         f.write("# Source: Office of the Royal Society, district names in Thai and romanized (data.go.th orst_0102,\n")
         f.write("# 2022-05-01), under the Terms and Conditions for DGA Open Government License v1.0; corrected by\n")
         f.write("# tools/make_districts.py (four Chaloem Phra Kiat added, two old names dropped, Nong Chok and\n")
-        f.write("# Nong Khaem romanized names swapped back)\n")
+        f.write("# Nong Khaem romanized names swapped back, บางซ้าย written Bang Saai as Wikipedia does)\n")
         f.write("# province (English)|English|Thai\n")
         for _, province, roman, thai in districts:
             f.write(f"{province}|{roman}|{thai}\n")
