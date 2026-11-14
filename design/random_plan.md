@@ -198,12 +198,13 @@ come later. Window size and place are remembered too.
   2026-11-14: the board spins 2-4 s and the dart is thrown 1-3 s in, each
   random; it flies 0.25 s (owner), lands in the drawn card's sector and turns with
   the board if it still turns; the dart's point goes into the board;
-  over 24 cards the board gets rings, at most 4 (owner 2026-11-14,
+  over 36 cards the board gets rings, at most 4 (owner 2026-11-14,
   Logic/BoardRings.cs): every card's area is its share of the chances,
   rings start equally wide and each boundary moves at most 5% so whole
   cards fill them, the heaviest cards (then the first listed) go in
-  the middle, and the fewest rings with every sector 15 degrees or more
-  are used; 77 cards: 7/15/23/32, outer sectors 11.2 degrees),
+  the middle, and the fewest rings with every sector 10 degrees or more
+  (owner: was 15) are used; 52 cards: 7/18/27, 77 cards: 7/15/23/32,
+  outer sectors near 7 degrees at 125 cards),
   Spin wheel (owner 2026-11-14, design X: up to three rings, a card each,
   turning clockwise, anticlockwise, clockwise for 3-5 s and stopping
   outside in; a marker at the top points down, one on the hub points up,

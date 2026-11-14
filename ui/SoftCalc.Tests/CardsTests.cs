@@ -284,12 +284,12 @@ public sealed class CardsTests
 
 	[Theory]
 	[InlineData(12, "12")]
-	[InlineData(24, "24")]
-	[InlineData(25, "7/18")]
-	[InlineData(35, "5/12/18")]
-	[InlineData(47, "4/9/15/19")]
+	[InlineData(36, "36")]
+	[InlineData(37, "10/27")]
+	[InlineData(52, "7/18/27")]    // a pack of cards
+	[InlineData(70, "6/14/21/29")]
 	[InlineData(77, "7/15/23/32")]    // owner 2026-11-14: the 77 provinces
-	[InlineData(100, "9/19/31/41")]
+	[InlineData(125, "11/24/38/52")]
 	public void BoardRingsMatchTheAgreedTable(int cards, string rings)
 	{
 		var layout = BoardRings.Layout(Enumerable.Repeat(1.0, cards).ToList());
@@ -307,11 +307,12 @@ public sealed class CardsTests
 	public void BoardRingsPutTheHeaviestCardsInTheMiddle()
 	{
 		var weights = Enumerable.Repeat(1.0, 40).ToList();
+		weights.AddRange(Enumerable.Repeat(1.0, 20));
 		weights[30] = 3;
 		var layout = BoardRings.Layout(weights);
 		Assert.Contains(30, layout[0].Cards);
 		Assert.Contains(0, layout[0].Cards);
-		Assert.Equal(Enumerable.Range(0, 40), layout.SelectMany(r => r.Cards).Order());
+		Assert.Equal(Enumerable.Range(0, 60), layout.SelectMany(r => r.Cards).Order());
 	}
 
 	[Fact]
