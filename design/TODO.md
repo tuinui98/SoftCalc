@@ -423,7 +423,7 @@ ends 1:1, the drag insert line is visible enough on dark.
         Effects in Edit tab, List effect, Results/History/Stats buttons,
         Clear history, right-click menus, Dartboard spin, conditions
         (>>, |, Then row, Save as deck, Stats rows "1 → deck"), Add box
-        weights, no spoilers, dartboard timing.
+        weights, no spoilers, dartboard timing, slot rows, Spin wheel.
 - [ ] Crypto wallet seeds (first: list what SoftCalc could do).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe

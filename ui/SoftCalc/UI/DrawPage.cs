@@ -29,6 +29,7 @@ internal sealed class DrawPage : TabPage
 	private readonly Panel _stageHolder = new() { Dock = DockStyle.Top, Height = 150 };
 	private readonly SlotStage _slot = new() { Dock = DockStyle.Fill };
 	private readonly DartStage _dart = new() { Dock = DockStyle.Fill };
+	private readonly SpinStage _spin = new() { Dock = DockStyle.Fill };
 	private readonly Button _draw = new() { Text = "&Draw", AutoSize = true, MinimumSize = new Size(90, 0) };
 	private readonly NumericUpDown _count = new() { Minimum = 1, Maximum = CardDraws.MaxCount, Width = 70 };
 	private readonly Label _note = new() { AutoSize = true, Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(0, 4, 0, 4) };
@@ -61,6 +62,7 @@ internal sealed class DrawPage : TabPage
 		Padding = new Padding(8);
 		_slot.Pictures = pictures;
 		_dart.Pictures = pictures;
+		_spin.Pictures = pictures;
 
 		//==================================================================
 		//  Top: name, Edit tab, Delete tab
@@ -129,6 +131,7 @@ internal sealed class DrawPage : TabPage
 
 		_stageHolder.Controls.Add(_slot);
 		_stageHolder.Controls.Add(_dart);
+		_stageHolder.Controls.Add(_spin);
 		var views = new Panel { Dock = DockStyle.Fill };
 		views.Controls.AddRange(_views);
 		views.Controls.Add(viewRow);
@@ -152,12 +155,14 @@ internal sealed class DrawPage : TabPage
 		_title.Text = Setup.Name;
 		_slot.Language = Language;
 		_dart.Language = Language;
+		_spin.Language = Language;
 		ShowPiles();
 		ShowTheme();
 		if (changed)
 		{
 			_slot.Clear();
 			_dart.Clear();
+			_spin.Clear();
 			FillHistory();
 			FillStats();
 		}
@@ -168,7 +173,8 @@ internal sealed class DrawPage : TabPage
 		_stageHolder.Visible = Setup.Theme != "list";
 		_slot.Visible = Setup.Theme == "slot";
 		_dart.Visible = Setup.Theme == "dart";
-		_stageHolder.Height = Setup.Theme == "dart" ? 210 : 160;
+		_spin.Visible = Setup.Theme == "spin";
+		_stageHolder.Height = Setup.Theme is "dart" or "spin" ? 220 : 160;
 	}
 
 	// "Step 1: 9 cards, 7 left" per step
@@ -226,7 +232,7 @@ internal sealed class DrawPage : TabPage
 				bool single = shown.All(l => l.Count == 1);
 				var stageSteps = shown.SelectMany((l, row) => l.Select(p =>
 					new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card, single ? 0 : row))).ToList();
-				var stage = Setup.Theme == "slot" ? (DrawStage)_slot : _dart;
+				var stage = Setup.Theme switch { "slot" => (DrawStage)_slot, "spin" => _spin, _ => _dart };
 				if (Setup.Theme == "slot")
 				{
 					int rowCount = stageSteps.Max(s => s.Row) + 1;
@@ -306,6 +312,7 @@ internal sealed class DrawPage : TabPage
 		_results.Items.Clear();
 		_slot.Clear();
 		_dart.Clear();
+		_spin.Clear();
 		_note.ForeColor = SystemColors.GrayText;
 		_note.Text = "Results cleared; History and Stats stay.";
 	}
