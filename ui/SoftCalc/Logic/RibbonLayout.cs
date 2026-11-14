@@ -58,18 +58,19 @@ internal static class RibbonLayout
 	//==================================================================
 	public static List<RibbonGroup> Default()
 	{
+		// owner 2026-11-15, for new users: the owner's own ribbon; Grad, the number bases, RPN and
+		// precision stay in the menus (Customize Ribbon adds them back)
 		return new List<RibbonGroup>
 		{
-			Group("Angle", 3, Item("View/Advanced Options/Degrees", "Deg"), Item("View/Advanced Options/Radians", "Rad"),
-				Item("View/Advanced Options/Grads", "Grad")),
-			Group("Output", 5, Item("View/Decimal Output", "Dec"), Item("View/Hexadecimal Output", "Hex"),
-				Item("View/Binary Output", "Bin"), Item("View/Octal Output", "Oct"), Item("View/Word Size")),
+			Group("Angle", 3, Item("View/Advanced Options/Degrees", "Deg"), Item("View/Advanced Options/Radians", "Rad")),
 			Group("Decimals  " + DecimalsToken, 3, Item("View/Decimal Places/More", display: "icon"),
 				Item("View/Decimal Places/Fewer", display: "icon"), Item("View/Decimal Places/All Digits", "All")),
-			Group("Mode", 2, Item("View/Advanced Options/RPN Mode", "RPN"), Item(PrecisionId)),
+			Group("Tools", 4, Item("Tools/Graph"), Item("Conversions"), Item("Tools/Compound Interest", "Interest"),
+				Item("Tools/Random", "Random")),
+			Group("View", 3, Item("View/Numeric Calc", "Numeric"), Item("View/History View", "History"),
+				Item("View/Advanced View", "Advanced")),
 			Group("History", 2, Item("View/Clear History", "Clear"), Item("File/Save History", "Save")),
-			Group("Tools", 4, Item("Tools/Graph"), Item("Tools/Compound Interest", "Interest"),
-				Item("View/Always on Top", "On top"), Item("Conversions")),
+			Group("Window", 3, Item("View/Always on Top", "On top", "icon"), Item(SpaceId), Item("File/Exit", display: "icon")),
 		};
 	}
 

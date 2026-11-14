@@ -129,7 +129,7 @@ public sealed class SvgIconTests
 	{
 		var names = SvgIcon.BuiltIn();
 		Assert.Contains("trash", names);
-		Assert.Equal(9, names.Count);
+		Assert.Equal(14, names.Count);
 		Assert.All(names, n => Assert.Null(SvgIcon.Problem(SvgIcon.EmbeddedText(n))));
 	}
 

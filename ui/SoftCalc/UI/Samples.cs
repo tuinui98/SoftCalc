@@ -9,7 +9,8 @@ internal static class Samples
 		"x=5    store 5 in the variable x;  2x  then means 2*x\r\n" +
 		"f(x)=x^2    define a function;  f(3)  calls it\r\n" +
 		"1 [in->cm]    convert units;  now [longdatetime]  formats a date\r\n" +
-		"answer, $1, $2    the last result, the results before it";
+		"answer, $1, $2    the last result, the results before it\r\n" +
+		"rand(1, 6)    roll a die;  Tools > Random  for coins, passwords and card draws";
 
 	public const string Rpn =
 		"56 34 +    add two numbers (operands first, then the operator)\r\n" +

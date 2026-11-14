@@ -381,7 +381,9 @@ internal sealed partial class MainForm : Form
 			ResizeForSidebar(view == CalcView.Advanced);
 		}
 		bool samples = _showSamplesItem.Checked && view != CalcView.Numeric;    // Numeric never shows Samples [KEEP]
-		_column.RowStyles[1].Height = samples ? 110 : 0;
+		// tall enough for every sample line (six since the rand line, owner 2026-11-15)
+		int sampleLines = Samples.Infix.Split('\n').Length;
+		_column.RowStyles[1].Height = samples ? sampleLines * _samples.Font.Height + 30 : 0;
 		_samplesBox.Visible = samples;
 		_column.RowStyles[3].Height = view == CalcView.Numeric ? 150 : 0;
 		_keypadHost.Visible = view == CalcView.Numeric;
