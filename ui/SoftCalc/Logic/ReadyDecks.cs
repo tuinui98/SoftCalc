@@ -3,7 +3,8 @@
 // Owner 2026-11-14: a pack of playing cards (the two jokers start
 // unticked), months, days, the provinces of Thailand, countries by
 // continent (the UN members plus Palestine, Taiwan and the Vatican),
-// twelve colours, the zodiac and the twelve animal years. The lists are
+// twelve colours, the zodiac and the twelve animal years; owner
+// 2026-11-15: the 928 districts, all and by province. The lists are
 // embedded text files (Decks/*.txt, "English|Thai" lines). Ready-made
 // decks cannot be edited; Copy to my decks makes one that can.
 
@@ -69,7 +70,33 @@ internal static class ReadyDecks
 				Cards = countries.Where(r => r[0] == english).Select(r => new Card { Name = r[1], Thai = r[2] }).ToList(),
 			});
 		}
+		decks.AddRange(Districts());
 		return decks;
+	}
+
+	// The 928 districts (owner 2026-11-15; Office of the Royal Society's list, see districts.txt):
+	// all of them, a name that two provinces share followed by its province, and a deck per province
+	private static IEnumerable<Deck> Districts()
+	{
+		var thaiProvince = Rows("provinces").ToDictionary(r => r[0], r => r[1]);
+		var rows = Rows("districts").ToList();
+		var shared = rows.GroupBy(r => r[1]).Where(g => g.Count() > 1).Select(g => g.Key).ToHashSet();
+		yield return new Deck
+		{
+			Id = Prefix + "districts", Name = "Districts: all", Thai = "อำเภอ: ทั้งหมด", Alphabetical = true,
+			Cards = rows.Select(r => shared.Contains(r[1])
+				? new Card { Name = $"{r[1]} ({r[0]})", Thai = $"{r[2]} ({thaiProvince[r[0]]})" }
+				: new Card { Name = r[1], Thai = r[2] }).ToList(),
+		};
+		foreach (var province in rows.GroupBy(r => r[0]).OrderBy(g => g.Key, StringComparer.Ordinal))
+		{
+			yield return new Deck
+			{
+				Id = Prefix + "districts-" + province.Key.ToLowerInvariant().Replace(' ', '-'),
+				Name = "Districts: " + province.Key, Thai = "อำเภอ: " + thaiProvince[province.Key], Alphabetical = true,
+				Cards = province.Select(r => new Card { Name = r[1], Thai = r[2] }).ToList(),
+			};
+		}
 	}
 
 	// 52 cards, ace to king in each suit, and two jokers that start unticked

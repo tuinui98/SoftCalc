@@ -250,8 +250,10 @@ A draw picks from a pile of cards. The **...** tab holds the decks:
   named after the file) and **Export CSV...**.
 - **Ready-made decks**: playing cards (four colours: spades black,
   hearts red, diamonds blue, clubs green; the two jokers start unticked
-  in a draw), months, days of the week, the provinces of Thailand,
-  countries by continent (the UN members, Palestine, Taiwan and the
+  in a draw), months, days of the week, the provinces of Thailand and
+  its 928 districts (all of them, and a deck for each province; names
+  from the Office of the Royal Society, see File > About), countries by
+  continent (the UN members, Palestine, Taiwan and the
   Vatican; also all of them), twelve colours, the zodiac signs and the
   animal years. **Ready-made names** shows them in English or Thai.
   They cannot be edited: **View...** shows the cards, **Copy to my

@@ -414,8 +414,13 @@ ends 1:1, the drag insert line is visible enough on dark.
       List / Slot machine / Dartboard with effects, Results, History,
       Stats, Clear draw, System or Seed), cards.json; help topic updated.
       Released in 1.4.0 (2026-11-15).
-  - [ ] Ready-made districts (928, English and Thai): needs a data
-        source; ask the owner.
+  - [x] Ready-made districts (928, English and Thai): built 2026-11-15
+        from the owner's source, the Office of the Royal Society's list
+        (data.go.th orst_0102, DGA Open Government License, credited in
+        THIRD-PARTY-NOTICES); tools/make_districts.py corrects its slips
+        (4 Chaloem Phra Kiat missing, 2 old names, Nong Chok/Nong Khaem
+        swapped). Decks: Districts: all, and one per province. Not
+        released yet.
   - [x] Conditions (owner 2026-11-14, built 2026-11-14): extra cards
         with "|weight" and ">>condition", Then row for deck cards, Save
         as deck, a card drawing from another deck (random_plan.md R7).

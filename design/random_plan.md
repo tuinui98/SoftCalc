@@ -161,6 +161,12 @@ come later. Window size and place are remembered too.
   settings.json, written at once after each change under the data
   folder lock; between two Random windows the last write wins.
 
+Ready-made districts (owner 2026-11-15): Decks/districts.txt, made by
+tools/make_districts.py from the Office of the Royal Society's
+orst_0102.csv (DGA Open Government License: the source is credited in
+THIRD-PARTY-NOTICES and help). 928 districts: Districts: all (a name two
+provinces share gets the province after it) and Districts: <province>.
+
 ## Draw tabs (R7, owner 2026-11-14)
 - New draw on "..." asks for the name (Custom random) and the steps;
   the tab goes before "...". Edit tab, Delete tab (asks first).

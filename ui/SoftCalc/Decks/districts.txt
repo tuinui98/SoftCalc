@@ -1,0 +1,934 @@
+# districts.txt - Ready-made decks: the 928 districts of Thailand (878 amphoe, 50 khet of Bangkok)
+# Source: Office of the Royal Society, district names in Thai and romanized (data.go.th orst_0102,
+# 2022-05-01), under the Terms and Conditions for DGA Open Government License v1.0; corrected by
+# tools/make_districts.py (four Chaloem Phra Kiat added, two old names dropped, Nong Chok and
+# Nong Khaem romanized names swapped back)
+# province (English)|English|Thai
+Bangkok|Phra Nakhon|พระนคร
+Bangkok|Dusit|ดุสิต
+Bangkok|Nong Chok|หนองจอก
+Bangkok|Bang Rak|บางรัก
+Bangkok|Bang Khen|บางเขน
+Bangkok|Bang Kapi|บางกะปิ
+Bangkok|Pathum Wan|ปทุมวัน
+Bangkok|Pom Prap Sattru Phai|ป้อมปราบศัตรูพ่าย
+Bangkok|Phra Khanong|พระโขนง
+Bangkok|Min Buri|มีนบุรี
+Bangkok|Lat Krabang|ลาดกระบัง
+Bangkok|Yan Nawa|ยานนาวา
+Bangkok|Samphanthawong|สัมพันธวงศ์
+Bangkok|Phaya Thai|พญาไท
+Bangkok|Thon Buri|ธนบุรี
+Bangkok|Bangkok Yai|บางกอกใหญ่
+Bangkok|Huai Khwang|ห้วยขวาง
+Bangkok|Khlong San|คลองสาน
+Bangkok|Taling Chan|ตลิ่งชัน
+Bangkok|Bangkok Noi|บางกอกน้อย
+Bangkok|Bang Khun Thian|บางขุนเทียน
+Bangkok|Phasi Charoen|ภาษีเจริญ
+Bangkok|Nong Khaem|หนองแขม
+Bangkok|Rat Burana|ราษฎร์บูรณะ
+Bangkok|Bang Phlat|บางพลัด
+Bangkok|Din Daeng|ดินแดง
+Bangkok|Bueng Kum|บึงกุ่ม
+Bangkok|Sathon|สาทร
+Bangkok|Bang Sue|บางซื่อ
+Bangkok|Chatuchak|จตุจักร
+Bangkok|Bang Kho Laem|บางคอแหลม
+Bangkok|Prawet|ประเวศ
+Bangkok|Khlong Toei|คลองเตย
+Bangkok|Suan Luang|สวนหลวง
+Bangkok|Chom Thong|จอมทอง
+Bangkok|Don Mueang|ดอนเมือง
+Bangkok|Ratchathewi|ราชเทวี
+Bangkok|Lat Phrao|ลาดพร้าว
+Bangkok|Vadhana|วัฒนา
+Bangkok|Bang Khae|บางแค
+Bangkok|Lak Si|หลักสี่
+Bangkok|Sai Mai|สายไหม
+Bangkok|Khan Na Yao|คันนายาว
+Bangkok|Saphan Sung|สะพานสูง
+Bangkok|Wang Thonglang|วังทองหลาง
+Bangkok|Khlong Sam Wa|คลองสามวา
+Bangkok|Bang Na|บางนา
+Bangkok|Thawi Watthana|ทวีวัฒนา
+Bangkok|Thung Khru|ทุ่งครุ
+Bangkok|Bang Bon|บางบอน
+Samut Prakan|Mueang Samut Prakan|เมืองสมุทรปราการ
+Samut Prakan|Bang Bo|บางบ่อ
+Samut Prakan|Bang Phli|บางพลี
+Samut Prakan|Phra Pradaeng|พระประแดง
+Samut Prakan|Phra Samut Chedi|พระสมุทรเจดีย์
+Samut Prakan|Bang Sao Thong|บางเสาธง
+Nonthaburi|Mueang Nonthaburi|เมืองนนทบุรี
+Nonthaburi|Bang Kruai|บางกรวย
+Nonthaburi|Bang Yai|บางใหญ่
+Nonthaburi|Bang Bua Thong|บางบัวทอง
+Nonthaburi|Sai Noi|ไทรน้อย
+Nonthaburi|Pak Kret|ปากเกร็ด
+Pathum Thani|Mueang Pathum Thani|เมืองปทุมธานี
+Pathum Thani|Khlong Luang|คลองหลวง
+Pathum Thani|Thanyaburi|ธัญบุรี
+Pathum Thani|Nong Suea|หนองเสือ
+Pathum Thani|Lat Lum Kaeo|ลาดหลุมแก้ว
+Pathum Thani|Lam Luk Ka|ลำลูกกา
+Pathum Thani|Sam Khok|สามโคก
+Phra Nakhon Si Ayutthaya|Phra Nakhon Si Ayutthaya|พระนครศรีอยุธยา
+Phra Nakhon Si Ayutthaya|Tha Ruea|ท่าเรือ
+Phra Nakhon Si Ayutthaya|Nakhon Luang|นครหลวง
+Phra Nakhon Si Ayutthaya|Bang Sai (1404)|บางไทร
+Phra Nakhon Si Ayutthaya|Bang Ban|บางบาล
+Phra Nakhon Si Ayutthaya|Bang Pa-in|บางปะอิน
+Phra Nakhon Si Ayutthaya|Bang Pahan|บางปะหัน
+Phra Nakhon Si Ayutthaya|Phak Hai|ผักไห่
+Phra Nakhon Si Ayutthaya|Phachi|ภาชี
+Phra Nakhon Si Ayutthaya|Lat Bua Luang|ลาดบัวหลวง
+Phra Nakhon Si Ayutthaya|Wang Noi|วังน้อย
+Phra Nakhon Si Ayutthaya|Sena|เสนา
+Phra Nakhon Si Ayutthaya|Bang Sai (1413)|บางซ้าย
+Phra Nakhon Si Ayutthaya|Uthai|อุทัย
+Phra Nakhon Si Ayutthaya|Maha Rat|มหาราช
+Phra Nakhon Si Ayutthaya|Ban Phraek|บ้านแพรก
+Ang Thong|Mueang Ang Thong|เมืองอ่างทอง
+Ang Thong|Chaiyo|ไชโย
+Ang Thong|Pa Mok|ป่าโมก
+Ang Thong|Pho Thong|โพธิ์ทอง
+Ang Thong|Sawaeng Ha|แสวงหา
+Ang Thong|Wiset Chai Chan|วิเศษชัยชาญ
+Ang Thong|Samko|สามโก้
+Lop Buri|Mueang Lop Buri|เมืองลพบุรี
+Lop Buri|Phatthana Nikhom|พัฒนานิคม
+Lop Buri|Khok Samrong|โคกสำโรง
+Lop Buri|Chai Badan|ชัยบาดาล
+Lop Buri|Tha Wung|ท่าวุ้ง
+Lop Buri|Ban Mi|บ้านหมี่
+Lop Buri|Tha Luang|ท่าหลวง
+Lop Buri|Sa Bot|สระโบสถ์
+Lop Buri|Khok Charoen|โคกเจริญ
+Lop Buri|Lam Sonthi|ลำสนธิ
+Lop Buri|Nong Muang|หนองม่วง
+Sing Buri|Mueang Sing Buri|เมืองสิงห์บุรี
+Sing Buri|Bang Rachan|บางระจัน
+Sing Buri|Khai Bang Rachan|ค่ายบางระจัน
+Sing Buri|Phrom Buri|พรหมบุรี
+Sing Buri|Tha Chang|ท่าช้าง
+Sing Buri|In Buri|อินทร์บุรี
+Chai Nat|Mueang Chai Nat|เมืองชัยนาท
+Chai Nat|Manorom|มโนรมย์
+Chai Nat|Wat Sing|วัดสิงห์
+Chai Nat|Sapphaya|สรรพยา
+Chai Nat|Sankhaburi|สรรคบุรี
+Chai Nat|Hankha|หันคา
+Chai Nat|Nong Mamong|หนองมะโมง
+Chai Nat|Noen Kham|เนินขาม
+Saraburi|Mueang Saraburi|เมืองสระบุรี
+Saraburi|Kaeng Khoi|แก่งคอย
+Saraburi|Nong Khae|หนองแค
+Saraburi|Wihan Daeng|วิหารแดง
+Saraburi|Nong Saeng|หนองแซง
+Saraburi|Ban Mo|บ้านหมอ
+Saraburi|Don Phut|ดอนพุด
+Saraburi|Nong Don|หนองโดน
+Saraburi|Phra Phutthabat|พระพุทธบาท
+Saraburi|Sao Hai|เสาไห้
+Saraburi|Muak Lek|มวกเหล็ก
+Saraburi|Wang Muang|วังม่วง
+Saraburi|Chaloem Phra Kiat|เฉลิมพระเกียรติ
+Chon Buri|Mueang Chon Buri|เมืองชลบุรี
+Chon Buri|Ban Bueng|บ้านบึง
+Chon Buri|Nong Yai|หนองใหญ่
+Chon Buri|Bang Lamung|บางละมุง
+Chon Buri|Phan Thong|พานทอง
+Chon Buri|Phanat Nikhom|พนัสนิคม
+Chon Buri|Si Racha|ศรีราชา
+Chon Buri|Ko Si Chang|เกาะสีชัง
+Chon Buri|Sattahip|สัตหีบ
+Chon Buri|Bo Thong|บ่อทอง
+Chon Buri|Ko Chan|เกาะจันทร์
+Rayong|Mueang Rayong|เมืองระยอง
+Rayong|Ban Chang|บ้านฉาง
+Rayong|Klaeng|แกลง
+Rayong|Wang Chan|วังจันทร์
+Rayong|Ban Khai|บ้านค่าย
+Rayong|Pluak Daeng|ปลวกแดง
+Rayong|Khao Chamao|เขาชะเมา
+Rayong|Nikhom Phatthana|นิคมพัฒนา
+Chanthaburi|Mueang Chanthaburi|เมืองจันทบุรี
+Chanthaburi|Khlung|ขลุง
+Chanthaburi|Tha Mai|ท่าใหม่
+Chanthaburi|Pong Nam Ron|โป่งน้ำร้อน
+Chanthaburi|Makham|มะขาม
+Chanthaburi|Laem Sing|แหลมสิงห์
+Chanthaburi|Soi Dao|สอยดาว
+Chanthaburi|Kaeng Hang Maeo|แก่งหางแมว
+Chanthaburi|Na Yai Am|นายายอาม
+Chanthaburi|Khao Khitchakut|เขาคิชฌกูฏ
+Trat|Mueang Trat|เมืองตราด
+Trat|Khlong Yai|คลองใหญ่
+Trat|Khao Saming|เขาสมิง
+Trat|Bo Rai|บ่อไร่
+Trat|Laem Ngop|แหลมงอบ
+Trat|Ko Kut|เกาะกูด
+Trat|Ko Chang|เกาะช้าง
+Chachoengsao|Mueang Chachoengsao|เมืองฉะเชิงเทรา
+Chachoengsao|Bang Khla|บางคล้า
+Chachoengsao|Bang Nam Priao|บางน้ำเปรี้ยว
+Chachoengsao|Bang Pakong|บางปะกง
+Chachoengsao|Ban Pho|บ้านโพธิ์
+Chachoengsao|Phanom Sarakham|พนมสารคาม
+Chachoengsao|Ratchasan|ราชสาส์น
+Chachoengsao|Sanam Chai Khet|สนามชัยเขต
+Chachoengsao|Plaeng Yao|แปลงยาว
+Chachoengsao|Tha Takiap|ท่าตะเกียบ
+Chachoengsao|Khlong Khuean|คลองเขื่อน
+Prachin Buri|Mueang Prachin Buri|เมืองปราจีนบุรี
+Prachin Buri|Kabin Buri|กบินทร์บุรี
+Prachin Buri|Na Di|นาดี
+Prachin Buri|Ban Sang|บ้านสร้าง
+Prachin Buri|Prachantakham|ประจันตคาม
+Prachin Buri|Si Maha Phot|ศรีมหาโพธิ
+Prachin Buri|Si Mahosot|ศรีมโหสถ
+Nakhon Nayok|Mueang Nakhon Nayok|เมืองนครนายก
+Nakhon Nayok|Pak Phli|ปากพลี
+Nakhon Nayok|Ban Na|บ้านนา
+Nakhon Nayok|Ongkharak|องครักษ์
+Sa Kaeo|Mueang Sa Kaeo|เมืองสระแก้ว
+Sa Kaeo|Khlong Hat|คลองหาด
+Sa Kaeo|Ta Phraya|ตาพระยา
+Sa Kaeo|Wang Nam Yen|วังน้ำเย็น
+Sa Kaeo|Watthana Nakhon|วัฒนานคร
+Sa Kaeo|Aranyaprathet|อรัญประเทศ
+Sa Kaeo|Khao Chakan|เขาฉกรรจ์
+Sa Kaeo|Khok Sung|โคกสูง
+Sa Kaeo|Wang Sombun|วังสมบูรณ์
+Nakhon Ratchasima|Mueang Nakhon Ratchasima|เมืองนครราชสีมา
+Nakhon Ratchasima|Khon Buri|ครบุรี
+Nakhon Ratchasima|Soeng Sang|เสิงสาง
+Nakhon Ratchasima|Khong|คง
+Nakhon Ratchasima|Ban Lueam|บ้านเหลื่อม
+Nakhon Ratchasima|Chakkarat|จักราช
+Nakhon Ratchasima|Chok Chai|โชคชัย
+Nakhon Ratchasima|Dan Khun Thot|ด่านขุนทด
+Nakhon Ratchasima|Non Thai|โนนไทย
+Nakhon Ratchasima|Non Sung|โนนสูง
+Nakhon Ratchasima|Kham Sakaesaeng|ขามสะแกแสง
+Nakhon Ratchasima|Bua Yai|บัวใหญ่
+Nakhon Ratchasima|Prathai|ประทาย
+Nakhon Ratchasima|Pak Thong Chai|ปักธงชัย
+Nakhon Ratchasima|Phimai|พิมาย
+Nakhon Ratchasima|Huai Thalaeng|ห้วยแถลง
+Nakhon Ratchasima|Chum Phuang|ชุมพวง
+Nakhon Ratchasima|Sung Noen|สูงเนิน
+Nakhon Ratchasima|Kham Thale So|ขามทะเลสอ
+Nakhon Ratchasima|Sikhio|สีคิ้ว
+Nakhon Ratchasima|Pak Chong|ปากช่อง
+Nakhon Ratchasima|Nong Bun Mak|หนองบุญมาก
+Nakhon Ratchasima|Kaeng Sanam Nang|แก้งสนามนาง
+Nakhon Ratchasima|Non Daeng|โนนแดง
+Nakhon Ratchasima|Wang Nam Khiao|วังน้ำเขียว
+Nakhon Ratchasima|Thepharak|เทพารักษ์
+Nakhon Ratchasima|Mueang Yang|เมืองยาง
+Nakhon Ratchasima|Phra Thong Kham|พระทองคำ
+Nakhon Ratchasima|Lam Thamenchai|ลำทะเมนชัย
+Nakhon Ratchasima|Bua Lai|บัวลาย
+Nakhon Ratchasima|Sida|สีดา
+Nakhon Ratchasima|Chaloem Phra Kiat|เฉลิมพระเกียรติ
+Buri Ram|Mueang Buri Ram|เมืองบุรีรัมย์
+Buri Ram|Khu Mueang|คูเมือง
+Buri Ram|Krasang|กระสัง
+Buri Ram|Nang Rong|นางรอง
+Buri Ram|Nong Ki|หนองกี่
+Buri Ram|Lahan Sai|ละหานทราย
+Buri Ram|Prakhon Chai|ประโคนชัย
+Buri Ram|Ban Kruat|บ้านกรวด
+Buri Ram|Phutthaisong|พุทไธสง
+Buri Ram|Lam Plai Mat|ลำปลายมาศ
+Buri Ram|Satuek|สตึก
+Buri Ram|Pakham|ปะคำ
+Buri Ram|Na Pho|นาโพธิ์
+Buri Ram|Nong Hong|หนองหงส์
+Buri Ram|Phlapphla Chai|พลับพลาชัย
+Buri Ram|Huai Rat|ห้วยราช
+Buri Ram|Non Suwan|โนนสุวรรณ
+Buri Ram|Chamni|ชำนิ
+Buri Ram|Ban Mai Chaiyaphot|บ้านใหม่ไชยพจน์
+Buri Ram|Non Din Daeng|โนนดินแดง
+Buri Ram|Ban Dan|บ้านด่าน
+Buri Ram|Khaen Dong|แคนดง
+Buri Ram|Chaloem Phra Kiat|เฉลิมพระเกียรติ
+Surin|Mueang Surin|เมืองสุรินทร์
+Surin|Chumphon Buri|ชุมพลบุรี
+Surin|Tha Tum|ท่าตูม
+Surin|Chom Phra|จอมพระ
+Surin|Prasat|ปราสาท
+Surin|Kap Choeng|กาบเชิง
+Surin|Rattanaburi|รัตนบุรี
+Surin|Sanom|สนม
+Surin|Sikhoraphum|ศีขรภูมิ
+Surin|Sangkha|สังขะ
+Surin|Lamduan|ลำดวน
+Surin|Samrong Thap|สำโรงทาบ
+Surin|Buachet|บัวเชด
+Surin|Phanom Dong Rak|พนมดงรัก
+Surin|Si Narong|ศรีณรงค์
+Surin|Khwao Sinarin|เขวาสินรินทร์
+Surin|Non Narai|โนนนารายณ์
+Si Sa Ket|Mueang Si Sa Ket|เมืองศรีสะเกษ
+Si Sa Ket|Yang Chum Noi|ยางชุมน้อย
+Si Sa Ket|Kanthararom|กันทรารมย์
+Si Sa Ket|Kantharalak|กันทรลักษ์
+Si Sa Ket|Khukhan|ขุขันธ์
+Si Sa Ket|Phrai Bueng|ไพรบึง
+Si Sa Ket|Prang Ku|ปรางค์กู่
+Si Sa Ket|Khun Han|ขุนหาญ
+Si Sa Ket|Rasi Salai|ราษีไศล
+Si Sa Ket|Uthumphon Phisai|อุทุมพรพิสัย
+Si Sa Ket|Bueng Bun|บึงบูรพ์
+Si Sa Ket|Huai Thap Than|ห้วยทับทัน
+Si Sa Ket|Non Khun|โนนคูณ
+Si Sa Ket|Si Rattana|ศรีรัตนะ
+Si Sa Ket|Nam Kliang|น้ำเกลี้ยง
+Si Sa Ket|Wang Hin|วังหิน
+Si Sa Ket|Phu Sing|ภูสิงห์
+Si Sa Ket|Mueang Chan|เมืองจันทร์
+Si Sa Ket|Benchalak|เบญจลักษ์
+Si Sa Ket|Phayu|พยุห์
+Si Sa Ket|Pho Si Suwan|โพธิ์ศรีสุวรรณ
+Si Sa Ket|Sila Lat|ศิลาลาด
+Ubon Ratchathani|Mueang Ubon Ratchathani|เมืองอุบลราชธานี
+Ubon Ratchathani|Si Mueang Mai|ศรีเมืองใหม่
+Ubon Ratchathani|Khong Chiam|โขงเจียม
+Ubon Ratchathani|Khueang Nai|เขื่องใน
+Ubon Ratchathani|Khemarat|เขมราฐ
+Ubon Ratchathani|Det Udom|เดชอุดม
+Ubon Ratchathani|Na Chaluai|นาจะหลวย
+Ubon Ratchathani|Nam Yuen|น้ำยืน
+Ubon Ratchathani|Buntharik|บุณฑริก
+Ubon Ratchathani|Trakan Phuet Phon|ตระการพืชผล
+Ubon Ratchathani|Kut Khaopun|กุดข้าวปุ้น
+Ubon Ratchathani|Muang Sam Sip|ม่วงสามสิบ
+Ubon Ratchathani|Warin Chamrap|วารินชำราบ
+Ubon Ratchathani|Phibun Mangsahan|พิบูลมังสาหาร
+Ubon Ratchathani|Tan Sum|ตาลสุม
+Ubon Ratchathani|Pho Sai|โพธิ์ไทร
+Ubon Ratchathani|Samrong|สำโรง
+Ubon Ratchathani|Don Mot Daeng|ดอนมดแดง
+Ubon Ratchathani|Sirindhorn|สิรินธร
+Ubon Ratchathani|Thung Si Udom|ทุ่งศรีอุดม
+Ubon Ratchathani|Na Yia|นาเยีย
+Ubon Ratchathani|Na Tan|นาตาล
+Ubon Ratchathani|Lao Suea Kok|เหล่าเสือโก้ก
+Ubon Ratchathani|Sawang Wirawong|สว่างวีระวงศ์
+Ubon Ratchathani|Nam Khun|น้ำขุ่น
+Yasothon|Mueang Yasothon|เมืองยโสธร
+Yasothon|Sai Mun|ทรายมูล
+Yasothon|Kut Chum|กุดชุม
+Yasothon|Kham Khuean Kaeo|คำเขื่อนแก้ว
+Yasothon|Pa Tio|ป่าติ้ว
+Yasothon|Maha Chana Chai|มหาชนะชัย
+Yasothon|Kho Wang|ค้อวัง
+Yasothon|Loeng Nok Tha|เลิงนกทา
+Yasothon|Thai Charoen|ไทยเจริญ
+Chaiyaphum|Mueang Chaiyaphum|เมืองชัยภูมิ
+Chaiyaphum|Ban Khwao|บ้านเขว้า
+Chaiyaphum|Khon Sawan|คอนสวรรค์
+Chaiyaphum|Kaset Sombun|เกษตรสมบูรณ์
+Chaiyaphum|Nong Bua Daeng|หนองบัวแดง
+Chaiyaphum|Chatturat|จัตุรัส
+Chaiyaphum|Bamnet Narong|บำเหน็จณรงค์
+Chaiyaphum|Nong Bua Rawe|หนองบัวระเหว
+Chaiyaphum|Thep Sathit|เทพสถิต
+Chaiyaphum|Phu Khiao|ภูเขียว
+Chaiyaphum|Ban Thaen|บ้านแท่น
+Chaiyaphum|Kaeng Khro|แก้งคร้อ
+Chaiyaphum|Khon San|คอนสาร
+Chaiyaphum|Phakdi Chumphon|ภักดีชุมพล
+Chaiyaphum|Noen Sa-nga|เนินสง่า
+Chaiyaphum|Sap Yai|ซับใหญ่
+Amnat Charoen|Mueang Amnat Charoen|เมืองอำนาจเจริญ
+Amnat Charoen|Chanuman|ชานุมาน
+Amnat Charoen|Pathum Ratchawongsa|ปทุมราชวงศา
+Amnat Charoen|Phana|พนา
+Amnat Charoen|Senangkhanikhom|เสนางคนิคม
+Amnat Charoen|Hua Taphan|หัวตะพาน
+Amnat Charoen|Lue Amnat|ลืออำนาจ
+Bueng Kan|Mueang Bueng Kan|เมืองบึงกาฬ
+Bueng Kan|Phon Charoen|พรเจริญ
+Bueng Kan|So Phisai|โซ่พิสัย
+Bueng Kan|Seka|เซกา
+Bueng Kan|Pak Khat|ปากคาด
+Bueng Kan|Bueng Khong Long|บึงโขงหลง
+Bueng Kan|Si Wilai|ศรีวิไล
+Bueng Kan|Bung Khla|บุ่งคล้า
+Nong Bua Lam Phu|Mueang Nong Bua Lam Phu|เมืองหนองบัวลำภู
+Nong Bua Lam Phu|Na Klang|นากลาง
+Nong Bua Lam Phu|Non Sang|โนนสัง
+Nong Bua Lam Phu|Si Bun Rueang|ศรีบุญเรือง
+Nong Bua Lam Phu|Suwannakhuha|สุวรรณคูหา
+Nong Bua Lam Phu|Na Wang|นาวัง
+Khon Kaen|Mueang Khon Kaen|เมืองขอนแก่น
+Khon Kaen|Ban Fang|บ้านฝาง
+Khon Kaen|Phra Yuen|พระยืน
+Khon Kaen|Nong Ruea|หนองเรือ
+Khon Kaen|Chum Phae|ชุมแพ
+Khon Kaen|Si Chomphu|สีชมพู
+Khon Kaen|Nam Phong|น้ำพอง
+Khon Kaen|Ubolratana|อุบลรัตน์
+Khon Kaen|Kranuan|กระนวน
+Khon Kaen|Ban Phai|บ้านไผ่
+Khon Kaen|Pueai Noi|เปือยน้อย
+Khon Kaen|Phon|พล
+Khon Kaen|Waeng Yai|แวงใหญ่
+Khon Kaen|Waeng Noi|แวงน้อย
+Khon Kaen|Nong Song Hong|หนองสองห้อง
+Khon Kaen|Phu Wiang|ภูเวียง
+Khon Kaen|Mancha Khiri|มัญจาคีรี
+Khon Kaen|Chonnabot|ชนบท
+Khon Kaen|Khao Suan Kwang|เขาสวนกวาง
+Khon Kaen|Phu Pha Man|ภูผาม่าน
+Khon Kaen|Sam Sung|ซำสูง
+Khon Kaen|Khok Pho Chai|โคกโพธิ์ไชย
+Khon Kaen|Nong Na Kham|หนองนาคำ
+Khon Kaen|Ban Haet|บ้านแฮด
+Khon Kaen|Non Sila|โนนศิลา
+Khon Kaen|Wiang Kao|เวียงเก่า
+Udon Thani|Mueang Udon Thani|เมืองอุดรธานี
+Udon Thani|Kut Chap|กุดจับ
+Udon Thani|Nong Wua So|หนองวัวซอ
+Udon Thani|Kumphawapi|กุมภวาปี
+Udon Thani|Non Sa-at|โนนสะอาด
+Udon Thani|Nong Han|หนองหาน
+Udon Thani|Thung Fon|ทุ่งฝน
+Udon Thani|Chai Wan|ไชยวาน
+Udon Thani|Si That|ศรีธาตุ
+Udon Thani|Wang Sam Mo|วังสามหมอ
+Udon Thani|Ban Dung|บ้านดุง
+Udon Thani|Ban Phue|บ้านผือ
+Udon Thani|Nam Som|น้ำโสม
+Udon Thani|Phen|เพ็ญ
+Udon Thani|Sang Khom|สร้างคอม
+Udon Thani|Nong Saeng|หนองแสง
+Udon Thani|Na Yung|นายูง
+Udon Thani|Phibun Rak|พิบูลย์รักษ์
+Udon Thani|Ku Kaeo|กู่แก้ว
+Udon Thani|Prachaksinlapakhom|ประจักษ์ศิลปาคม
+Loei|Mueang Loei|เมืองเลย
+Loei|Na Duang|นาด้วง
+Loei|Chiang Khan|เชียงคาน
+Loei|Pak Chom|ปากชม
+Loei|Dan Sai|ด่านซ้าย
+Loei|Na Haeo|นาแห้ว
+Loei|Phu Ruea|ภูเรือ
+Loei|Tha Li|ท่าลี่
+Loei|Wang Saphung|วังสะพุง
+Loei|Phu Kradueng|ภูกระดึง
+Loei|Phu Luang|ภูหลวง
+Loei|Pha Khao|ผาขาว
+Loei|Erawan|เอราวัณ
+Loei|Nong Hin|หนองหิน
+Nong Khai|Mueang Nong Khai|เมืองหนองคาย
+Nong Khai|Tha Bo|ท่าบ่อ
+Nong Khai|So Phisai|โพนพิสัย
+Nong Khai|Si Chiang Mai|ศรีเชียงใหม่
+Nong Khai|Sangkhom|สังคม
+Nong Khai|Sakhrai|สระใคร
+Nong Khai|Fao Rai|เฝ้าไร่
+Nong Khai|Rattanawapi|รัตนวาปี
+Nong Khai|Pho Tak|โพธิ์ตาก
+Maha Sarakham|Mueang Maha Sarakham|เมืองมหาสารคาม
+Maha Sarakham|Kae Dam|แกดำ
+Maha Sarakham|Kosum Phisai|โกสุมพิสัย
+Maha Sarakham|Kantharawichai|กันทรวิชัย
+Maha Sarakham|Chiang Yuen|เชียงยืน
+Maha Sarakham|Borabue|บรบือ
+Maha Sarakham|Na Chueak|นาเชือก
+Maha Sarakham|Phayakkhaphum Phisai|พยัคฆภูมิพิสัย
+Maha Sarakham|Wapi Pathum|วาปีปทุม
+Maha Sarakham|Na Dun|นาดูน
+Maha Sarakham|Yang Sisurat|ยางสีสุราช
+Maha Sarakham|Kut Rang|กุดรัง
+Maha Sarakham|Chuen Chom|ชื่นชม
+Roi Et|Mueang Roi Et|เมืองร้อยเอ็ด
+Roi Et|Kaset Wisai|เกษตรวิสัย
+Roi Et|Pathum Rat|ปทุมรัตต์
+Roi Et|Chaturaphak Phiman|จตุรพักตรพิมาน
+Roi Et|Thawat Buri|ธวัชบุรี
+Roi Et|Phanom Phrai|พนมไพร
+Roi Et|Phon Thong|โพนทอง
+Roi Et|Pho Chai|โพธิ์ชัย
+Roi Et|Nong Phok|หนองพอก
+Roi Et|Selaphum|เสลภูมิ
+Roi Et|Suwannaphum|สุวรรณภูมิ
+Roi Et|Mueang Suang|เมืองสรวง
+Roi Et|Phon Sai|โพนทราย
+Roi Et|At Samat|อาจสามารถ
+Roi Et|Moei Wadi|เมยวดี
+Roi Et|Si Somdet|ศรีสมเด็จ
+Roi Et|Changhan|จังหาร
+Roi Et|Chiang Khwan|เชียงขวัญ
+Roi Et|Nong Hi|หนองฮี
+Roi Et|Thung Khao Luang|ทุ่งเขาหลวง
+Kalasin|Mueang Kalasin|เมืองกาฬสินธุ์
+Kalasin|Na Mon|นามน
+Kalasin|Kamalasai|กมลาไสย
+Kalasin|Rong Kham|ร่องคำ
+Kalasin|Kuchinarai|กุฉินารายณ์
+Kalasin|Khao Wong|เขาวง
+Kalasin|Yang Talat|ยางตลาด
+Kalasin|Huai Mek|ห้วยเม็ก
+Kalasin|Sahatsakhan|สหัสขันธ์
+Kalasin|Kham Muang|คำม่วง
+Kalasin|Tha Khantho|ท่าคันโท
+Kalasin|Nong Kung Si|หนองกุงศรี
+Kalasin|Somdet|สมเด็จ
+Kalasin|Huai Phueng|ห้วยผึ้ง
+Kalasin|Sam Chai|สามชัย
+Kalasin|Na Khu|นาคู
+Kalasin|Don Chan|ดอนจาน
+Kalasin|Khong Chai|ฆ้องชัย
+Sakon Nakhon|Mueang Sakon Nakhon|เมืองสกลนคร
+Sakon Nakhon|Kusuman|กุสุมาลย์
+Sakon Nakhon|Kut Bak|กุดบาก
+Sakon Nakhon|Phanna Nikhom|พรรณานิคม
+Sakon Nakhon|Phang Khon|พังโคน
+Sakon Nakhon|Waritchaphum|วาริชภูมิ
+Sakon Nakhon|Nikhom Nam Un|นิคมน้ำอูน
+Sakon Nakhon|Wanon Niwat|วานรนิวาส
+Sakon Nakhon|Kham Ta Kla|คำตากล้า
+Sakon Nakhon|Ban Muang|บ้านม่วง
+Sakon Nakhon|Akat Amnuai|อากาศอำนวย
+Sakon Nakhon|Sawang Daen Din|สว่างแดนดิน
+Sakon Nakhon|Song Dao|ส่องดาว
+Sakon Nakhon|Tao Ngoi|เต่างอย
+Sakon Nakhon|Khok Si Suphan|โคกศรีสุพรรณ
+Sakon Nakhon|Charoen Sin|เจริญศิลป์
+Sakon Nakhon|Phon Na Kaeo|โพนนาแก้ว
+Sakon Nakhon|Phu Phan|ภูพาน
+Nakhon Phanom|Mueang Nakhon Phanom|เมืองนครพนม
+Nakhon Phanom|Pla Pak|ปลาปาก
+Nakhon Phanom|Tha Uthen|ท่าอุเทน
+Nakhon Phanom|Ban Phaeng|บ้านแพง
+Nakhon Phanom|That Phanom|ธาตุพนม
+Nakhon Phanom|Renu Nakhon|เรณูนคร
+Nakhon Phanom|Na Kae|นาแก
+Nakhon Phanom|Si Songkhram|ศรีสงคราม
+Nakhon Phanom|Na Wa|นาหว้า
+Nakhon Phanom|Phon Sawan|โพนสวรรค์
+Nakhon Phanom|Na Thom|นาทม
+Nakhon Phanom|Wang Yang|วังยาง
+Mukdahan|Mueang Mukdahan|เมืองมุกดาหาร
+Mukdahan|Nikhom Kham Soi|นิคมคำสร้อย
+Mukdahan|Don Tan|ดอนตาล
+Mukdahan|Dong Luang|ดงหลวง
+Mukdahan|Khamcha-i|คำชะอี
+Mukdahan|Wan Yai|หว้านใหญ่
+Mukdahan|Nong Sung|หนองสูง
+Chiang Mai|Mueang Chiang Mai|เมืองเชียงใหม่
+Chiang Mai|Chom Thong|จอมทอง
+Chiang Mai|Mae Chaem|แม่แจ่ม
+Chiang Mai|Chiang Dao|เชียงดาว
+Chiang Mai|Doi Saket|ดอยสะเก็ด
+Chiang Mai|Mae Taeng|แม่แตง
+Chiang Mai|Mae Rim|แม่ริม
+Chiang Mai|Samoeng|สะเมิง
+Chiang Mai|Fang|ฝาง
+Chiang Mai|Mae Ai|แม่อาย
+Chiang Mai|Phrao|พร้าว
+Chiang Mai|San Pa Tong|สันป่าตอง
+Chiang Mai|San Kamphaeng|สันกำแพง
+Chiang Mai|San Sai|สันทราย
+Chiang Mai|Hang Dong|หางดง
+Chiang Mai|Hot|ฮอด
+Chiang Mai|Doi Tao|ดอยเต่า
+Chiang Mai|Omkoi|อมก๋อย
+Chiang Mai|Saraphi|สารภี
+Chiang Mai|Wiang Haeng|เวียงแหง
+Chiang Mai|Chai Prakan|ไชยปราการ
+Chiang Mai|Mae Wang|แม่วาง
+Chiang Mai|Mae On|แม่ออน
+Chiang Mai|Doi Lo|ดอยหล่อ
+Chiang Mai|Galayani Vadhana|กัลยาณิวัฒนา
+Lamphun|Mueang Lamphun|เมืองลำพูน
+Lamphun|Mae Tha|แม่ทา
+Lamphun|Ban Hong|บ้านโฮ่ง
+Lamphun|Li|ลี้
+Lamphun|Thung Hua Chang|ทุ่งหัวช้าง
+Lamphun|Pa Sang|ป่าซาง
+Lamphun|Ban Thi|บ้านธิ
+Lamphun|Wiang Nong Long|เวียงหนองล่อง
+Lampang|Mueang Lampang|เมืองลำปาง
+Lampang|Mae Mo|แม่เมาะ
+Lampang|Ko Kha|เกาะคา
+Lampang|Soem Ngam|เสริมงาม
+Lampang|Ngao|งาว
+Lampang|Chae Hom|แจ้ห่ม
+Lampang|Wang Nuea|วังเหนือ
+Lampang|Thoen|เถิน
+Lampang|Mae Phrik|แม่พริก
+Lampang|Mae Tha|แม่ทะ
+Lampang|Sop Prap|สบปราบ
+Lampang|Hang Chat|ห้างฉัตร
+Lampang|Mueang Pan|เมืองปาน
+Uttaradit|Mueang Uttaradit|เมืองอุตรดิตถ์
+Uttaradit|Tron|ตรอน
+Uttaradit|Tha Pla|ท่าปลา
+Uttaradit|Nam Pat|น้ำปาด
+Uttaradit|Fak Tha|ฟากท่า
+Uttaradit|Ban Khok|บ้านโคก
+Uttaradit|Phichai|พิชัย
+Uttaradit|Laplae|ลับแล
+Uttaradit|Thong Saen Khan|ทองแสนขัน
+Phrae|Mueang Phrae|เมืองแพร่
+Phrae|Rong Kwang|ร้องกวาง
+Phrae|Long|ลอง
+Phrae|Sung Men|สูงเม่น
+Phrae|Den Chai|เด่นชัย
+Phrae|Song|สอง
+Phrae|Wang Chin|วังชิ้น
+Phrae|Nong Muang Khai|หนองม่วงไข่
+Nan|Mueang Nan|เมืองน่าน
+Nan|Mae Charim|แม่จริม
+Nan|Ban Luang|บ้านหลวง
+Nan|Na Noi|นาน้อย
+Nan|Pua|ปัว
+Nan|Tha Wang Pha|ท่าวังผา
+Nan|Wiang Sa|เวียงสา
+Nan|Thung Chang|ทุ่งช้าง
+Nan|Chiang Klang|เชียงกลาง
+Nan|Na Muen|นาหมื่น
+Nan|Santi Suk|สันติสุข
+Nan|Bo Kluea|บ่อเกลือ
+Nan|Song Khwae|สองแคว
+Nan|Phu Phiang|ภูเพียง
+Nan|Chaloem Phra Kiat|เฉลิมพระเกียรติ
+Phayao|Mueang Phayao|เมืองพะเยา
+Phayao|Chun|จุน
+Phayao|Chiang Kham|เชียงคำ
+Phayao|Chiang Muan|เชียงม่วน
+Phayao|Dok Khamtai|ดอกคำใต้
+Phayao|Pong|ปง
+Phayao|Mae Chai|แม่ใจ
+Phayao|Phu Sang|ภูซาง
+Phayao|Phu Kamyao|ภูกามยาว
+Chiang Rai|Mueang Chiang Rai|เมืองเชียงราย
+Chiang Rai|Wiang Chai|เวียงชัย
+Chiang Rai|Chiang Khong|เชียงของ
+Chiang Rai|Thoeng|เทิง
+Chiang Rai|Phan|พาน
+Chiang Rai|Pa Daet|ป่าแดด
+Chiang Rai|Mae Chan|แม่จัน
+Chiang Rai|Chiang Saen|เชียงแสน
+Chiang Rai|Mae Sai|แม่สาย
+Chiang Rai|Mae Suai|แม่สรวย
+Chiang Rai|Wiang Pa Pao|เวียงป่าเป้า
+Chiang Rai|Phaya Mengrai|พญาเม็งราย
+Chiang Rai|Wiang Kaen|เวียงแก่น
+Chiang Rai|Khun Tan|ขุนตาล
+Chiang Rai|Mae Fa Luang|แม่ฟ้าหลวง
+Chiang Rai|Mae Lao|แม่ลาว
+Chiang Rai|Wiang Chiang Rung|เวียงเชียงรุ้ง
+Chiang Rai|Doi Luang|ดอยหลวง
+Mae Hong Son|Mueang Mae Hong Son|เมืองแม่ฮ่องสอน
+Mae Hong Son|Khun Yuam|ขุนยวม
+Mae Hong Son|Pai|ปาย
+Mae Hong Son|Mae Sariang|แม่สะเรียง
+Mae Hong Son|Mae La Noi|แม่ลาน้อย
+Mae Hong Son|Sop Moei|สบเมย
+Mae Hong Son|Pang Mapha|ปางมะผ้า
+Nakhon Sawan|Mueang Nakhon Sawan|เมืองนครสวรรค์
+Nakhon Sawan|Krok Phra|โกรกพระ
+Nakhon Sawan|Chum Saeng|ชุมแสง
+Nakhon Sawan|Nong Bua|หนองบัว
+Nakhon Sawan|Banphot Phisai|บรรพตพิสัย
+Nakhon Sawan|Kao Liao|เก้าเลี้ยว
+Nakhon Sawan|Takhli|ตาคลี
+Nakhon Sawan|Tha Tako|ท่าตะโก
+Nakhon Sawan|Phaisali|ไพศาลี
+Nakhon Sawan|Phayuha Khiri|พยุหะคีรี
+Nakhon Sawan|Lat Yao|ลาดยาว
+Nakhon Sawan|Tak Fa|ตากฟ้า
+Nakhon Sawan|Mae Wong|แม่วงก์
+Nakhon Sawan|Mae Poen|แม่เปิน
+Nakhon Sawan|Chum Ta Bong|ชุมตาบง
+Uthai Thani|Mueang Uthai Thani|เมืองอุทัยธานี
+Uthai Thani|Thap Than|ทัพทัน
+Uthai Thani|Sawang Arom|สว่างอารมณ์
+Uthai Thani|Nong Chang|หนองฉาง
+Uthai Thani|Nong Khayang|หนองขาหย่าง
+Uthai Thani|Ban Rai|บ้านไร่
+Uthai Thani|Lan Sak|ลานสัก
+Uthai Thani|Huai Khot|ห้วยคต
+Kamphaeng Phet|Mueang Kamphaeng Phet|เมืองกำแพงเพชร
+Kamphaeng Phet|Sai Ngam|ไทรงาม
+Kamphaeng Phet|Khlong Lan|คลองลาน
+Kamphaeng Phet|Khanu Woralaksaburi|ขาณุวรลักษบุรี
+Kamphaeng Phet|Khlong Khlung|คลองขลุง
+Kamphaeng Phet|Phran Kratai|พรานกระต่าย
+Kamphaeng Phet|Lan Krabue|ลานกระบือ
+Kamphaeng Phet|Sai Thong Watthana|ทรายทองวัฒนา
+Kamphaeng Phet|Pang Sila Thong|ปางศิลาทอง
+Kamphaeng Phet|Bueng Samakkhi|บึงสามัคคี
+Kamphaeng Phet|Kosamphi Nakhon|โกสัมพีนคร
+Tak|Mueang Tak|เมืองตาก
+Tak|Ban Tak|บ้านตาก
+Tak|Sam Ngao|สามเงา
+Tak|Mae Ramat|แม่ระมาด
+Tak|Tha Song Yang|ท่าสองยาง
+Tak|Mae Sot|แม่สอด
+Tak|Phop Phra|พบพระ
+Tak|Umphang|อุ้มผาง
+Tak|Wang Chao|วังเจ้า
+Sukhothai|Mueang Sukhothai|เมืองสุโขทัย
+Sukhothai|Ban Dan Lan Hoi|บ้านด่านลานหอย
+Sukhothai|Khiri Mat|คีรีมาศ
+Sukhothai|Kong Krailat|กงไกรลาศ
+Sukhothai|Si Satchanalai|ศรีสัชนาลัย
+Sukhothai|Si Samrong|ศรีสำโรง
+Sukhothai|Sawankhalok|สวรรคโลก
+Sukhothai|Si Nakhon|ศรีนคร
+Sukhothai|Thung Saliam|ทุ่งเสลี่ยม
+Phitsanulok|Mueang Phitsanulok|เมืองพิษณุโลก
+Phitsanulok|Nakhon Thai|นครไทย
+Phitsanulok|Chat Trakan|ชาติตระการ
+Phitsanulok|Bang Rakam|บางระกำ
+Phitsanulok|Bang Krathum|บางกระทุ่ม
+Phitsanulok|Phrom Phiram|พรหมพิราม
+Phitsanulok|Wat Bot|วัดโบสถ์
+Phitsanulok|Wang Thong|วังทอง
+Phitsanulok|Noen Maprang|เนินมะปราง
+Phichit|Mueang Phichit|เมืองพิจิตร
+Phichit|Wang Sai Phun|วังทรายพูน
+Phichit|Pho Prathap Chang|โพธิ์ประทับช้าง
+Phichit|Taphan Hin|ตะพานหิน
+Phichit|Bang Mun Nak|บางมูลนาก
+Phichit|Pho Thale|โพทะเล
+Phichit|Sam Ngam|สามง่าม
+Phichit|Tap Khlo|ทับคล้อ
+Phichit|Sak Lek|สากเหล็ก
+Phichit|Bueng Na Rang|บึงนาราง
+Phichit|Dong Charoen|ดงเจริญ
+Phichit|Wachirabarami|วชิรบารมี
+Phetchabun|Mueang Phetchabun|เมืองเพชรบูรณ์
+Phetchabun|Chon Daen|ชนแดน
+Phetchabun|Lom Sak|หล่มสัก
+Phetchabun|Lom Kao|หล่มเก่า
+Phetchabun|Wichian Buri|วิเชียรบุรี
+Phetchabun|Si Thep|ศรีเทพ
+Phetchabun|Nong Phai|หนองไผ่
+Phetchabun|Bueng Sam Phan|บึงสามพัน
+Phetchabun|Nam Nao|น้ำหนาว
+Phetchabun|Wang Pong|วังโป่ง
+Phetchabun|Khao Kho|เขาค้อ
+Ratchaburi|Mueang Ratchaburi|เมืองราชบุรี
+Ratchaburi|Chom Bueng|จอมบึง
+Ratchaburi|Suan Phueng|สวนผึ้ง
+Ratchaburi|Damnoen Saduak|ดำเนินสะดวก
+Ratchaburi|Ban Pong|บ้านโป่ง
+Ratchaburi|Bang Phae|บางแพ
+Ratchaburi|Photharam|โพธาราม
+Ratchaburi|Pak Tho|ปากท่อ
+Ratchaburi|Wat Phleng|วัดเพลง
+Ratchaburi|Ban Kha|บ้านคา
+Kanchanaburi|Mueang Kanchanaburi|เมืองกาญจนบุรี
+Kanchanaburi|Sai Yok|ไทรโยค
+Kanchanaburi|Bo Phloi|บ่อพลอย
+Kanchanaburi|Si Sawat|ศรีสวัสดิ์
+Kanchanaburi|Tha Maka|ท่ามะกา
+Kanchanaburi|Tha Muang|ท่าม่วง
+Kanchanaburi|Thong Pha Phum|ทองผาภูมิ
+Kanchanaburi|Sangkhla Buri|สังขละบุรี
+Kanchanaburi|Phanom Thuan|พนมทวน
+Kanchanaburi|Lao Khwan|เลาขวัญ
+Kanchanaburi|Dan Makham Tia|ด่านมะขามเตี้ย
+Kanchanaburi|Nong Prue|หนองปรือ
+Kanchanaburi|Huai Krachao|ห้วยกระเจา
+Suphan Buri|Mueang Suphan Buri|เมืองสุพรรณบุรี
+Suphan Buri|Doem Bang Nang Buat|เดิมบางนางบวช
+Suphan Buri|Dan Chang|ด่านช้าง
+Suphan Buri|Bang Pla Ma|บางปลาม้า
+Suphan Buri|Si Prachan|ศรีประจันต์
+Suphan Buri|Don Chedi|ดอนเจดีย์
+Suphan Buri|Song Phi Nong|สองพี่น้อง
+Suphan Buri|Sam Chuk|สามชุก
+Suphan Buri|U Thong|อู่ทอง
+Suphan Buri|Nong Ya Sai|หนองหญ้าไซ
+Nakhon Pathom|Mueang Nakhon Pathom|เมืองนครปฐม
+Nakhon Pathom|Kamphaeng Saen|กำแพงแสน
+Nakhon Pathom|Nakhon Chai Si|นครชัยศรี
+Nakhon Pathom|Don Tum|ดอนตูม
+Nakhon Pathom|Bang Len|บางเลน
+Nakhon Pathom|Sam Phran|สามพราน
+Nakhon Pathom|Phutthamonthon|พุทธมณฑล
+Samut Sakhon|Mueang Samut Sakhon|เมืองสมุทรสาคร
+Samut Sakhon|Krathum Baen|กระทุ่มแบน
+Samut Sakhon|Ban Phaeo|บ้านแพ้ว
+Samut Songkhram|Mueang Samut Songkhram|เมืองสมุทรสงคราม
+Samut Songkhram|Bang Khonthi|บางคนที
+Samut Songkhram|Amphawa|อัมพวา
+Phetchaburi|Mueang Phetchaburi|เมืองเพชรบุรี
+Phetchaburi|Khao Yoi|เขาย้อย
+Phetchaburi|Nong Ya Plong|หนองหญ้าปล้อง
+Phetchaburi|Cha-am|ชะอำ
+Phetchaburi|Tha Yang|ท่ายาง
+Phetchaburi|Ban Lat|บ้านลาด
+Phetchaburi|Ban Laem|บ้านแหลม
+Phetchaburi|Kaeng Krachan|แก่งกระจาน
+Prachuap Khiri Khan|Mueang Prachuap Khiri Khan|เมืองประจวบคีรีขันธ์
+Prachuap Khiri Khan|Kui Buri|กุยบุรี
+Prachuap Khiri Khan|Thap Sakae|ทับสะแก
+Prachuap Khiri Khan|Bang Saphan|บางสะพาน
+Prachuap Khiri Khan|Bang Saphan Noi|บางสะพานน้อย
+Prachuap Khiri Khan|Pran Buri|ปราณบุรี
+Prachuap Khiri Khan|Hua Hin|หัวหิน
+Prachuap Khiri Khan|Sam Roi Yot|สามร้อยยอด
+Nakhon Si Thammarat|Mueang Nakhon Si Thammarat|เมืองนครศรีธรรมราช
+Nakhon Si Thammarat|Phrom Khiri|พรหมคีรี
+Nakhon Si Thammarat|Lan Saka|ลานสกา
+Nakhon Si Thammarat|Chawang|ฉวาง
+Nakhon Si Thammarat|Phipun|พิปูน
+Nakhon Si Thammarat|Chian Yai|เชียรใหญ่
+Nakhon Si Thammarat|Cha-uat|ชะอวด
+Nakhon Si Thammarat|Tha Sala|ท่าศาลา
+Nakhon Si Thammarat|Thung Song|ทุ่งสง
+Nakhon Si Thammarat|Na Bon|นาบอน
+Nakhon Si Thammarat|Thung Yai|ทุ่งใหญ่
+Nakhon Si Thammarat|Pak Phanang|ปากพนัง
+Nakhon Si Thammarat|Ron Phibun|ร่อนพิบูลย์
+Nakhon Si Thammarat|Sichon|สิชล
+Nakhon Si Thammarat|Khanom|ขนอม
+Nakhon Si Thammarat|Hua Sai|หัวไทร
+Nakhon Si Thammarat|Bang Khan|บางขัน
+Nakhon Si Thammarat|Tham Phannara|ถ้ำพรรณรา
+Nakhon Si Thammarat|Chulabhorn|จุฬาภรณ์
+Nakhon Si Thammarat|Phra Phrom|พระพรหม
+Nakhon Si Thammarat|Nopphitam|นบพิตำ
+Nakhon Si Thammarat|Chang Klang|ช้างกลาง
+Nakhon Si Thammarat|Chaloem Phra Kiat|เฉลิมพระเกียรติ
+Krabi|Mueang Krabi|เมืองกระบี่
+Krabi|Khao Phanom|เขาพนม
+Krabi|Ko Lanta|เกาะลันตา
+Krabi|Khlong Thom|คลองท่อม
+Krabi|Ao Luek|อ่าวลึก
+Krabi|Plai Phraya|ปลายพระยา
+Krabi|Lam Thap|ลำทับ
+Krabi|Nuea Khlong|เหนือคลอง
+Phangnga|Mueang Phangnga|เมืองพังงา
+Phangnga|Ko Yao|เกาะยาว
+Phangnga|Kapong|กะปง
+Phangnga|Takua Thung|ตะกั่วทุ่ง
+Phangnga|Takua Pa|ตะกั่วป่า
+Phangnga|Khura Buri|คุระบุรี
+Phangnga|Thap Put|ทับปุด
+Phangnga|Thai Mueang|ท้ายเหมือง
+Phuket|Mueang Phuket|เมืองภูเก็ต
+Phuket|Kathu|กะทู้
+Phuket|Thalang|ถลาง
+Surat Thani|Mueang Surat Thani|เมืองสุราษฎร์ธานี
+Surat Thani|Kanchanadit|กาญจนดิษฐ์
+Surat Thani|Don Sak|ดอนสัก
+Surat Thani|Ko Samui|เกาะสมุย
+Surat Thani|Ko Pha-ngan|เกาะพะงัน
+Surat Thani|Chaiya|ไชยา
+Surat Thani|Tha Chana|ท่าชนะ
+Surat Thani|Khiri Rat Nikhom|คีรีรัฐนิคม
+Surat Thani|Ban Ta Khun|บ้านตาขุน
+Surat Thani|Phanom|พนม
+Surat Thani|Tha Chang|ท่าฉาง
+Surat Thani|Ban Na San|บ้านนาสาร
+Surat Thani|Ban Na Doem|บ้านนาเดิม
+Surat Thani|Khian Sa|เคียนซา
+Surat Thani|Wiang Sa|เวียงสระ
+Surat Thani|Phrasaeng|พระแสง
+Surat Thani|Phunphin|พุนพิน
+Surat Thani|Chai Buri|ชัยบุรี
+Surat Thani|Vibhavadi|วิภาวดี
+Ranong|Mueang Ranong|เมืองระนอง
+Ranong|La-un|ละอุ่น
+Ranong|Kapoe|กะเปอร์
+Ranong|Kra Buri|กระบุรี
+Ranong|Suk Samran|สุขสำราญ
+Chumphon|Mueang Chumphon|เมืองชุมพร
+Chumphon|Tha Sae|ท่าแซะ
+Chumphon|Pathio|ปะทิว
+Chumphon|Lang Suan|หลังสวน
+Chumphon|Lamae|ละแม
+Chumphon|Phato|พะโต๊ะ
+Chumphon|Sawi|สวี
+Chumphon|Thung Tako|ทุ่งตะโก
+Songkhla|Mueang Songkhla|เมืองสงขลา
+Songkhla|Sathing Phra|สทิงพระ
+Songkhla|Chana|จะนะ
+Songkhla|Na Thawi|นาทวี
+Songkhla|Thepha|เทพา
+Songkhla|Saba Yoi|สะบ้าย้อย
+Songkhla|Ranot|ระโนด
+Songkhla|Krasae Sin|กระแสสินธุ์
+Songkhla|Rattaphum|รัตภูมิ
+Songkhla|Sadao|สะเดา
+Songkhla|Hat Yai|หาดใหญ่
+Songkhla|Na Mom|นาหม่อม
+Songkhla|Khuan Niang|ควนเนียง
+Songkhla|Bang Klam|บางกล่ำ
+Songkhla|Singhanakhon|สิงหนคร
+Songkhla|Khlong Hoi Khong|คลองหอยโข่ง
+Satun|Mueang Satun|เมืองสตูล
+Satun|Khuan Don|ควนโดน
+Satun|Khuan Kalong|ควนกาหลง
+Satun|Tha Phae|ท่าแพ
+Satun|La-ngu|ละงู
+Satun|Thung Wa|ทุ่งหว้า
+Satun|Manang|มะนัง
+Trang|Mueang Trang|เมืองตรัง
+Trang|Kantang|กันตัง
+Trang|Yan Ta Khao|ย่านตาขาว
+Trang|Palian|ปะเหลียน
+Trang|Sikao|สิเกา
+Trang|Huai Yot|ห้วยยอด
+Trang|Wang Wiset|วังวิเศษ
+Trang|Na Yong|นาโยง
+Trang|Ratsada|รัษฎา
+Trang|Hat Samran|หาดสำราญ
+Phatthalung|Mueang Phatthalung|เมืองพัทลุง
+Phatthalung|Kong Ra|กงหรา
+Phatthalung|Khao Chaison|เขาชัยสน
+Phatthalung|Tamot|ตะโหมด
+Phatthalung|Khuan Khanun|ควนขนุน
+Phatthalung|Pak Phayun|ปากพะยูน
+Phatthalung|Si Banphot|ศรีบรรพต
+Phatthalung|Pa Bon|ป่าบอน
+Phatthalung|Bang Kaeo|บางแก้ว
+Phatthalung|Pa Phayom|ป่าพะยอม
+Phatthalung|Srinagarindra|ศรีนครินทร์
+Pattani|Mueang Pattani|เมืองปัตตานี
+Pattani|Khok Pho|โคกโพธิ์
+Pattani|Nong Chik|หนองจิก
+Pattani|Panare|ปะนาเระ
+Pattani|Mayo|มายอ
+Pattani|Thung Yang Daeng|ทุ่งยางแดง
+Pattani|Sai Buri|สายบุรี
+Pattani|Mai Kaen|ไม้แก่น
+Pattani|Yaring|ยะหริ่ง
+Pattani|Yarang|ยะรัง
+Pattani|Kapho|กะพ้อ
+Pattani|Mae Lan|แม่ลาน
+Yala|Mueang Yala|เมืองยะลา
+Yala|Betong|เบตง
+Yala|Bannang Sata|บันนังสตา
+Yala|Than To|ธารโต
+Yala|Yaha|ยะหา
+Yala|Raman|รามัน
+Yala|Kabang|กาบัง
+Yala|Krong Pinang|กรงปินัง
+Narathiwat|Mueang Narathiwat|เมืองนราธิวาส
+Narathiwat|Tak Bai|ตากใบ
+Narathiwat|Bacho|บาเจาะ
+Narathiwat|Yi-ngo|ยี่งอ
+Narathiwat|Ra-ngae|ระแงะ
+Narathiwat|Rueso|รือเสาะ
+Narathiwat|Si Sakhon|ศรีสาคร
+Narathiwat|Waeng|แว้ง
+Narathiwat|Sukhirin|สุคิริน
+Narathiwat|Su-ngai Kolok|สุไหงโก-ลก
+Narathiwat|Su-ngai Padi|สุไหงปาดี
+Narathiwat|Chanae|จะแนะ
+Narathiwat|Cho-airong|เจาะไอร้อง
