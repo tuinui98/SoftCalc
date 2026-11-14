@@ -3,7 +3,8 @@
 // Owner 2026-11-14: each step pools any decks (the user's own and the
 // ready-made ones) with extra cards typed for this draw only, which are
 // not saved as a deck; each card can be unticked (Days without Saturday
-// and Sunday); Use weights and No repeat are set per step. Works on a
+// and Sunday); Use weights and No repeat are set per step. The theme
+// and Effects are set here too (owner 2026-11-14), not on the tab. Works on a
 // copy of the steps: OK keeps them, Cancel drops them.
 
 using SoftCalc.Logic;
@@ -17,7 +18,9 @@ internal sealed class DrawEditor : Form
 	private readonly string _language;
 	private readonly Func<Deck?> _newDeck;
 	private readonly List<DrawStep> _steps;
-	private readonly TextBox _name = new() { Width = 260 };
+	private readonly TextBox _name = new() { Width = 220 };
+	private readonly ComboBox _theme = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120 };
+	private readonly CheckBox _effects = new() { Text = "E&ffects", AutoSize = true, Margin = new Padding(8, 6, 3, 3) };
 	private readonly ListBox _stepList = new() { Dock = DockStyle.Fill, IntegralHeight = false };
 	private readonly GroupBox _stepBox = new() { Dock = DockStyle.Fill, Padding = new Padding(6) };
 	private readonly ListBox _decks = new() { Width = 260, Height = 64, IntegralHeight = false };
@@ -37,8 +40,11 @@ internal sealed class DrawEditor : Form
 
 	public string ResultName => _name.Text.Trim();
 	public List<DrawStep> ResultSteps => _steps;
+	public string ResultTheme => CardDraws.Themes[Math.Max(0, _theme.SelectedIndex)];
+	public bool ResultEffects => _effects.Checked;
 
-	public DrawEditor(string title, string name, IEnumerable<DrawStep> steps, CardStore store, string language, Func<Deck?> newDeck)
+	public DrawEditor(string title, string name, IEnumerable<DrawStep> steps, CardStore store, string language, Func<Deck?> newDeck,
+		string theme, bool effects)
 	{
 		_store = store;
 		_language = language;
@@ -65,6 +71,13 @@ internal sealed class DrawEditor : Form
 		nameRow.Controls.Add(new Label { Text = "&Name", AutoSize = true, Margin = new Padding(3, 7, 6, 3) });
 		nameRow.Controls.Add(_name);
 		_name.Text = name;
+		nameRow.Controls.Add(new Label { Text = "T&heme", AutoSize = true, Margin = new Padding(14, 7, 6, 3) });
+		_theme.Items.AddRange(CardDraws.ThemeNames);
+		_theme.SelectedIndex = Math.Max(0, Array.IndexOf(CardDraws.Themes, theme));
+		nameRow.Controls.Add(_theme);
+		_effects.Checked = effects;
+		nameRow.Controls.Add(_effects);
+		new ToolTip().SetToolTip(_effects, "Play the theme while drawing one line; a click skips it");
 
 		var stepButtons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Bottom, WrapContents = true };
 		var addStep = new Button { Text = "Add &step", AutoSize = true };

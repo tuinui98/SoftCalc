@@ -291,11 +291,13 @@ its steps:
 
 ![A draw tab with the slot machine](img/random-draw-slot.light.png)
 
-- **Draw** draws **Count** lines. **Theme**: List, **Slot machine** (a
-  reel for each step) or **Dartboard** (a board for each step, each
-  card's part as big as its chance). With **Effects** the reels roll
-  or the dart flies while one line is drawn; the cards are drawn
-  first, so the effect never changes them, and a click skips it.
+- **Draw** draws **Count** lines. The **Theme** is set in **Edit
+  tab...**: **List**, **Slot machine** (a reel for each step; new tabs
+  start here) or **Dartboard** (a board for each step, each card's part
+  as big as its chance). With **Effects** the names roll in Results,
+  the reels roll or the dart flies while one line is drawn; the cards
+  are drawn first, so the effect never changes them, and a click skips
+  it.
 - **Shuffle** puts the drawn cards back in the No repeat piles. The
   line under the name shows each step's cards and how many are left.
 - **Results** shows the last Draw, **History** every line with its

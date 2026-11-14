@@ -33,7 +33,7 @@ internal sealed class DrawSetup
 {
 	public string Id { get; set; } = "";
 	public string Name { get; set; } = "";
-	public string Theme { get; set; } = "list";    // list, slot, dart
+	public string Theme { get; set; } = "slot";    // list, slot, dart; new tabs start on slot (owner 2026-11-14)
 	public int Count { get; set; } = 1;
 	public bool Effects { get; set; } = true;
 	public List<DrawStep> Steps { get; set; } = new();
