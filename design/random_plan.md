@@ -186,11 +186,20 @@ come later. Window size and place are remembered too.
   rows `1 → Gym`. Edit tab checks conditions on OK (unknown deck,
   step not later). Save as deck turns the extra cards into a deck
   of my own (opens the deck editor) and moves their conditions,
-  ticks, pile and counts to it. The deck editor's Add box takes
+  ticks, pile and counts to it. Runs of numbers (owner 2026-11-14):
+  `[1,100]` or `[from,to,step]` (step 1 if left out, decimals allowed,
+  leading zeros and decimals kept as typed) gives a card per number,
+  with the words around it on each (`fish [1,3] each`); in Extra and
+  the deck editor's Add box. The deck editor's Add box takes
   "|weight" too and cuts off any ">>" condition, with a note (owner
   2026-11-14).
 - No repeat works like a pile (owner): a drawn card stays out until
   Shuffle, also across closing the window.
+- Card colours (owner 2026-11-14): Colour... / No colour in the deck
+  editor (several cards at once), a colour column in CSV; the
+  dartboard and spin wheel fill sectors with it, the slot machine shows
+  a strip. The ready-made pack is four-colour (spades black, hearts red,
+  diamonds blue, clubs green), two shades in turn.
 - Theme (set in Edit tab, owner 2026-11-14; new tabs start on Slot
   machine): List (lines roll in Results, slowing down), Slot machine
   (a reel per step, stopping one by one),

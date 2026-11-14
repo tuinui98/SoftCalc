@@ -85,6 +85,13 @@ internal abstract class DrawStage : Control
 	// A card's face in a box: its picture (if any) above its name
 	protected void DrawFace(Graphics g, Card card, Rectangle box, Font font, Color text)
 	{
+		// the card's colour: a strip down the left of its face
+		if (card.Color != null && box.Width > 40)
+		{
+			using var strip = new SolidBrush(ColorTranslator.FromHtml(card.Color));
+			g.FillRectangle(strip, box.Left + 2, box.Top + 4, 6, box.Height - 8);
+			box = new Rectangle(box.Left + 8, box.Top, box.Width - 8, box.Height);
+		}
 		var picture = Pictures?.For(card);
 		var textBox = box;
 		if (picture != null && box.Height > 50)
@@ -144,15 +151,20 @@ internal abstract class DrawStage : Control
 		int room = Math.Max(3, (int)(((along ? arc : across) - 6) / 6));
 		name = name.Length > room ? name[..(room - 1)] + "…" : name;
 		var size = g.MeasureString(name, font);
-		using var text = new SolidBrush(SuitColour(card, back.GetBrightness() > 0.55 ? Color.Black : Color.White));
+		// on the card's own colour, black or white, whichever reads
+		var contrast = back.GetBrightness() > 0.55 ? Color.Black : Color.White;
+		using var text = new SolidBrush(card.Color != null ? contrast : SuitColour(card, contrast));
 		g.DrawString(name, font, text, -size.Width / 2, -size.Height / 2);
 		g.Restore(state);
 	}
 
 	// Hearts and diamonds in red
+	// Hearts red, diamonds blue, clubs green (the four-colour pack, owner 2026-11-14); else text
 	protected static Color SuitColour(Card card, Color text)
 	{
-		return card.Name.EndsWith('♥') || card.Name.EndsWith('♦') || card.Name == "Joker (red)" ? Color.FromArgb(205, 40, 40) : text;
+		return card.Name.EndsWith('♥') || card.Name == "Joker (red)" ? Color.FromArgb(205, 40, 40)
+			: card.Name.EndsWith('♦') ? Color.FromArgb(40, 100, 190)
+			: card.Name.EndsWith('♣') ? Color.FromArgb(40, 140, 60) : text;
 	}
 }
 

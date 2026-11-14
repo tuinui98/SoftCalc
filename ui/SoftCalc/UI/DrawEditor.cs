@@ -138,7 +138,8 @@ internal sealed class DrawEditor : Form
 		deckRow.Controls.Add(extraColumn, 1, 1);
 		new ToolTip().SetToolTip(_extra, "Split by lines, else commas, else spaces. Not saved as a deck.\n"
 			+ "name|2: a weight.  name>>stop: end the line.  name>>step 3: skip to step 3.\n"
-			+ "name>>Gym: draw a card from the deck Gym too (Gym*2: two cards, Gym,stop: then end the line).");
+			+ "name>>Gym: draw a card from the deck Gym too (Gym*2: two cards, Gym,stop: then end the line).\n"
+			+ "[1,100]: a card for each number; [0,1,0.25]: a step of 0.25; fish [1,3] each: fish 1 each ... fish 3 each.");
 		_extra.TextChanged += (_, _) =>
 		{
 			if (!_showing && Current is { } step)

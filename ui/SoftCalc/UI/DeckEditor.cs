@@ -34,6 +34,10 @@ internal sealed class DeckEditor : Form
 	};
 	private readonly Button _choose = new() { Text = "C&hoose...", AutoSize = true };
 	private readonly Button _clearPicture = new() { Text = "C&lear", AutoSize = true };
+	// owner 2026-11-14: a colour for each card, shown on the dartboard and the spin wheel
+	private readonly Panel _swatch = new() { Size = new Size(22, 22), BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3, 5, 3, 3) };
+	private readonly Button _colour = new() { Text = "Colo&ur...", AutoSize = true };
+	private readonly Button _noColour = new() { Text = "N&o colour", AutoSize = true };
 	private readonly TextBox _add = new() { Width = 300, PlaceholderText = "Fried rice, Noodles, Som tam" };
 	private readonly ComboBox _split = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 80 };
 	private readonly Label _count = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(8, 8, 3, 3) };
@@ -70,7 +74,7 @@ internal sealed class DeckEditor : Form
 		_name.Text = deck.Shown(language);
 		_name.ReadOnly = readOnly;
 
-		_list.Columns.Add("Card", 300);
+		_list.Columns.Add("Card", 240);
 		_list.Columns.Add("Weight", 60, HorizontalAlignment.Right);
 		_list.SelectedIndexChanged += (_, _) => ShowCard();
 		_list.KeyDown += (_, e) =>
@@ -95,7 +99,14 @@ internal sealed class DeckEditor : Form
 			AutoSize = true, MaximumSize = new Size(200, 0), ForeColor = SystemColors.GrayText,
 			Text = "A card of weight 2 comes up twice as often as one of weight 1 (when the draw uses weights).",
 		};
-		card.Controls.Add(weightNote, 0, 4);
+		card.Controls.Add(Caption("Colour"), 0, 4);
+		var colourRow = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty, WrapContents = false };
+		colourRow.Controls.AddRange(new Control[] { _swatch, _colour, _noColour });
+		card.Controls.Add(colourRow, 1, 4);
+		new ToolTip().SetToolTip(_colour, "A colour for the chosen cards, for the dartboard and the spin wheel");
+		_colour.Click += (_, _) => ChooseColour();
+		_noColour.Click += (_, _) => SetColour(null);
+		card.Controls.Add(weightNote, 0, 5);
 		card.SetColumnSpan(weightNote, 2);
 		_cardName.TextChanged += (_, _) => EditCard(c => c.Name = _cardName.Text.Trim());
 		_weight.ValueChanged += (_, _) => EditCard(c => c.Weight = (int)_weight.Value);
@@ -130,7 +141,7 @@ internal sealed class DeckEditor : Form
 		addRow.Controls.Add(new Label { Text = "Add", AutoSize = true, Margin = new Padding(3, 7, 6, 3) });
 		addRow.Controls.AddRange(new Control[] { _add, new Label { Text = "Split", AutoSize = true, Margin = new Padding(6, 7, 3, 3) }, _split, addButton });
 		new ToolTip().SetToolTip(_add, "Several cards at once: one per line, or split by commas or spaces. "
-			+ "A name with a space needs lines or commas. name|2: a weight of 2.");
+			+ "A name with a space needs lines or commas. name|2: a weight of 2. [1,100] or [0,1,0.1]: a card for each number.");
 
 		var fileRow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Bottom, WrapContents = true };
 		var asText = new Button { Text = "Edit all as &text...", AutoSize = true };
@@ -153,7 +164,8 @@ internal sealed class DeckEditor : Form
 		{
 			ok.Visible = false;
 			cancel.Text = "Close";
-			foreach (var control in new Control[] { _cardName, _weight, _choose, _clearPicture, remove, up, down, addRow, asText, import })
+			foreach (var control in new Control[] { _cardName, _weight, _choose, _clearPicture, _colour, _noColour, remove, up, down, addRow, asText,
+				import })
 			{
 				control.Enabled = false;
 			}
@@ -184,6 +196,7 @@ internal sealed class DeckEditor : Form
 		_list.SmallImageList = _pictures.List(_deck.Cards, ThumbSize);
 		foreach (var card in Ordered)
 		{
+			// a card without a picture shows its colour (CardPictures)
 			var item = new ListViewItem(card.Shown(_language)) { Tag = card, ImageKey = _pictures.Key(card) ?? "" };
 			item.SubItems.Add(card.Weight.ToString());
 			_list.Items.Add(item);
@@ -215,7 +228,49 @@ internal sealed class DeckEditor : Form
 		_weight.Enabled = editable;
 		_choose.Enabled = editable;
 		_clearPicture.Enabled = editable && card!.Image != null;
+		// colours go on every chosen card
+		var chosen = Chosen;
+		_swatch.BackColor = chosen.Count == 1 && chosen[0].Color != null ? ColorTranslator.FromHtml(chosen[0].Color!) : SystemColors.Control;
+		_colour.Enabled = chosen.Count > 0 && !_readOnly;
+		_noColour.Enabled = chosen.Any(c => c.Color != null) && !_readOnly;
 		_showing = false;
+	}
+
+	private List<Card> Chosen => _list.SelectedItems.Cast<ListViewItem>().Select(i => (Card)i.Tag!).ToList();
+
+	private void ChooseColour()
+	{
+		var chosen = Chosen;
+		using var dialog = new ColorDialog { FullOpen = true, AnyColor = true };
+		if (chosen.FirstOrDefault(c => c.Color != null) is { } first)
+		{
+			dialog.Color = ColorTranslator.FromHtml(first.Color!);
+		}
+		if (dialog.ShowDialog(this) == DialogResult.OK)
+		{
+			SetColour($"#{dialog.Color.R:X2}{dialog.Color.G:X2}{dialog.Color.B:X2}");
+		}
+	}
+
+	private void SetColour(string? colour)
+	{
+		var chosen = Chosen;
+		if (chosen.Count == 0)
+		{
+			return;
+		}
+		foreach (var card in chosen)
+		{
+			card.Color = colour;
+		}
+		// the list again for the new swatches, the same cards chosen
+		int first = _list.SelectedIndices[0];
+		FillList(first);
+		foreach (ListViewItem item in _list.Items)
+		{
+			item.Selected = chosen.Contains((Card)item.Tag!);
+		}
+		ShowCard();
 	}
 
 	private void EditCard(Action<Card> change, bool redraw = false)
@@ -289,7 +344,13 @@ internal sealed class DeckEditor : Form
 	{
 		// owner 2026-11-14: "name|2" takes a weight as in a draw's Extra; a ">>" condition
 		// is cut off, since conditions belong to a draw tab, not to the deck
-		var entries = CardDraws.ExtraEntries(_add.Text, CardText.Splits[Math.Max(0, _split.SelectedIndex)]);
+		string mode = CardText.Splits[Math.Max(0, _split.SelectedIndex)];
+		if (CardDraws.ExtraEntries(_add.Text, mode, expand: false).Select(e => CardDraws.Expand(e).Error).FirstOrDefault(e => e != null) is { } runError)
+		{
+			Say(runError);
+			return;
+		}
+		var entries = CardDraws.ExtraEntries(_add.Text, mode);
 		var made = new List<Card>();
 		bool cut = false;
 		foreach (string entry in entries)

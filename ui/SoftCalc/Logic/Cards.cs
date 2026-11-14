@@ -143,8 +143,8 @@ internal static class CardText
 		return string.Join(Environment.NewLine, cards.Select(c => c.Weight == 1 ? c.Name : $"{c.Name} | {c.Weight}"));
 	}
 
-	// CSV rows: name, weight (optional), image path (optional); a first row
-	// starting with "name" is a header
+	// CSV rows: name, weight (optional), image path (optional), colour #RRGGBB
+	// (optional, owner 2026-11-14); a first row starting with "name" is a header
 	public static (List<(Card Card, string Image)>? Rows, string? Error) ParseCsv(string text)
 	{
 		var rows = new List<(Card, string)>();
@@ -175,6 +175,14 @@ internal static class CardText
 			{
 				return (null, $"Row {i + 1}: {nameError}");
 			}
+			if (fields.Count > 3 && fields[3].Trim().Length > 0)
+			{
+				if (!IsColour(fields[3].Trim()))
+				{
+					return (null, $"Row {i + 1}: the colour '{fields[3].Trim()}' must be #RRGGBB.");
+				}
+				card.Color = fields[3].Trim().ToUpperInvariant();
+			}
 			rows.Add((card, fields.Count > 2 ? fields[2].Trim() : ""));
 		}
 		return rows.Count > MaxCards ? (null, $"At most {MaxCards} cards in a deck.") : (rows, null);
@@ -182,12 +190,13 @@ internal static class CardText
 
 	public static string ToCsv(IEnumerable<Card> cards, string language, Func<Card, string> imagePath)
 	{
-		var text = new StringBuilder("name,weight,image\r\n");
+		var text = new StringBuilder("name,weight,image,color\r\n");
 		foreach (var card in cards)
 		{
 			text.Append(Quote(card.Shown(language))).Append(',')
 				.Append(card.Weight.ToString(CultureInfo.InvariantCulture)).Append(',')
-				.Append(Quote(imagePath(card))).Append("\r\n");
+				.Append(Quote(imagePath(card))).Append(',')
+				.Append(card.Color ?? "").Append("\r\n");
 		}
 		return text.ToString();
 	}
@@ -227,6 +236,11 @@ internal static class CardText
 			into.Add(card);
 		}
 		return skipped;
+	}
+
+	public static bool IsColour(string text)
+	{
+		return text.Length == 7 && text[0] == '#' && text.Skip(1).All(char.IsAsciiHexDigit);
 	}
 
 	public static (Card? Card, string? Error) Make(string name, int weight)

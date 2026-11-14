@@ -190,6 +190,39 @@ public sealed class CardsTests
 	}
 
 	[Fact]
+	public void RunsOfNumbersMakeCards()
+	{
+		// owner 2026-11-14: [from,to,step], words around it on each card
+		Assert.Equal(new[] { "1", "2", "3" }, CardDraws.ExtraEntries("[1,3]"));
+		Assert.Equal(new[] { "ปลา 1 ตัว", "ปลา 2 ตัว" }, CardDraws.ExtraEntries("ปลา [1,2] ตัว"));
+		Assert.Equal(new[] { "a", "x 1", "x 2", "b" }, CardDraws.ExtraEntries("a, x [1, 2], b"));
+		Assert.Equal(new[] { "0.00", "0.25", "0.50", "0.75", "1.00" }, CardDraws.ExtraEntries("[0,1,0.25]"));
+		Assert.Equal(new[] { "10", "7", "4", "1" }, CardDraws.ExtraEntries("[10,1,3]"));
+		Assert.Equal(new[] { "08", "09", "10" }, CardDraws.ExtraEntries("[08,10]"));
+		Assert.Equal(new[] { "-1", "0", "1" }, CardDraws.ExtraEntries("[-1,1]"));
+		Assert.Equal(new[] { "1>>stop|2", "2>>stop|2" }, CardDraws.ExtraEntries("[1,2]>>stop|2"));
+		Assert.Equal(new[] { "a", "b" }, CardDraws.ExtraEntries("a b"));    // spaces still split without a run
+		Assert.NotNull(CardDraws.Expand("[1,5,0]").Error);
+		Assert.NotNull(CardDraws.Expand("[1,10000]").Error);
+		Assert.Equal(new[] { "[1,x]" }, CardDraws.ExtraEntries("[1,x]"));
+		var steps = new List<DrawStep> { new() { Extra = "[1,5,0]" } };
+		Assert.Contains("step", CardDraws.Check(steps, 0, _ => null, _ => null, "en"));
+		Assert.Equal(100, CardDraws.Pool(new DrawStep { Extra = "[1,100]" }, _ => null).Count);
+	}
+
+	[Fact]
+	public void CsvKeepsTheColour()
+	{
+		var (rows, error) = CardText.ParseCsv("name,weight,image,color\nA,2,,#c62828\nB");
+		Assert.Null(error);
+		Assert.Equal("#C62828", rows![0].Card.Color);
+		Assert.Null(rows[1].Card.Color);
+		Assert.Contains("#RRGGBB", CardText.ParseCsv("A,1,,red").Error);
+		Assert.Contains(",#C62828", CardText.ToCsv(rows.Select(r => r.Card), "en", _ => ""));
+		Assert.Equal(ReadyDecks.SuitShades[1][0], ReadyDecks.Find(ReadyDecks.Prefix + "playing-cards")!.Cards[13].Color);    // A♥
+	}
+
+	[Fact]
 	public void ConditionsParseAndFormat()
 	{
 		Assert.Equal(CardThen.Next, CardThen.Parse("").Then);
