@@ -81,7 +81,7 @@ internal sealed class CompoundPrefs
 // Last options of the Random window (design/random_plan.md); never the results
 internal sealed class RandomPrefs
 {
-	public string Tab { get; set; } = "numbers";
+	public string Tab { get; set; } = "numbers";    // numbers, advanced, password, entropy, cards ("...") or draw:<id>
 	public string Kind { get; set; } = "whole";    // whole, decimal, coin, dice
 	public decimal From { get; set; } = 1;
 	public decimal To { get; set; } = 100;
@@ -325,7 +325,8 @@ internal static class SettingsStore
 	private static void SanitizeRandom(RandomPrefs r)
 	{
 		var d = new RandomPrefs();
-		if (r.Tab is not ("numbers" or "advanced" or "password" or "entropy"))
+		if (r.Tab is not ("numbers" or "advanced" or "password" or "entropy" or "cards")
+			&& !System.Text.RegularExpressions.Regex.IsMatch(r.Tab ?? "", "^draw:[0-9a-f]{1,32}$"))
 		{
 			r.Tab = d.Tab;
 		}

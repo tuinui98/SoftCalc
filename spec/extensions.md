@@ -511,7 +511,13 @@ Choices made while implementing E7-E11 in the engine; all [DEF].
   beacon, drand side by side (raw value, 128-bit SHA-256 seed, bits
   changed between pulls, estimated bits); Use as Seed, or Mix into
   System (HMAC with the system's bytes, all tabs, until cleared). The
-  beacons are fetched only on Get.
+  beacons are fetched only on Get. Draw tabs (owner 2026-11-14,
+  design/random_plan.md R6-R7): the "..." tab makes draw tabs and holds
+  card decks (own decks with weights and pictures, CSV import/export,
+  ready-made decks in English and Thai); a draw tab draws a card from
+  each step's pooled decks and extras, with weights, a No repeat pile
+  until Shuffle, List / Slot machine / Dartboard with effects, and its
+  own History and Stats in cards.json.
   Results never go to History or disk; a
   copied password is kept out of clipboard history and cloud sync and
   wiped after 30 s and when SoftCalc closes.

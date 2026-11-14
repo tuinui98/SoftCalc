@@ -273,6 +273,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			Save("random-entropy", Program.Capture(random.Handle).Picture);
 			random.Close();
 		}
+		await CardShotsAsync();
 		using (var gallery = new GraphGallery(session))
 		{
 			gallery.StartPosition = FormStartPosition.Manual;
@@ -396,6 +397,78 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 	}
 
 	// A modal dialog opened right after this starts: found by its caption, pictured, cancelled
+	// Card decks and draw tabs (owner 2026-11-14): the "..." tab, a deck, a draw's steps, the slot machine and the dartboard
+	private async Task CardShotsAsync()
+	{
+		string folder = Path.Combine(Path.GetTempPath(), "softcalc-helpshots-cards-" + theme);
+		if (Directory.Exists(folder))
+		{
+			Directory.Delete(folder, true);
+		}
+		var cards = new CardStore(new DataFolder(folder));
+		var food = new Deck { Id = "food01", Name = "Food", Cards = CardText.ParseLines(
+			"Fried rice | 2\nNoodles\nSom tam\nPad thai\nGreen curry\nTom yum").Cards! };
+		var tints = new[] { Color.Goldenrod, Color.Peru, Color.YellowGreen, Color.Coral, Color.SeaGreen, Color.Tomato };
+		for (int i = 0; i < food.Cards.Count; i++)
+		{
+			string picture = Path.Combine(folder, $"food{i}.png");
+			using (var bitmap = new Bitmap(96, 96))
+			{
+				using var g = Graphics.FromImage(bitmap);
+				g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+				using var plate = new SolidBrush(tints[i]);
+				g.FillEllipse(Brushes.WhiteSmoke, 4, 4, 88, 88);
+				g.FillEllipse(plate, 20, 20, 56, 56);
+				bitmap.Save(picture, ImageFormat.Png);
+			}
+			food.Cards[i].Image = cards.ImportImage(picture).Name;
+		}
+		var drinks = new Deck { Id = "drink1", Name = "Drinks", Cards = CardText.ParseLines("Iced tea\nWater\nCoffee\nOrange juice").Cards! };
+		cards.File.Decks.AddRange(new[] { food, drinks });
+		string days = ReadyDecks.Prefix + "days";
+		var lunch = new DrawSetup
+		{
+			Id = "lunch1", Name = "What to eat", Theme = "slot", Effects = false,
+			Steps =
+			{
+				new DrawStep { Decks = { days }, Extra = "End of the month, Payday", Off = { days + "/Saturday", days + "/Sunday" } },
+				new DrawStep { Decks = { "food01" } },
+				new DrawStep { Decks = { "drink1" }, NoRepeat = true },
+			},
+		};
+		var signs = new DrawSetup { Id = "sign01", Name = "Zodiac", Theme = "dart", Effects = false,
+			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "zodiac" } } } };
+		cards.File.Draws.AddRange(new[] { lunch, signs });
+		using var random = new RandomWindow(new RandomPrefs { Tab = "cards" }, _ => { }, null, cards);
+		random.StartPosition = FormStartPosition.Manual;
+		random.Location = new Point(form.Right + 20, form.Top);
+		random.Show(form);
+		var tabs = Program.Field<TabControl>(random, "_tabs");
+		Program.Field<ListView>(random, "_myDecks").Items[0].Selected = true;
+		random.ActiveControl = null;
+		await Task.Delay(300);
+		Save("random-cards", Program.Capture(random.Handle).Picture);
+		var deck = ModalShotAsync("random-deck", "Edit deck", 800);
+		Program.Call(random, "OpenDeckEditor", food, false);
+		await deck;
+		var pages = tabs.TabPages.OfType<DrawPage>().ToList();
+		var steps = ModalShotAsync("random-draw-edit", "Edit tab", 800);
+		Program.Call(random, "EditDraw", pages[0]);
+		await steps;
+		foreach (var (page, name) in new[] { (pages[0], "random-draw-slot"), (pages[1], "random-draw-dart") })
+		{
+			tabs.SelectedTab = page;
+			for (int i = 0; i < 4; i++)
+			{
+				await (Task)Program.Call(page, "DrawAsync")!;
+			}
+			random.ActiveControl = null;
+			await Task.Delay(300);
+			Save(name, Program.Capture(random.Handle).Picture);
+		}
+		random.Close();
+	}
+
 	private async Task ModalShotAsync(string name, string caption, int settle)
 	{
 		await Task.Delay(settle);

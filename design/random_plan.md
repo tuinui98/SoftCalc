@@ -135,6 +135,63 @@ come later. Window size and place are remembered too.
   `Engine/RandomBeacons.cs`, `UI/RandomWindow.Entropy.cs`; EntropyTests
   (network only with SOFTCALC_NET_TESTS=1).
 
+## Card decks (R6, owner 2026-11-14)
+- The main job of a custom draw is a pick from a pile of cards. The
+  tab strip ends in a "..." tab (no other tab until a draw is made):
+  New draw, New deck, the user's decks (Edit, Copy, Delete, Import
+  CSV, Export CSV) and the ready-made decks (View, Copy to my decks,
+  Export CSV), named in English or Thai (owner: both languages).
+- A deck: cards with a name, a weight (whole number 1-1000) and an
+  optional picture (shrunk to 128 px, stored as PNG in `<data>\cards\`
+  under a name from its content, dropped when no deck uses it; a
+  picture added in the last hour stays, for another open window).
+  Cards come from an Add box (Auto: lines, else commas, else spaces;
+  owner ok), Edit all as text (`name | weight` lines), or CSV
+  (`name,weight,image`; UTF-8 with or without a BOM, UTF-16, else the
+  Thai code page 874 Excel writes; export as UTF-8 with a BOM).
+- Ready-made (embedded `Decks/*.txt`, `English|Thai`): playing cards
+  (52, and two jokers that start unticked), months, days (Monday
+  first), the 77 provinces, countries by continent after UN M49 (193
+  UN members plus Palestine, Taiwan and the Vatican, owner; the
+  Americas split North with Central and the Caribbean, and South;
+  also all 196), 12 colours with swatches, the zodiac, the twelve
+  animal years. Alphabetical lists sort in the shown language.
+  Districts (928) wait for a data source (to ask the owner).
+- Saved in `<data>\cards.json` (decks and draw tabs), apart from
+  settings.json, written at once after each change under the data
+  folder lock; between two Random windows the last write wins.
+
+## Draw tabs (R7, owner 2026-11-14)
+- New draw on "..." asks for the name (Custom random) and the steps;
+  the tab goes before "...". Edit tab, Delete tab (asks first).
+- A step pools any decks with extra cards typed for this draw only
+  (not saved as a deck); any card can be unticked (Days + "end of the
+  month, payday" = 9 cards; untick Saturday and Sunday). Use weights,
+  No repeat per step. One Draw gives one line, a card from each step
+  in turn (fixed decks per step; a card choosing the next deck may
+  come later, owner).
+- No repeat works like a pile (owner): a drawn card stays out until
+  Shuffle, also across closing the window.
+- Theme: List, Slot machine (a reel per step, stopping one by one),
+  Dartboard (a board per step, sectors sized by chance, a dart lands in
+  the drawn card's sector). Effects play only for one line; the cards
+  are drawn first and the effect plays towards them (System.Random for
+  the show only); a click skips.
+- Results, History (newest first, with the time, at most 1000) and
+  Stats (times, share, the share the weights give) per tab, saved.
+  Clear draw (owner) empties the results and History, not Stats;
+  Clear stats empties the counts. Nothing goes to the calculator's
+  History.
+- Source row as on the other tabs: System (with any Entropy mix), or
+  Seed: the window's engine draws rand() once per pick after
+  rands(seed), and a pick is floor(u * points), so the same seed and
+  the same piles give the same cards.
+- Code: `Logic/Cards.cs`, `Logic/ReadyDecks.cs`, `Logic/CardDraws.cs`,
+  `Persistence/CardStore.cs`, `UI/RandomWindow.Cards.cs`,
+  `UI/RandomWindow.Draws.cs`, `UI/DeckEditor.cs`, `UI/DrawEditor.cs`,
+  `UI/DrawPage.cs`, `UI/DrawStages.cs`, `UI/CardPictures.cs`;
+  CardsTests.
+
 ## Code
 - `Logic/RandomTools.cs`: the generators behind an `IRandomSource`, so
   tests can feed fixed numbers; no WinForms.

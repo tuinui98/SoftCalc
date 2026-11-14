@@ -129,7 +129,7 @@ public sealed class RandomShapesTests
 		var prefs = new RandomPrefs { Tab = "advanced", Shape = "triangle", ShapeWhole = false, ShapePlaces = 1, ShapePeak = 2.5m };
 		using var window = new RandomWindow(prefs, _ => { });
 		var tabs = window.Controls.OfType<TabControl>().Single();
-		Assert.Equal(new[] { "Simple", "Advanced", "Password", "Entropy" }, tabs.TabPages.Cast<TabPage>().Select(t => t.Text));
+		Assert.Equal(new[] { "Simple", "Advanced", "Password", "Entropy", "..." }, tabs.TabPages.Cast<TabPage>().Select(t => t.Text));
 		Assert.Equal(1, tabs.SelectedIndex);
 		window.SavePrefs();
 		Assert.Equal(("advanced", "triangle", false, 2.5m), (prefs.Tab, prefs.Shape, prefs.ShapeWhole, prefs.ShapePeak));

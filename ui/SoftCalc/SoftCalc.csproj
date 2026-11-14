@@ -30,6 +30,11 @@
 		<EmbeddedResource Include="THIRD-PARTY-NOTICES.txt" LogicalName="THIRD-PARTY-NOTICES.txt" />
 	</ItemGroup>
 
+	<!-- Ready-made card decks for the Random window (owner 2026-11-14): "English|Thai" lines -->
+	<ItemGroup>
+		<EmbeddedResource Include="Decks\*.txt" LogicalName="decks/%(Filename)%(Extension)" />
+	</ItemGroup>
+
 	<!-- Help topics and their pictures (owner 2026-11-10); help/README.md is for authors and stays out -->
 	<ItemGroup>
 		<EmbeddedResource Include="..\..\help\??-*.md" LogicalName="help/%(Filename)%(Extension)" />

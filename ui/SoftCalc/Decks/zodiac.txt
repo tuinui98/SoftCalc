@@ -1,0 +1,13 @@
+# zodiac.txt - Ready-made deck: the twelve signs of the zodiac (English|Thai), in order
+Aries|เมษ
+Taurus|พฤษภ
+Gemini|เมถุน
+Cancer|กรกฎ
+Leo|สิงห์
+Virgo|กันย์
+Libra|ตุลย์
+Scorpio|พิจิก
+Sagittarius|ธนู
+Capricorn|มังกร
+Aquarius|กุมภ์
+Pisces|มีน

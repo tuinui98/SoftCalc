@@ -2,7 +2,8 @@
 
 Random numbers come two ways: functions such as `rand()` in any line,
 and the Random window for lists of numbers, coin flips, dice, numbers
-in a shape, passwords and a look at where randomness comes from.
+in a shape, passwords, a look at where randomness comes from, and
+draws from decks of cards of your own.
 
 ## rand() in a line
 
@@ -83,7 +84,8 @@ four (or three) numbers: `2 5 1 10 randbeta`.
 ## The Random window
 
 Tools > Random... (it can go on the ribbon too). It has four tabs:
-Simple, Advanced, Password and Entropy.
+Simple, Advanced, Password and Entropy, then your draw tabs and a
+**...** tab that makes them.
 
 ### Source
 
@@ -236,6 +238,83 @@ random they really are.
   never weaker than System alone. **Clear mix** stops it; closing the
   window does too.
 
-Nothing drawn in the window goes to History or to a file; the lists
-are cleared when the window closes. The window keeps only its
-settings, never a seed, a signature or a password.
+### Card decks (the ... tab)
+
+![The ... tab](img/random-cards.light.png)
+
+A draw picks from a pile of cards. The **...** tab holds the decks:
+
+- **My decks**: **New deck...**, **Edit...** (or a double-click),
+  **Copy**, **Delete** (it asks first), **Import CSV...** (a new deck
+  named after the file) and **Export CSV...**.
+- **Ready-made decks**: playing cards (the two jokers start unticked
+  in a draw), months, days of the week, the provinces of Thailand,
+  countries by continent (the UN members, Palestine, Taiwan and the
+  Vatican; also all of them), twelve colours, the zodiac signs and the
+  animal years. **Ready-made names** shows them in English or Thai.
+  They cannot be edited: **View...** shows the cards, **Copy to my
+  decks** makes a deck you can change, in the language shown.
+
+![A deck](img/random-deck.light.png)
+
+- Each card has a name, a **Weight** and a **Picture**. A card of
+  weight 2 comes up twice as often as one of weight 1, when the draw
+  uses weights. A picture is shrunk to 128 pixels and kept in the
+  data folder, so the original file can move.
+- **Add** takes several cards at once: one per line, or split by
+  commas, or by spaces. With **Split** on Auto it uses lines if there
+  is a line break, else commas if there is a comma, else spaces; a
+  name with a space in it needs lines or commas.
+- **Edit all as text...** shows every card on a line, with the weight
+  after a bar: `Fried rice | 2`.
+- **Import CSV...** adds cards from a CSV or text file: a name, then a
+  weight and the path of a picture if you like (`name,weight,image`).
+  Thai text from Excel reads correctly. **Export CSV...** writes the
+  same columns, for Excel too.
+
+### Draw tabs
+
+**New draw...** asks for the tab's name (Custom random to start) and
+its steps:
+
+![A draw's steps](img/random-draw-edit.light.png)
+
+- Each step picks one card. Add any decks to its pile, and type
+  **Extra** cards that belong to this draw only (they are not saved as
+  a deck): Days of the week with `End of the month, Payday` makes 9
+  cards. Untick a card to leave it out, such as Saturday and Sunday.
+- **Use weights**: the cards' weights count; off, every card has the
+  same chance. **No repeat**: like a real pile, a drawn card stays out
+  until you press Shuffle.
+- One Draw gives a line with a card from each step in turn, such as
+  `Friday · Fried rice · Iced tea`.
+
+![A draw tab with the slot machine](img/random-draw-slot.light.png)
+
+- **Draw** draws **Count** lines. **Theme**: List, **Slot machine** (a
+  reel for each step) or **Dartboard** (a board for each step, each
+  card's part as big as its chance). With **Effects** the reels roll
+  or the dart flies while one line is drawn; the cards are drawn
+  first, so the effect never changes them, and a click skips it.
+- **Shuffle** puts the drawn cards back in the No repeat piles. The
+  line under the name shows each step's cards and how many are left.
+- **Results** shows the last Draw, **History** every line with its
+  date and time (newest first, the last 1000), **Stats** how often each
+  card came up, its share, and the share its weight gives.
+- **Clear draw** empties Results and History but keeps Stats; **Clear
+  stats** starts the counts again. **Copy** copies the chosen lines
+  (all when none is chosen).
+- **Edit tab...** changes the name and steps; **Delete tab** removes
+  the tab with its History and Stats (its decks stay).
+- With **Seed** in the Source row, the same seed and the same piles
+  give the same cards.
+
+![The dartboard](img/random-draw-dart.light.png)
+
+Decks and draw tabs, with their History and Stats, are kept in
+`cards.json` (and pictures in `cards\`) in the data folder. Nothing
+drawn goes to the calculator's History.
+
+The other tabs keep nothing they drew: their lists are cleared when
+the window closes. The window keeps only its settings, never a seed,
+a signature or a password.
