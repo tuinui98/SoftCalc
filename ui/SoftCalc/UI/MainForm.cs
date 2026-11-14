@@ -231,7 +231,7 @@ internal sealed partial class MainForm : Form
 		{
 			// Seed draws in an engine of the window's own, at the main window's precision
 			var seeds = new SeedEngine(_session.StartInfo, () => (int?)_session.Settings["precision"] ?? _prefs.Precision);
-			_randomWindow = new RandomWindow(_prefs.Random, InsertValue, seeds);
+			_randomWindow = new RandomWindow(_prefs.Random, InsertValue, seeds, new CardStore(_folder));
 			_randomWindow.Show(this);
 		}
 		else

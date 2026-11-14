@@ -7,7 +7,9 @@
 // History or to disk, and the lists are cleared when the window closes.
 // A copied password stays out of the clipboard history and is wiped
 // after 30 s (SecretClipboard). The Source row (RandomWindow.Seed.cs)
-// picks System or a repeatable Seed. Custom list tabs come later.
+// picks System or a repeatable Seed. Draw tabs pick cards from decks
+// (RandomWindow.Cards.cs, RandomWindow.Draws.cs); they keep their own
+// History and Stats in cards.json.
 
 using System.Globalization;
 using SoftCalc.Logic;
@@ -58,11 +60,13 @@ internal sealed partial class RandomWindow : Form
 	private readonly Label _strength = Note();
 	private static readonly string[] TabIds = { "numbers", "advanced", "password", "entropy" };    // the tab pages in order, as saved
 
-	public RandomWindow(RandomPrefs prefs, Action<string> insert, SoftCalc.Engine.SeedEngine? seeds = null)
+	public RandomWindow(RandomPrefs prefs, Action<string> insert, SoftCalc.Engine.SeedEngine? seeds = null, CardStore? cards = null)
 	{
 		_prefs = prefs;
 		_insert = insert;
 		_seeds = seeds;
+		_cards = cards ?? new CardStore(null);
+		_pictures = new CardPictures(_cards);
 		Text = "Random";
 		Icon = SvgIcon.ProgramIcon();
 		ShowInTaskbar = false;
@@ -80,6 +84,8 @@ internal sealed partial class RandomWindow : Form
 		_tabs.TabPages.Add(AdvancedTab());
 		_tabs.TabPages.Add(PasswordTab());
 		_tabs.TabPages.Add(EntropyTab());
+		_tabs.TabPages.Add(MorePage());
+		AddDrawPages();
 		Controls.Add(_tabs);
 		Controls.Add(SourceRow());
 		LoadPrefs();
@@ -95,6 +101,7 @@ internal sealed partial class RandomWindow : Form
 			_seeds?.Dispose();
 			_secure.Clear();
 			ClearEntropy();
+			_pictures.Dispose();
 		};
 	}
 
@@ -486,7 +493,7 @@ internal sealed partial class RandomWindow : Form
 		_place.SelectedIndex = Math.Max(0, Array.IndexOf(RandomTools.Places, p.SignaturePlace));
 		LoadShapePrefs(p);
 		LoadEntropyPrefs(p);
-		_tabs.SelectedIndex = Math.Max(0, Array.IndexOf(TabIds, p.Tab));
+		SelectTabId(p.Tab);
 		ShowStrength();
 	}
 
@@ -504,7 +511,7 @@ internal sealed partial class RandomWindow : Form
 		p.SignaturePlace = RandomTools.Places[Math.Max(0, _place.SelectedIndex)];
 		SaveShapePrefs(p);
 		SaveEntropyPrefs(p);
-		p.Tab = TabIds[Math.Max(0, _tabs.SelectedIndex)];
+		p.Tab = SelectedTabId();
 		var bounds = WindowState == FormWindowState.Normal ? Bounds : RestoreBounds;
 		p.Window = new WindowPlacement { X = bounds.X, Y = bounds.Y, Width = bounds.Width, Height = bounds.Height };
 	}

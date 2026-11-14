@@ -406,14 +406,17 @@ ends 1:1, the drag insert line is visible enough on dark.
     checked examples, shaped functions, Source row, Simple, Advanced,
     Password with signature, Entropy; 03-functions Random row); all
     help pictures regenerated, new random-advanced and random-entropy.
-- [ ] Random window: custom list tabs (owner 2026-11-12: "later, details
-      to discuss").
-  - Pick a topic at random from a list; add, remove and import topics
-    (text file, one per line); then pick one of that topic's options
-    (e.g. "what to eat": dishes, then how, then a shop).
-  - Plain 50/50 or weighted picks (a bias per item).
-  - To discuss: where the lists are saved, whether picks go to
-    History, Seed and the Entropy mix for picks too.
+- [x] Random window: card decks and draw tabs (owner 2026-11-12, design
+      2026-11-14; design/random_plan.md R6-R7). Built 2026-11-14: the
+      "..." tab (New draw, New deck, own and ready-made decks in English
+      and Thai, CSV, pictures), draw tabs (steps pooling decks and
+      extras, unticked cards, weights, No repeat pile with Shuffle,
+      List / Slot machine / Dartboard with effects, Results, History,
+      Stats, Clear draw, System or Seed), cards.json; help topic updated.
+  - [ ] Ready-made districts (928, English and Thai): needs a data
+        source; ask the owner.
+  - [ ] Later (owner 2026-11-14): a card may choose the deck of the
+        next step ("Then draw from").
 - [ ] Crypto wallet seeds (first: list what SoftCalc could do).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe

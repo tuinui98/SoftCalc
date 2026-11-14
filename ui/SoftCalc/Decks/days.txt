@@ -1,0 +1,8 @@
+# days.txt - Ready-made deck: the days of the week (English|Thai), Monday first
+Monday|จันทร์
+Tuesday|อังคาร
+Wednesday|พุธ
+Thursday|พฤหัสบดี
+Friday|ศุกร์
+Saturday|เสาร์
+Sunday|อาทิตย์

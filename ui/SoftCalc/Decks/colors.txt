@@ -1,0 +1,13 @@
+# colors.txt - Ready-made deck: twelve basic colours (English|Thai|swatch)
+Red|แดง|#E53935
+Orange|ส้ม|#FB8C00
+Yellow|เหลือง|#FDD835
+Green|เขียว|#43A047
+Light blue|ฟ้า|#4FC3F7
+Blue|น้ำเงิน|#1E40AF
+Purple|ม่วง|#8E24AA
+Pink|ชมพู|#F06292
+Brown|น้ำตาล|#795548
+Black|ดำ|#000000
+White|ขาว|#FFFFFF
+Gray|เทา|#9E9E9E

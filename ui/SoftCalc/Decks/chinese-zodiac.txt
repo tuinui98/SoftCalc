@@ -1,0 +1,13 @@
+# chinese-zodiac.txt - Ready-made deck: the twelve animal years (English|Thai), in order
+Rat|ชวด
+Ox|ฉลู
+Tiger|ขาล
+Rabbit|เถาะ
+Dragon|มะโรง
+Snake|มะเส็ง
+Horse|มะเมีย
+Goat|มะแม
+Monkey|วอก
+Rooster|ระกา
+Dog|จอ
+Pig|กุน

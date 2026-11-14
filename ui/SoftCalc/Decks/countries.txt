@@ -1,0 +1,199 @@
+# countries.txt - Ready-made decks: the 193 UN member states plus Palestine, Taiwan and the Vatican (owner 2026-11-14),
+# by continent after the UN M49 regions; the Americas split into North (with Central America and the Caribbean) and South
+# continent|English|Thai
+Africa|Algeria|แอลจีเรีย
+Africa|Angola|แองโกลา
+Africa|Benin|เบนิน
+Africa|Botswana|บอตสวานา
+Africa|Burkina Faso|บูร์กินาฟาโซ
+Africa|Burundi|บุรุนดี
+Africa|Cabo Verde|กาบูเวร์ดี
+Africa|Cameroon|แคเมอรูน
+Africa|Central African Republic|สาธารณรัฐแอฟริกากลาง
+Africa|Chad|ชาด
+Africa|Comoros|คอโมโรส
+Africa|Congo|คองโก
+Africa|DR Congo|สาธารณรัฐประชาธิปไตยคองโก
+Africa|Côte d'Ivoire|โกตดิวัวร์
+Africa|Djibouti|จิบูตี
+Africa|Egypt|อียิปต์
+Africa|Equatorial Guinea|อิเควทอเรียลกินี
+Africa|Eritrea|เอริเทรีย
+Africa|Eswatini|เอสวาตินี
+Africa|Ethiopia|เอธิโอเปีย
+Africa|Gabon|กาบอง
+Africa|Gambia|แกมเบีย
+Africa|Ghana|กานา
+Africa|Guinea|กินี
+Africa|Guinea-Bissau|กินี-บิสเซา
+Africa|Kenya|เคนยา
+Africa|Lesotho|เลโซโท
+Africa|Liberia|ไลบีเรีย
+Africa|Libya|ลิเบีย
+Africa|Madagascar|มาดากัสการ์
+Africa|Malawi|มาลาวี
+Africa|Mali|มาลี
+Africa|Mauritania|มอริเตเนีย
+Africa|Mauritius|มอริเชียส
+Africa|Morocco|โมร็อกโก
+Africa|Mozambique|โมซัมบิก
+Africa|Namibia|นามิเบีย
+Africa|Niger|ไนเจอร์
+Africa|Nigeria|ไนจีเรีย
+Africa|Rwanda|รวันดา
+Africa|Sao Tome and Principe|เซาตูเมและปรินซีปี
+Africa|Senegal|เซเนกัล
+Africa|Seychelles|เซเชลส์
+Africa|Sierra Leone|เซียร์ราลีโอน
+Africa|Somalia|โซมาเลีย
+Africa|South Africa|แอฟริกาใต้
+Africa|South Sudan|ซูดานใต้
+Africa|Sudan|ซูดาน
+Africa|Tanzania|แทนซาเนีย
+Africa|Togo|โตโก
+Africa|Tunisia|ตูนิเซีย
+Africa|Uganda|ยูกันดา
+Africa|Zambia|แซมเบีย
+Africa|Zimbabwe|ซิมบับเว
+Asia|Afghanistan|อัฟกานิสถาน
+Asia|Armenia|อาร์มีเนีย
+Asia|Azerbaijan|อาเซอร์ไบจาน
+Asia|Bahrain|บาห์เรน
+Asia|Bangladesh|บังกลาเทศ
+Asia|Bhutan|ภูฏาน
+Asia|Brunei|บรูไน
+Asia|Cambodia|กัมพูชา
+Asia|China|จีน
+Asia|Cyprus|ไซปรัส
+Asia|Georgia|จอร์เจีย
+Asia|India|อินเดีย
+Asia|Indonesia|อินโดนีเซีย
+Asia|Iran|อิหร่าน
+Asia|Iraq|อิรัก
+Asia|Israel|อิสราเอล
+Asia|Japan|ญี่ปุ่น
+Asia|Jordan|จอร์แดน
+Asia|Kazakhstan|คาซัคสถาน
+Asia|Kuwait|คูเวต
+Asia|Kyrgyzstan|คีร์กีซสถาน
+Asia|Laos|ลาว
+Asia|Lebanon|เลบานอน
+Asia|Malaysia|มาเลเซีย
+Asia|Maldives|มัลดีฟส์
+Asia|Mongolia|มองโกเลีย
+Asia|Myanmar|เมียนมา
+Asia|Nepal|เนปาล
+Asia|North Korea|เกาหลีเหนือ
+Asia|Oman|โอมาน
+Asia|Pakistan|ปากีสถาน
+Asia|Palestine|ปาเลสไตน์
+Asia|Philippines|ฟิลิปปินส์
+Asia|Qatar|กาตาร์
+Asia|Saudi Arabia|ซาอุดีอาระเบีย
+Asia|Singapore|สิงคโปร์
+Asia|South Korea|เกาหลีใต้
+Asia|Sri Lanka|ศรีลังกา
+Asia|Syria|ซีเรีย
+Asia|Taiwan|ไต้หวัน
+Asia|Tajikistan|ทาจิกิสถาน
+Asia|Thailand|ไทย
+Asia|Timor-Leste|ติมอร์-เลสเต
+Asia|Türkiye|ตุรกี
+Asia|Turkmenistan|เติร์กเมนิสถาน
+Asia|United Arab Emirates|สหรัฐอาหรับเอมิเรตส์
+Asia|Uzbekistan|อุซเบกิสถาน
+Asia|Vietnam|เวียดนาม
+Asia|Yemen|เยเมน
+Europe|Albania|แอลเบเนีย
+Europe|Andorra|อันดอร์รา
+Europe|Austria|ออสเตรีย
+Europe|Belarus|เบลารุส
+Europe|Belgium|เบลเยียม
+Europe|Bosnia and Herzegovina|บอสเนียและเฮอร์เซโกวีนา
+Europe|Bulgaria|บัลแกเรีย
+Europe|Croatia|โครเอเชีย
+Europe|Czechia|เช็กเกีย
+Europe|Denmark|เดนมาร์ก
+Europe|Estonia|เอสโตเนีย
+Europe|Finland|ฟินแลนด์
+Europe|France|ฝรั่งเศส
+Europe|Germany|เยอรมนี
+Europe|Greece|กรีซ
+Europe|Hungary|ฮังการี
+Europe|Iceland|ไอซ์แลนด์
+Europe|Ireland|ไอร์แลนด์
+Europe|Italy|อิตาลี
+Europe|Latvia|ลัตเวีย
+Europe|Liechtenstein|ลิกเตนสไตน์
+Europe|Lithuania|ลิทัวเนีย
+Europe|Luxembourg|ลักเซมเบิร์ก
+Europe|Malta|มอลตา
+Europe|Moldova|มอลโดวา
+Europe|Monaco|โมนาโก
+Europe|Montenegro|มอนเตเนโกร
+Europe|Netherlands|เนเธอร์แลนด์
+Europe|North Macedonia|มาซิโดเนียเหนือ
+Europe|Norway|นอร์เวย์
+Europe|Poland|โปแลนด์
+Europe|Portugal|โปรตุเกส
+Europe|Romania|โรมาเนีย
+Europe|Russia|รัสเซีย
+Europe|San Marino|ซานมารีโน
+Europe|Serbia|เซอร์เบีย
+Europe|Slovakia|สโลวาเกีย
+Europe|Slovenia|สโลวีเนีย
+Europe|Spain|สเปน
+Europe|Sweden|สวีเดน
+Europe|Switzerland|สวิตเซอร์แลนด์
+Europe|Ukraine|ยูเครน
+Europe|United Kingdom|สหราชอาณาจักร
+Europe|Vatican City|นครรัฐวาติกัน
+North America|Antigua and Barbuda|แอนติกาและบาร์บิวดา
+North America|Bahamas|บาฮามาส
+North America|Barbados|บาร์เบโดส
+North America|Belize|เบลีซ
+North America|Canada|แคนาดา
+North America|Costa Rica|คอสตาริกา
+North America|Cuba|คิวบา
+North America|Dominica|ดอมินีกา
+North America|Dominican Republic|สาธารณรัฐโดมินิกัน
+North America|El Salvador|เอลซัลวาดอร์
+North America|Grenada|เกรเนดา
+North America|Guatemala|กัวเตมาลา
+North America|Haiti|เฮติ
+North America|Honduras|ฮอนดูรัส
+North America|Jamaica|จาเมกา
+North America|Mexico|เม็กซิโก
+North America|Nicaragua|นิการากัว
+North America|Panama|ปานามา
+North America|Saint Kitts and Nevis|เซนต์คิตส์และเนวิส
+North America|Saint Lucia|เซนต์ลูเชีย
+North America|Saint Vincent and the Grenadines|เซนต์วินเซนต์และเกรนาดีนส์
+North America|Trinidad and Tobago|ตรินิแดดและโตเบโก
+North America|United States|สหรัฐอเมริกา
+South America|Argentina|อาร์เจนตินา
+South America|Bolivia|โบลิเวีย
+South America|Brazil|บราซิล
+South America|Chile|ชิลี
+South America|Colombia|โคลอมเบีย
+South America|Ecuador|เอกวาดอร์
+South America|Guyana|กายอานา
+South America|Paraguay|ปารากวัย
+South America|Peru|เปรู
+South America|Suriname|ซูรินาม
+South America|Uruguay|อุรุกวัย
+South America|Venezuela|เวเนซุเอลา
+Oceania|Australia|ออสเตรเลีย
+Oceania|Fiji|ฟีจี
+Oceania|Kiribati|คิริบาส
+Oceania|Marshall Islands|หมู่เกาะมาร์แชลล์
+Oceania|Micronesia|ไมโครนีเซีย
+Oceania|Nauru|นาอูรู
+Oceania|New Zealand|นิวซีแลนด์
+Oceania|Palau|ปาเลา
+Oceania|Papua New Guinea|ปาปัวนิวกินี
+Oceania|Samoa|ซามัว
+Oceania|Solomon Islands|หมู่เกาะโซโลมอน
+Oceania|Tonga|ตองกา
+Oceania|Tuvalu|ตูวาลู
+Oceania|Vanuatu|วานูอาตู
