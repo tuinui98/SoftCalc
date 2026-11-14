@@ -6,6 +6,10 @@
 // and Sunday); Use weights and No repeat are set per step. The theme
 // and Effects are set here too (owner 2026-11-14), not on the tab. Works on a
 // copy of the steps: OK keeps them, Cancel drops them.
+//
+// Owner 2026-11-14 (conditions): extra cards take "|weight" and ">>condition";
+// a deck card's condition is set in the Then row. Save as deck turns the
+// extra cards into a deck of the user's own, conditions and all.
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -16,7 +20,7 @@ internal sealed class DrawEditor : Form
 {
 	private readonly CardStore _store;
 	private readonly string _language;
-	private readonly Func<Deck?> _newDeck;
+	private readonly Func<Deck?, Deck?> _newDeck;
 	private readonly List<DrawStep> _steps;
 	private readonly TextBox _name = new() { Width = 220 };
 	private readonly ComboBox _theme = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 120 };
@@ -27,14 +31,21 @@ internal sealed class DrawEditor : Form
 	private readonly ComboBox _deckChoice = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 220, MaxDropDownItems = 20 };
 	private readonly TextBox _extra = new()
 	{
-		Multiline = true, Height = 44, Width = 420, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true,
-		PlaceholderText = "Cards for this draw only, e.g.  End of the month, Payday",
+		Multiline = true, Height = 44, Width = 340, ScrollBars = ScrollBars.Vertical, AcceptsReturn = true,
+		PlaceholderText = "Cards for this draw only, e.g.  Run, Badminton, Gym>>Gym deck|2, Swim>>stop",
 	};
 	private readonly CheckedListBox _cardList = new() { Dock = DockStyle.Fill, CheckOnClick = true, IntegralHeight = false };
 	private readonly Label _cardCount = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(3, 8, 3, 3) };
 	private readonly CheckBox _weights = new() { Text = "Use &weights", AutoSize = true };
 	private readonly CheckBox _noRepeat = new() { Text = "No &repeat (like a pile: a drawn card stays out until Shuffle)", AutoSize = true };
 	private readonly Label _error = new() { AutoSize = true, Dock = DockStyle.Bottom, ForeColor = Theme.Error, Padding = new Padding(0, 4, 0, 4) };
+	private readonly ComboBox _thenKind = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 130 };
+	private readonly NumericUpDown _thenStep = new() { Minimum = 1, Maximum = CardDraws.MaxSteps, Width = 50 };
+	private readonly ComboBox _thenDeck = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170, MaxDropDownItems = 20 };
+	private readonly NumericUpDown _thenCount = new() { Minimum = 1, Maximum = CardThen.MaxCount, Width = 50 };
+	private readonly CheckBox _thenStop = new() { Text = "then stop", AutoSize = true, Margin = new Padding(6, 6, 3, 3) };
+	private readonly Label _thenNote = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(6, 7, 3, 3) };
+	private static readonly string[] ThenKinds = { "Next step", "Stop the line", "Skip to step", "Draw from deck" };
 	private List<PoolCard> _pool = new();
 	private bool _showing;
 
@@ -43,7 +54,7 @@ internal sealed class DrawEditor : Form
 	public string ResultTheme => CardDraws.Themes[Math.Max(0, _theme.SelectedIndex)];
 	public bool ResultEffects => _effects.Checked;
 
-	public DrawEditor(string title, string name, IEnumerable<DrawStep> steps, CardStore store, string language, Func<Deck?> newDeck,
+	public DrawEditor(string title, string name, IEnumerable<DrawStep> steps, CardStore store, string language, Func<Deck?, Deck?> newDeck,
 		string theme, bool effects)
 	{
 		_store = store;
@@ -60,8 +71,8 @@ internal sealed class DrawEditor : Form
 		MinimizeBox = false;
 		StartPosition = FormStartPosition.CenterParent;
 		AutoScaleMode = AutoScaleMode.Dpi;
-		ClientSize = new Size(720, 540);
-		MinimumSize = new Size(640, 460);
+		ClientSize = new Size(720, 600);
+		MinimumSize = new Size(640, 520);
 		Padding = new Padding(8);
 
 		//==================================================================
@@ -118,8 +129,16 @@ internal sealed class DrawEditor : Form
 		deckColumn.Controls.Add(deckButtons);
 		deckRow.Controls.Add(deckColumn, 1, 0);
 		deckRow.Controls.Add(Caption("E&xtra"), 0, 1);
-		deckRow.Controls.Add(_extra, 1, 1);
-		new ToolTip().SetToolTip(_extra, "Split by lines, else commas, else spaces. Not saved as a deck.");
+		var extraColumn = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty, WrapContents = false };
+		var saveDeck = new Button { Text = "Sa&ve as deck...", AutoSize = true };
+		saveDeck.Click += (_, _) => SaveAsDeck();
+		new ToolTip().SetToolTip(saveDeck, "Make the extra cards a deck of your own, with their weights and conditions");
+		extraColumn.Controls.Add(_extra);
+		extraColumn.Controls.Add(saveDeck);
+		deckRow.Controls.Add(extraColumn, 1, 1);
+		new ToolTip().SetToolTip(_extra, "Split by lines, else commas, else spaces. Not saved as a deck.\n"
+			+ "name|2: a weight.  name>>stop: end the line.  name>>step 3: skip to step 3.\n"
+			+ "name>>Gym: draw a card from the deck Gym too (Gym*2: two cards, Gym,stop: then end the line).");
 		_extra.TextChanged += (_, _) =>
 		{
 			if (!_showing && Current is { } step)
@@ -156,7 +175,22 @@ internal sealed class DrawEditor : Form
 		_weights.CheckedChanged += (_, _) => SetOption(s => s.Weights = _weights.Checked);
 		_noRepeat.CheckedChanged += (_, _) => SetOption(s => s.NoRepeat = _noRepeat.Checked);
 
+		//==================================================================
+		//  Then: the chosen deck card's condition
+		//==================================================================
+		var thenRow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Bottom, WrapContents = true };
+		_thenKind.Items.AddRange(ThenKinds);
+		thenRow.Controls.AddRange(new Control[] { Caption("&Then"), _thenKind, _thenStep, _thenDeck, _thenCount, _thenStop, _thenNote });
+		new ToolTip().SetToolTip(_thenCount, "Cards to draw from the deck, all different");
+		_thenKind.SelectedIndexChanged += (_, _) => SetThen();
+		_thenStep.ValueChanged += (_, _) => SetThen();
+		_thenDeck.SelectedIndexChanged += (_, _) => SetThen();
+		_thenCount.ValueChanged += (_, _) => SetThen();
+		_thenStop.CheckedChanged += (_, _) => SetThen();
+		_cardList.SelectedIndexChanged += (_, _) => ShowThen();
+
 		_stepBox.Controls.Add(_cardList);
+		_stepBox.Controls.Add(thenRow);
 		_stepBox.Controls.Add(cardTop);
 		_stepBox.Controls.Add(options);
 		_stepBox.Controls.Add(deckRow);
@@ -190,7 +224,9 @@ internal sealed class DrawEditor : Form
 		return new DrawStep
 		{
 			Decks = s.Decks.ToList(), Extra = s.Extra, Off = s.Off.ToList(), Weights = s.Weights, NoRepeat = s.NoRepeat,
-			Drawn = s.Drawn.ToList(), Counts = new Dictionary<string, int>(s.Counts),
+			Drawn = s.Drawn.ToList(), Counts = new Dictionary<string, int>(s.Counts), Then = new Dictionary<string, string>(s.Then),
+			SubDrawn = s.SubDrawn.ToDictionary(kv => kv.Key, kv => kv.Value.ToList()),
+			SubCounts = s.SubCounts.ToDictionary(kv => kv.Key, kv => new Dictionary<string, int>(kv.Value)),
 		};
 	}
 
@@ -220,7 +256,7 @@ internal sealed class DrawEditor : Form
 	private string Summary(DrawStep step)
 	{
 		var parts = step.Decks.Select(id => _store.Find(id)?.Shown(_language) ?? "(deck gone)").ToList();
-		int extra = CardText.Split(step.Extra, "auto").Count;
+		int extra = CardDraws.ExtraEntries(step.Extra).Count;
 		if (extra > 0)
 		{
 			parts.Add($"{extra} extra");
@@ -319,6 +355,9 @@ internal sealed class DrawEditor : Form
 		{
 			_deckChoice.SelectedIndex = 0;
 		}
+		_thenDeck.Items.Clear();
+		_thenDeck.Items.AddRange(_store.File.Decks.Select(d => d.Name).Concat(ReadyDecks.All.Select(d => d.Shown(_language)))
+			.Distinct(StringComparer.OrdinalIgnoreCase).Cast<object>().ToArray());
 	}
 
 	private void AddDeck()
@@ -356,7 +395,7 @@ internal sealed class DrawEditor : Form
 
 	private void MakeDeck()
 	{
-		if (_newDeck() is { } deck)
+		if (_newDeck(null) is { } deck)
 		{
 			FillDeckChoice();
 			AddDeck(deck.Id);
@@ -370,6 +409,7 @@ internal sealed class DrawEditor : Form
 			return;
 		}
 		_showing = true;
+		int selected = _cardList.SelectedIndex;
 		_pool = CardDraws.Pool(step, _store.Find);
 		var off = new HashSet<string>(step.Off);
 		_cardList.BeginUpdate();
@@ -377,11 +417,120 @@ internal sealed class DrawEditor : Form
 		foreach (var p in _pool)
 		{
 			string weight = step.Weights && p.Card.Weight > 1 ? $"   ×{p.Card.Weight}" : "";
-			_cardList.Items.Add(p.Card.Shown(_language) + weight, !off.Contains(p.Key));
+			string then = CardThen.Parse(p.Then).Then is { } t && t.Format() is { Length: > 0 } text ? CardDraws.SubJoiner + text : "";
+			_cardList.Items.Add(p.Card.Shown(_language) + weight + then, !off.Contains(p.Key));
 		}
+		_cardList.SelectedIndex = selected < _pool.Count ? selected : -1;
 		_cardList.EndUpdate();
 		_showing = false;
 		ShowCount();
+		ShowThen();
+	}
+
+	//==================================================================
+	//  Then
+	//==================================================================
+	private PoolCard? ChosenCard => _cardList.SelectedIndex >= 0 && _cardList.SelectedIndex < _pool.Count ? _pool[_cardList.SelectedIndex] : null;
+
+	private void ShowThen()
+	{
+		if (_showing)
+		{
+			return;
+		}
+		_showing = true;
+		var card = ChosenCard;
+		bool deckCard = card != null && card.Source != CardDraws.ExtraSource;
+		var then = card == null ? CardThen.Next : CardThen.Parse(card.Then).Then ?? CardThen.Next;
+		_thenKind.Enabled = deckCard;
+		_thenKind.SelectedIndex = then.Deck != null ? 3 : (int)then.Flow;
+		_thenStep.Value = Math.Clamp(then.Step < 1 ? _stepList.SelectedIndex + 2 : then.Step, 1, CardDraws.MaxSteps);
+		_thenDeck.SelectedIndex = then.Deck == null ? (_thenDeck.Items.Count > 0 ? 0 : -1)
+			: _thenDeck.Items.Cast<string>().ToList().FindIndex(n => n.Equals(then.Deck, StringComparison.OrdinalIgnoreCase));
+		_thenCount.Value = Math.Clamp(then.Count, 1, CardThen.MaxCount);
+		_thenStop.Checked = then.Flow == ThenFlow.Stop;
+		_thenStep.Visible = _thenKind.SelectedIndex == 2;
+		_thenDeck.Visible = _thenCount.Visible = _thenStop.Visible = _thenKind.SelectedIndex == 3;
+		_thenNote.Text = card == null ? "Choose a card." : deckCard ? "" : "Extra card: type >> after its name.";
+		_showing = false;
+	}
+
+	private void SetThen()
+	{
+		if (_showing || Current is not { } step || ChosenCard is not { } card || card.Source == CardDraws.ExtraSource)
+		{
+			return;
+		}
+		var then = _thenKind.SelectedIndex switch
+		{
+			1 => new CardThen(null, 1, ThenFlow.Stop, 0),
+			2 => new CardThen(null, 1, ThenFlow.Step, (int)_thenStep.Value),
+			3 when _thenDeck.SelectedItem is string deck => new CardThen(deck, (int)_thenCount.Value,
+				_thenStop.Checked ? ThenFlow.Stop : ThenFlow.Next, 0),
+			_ => CardThen.Next,
+		};
+		string text = then.Format();
+		step.Then.Remove(card.Key);
+		if (text.Length > 0)
+		{
+			step.Then[card.Key] = text;
+		}
+		FillCards();
+	}
+
+	// The extra cards become a deck of the user's own; the step then uses that deck
+	private void SaveAsDeck()
+	{
+		if (Current is not { } step)
+		{
+			return;
+		}
+		var extras = _pool.Where(p => p.Source == CardDraws.ExtraSource).ToList();
+		if (extras.Count == 0)
+		{
+			_error.Text = "No extra cards to save: type them in Extra.";
+			return;
+		}
+		var start = new Deck
+		{
+			Id = CardStore.NewId(), Name = _store.FreeName($"Step {_stepList.SelectedIndex + 1} cards"),
+			Cards = extras.Select(p => new Card { Name = p.Card.Name, Weight = p.Card.Weight }).ToList(),
+		};
+		if (_newDeck(start) is not { } deck)
+		{
+			return;
+		}
+		FillDeckChoice();
+		step.Decks.Add(deck.Id);
+		// the extras' conditions, ticks, No repeat pile and counts move to the deck's cards
+		foreach (var p in extras)
+		{
+			if (deck.Cards.FirstOrDefault(c => c.Name.Equals(p.Card.Name, StringComparison.OrdinalIgnoreCase)) is not { } card)
+			{
+				continue;
+			}
+			string key = CardDraws.Key(deck.Id, card);
+			if (p.Then.Length > 0)
+			{
+				step.Then[key] = p.Then;
+			}
+			if (step.Off.Remove(p.Key))
+			{
+				step.Off.Add(key);
+			}
+			if (step.Drawn.Remove(p.Key))
+			{
+				step.Drawn.Add(key);
+			}
+			if (step.Counts.Remove(p.Key, out int times))
+			{
+				step.Counts[key] = times;
+			}
+		}
+		step.Extra = "";
+		ShowStep();
+		FillSteps();
+		_error.Text = "";
 	}
 
 	private void ShowCount()
@@ -424,10 +573,20 @@ internal sealed class DrawEditor : Form
 				_stepList.SelectedIndex = i;
 				return;
 			}
+			if (CardDraws.Check(_steps, i, _store.Find, _store.Named, _language) is { } mistake)
+			{
+				_error.Text = mistake;
+				_stepList.SelectedIndex = i;
+				return;
+			}
 			// keys that left the pool no longer count as drawn or unticked
 			var keys = CardDraws.Pool(step, _store.Find).Select(p => p.Key).ToHashSet();
 			step.Off.RemoveAll(k => !keys.Contains(k));
 			step.Drawn.RemoveAll(k => !keys.Contains(k));
+			foreach (string key in step.Then.Keys.Where(k => !keys.Contains(k)).ToList())
+			{
+				step.Then.Remove(key);
+			}
 			step.Off = step.Off.Distinct().ToList();
 		}
 		DialogResult = DialogResult.OK;

@@ -92,6 +92,14 @@ internal sealed class CardStore
 		return id.StartsWith(ReadyDecks.Prefix, StringComparison.Ordinal) ? ReadyDecks.Find(id) : File.Decks.FirstOrDefault(d => d.Id == id);
 	}
 
+	// A deck by its name, for the draw conditions: my decks first, then the ready-made ones (English or Thai)
+	public Deck? Named(string name)
+	{
+		return File.Decks.FirstOrDefault(d => d.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+			?? ReadyDecks.All.FirstOrDefault(d => d.Name.Equals(name, StringComparison.OrdinalIgnoreCase)
+				|| (d.Thai?.Equals(name, StringComparison.OrdinalIgnoreCase) ?? false));
+	}
+
 	public static string NewId()
 	{
 		return Guid.NewGuid().ToString("N")[..12];
@@ -230,6 +238,11 @@ internal sealed class CardStore
 				step.Off = (step.Off ?? new()).Where(k => k != null).ToList();
 				step.Drawn = (step.Drawn ?? new()).Where(k => k != null).ToList();
 				step.Counts = (step.Counts ?? new()).Where(kv => kv.Key != null && kv.Value > 0).ToDictionary();
+				step.Then = (step.Then ?? new()).Where(kv => kv.Key != null && !string.IsNullOrWhiteSpace(kv.Value)).ToDictionary();
+				step.SubDrawn = (step.SubDrawn ?? new()).Where(kv => kv.Key != null && kv.Value != null)
+					.ToDictionary(kv => kv.Key, kv => kv.Value.Where(k => k != null).ToList());
+				step.SubCounts = (step.SubCounts ?? new()).Where(kv => kv.Key != null && kv.Value != null)
+					.ToDictionary(kv => kv.Key, kv => kv.Value.Where(c => c.Key != null && c.Value > 0).ToDictionary());
 			}
 			draw.History = (draw.History ?? new()).Where(h => h?.Text != null).Take(CardDraws.MaxHistory).ToList();
 			draw.Draws = Math.Max(0, draw.Draws);

@@ -120,14 +120,15 @@ internal sealed partial class RandomWindow
 		return editor.ShowDialog(this) == DialogResult.OK && !readOnly ? editor.Result : null;
 	}
 
-	internal Deck? NewDeck()
+	// A new deck of my own, from start's cards when given (Save as deck)
+	internal Deck? NewDeck(Deck? start = null)
 	{
 		if (_cards.File.Decks.Count >= CardStore.MaxDecks)
 		{
 			Tell(_cardsNote, $"At most {CardStore.MaxDecks} decks.", error: true);
 			return null;
 		}
-		var made = OpenDeckEditor(new Deck { Id = CardStore.NewId() }, readOnly: false);
+		var made = OpenDeckEditor(start ?? new Deck { Id = CardStore.NewId() }, readOnly: false);
 		if (made != null)
 		{
 			_cards.File.Decks.Add(made);
