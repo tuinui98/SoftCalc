@@ -186,15 +186,20 @@ come later. Window size and place are remembered too.
   rows `1 → Gym`. Edit tab checks conditions on OK (unknown deck,
   step not later). Save as deck turns the extra cards into a deck
   of my own (opens the deck editor) and moves their conditions,
-  ticks, pile and counts to it.
+  ticks, pile and counts to it. The deck editor's Add box takes
+  "|weight" too and cuts off any ">>" condition, with a note (owner
+  2026-11-14).
 - No repeat works like a pile (owner): a drawn card stays out until
   Shuffle, also across closing the window.
 - Theme (set in Edit tab, owner 2026-11-14; new tabs start on Slot
   machine): List (lines roll in Results, slowing down), Slot machine
   (a reel per step, stopping one by one),
   Dartboard (a board per step, sectors sized by chance; owner
-  2026-11-14: the board spins 1-2 s, random, stops, then a dart lands in
-  the drawn card's sector). Effects play only for one line; the cards
+  2026-11-14: the board spins 2-4 s, random; the dart is thrown 2-3 s in,
+  maybe before the board stops, lands in the drawn card's sector and
+  turns with the board; the dart's point goes into the board).
+  No spoilers (owner 2026-11-14): Results and History fill only after
+  the reels or the dart. Effects play only for one line; the cards
   are drawn first and the effect plays towards them (System.Random for
   the show only); a click skips.
 - Results, History (newest first, with the time, at most 1000) and

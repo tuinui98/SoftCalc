@@ -217,6 +217,22 @@ internal sealed class DrawPage : TabPage
 			{
 				await RollAsync(live);
 			}
+			if (lines.Count > 0 && Setup.Theme != "list")
+			{
+				// a reel or board for each card of the last line, a condition's cards too
+				var stageSteps = lines[^1].Select(p => new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card)).ToList();
+				var stage = Setup.Theme == "slot" ? (DrawStage)_slot : _dart;
+				if (Setup.Effects && lines.Count == 1)
+				{
+					// owner 2026-11-14: no spoilers, Results and History wait for the reels or the dart
+					_results.Items.Clear();
+					await stage.PlayAsync(stageSteps);
+				}
+				else
+				{
+					stage.ShowStill(stageSteps);
+				}
+			}
 			if (IsDisposed)
 			{
 				return;
@@ -231,20 +247,6 @@ internal sealed class DrawPage : TabPage
 			{
 				_note.ForeColor = Theme.Error;
 				_note.Text = (lines.Count > 0 ? $"Drew {lines.Count}. " : "") + error;
-			}
-			if (lines.Count > 0 && Setup.Theme != "list")
-			{
-				// a reel or board for each card of the last line, a condition's cards too
-				var stageSteps = lines[^1].Select(p => new StageStep(p.Live ?? new List<PoolCard> { p.Card }, p.Weights, p.Card)).ToList();
-				var stage = Setup.Theme == "slot" ? (DrawStage)_slot : _dart;
-				if (Setup.Effects && lines.Count == 1)
-				{
-					await stage.PlayAsync(stageSteps);
-				}
-				else
-				{
-					stage.ShowStill(stageSteps);
-				}
 			}
 		}
 		finally

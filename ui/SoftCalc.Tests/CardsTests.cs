@@ -182,6 +182,7 @@ public sealed class CardsTests
 		// "Gym,stop" and "step 3" split by commas or spaces join up again
 		Assert.Equal(new[] { "a", "Gym>>ยิม,stop|2", "b" }, CardDraws.ExtraEntries("a, Gym>>ยิม|2, stop, b"));
 		Assert.Equal(new[] { "a>>step 3", "b" }, CardDraws.ExtraEntries("a>>step 3 b"));
+		Assert.Equal(new[] { "a>>b,stop", "c" }, CardDraws.ExtraEntries("a>>b,stop,c", "comma"));    // the deck editor's Add box
 		var pool = CardDraws.Pool(new DrawStep { Extra = "Run, Gym>>ยิม|2, Swim>>stop" }, _ => null);
 		Assert.Equal(new[] { 1, 2, 1 }, pool.Select(p => p.Card.Weight));
 		Assert.Equal(new[] { "", "ยิม", "stop" }, pool.Select(p => p.Then));
