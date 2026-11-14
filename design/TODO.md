@@ -438,7 +438,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       693x728, Samples with a rand line, graph y=sin(x) and y=x/360 over
       -360..360, a Spin draw tab (zodiac wheel). Existing settings keep
       theirs; an uncustomized ribbon follows the new default.
-- [ ] Crypto wallet seeds (first: list what SoftCalc could do).
+- [ ] Crypto wallet: balances and address checks (first: list what SoftCalc could do).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe
     dice/coin entropy entered by hand.
@@ -456,3 +456,8 @@ ends 1:1, the drag insert line is visible enough on dark.
     PSBT handed to another wallet). Suggested: SoftCalc makes and checks
     the mnemonic and shows addresses; spending stays in an established
     wallet that imports the same words.
+  - Owner 2026-11-15: scope narrowed to **checking balances and checking
+    that an address is valid** (no keys, no seeds, no signing in
+    SoftCalc). Monitor ideas proposed, waiting for the owner's choice.
+    The hardware-wallet discussion went to
+    D:\Projects\esp32-hardware-wallet\NOTES.md (a separate project).
