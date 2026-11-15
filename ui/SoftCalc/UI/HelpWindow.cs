@@ -305,6 +305,7 @@ internal sealed class HelpWindow : Form
 				{ Tag: string tag } when tag.StartsWith(TopicTag, StringComparison.Ordinal) => tag[TopicTag.Length..],
 				CompoundWindow => "finance",
 				RandomWindow => "random",
+				CryptoWindow => "cryptocurrency",
 				DefinitionEditor => "variables-functions",
 				CustomizeRibbonDialog => "ribbon",
 				MainForm => "getting-started",

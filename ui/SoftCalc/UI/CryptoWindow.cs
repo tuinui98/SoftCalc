@@ -1,4 +1,4 @@
-// CryptoWindow.cs - Tools > Crypto: address checks, balances, watched addresses and fee sums (design/crypto_plan.md C0-C2a)
+// CryptoWindow.cs - Tools > Cryptocurrency: address checks, balances, watched addresses and fee sums (design/crypto_plan.md C0-C2a)
 //
 // Owner 2026-11-15: SoftCalc only checks addresses and (later, C1-C2)
 // balances: no seed, no private key, no signing. The Address tab checks
@@ -43,7 +43,7 @@ internal sealed partial class CryptoWindow : Form
 		_watcher = watcher;
 		_insert = insert;
 		_prices = prices ?? (() => Task.FromResult<CoinPrices?>(null));
-		Text = "Crypto";
+		Text = "Cryptocurrency";
 		Icon = SvgIcon.ProgramIcon();
 		ShowInTaskbar = false;
 		MinimizeBox = false;

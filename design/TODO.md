@@ -480,7 +480,11 @@ ends 1:1, the drag insert line is visible enough on dark.
         Binance; money only passes through), so C2a watches single
         addresses; xpub/descriptor watching (C2b) waits for the
         hardware-wallet project, which needs an own node.
-  - [ ] Help for the crypto window and the coin units, once the owner
-        calls the topic done.
+  - [x] Help 2026-11-16: help/18-cryptocurrency.md (coin units, prices,
+        the Address / Balance / Watch / Fees tabs, own nodes, privacy),
+        three pictures; menu renamed Tools > Cryptocurrency... Owner
+        2026-11-16: the crypto topic is done; full service (C2b, own node,
+        Tron through an own node, Lightning invoices) comes with the
+        hardware-wallet project.
     The hardware-wallet discussion went to
     D:\Projects\esp32-hardware-wallet\NOTES.md (a separate project).
