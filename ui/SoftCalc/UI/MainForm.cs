@@ -38,11 +38,15 @@ internal sealed partial class MainForm : Form
 		Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, BorderStyle = BorderStyle.None,
 		BackColor = SystemColors.Info, TabStop = false,
 	};
-	private readonly Keypad _keypad = new();
+	private readonly Keypad _keypad = new() { Dock = DockStyle.Fill };
+	// Drag bar over the keypad: History above gets what the keypad gives up (owner 2026-11-16)
+	private readonly Panel _keypadBar = new() { Dock = DockStyle.Top, Height = 7, Cursor = Cursors.HSplit };
+	private int _keypadDragFrom = -1, _keypadDragHeight;
+	private bool _storeArmed;    // STO pressed: the next x or y key stores Input there
 	private readonly SplitContainer _split = new() { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };
 	private readonly TableLayoutPanel _column = new() { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4 };
 	private readonly GroupBox _samplesBox = new() { Text = "Samples", Dock = DockStyle.Fill };
-	private readonly Panel _keypadHost = new() { Dock = DockStyle.Fill, Height = 150 };
+	private readonly Panel _keypadHost = new() { Dock = DockStyle.Fill };
 	private readonly GroupBox _inputBox = new() { Text = "Input", Dock = DockStyle.Fill, Height = 52 };
 	private readonly InputRecall _recall;
 	private readonly MenuStrip _menu = new();
@@ -125,7 +129,9 @@ internal sealed partial class MainForm : Form
 		_input.MouseUp += (_, _) => UpdateHint();
 		_input.KeyPress += OnInputKeyPress;
 		_input.ContextMenuStrip = BuildInputMenu();
-		_keypad.KeyPressedLabel += async (_, label) => await OnKeypad(label);
+		_keypad.KeyPressed += async (id, where) => await OnKeypad(id, where);
+		_keypad.ModeChanged += (_, _) => _prefs.KeypadScientific = _keypad.Scientific;
+		_keypad.SetScientific(_prefs.KeypadScientific);
 		ApplySavedWindow();
 		ApplyView(Enum.TryParse<CalcView>(_prefs.View, out var view) ? view : CalcView.History);
 		Shown += async (_, _) => await StartEngineAsync();
@@ -160,7 +166,8 @@ internal sealed partial class MainForm : Form
 		_inputBox.Controls.Add(_hint);
 		_inputBox.Controls.Add(_input);    // added last: docks first, above the hint
 		_keypadHost.Controls.Add(_keypad);
-		_keypadHost.Resize += (_, _) => CenterKeypad();
+		_keypadHost.Controls.Add(_keypadBar);
+		WireKeypadBar();
 
 		_column.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 		_column.RowStyles.Add(new RowStyle(SizeType.Absolute, 110));
@@ -323,6 +330,7 @@ internal sealed partial class MainForm : Form
 		var font = new Font(family, baseSize * percent / 100f);
 		_history.Font = font;
 		_input.Font = font;
+		_keypad.Font = font;
 		_hint.Font = new Font(font, FontStyle.Italic);
 		LayoutInputRow();
 		foreach (var (step, item) in _textSizeItems)
@@ -460,11 +468,37 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
-	private void CenterKeypad()
+	// The keypad row's height: dragged by the bar on top, kept in settings (96-dpi pixels)
+	private void WireKeypadBar()
 	{
-		_keypad.Location = new Point(
-			Math.Max(0, (_keypadHost.Width - _keypad.Width) / 2),
-			Math.Max(0, (_keypadHost.Height - _keypad.Height) / 2));
+		_keypadBar.MouseDown += (_, e) =>
+		{
+			if (e.Button == MouseButtons.Left)
+			{
+				_keypadDragFrom = Cursor.Position.Y;
+				_keypadDragHeight = (int)_column.RowStyles[3].Height;
+			}
+		};
+		_keypadBar.MouseMove += (_, _) =>
+		{
+			if (_keypadDragFrom < 0)
+			{
+				return;
+			}
+			int most = Math.Max(LogicalToDeviceUnits(120), _column.Height - (int)_column.RowStyles[2].Height - LogicalToDeviceUnits(80));
+			int height = Math.Clamp(_keypadDragHeight + _keypadDragFrom - Cursor.Position.Y, LogicalToDeviceUnits(120), most);
+			_column.RowStyles[3].Height = height;    // the layout follows the mouse
+			_prefs.KeypadHeight = height * 96 / DeviceDpi;
+		};
+		_keypadBar.MouseUp += (_, _) => _keypadDragFrom = -1;
+		_keypadBar.Paint += (_, e) =>
+		{
+			int x = _keypadBar.Width / 2, y = _keypadBar.Height / 2;
+			using var grip = new Pen(SystemColors.ControlDark, 1f);
+			e.Graphics.DrawLine(grip, x - 16, y - 1, x + 16, y - 1);
+			e.Graphics.DrawLine(grip, x - 16, y + 1, x + 16, y + 1);
+		};
+		_keypadBar.Resize += (_, _) => _keypadBar.Invalidate();
 	}
 
 	private void ApplyView(CalcView view)
@@ -480,7 +514,7 @@ internal sealed partial class MainForm : Form
 		int sampleLines = Samples.Infix.Split('\n').Length;
 		_column.RowStyles[1].Height = samples ? sampleLines * _samples.Font.Height + 30 : 0;
 		_samplesBox.Visible = samples;
-		_column.RowStyles[3].Height = view == CalcView.Numeric ? 150 : 0;
+		_column.RowStyles[3].Height = view == CalcView.Numeric ? LogicalToDeviceUnits(_prefs.KeypadHeight) : 0;
 		_keypadHost.Visible = view == CalcView.Numeric;
 		_ribbon.Visible = _showRibbonItem.Checked && view != CalcView.Numeric;    // Numeric stays plain
 		_split.Panel1Collapsed = view != CalcView.Advanced;
@@ -488,7 +522,6 @@ internal sealed partial class MainForm : Form
 		{
 			item.Checked = name == view.ToString();
 		}
-		CenterKeypad();
 	}
 
 	//==================================================================
@@ -727,6 +760,7 @@ internal sealed partial class MainForm : Form
 		bool rpn = (bool?)settings["rpn"] == true;
 		_samples.Text = rpn ? Samples.Rpn : Samples.Infix;
 		_inputBox.Text = rpn ? "Input  -  RPN mode" : "Input";    // visible in every view
+		_keypad.SetModes((string?)settings["base"], (string?)settings["angle"]);
 	}
 
 	//==================================================================
@@ -1048,26 +1082,46 @@ internal sealed partial class MainForm : Form
 		return true;
 	}
 
-	private async Task OnKeypad(string label)
+	//==================================================================
+	//  Numeric keypad (owner 2026-11-16): each key edits Input as text
+	//==================================================================
+	private async Task OnKeypad(string id, Rectangle where)
 	{
 		_input.Focus();
 		bool rpn = (bool?)_session.Settings["rpn"] == true;
-		if (rpn && (label == "Ent" || (label.Length == 1 && OperatorSymbols.Contains(label[0]))))
+		if (rpn && (id == "=" || (id.Length == 1 && "+-*/".Contains(id[0]))))
 		{
-			await OnRpnKeypad(label);
+			await OnRpnKeypad(id == "=" ? "Ent" : id);
 			return;
 		}
-		switch (label)
+		if (_storeArmed)
 		{
-			case "Ent":
+			_storeArmed = false;
+			_keypad.SetArmed(false);
+			if (id is "x" or "y")
+			{
+				SetInput(KeypadRules.Store(_input.Text, id));
+				await SubmitAsync();
+				return;
+			}
+		}
+		switch (id)
+		{
+			case "=":
 				await SubmitAsync();
 				break;
-			case "Clr":
+			case "AC":
 				_input.Clear();
+				break;
+			case "C":
+				SetInput(KeypadRules.ClearEntry(_input.Text));
+				break;
+			case "%":
+				SetInput(rpn ? _input.Text + "%" : KeypadRules.Percent(_input.Text));
 				break;
 			case "M+":
 			case "M-":
-				await MemoryAddAsync(label == "M-");
+				await MemoryAddAsync(id == "M-");
 				break;
 			case "MC":
 				await EvaluateDefinitionAsync(InputRules.MemoryClear);
@@ -1075,14 +1129,80 @@ internal sealed partial class MainForm : Form
 			case "MR":
 				_input.SelectedText = InputRules.MemoryRecall;
 				break;
-			default:
-				if (label.Length == 1 && OperatorSymbols.Contains(label[0]) && TypeOperator(label[0]))
+			case "sto":
+				_storeArmed = true;    // then x or y
+				_keypad.SetArmed(true);
+				break;
+			case "entry":
+				if (_recall.Up(_input.Text) is string previous)
 				{
+					SetInput(previous);
+				}
+				break;
+			case "base":
+				await NextBaseAsync();
+				break;
+			case "angle":
+				await ChangeSettingAsync("angle", (string?)_session.Settings["angle"] == "deg" ? "rad" : "deg");
+				break;
+			case "func":
+				ShowMenuAt(_functionsMenu, where);
+				break;
+			case "units":
+				ShowMenuAt(_conversionsMenu, where);
+				break;
+			default:
+				if (id.StartsWith("fn:", StringComparison.Ordinal))
+				{
+					await InsertFunctionOrOperatorAsync(id[3..]);
 					break;
 				}
-				_input.SelectedText = label;
+				string text = id.StartsWith("ins:", StringComparison.Ordinal) ? id[4..] : id;
+				if (text.Length > 0 && OperatorSymbols.Contains(text[0]) && TypeOperator(text[0]))
+				{
+					_input.SelectedText = text[1..];    // after the answer the rule put in
+					break;
+				}
+				_input.SelectedText = text;
 				break;
 		}
+	}
+
+	private void SetInput(string text)
+	{
+		_input.Text = text;
+		_input.SelectionStart = _input.TextLength;
+	}
+
+	// dec -> hex -> oct -> bin -> dec; a line in Input is then worked out in the new base
+	private async Task NextBaseAsync()
+	{
+		string next = (string?)_session.Settings["base"] switch
+		{
+			"dec" => "hex",
+			"hex" => "oct",
+			"oct" => "bin",
+			_ => "dec",
+		};
+		await ChangeSettingAsync("base", next);
+		if (_input.Text.Trim().Length > 0)
+		{
+			await SubmitAsync();
+		}
+	}
+
+	// func / units: the Functions or Conversions menu, opened under the key
+	private void ShowMenuAt(ToolStripMenuItem menu, Rectangle where)
+	{
+		var popup = new ContextMenuStrip();
+		var items = menu.DropDownItems.Cast<ToolStripItem>().ToList();
+		popup.Items.AddRange(items.ToArray());    // moved for now: an item has one owner
+		popup.Closed += (_, _) => BeginInvoke(() =>
+		{
+			menu.DropDownItems.AddRange(popup.Items.Cast<ToolStripItem>().ToArray());
+			popup.Dispose();
+		});
+		popup.Show(new Point(where.Left, where.Bottom));
 	}
 
 	// RPN keypad: Ent separates numbers, an operator is appended and evaluates the line
