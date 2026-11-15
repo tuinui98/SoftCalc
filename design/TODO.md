@@ -367,6 +367,11 @@ ends 1:1, the drag insert line is visible enough on dark.
     n!, pi, e, memory, parentheses, Deg/Rad), how they insert into Input
     (text like the menus do, so History stays expression based),
     resizable keypad, font scaling with Text Size.
+  - Owner 2026-11-16: redesign the keypad with two modes. Basic: bigger
+    keys filling the space, a key to show Scientific mode, AC, C and %.
+    Scientific: with a 2nd key, modelled on the TI-89 the owner uses
+    (owner works in History view otherwise). Design proposed, waiting
+    for the owner's choice.
 - [x] Random tools (a section or window): built 2026-11-12/13, help
       updated; released in 1.4.0 (2026-11-15).
   - Owner 2026-11-12: a window of its own with tabs: Simple random,
@@ -438,7 +443,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       693x728, Samples with a rand line, graph y=sin(x) and y=x/360 over
       -360..360, a Spin draw tab (zodiac wheel). Existing settings keep
       theirs; an uncustomized ribbon follows the new default.
-- [ ] Crypto wallet: balances and address checks (first: list what SoftCalc could do).
+- [x] Crypto: balances and address checks; topic done 2026-11-16 (owner).
   - Possible: BIP39 mnemonic words (12/24) from a secure random source
     with the checksum word; check a typed mnemonic's checksum; maybe
     dice/coin entropy entered by hand.
@@ -475,7 +480,8 @@ ends 1:1, the drag insert line is visible enough on dark.
         Services dialog resizable.
   - [x] C2a built 2026-11-16: Watch tab, tray notifications, poisoning
         and dust warnings (design/crypto_plan.md). Not released.
-  - [ ] C2b watch xpubs / descriptors through an own node. Owner 2026-11-16:
+  - Later, with the hardware-wallet project (not a TODO here): C2b watch
+        xpubs / descriptors through an own node. Owner 2026-11-16:
         today's addresses are exchange deposit addresses (Bitkub,
         Binance; money only passes through), so C2a watches single
         addresses; xpub/descriptor watching (C2b) waits for the
