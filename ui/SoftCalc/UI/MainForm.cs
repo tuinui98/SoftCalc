@@ -485,8 +485,9 @@ internal sealed partial class MainForm : Form
 			{
 				return;
 			}
-			int most = Math.Max(LogicalToDeviceUnits(120), _column.Height - (int)_column.RowStyles[2].Height - LogicalToDeviceUnits(80));
-			int height = Math.Clamp(_keypadDragHeight + _keypadDragFrom - Cursor.Position.Y, LogicalToDeviceUnits(120), most);
+			int least = LogicalToDeviceUnits(AppSettings.KeypadLeast);    // keys no flatter than the owner's dev window (2026-11-16)
+			int most = Math.Max(least, _column.Height - (int)_column.RowStyles[2].Height - LogicalToDeviceUnits(80));
+			int height = Math.Clamp(_keypadDragHeight + _keypadDragFrom - Cursor.Position.Y, least, most);
 			_column.RowStyles[3].Height = height;    // the layout follows the mouse
 			_prefs.KeypadHeight = height * 96 / DeviceDpi;
 		};
@@ -1174,7 +1175,7 @@ internal sealed partial class MainForm : Form
 		_input.SelectionStart = _input.TextLength;
 	}
 
-	// dec -> hex -> oct -> bin -> dec; a line in Input is then worked out in the new base
+	// dec -> hex -> oct -> bin -> dec; a line in Input is then worked out in the new base and kept
 	private async Task NextBaseAsync()
 	{
 		string next = (string?)_session.Settings["base"] switch
@@ -1185,9 +1186,11 @@ internal sealed partial class MainForm : Form
 			_ => "dec",
 		};
 		await ChangeSettingAsync("base", next);
-		if (_input.Text.Trim().Length > 0)
+		string line = _input.Text;
+		if (line.Trim().Length > 0)
 		{
 			await SubmitAsync();
+			SetInput(line);    // the line stays for the next base (owner 2026-11-16)
 		}
 	}
 

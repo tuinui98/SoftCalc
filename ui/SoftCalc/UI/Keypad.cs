@@ -183,7 +183,7 @@ internal sealed class Keypad : Control
 				using var edge = new Pen(SystemColors.ControlDark, 1f);
 				g.DrawPath(edge, path);
 			}
-			Color ink = lit || key.Id == "=" ? SystemColors.HighlightText : SystemColors.ControlText;
+			Color ink = lit || key.Id == "=" ? SystemColors.HighlightText : key.Id == "2nd" ? SecondInk : SystemColors.ControlText;
 			var labelBox = Rectangle.Round(box);
 			if (key.SecondLabel != null)
 			{
@@ -222,8 +222,9 @@ internal sealed class Keypad : Control
 
 	private static Color Accent => SystemColors.Highlight;
 	private static Color LinkColour => Theme.IsDark ? Color.FromArgb(120, 180, 255) : Color.FromArgb(0, 90, 190);
-	private static Color SecondInk => Theme.IsDark ? Color.FromArgb(255, 170, 60) : Color.FromArgb(205, 95, 0);
-	private static Color SecondFaint => Theme.IsDark ? Color.FromArgb(200, 140, 70) : Color.FromArgb(200, 120, 50);
+	// 2nd in yellow (owner 2026-11-16); a darker yellow on light keys to stay readable
+	private static Color SecondInk => Theme.IsDark ? Color.FromArgb(255, 214, 0) : Color.FromArgb(176, 136, 0);
+	private static Color SecondFaint => Theme.IsDark ? Color.FromArgb(222, 190, 40) : Color.FromArgb(160, 128, 20);
 
 	private static GraphicsPath Rounded(RectangleF box, float radius)
 	{
