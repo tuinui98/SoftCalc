@@ -361,7 +361,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       them for every release.
 
 ## 11. Owner ideas 2026-11-11 (noted only; plan and discuss first)
-- [ ] Numeric Calc view: better size and layout, and scientific
+- [x] Numeric Calc view: better size and layout, and scientific
       calculator buttons.
   - To discuss: which buttons (sin/cos/tan, inverse, log/ln, x^y, root,
     n!, pi, e, memory, parentheses, Deg/Rad), how they insert into Input
@@ -380,7 +380,9 @@ ends 1:1, the drag insert line is visible enough on dark.
     line in Input is then worked out in the new base), func and units
     open the Functions and Conversions menus. Owner 2026-11-16: % key back
     to appending % (the A*(1+B%) rewrite was tried and dropped); keypad
-    no lower than 260 px; the base key keeps Input; 2nd in yellow. The engine has no nCr, cbrt or log (it has
+    no lower than 260 px; the base key keeps Input; 2nd in yellow.
+    Help 2026-11-16: Views topic (Basic and Scientific keys, two
+    pictures), RPN topic (= key). The engine has no nCr, cbrt or log (it has
     log10): rand, ^(1/3) and log10 are used.
 - [x] Random tools (a section or window): built 2026-11-12/13, help
       updated; released in 1.4.0 (2026-11-15).

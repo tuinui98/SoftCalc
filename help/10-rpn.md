@@ -23,6 +23,6 @@ reads `Input - RPN mode`.
 
 ## Keypad in Numeric Calc
 
-The keypad's **Ent** key separates items: `1`, Ent, `2`, `+` gives
-`1 2 +` and calculates at once. Ent after an operator, or on an empty
+The keypad's **=** key separates items: `1`, =, `2`, `+` gives
+`1 2 +` and calculates at once. = after an operator, or on an empty
 Input, calculates.

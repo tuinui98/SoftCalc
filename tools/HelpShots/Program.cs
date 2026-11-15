@@ -303,6 +303,22 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		plot.MakeSquare();    // 1:1 pressed, circles round
 		plot.Focus();    // no selected text in the Range panel
 		await OpenedShotAsync("graph", graph, 2500);
+
+		//==================================================================
+		//  BLOCK 5 - Numeric Calc keypads (owner 2026-11-16): Basic, Scientific
+		//==================================================================
+		Program.Call(form, "ApplyView", CalcView.Numeric);
+		var keypad = Program.Field<Keypad>(form, "_keypad");
+		var host = Program.Field<Control>(form, "_keypadHost");
+		await TypeAsync("2*sin(30");
+		keypad.SetScientific(false);
+		await Task.Delay(400);
+		Save("keypad-basic", Crop(form, host.RectangleToScreen(host.ClientRectangle)));
+		keypad.SetScientific(true);
+		await Task.Delay(400);
+		Save("keypad-scientific", Crop(form, host.RectangleToScreen(host.ClientRectangle)));
+		keypad.SetScientific(false);
+		Program.Call(form, "ApplyView", CalcView.Advanced);
 	}   // end RunAsync
 
 	// A check of the Help window itself (not a help picture): two topics, a search, an example click
