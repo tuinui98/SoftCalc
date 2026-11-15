@@ -468,7 +468,16 @@ ends 1:1, the drag insert line is visible enough on dark.
         USDT-ERC20, TRX + USDT-TRC20), CoinGecko prices also in lines
         (`[btc->thb]`), default Ethereum RPC ethereum-rpc.publicnode.com.
         Not released.
-  - [ ] C2 Watch with Windows toast notifications.
+  - [x] C1 tested by the owner 2026-11-16 (BTC, ETH, Tron, x/y/zpub and
+        Taproot xpub through blockstream.info). Fixed: public services
+        asked 1 s apart with waits when busy (mempool.space blocked the
+        IP after ~20 quick calls), one-case ETH warned in Balance too,
+        Services dialog resizable.
+  - [ ] C2 Watch with Windows toast notifications. Owner 2026-11-16:
+        today's addresses are exchange deposit addresses (Bitkub,
+        Binance; money only passes through), so C2a watches single
+        addresses; xpub/descriptor watching (C2b) waits for the
+        hardware-wallet project, which needs an own node.
   - [ ] Help for the crypto window and the coin units, once the owner
         calls the topic done.
     The hardware-wallet discussion went to
