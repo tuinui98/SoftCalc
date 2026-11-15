@@ -24,7 +24,9 @@ internal sealed record CryptoEndpoints(string Esplora, string EthereumRpc, strin
 
 internal sealed record AssetBalance(string Asset, string Coin, decimal Amount, decimal Pending);
 
-internal sealed record CryptoPayment(DateTime? TimeUtc, string Asset, decimal Amount, string Status, string Id);
+// Counterparty: who paid (incoming) or was paid (outgoing), when known; Confirmations: 0 pending, null unknown
+internal sealed record CryptoPayment(DateTime? TimeUtc, string Asset, decimal Amount, string Status, string Id, string? Counterparty = null,
+	int? Confirmations = null);
 
 internal sealed record BalanceReport(string Network, IReadOnlyList<AssetBalance> Assets, IReadOnlyList<CryptoPayment> Payments,
 	IReadOnlyList<string> Notes);
@@ -179,19 +181,26 @@ internal static class CryptoBalance
 					continue;
 				}
 				long change = 0;
+				string? payee = null, payer = null;
 				foreach (var output in tx!["vout"]?.AsArray() ?? new JsonArray())
 				{
-					change += mine.Contains((string?)output?["scriptpubkey_address"] ?? "") ? Long(output?["value"]) : 0;
+					string to = (string?)output?["scriptpubkey_address"] ?? "";
+					change += mine.Contains(to) ? Long(output?["value"]) : 0;
+					payee ??= to.Length > 0 && !mine.Contains(to) ? to : null;
 				}
 				foreach (var input in tx["vin"]?.AsArray() ?? new JsonArray())
 				{
-					change -= mine.Contains((string?)input?["prevout"]?["scriptpubkey_address"] ?? "") ? Long(input?["prevout"]?["value"]) : 0;
+					string from = (string?)input?["prevout"]?["scriptpubkey_address"] ?? "";
+					change -= mine.Contains(from) ? Long(input?["prevout"]?["value"]) : 0;
+					payer ??= from.Length > 0 && !mine.Contains(from) ? from : null;
 				}
 				var status = tx["status"];
 				bool done = (bool?)status?["confirmed"] ?? false;
 				long height = Long(status?["block_height"]);
+				int confirmations = done ? (int)Math.Clamp(tip - height + 1, 1, 1_000_000) : 0;
 				DateTime? time = done ? DateTimeOffset.FromUnixTimeSeconds(Long(status?["block_time"])).UtcDateTime : null;
-				seen[id] = new CryptoPayment(time, "BTC", Sats(change), done ? Confirmations(tip - height + 1) : "pending", id);
+				seen[id] = new CryptoPayment(time, "BTC", Sats(change), done ? Confirmations(confirmations) : "pending", id,
+					change >= 0 ? payer : payee, confirmations);
 			}
 		}
 		return seen.Values.OrderByDescending(p => p.TimeUtc ?? DateTime.MaxValue).ToList();
@@ -338,13 +347,13 @@ internal static class CryptoBalance
 		}
 		var payments = new List<CryptoPayment>();
 		string hex = Convert.ToHexString(Encoders.Base58Check.DecodeData(address)).ToLowerInvariant();
-		foreach (var tx in Items(Object(await fetch($"{api}/v1/accounts/{address}/transactions/trc20?limit=20&contract_address={UsdtTrc20}",
+		foreach (var tx in Items(Object(await fetch($"{api}/v1/accounts/{address}/transactions/trc20?only_confirmed=true&limit=20&contract_address={UsdtTrc20}",
 			null, cancel))["data"]?.ToJsonString() ?? "[]"))
 		{
 			decimal amount = Units(BigInteger.Parse((string?)tx?["value"] ?? "0", CultureInfo.InvariantCulture), 6);
 			bool incoming = (string?)tx?["to"] == address;
 			payments.Add(new CryptoPayment(Millis(tx?["block_timestamp"]), "USDT", incoming ? amount : -amount, "confirmed",
-				(string?)tx?["transaction_id"] ?? ""));
+				(string?)tx?["transaction_id"] ?? "", (string?)tx?[incoming ? "from" : "to"], TronConfirmed));
 		}
 		foreach (var tx in Items(Object(await fetch($"{api}/v1/accounts/{address}/transactions?only_confirmed=true&limit=20", null, cancel))
 			["data"]?.ToJsonString() ?? "[]"))
@@ -358,11 +367,31 @@ internal static class CryptoBalance
 			decimal amount = Long(value?["amount"]) / 1_000_000m;
 			bool incoming = string.Equals((string?)value?["to_address"], hex, StringComparison.OrdinalIgnoreCase);
 			payments.Add(new CryptoPayment(Millis(tx?["block_timestamp"]), "TRX", incoming ? amount : -amount, "confirmed",
-				(string?)tx?["txID"] ?? ""));
+				(string?)tx?["txID"] ?? "", TronBase58((string?)value?[incoming ? "owner_address" : "to_address"]), TronConfirmed));
 		}
 		var notes = account == null ? new[] { "This address has never received anything (not activated on Tron)." } : Array.Empty<string>();
 		return new BalanceReport("Tron", new[] { new AssetBalance("TRX", "trx", trx, 0), new AssetBalance("USDT (TRC-20)", "usdt", usdt, 0) },
 			payments.OrderByDescending(p => p.TimeUtc).ToList(), notes);
+	}
+
+	// TronGrid lists confirmed transfers only; a block is final after 19 more (solidified)
+	private const int TronConfirmed = 19;
+
+	// 41... hex (as TronGrid writes the TRX parties) to the T... form
+	private static string? TronBase58(string? hex)
+	{
+		if (hex == null || hex.Length != 42)
+		{
+			return null;
+		}
+		try
+		{
+			return Encoders.Base58Check.EncodeData(Convert.FromHexString(hex));
+		}
+		catch (FormatException)
+		{
+			return null;
+		}
 	}
 
 	private static DateTime? Millis(JsonNode? node)

@@ -153,3 +153,37 @@ decimals; Tron TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t is named TetherToken.
   the three URLs (own node), saved in settings. Testnet addresses need a
   testnet Esplora URL. Huge spam-token amounts saturate instead of
   overflowing.
+
+## C2a as built (2026-11-16)
+
+Owner 2026-11-16: today's addresses are exchange deposit addresses
+(Bitkub, Binance; money only passes through), so C2 is split: C2a
+watches single addresses now; C2b (xpub / descriptor watching, through
+an own node) waits for the hardware-wallet project. Owner took every
+proposal: every 10 minutes (2-60), every minute while an incoming
+payment waits; watching while SoftCalc runs, or in the tray after the
+window closes (option); BTC 2 and Tron 1 confirmations; dust below
+1 USD; Windows' own sound.
+
+- `Logic/CryptoWatch.cs`: compares a look with the last one. The first
+  look only learns. Events: incoming (pending or with its
+  confirmations), confirmed (reached the number asked for, told once),
+  outgoing, an Ethereum balance move (no history), and suspicious:
+  a 0 transfer, an incoming payment under the dust value, or a party
+  whose first and last 4 characters copy a watched address or an
+  earlier party (address poisoning; outgoing to such a twin too).
+- `Persistence/CryptoWatchStore.cs`: crypto.json (at most 50 addresses,
+  200 events); xpubs and invalid addresses are dropped on load.
+- `UI/CryptoWatcher.cs`, owned by the main window: timer, one address at
+  a time a second apart (plus the 1 s gap per service), tray icon while
+  addresses are watched, a balloon (toast) per round of changes,
+  warning icon for suspicious ones; tray menu Open, Crypto watch, Check
+  now, Exit. File > Exit and the tray's Exit really close.
+- Watch tab: Add / Rename / Remove / Check now, the settings, and the
+  event list (double-click copies the transaction id). Balance tab has
+  Watch... to add the address in its box.
+- Payments now carry the counterparty and the confirmations; TronGrid's
+  TRC-20 list asks for confirmed transfers only.
+- Checked live 2026-11-16 with the genesis address (blockstream.info),
+  the EIP-55 sample and a Tron sample: a forgotten transaction came back
+  as a dust warning (546 sat) and an outgoing USDT transfer.

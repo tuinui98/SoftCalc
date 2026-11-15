@@ -473,7 +473,9 @@ ends 1:1, the drag insert line is visible enough on dark.
         asked 1 s apart with waits when busy (mempool.space blocked the
         IP after ~20 quick calls), one-case ETH warned in Balance too,
         Services dialog resizable.
-  - [ ] C2 Watch with Windows toast notifications. Owner 2026-11-16:
+  - [x] C2a built 2026-11-16: Watch tab, tray notifications, poisoning
+        and dust warnings (design/crypto_plan.md). Not released.
+  - [ ] C2b watch xpubs / descriptors through an own node. Owner 2026-11-16:
         today's addresses are exchange deposit addresses (Bitkub,
         Binance; money only passes through), so C2a watches single
         addresses; xpub/descriptor watching (C2b) waits for the
