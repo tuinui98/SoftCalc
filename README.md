@@ -39,8 +39,9 @@ fv(0.05/12, 120, -100)    15528.227944566792820456167703351
   `x^2+y^2=r^2`; zoom, pan, 1:1 scale, trace at full precision, line
   colours, polar mode, and a gallery of classic curves with their
   constants explained.
-- Views: Numeric Calc, History View, Advanced View (with Graph and
-  Variables panels); light and dark theme; text size.
+- Views: Numeric Calc (a Basic keypad with big keys, or Scientific
+  keys with 2nd, base and angle keys), History View, Advanced View
+  (with Graph and Variables panels); light and dark theme; text size.
 - Random: `rand()` and seeds in any line, numbers in a shape
   (`randbeta`, `randtri`, ...), and a Random window with lists, coins,
   dice, shaped draws, passwords, an entropy lab (system, TPM, timing,
@@ -48,6 +49,11 @@ fv(0.05/12, 120, -100)    15528.227944566792820456167703351
   draws from card decks of your own or ready-made ones (playing cards,
   months, provinces of Thailand, countries...): weights, conditions
   between steps, and a slot machine, dartboard or spin wheel to watch.
+- Cryptocurrency (look only: no seed words, no keys, no sending): coin
+  units and prices in lines (`0.01 [btc->thb]`, `[gwei->eth]`), address
+  checks for Bitcoin, Ethereum and Tron, balances (also of an
+  xpub/zpub wallet) on request, and a watch list that tells you of
+  payments in and out and warns of address poisoning.
 - Customize Ribbon: put any menu command on the ribbon, with your own
   SVG icons, spaces and separators.
 - Help inside the program (File > Help, or F1 in any window).
