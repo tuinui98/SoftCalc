@@ -188,25 +188,30 @@ internal sealed partial class CryptoWindow
 		using var dialog = new Form
 		{
 			Text = "Services", Icon = SvgIcon.ProgramIcon(), ShowInTaskbar = false, MinimizeBox = false, MaximizeBox = false,
-			StartPosition = FormStartPosition.CenterParent, AutoScaleMode = AutoScaleMode.Dpi, AutoSize = true,
-			AutoSizeMode = AutoSizeMode.GrowAndShrink, Padding = new Padding(10), FormBorderStyle = FormBorderStyle.FixedDialog,
+			StartPosition = FormStartPosition.CenterParent, AutoScaleMode = AutoScaleMode.Dpi, Padding = new Padding(10),
+			FormBorderStyle = FormBorderStyle.Sizable, SizeGripStyle = SizeGripStyle.Show,
 		};
-		var table = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Dock = DockStyle.Top };
+		// One table fills the dialog: the address boxes stretch with its width, the note wraps to it
+		var table = new TableLayoutPanel { ColumnCount = 2, RowCount = 5, Dock = DockStyle.Fill };
+		table.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+		table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
 		var boxes = new[] { new TextBox { Width = 360, Text = _prefs.Esplora }, new TextBox { Width = 360, Text = _prefs.EthereumRpc },
 			new TextBox { Width = 360, Text = _prefs.TronGrid } };
 		string[] labels = { "Bitcoin (Esplora API)", "Ethereum (JSON-RPC)", "Tron (TronGrid API)" };
 		for (int i = 0; i < 3; i++)
 		{
-			table.Controls.Add(new Label { Text = labels[i], AutoSize = true, Margin = new Padding(3, 7, 8, 3) }, 0, i);
+			table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+			table.Controls.Add(new Label { Text = labels[i], AutoSize = true, Anchor = AnchorStyles.Left, Margin = new Padding(3, 3, 8, 3) }, 0, i);
+			boxes[i].Anchor = AnchorStyles.Left | AnchorStyles.Right;
 			table.Controls.Add(boxes[i], 1, i);
 		}
 		var note = new Label
 		{
-			AutoSize = true, MaximumSize = new Size(520, 0), ForeColor = SystemColors.GrayText, Dock = DockStyle.Top, Padding = new Padding(0, 6, 0, 6),
+			AutoSize = true, ForeColor = SystemColors.GrayText, Anchor = AnchorStyles.Left | AnchorStyles.Right, Padding = new Padding(0, 6, 0, 6),
 			Text = "A public service sees every address you check. With your own node (e.g. Umbrel with the mempool app: "
 				+ "http://umbrel.local:3006/api) nobody else does.",
 		};
-		var buttons = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, FlowDirection = FlowDirection.RightToLeft };
+		var buttons = new FlowLayoutPanel { AutoSize = true, Anchor = AnchorStyles.Right, FlowDirection = FlowDirection.RightToLeft, WrapContents = false };
 		var ok = new Button { Text = "OK", DialogResult = DialogResult.OK, AutoSize = true, MinimumSize = new Size(80, 0) };
 		var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, AutoSize = true, MinimumSize = new Size(80, 0) };
 		var reset = new Button { Text = "&Defaults", AutoSize = true };
@@ -217,9 +222,26 @@ internal sealed partial class CryptoWindow
 			boxes[2].Text = CryptoEndpoints.Default.TronGrid;
 		};
 		buttons.Controls.AddRange(new Control[] { cancel, ok, reset });
-		dialog.Controls.Add(buttons);
-		dialog.Controls.Add(note);
+		table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		table.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+		table.Controls.Add(note, 0, 3);
+		table.SetColumnSpan(note, 2);
+		table.Controls.Add(buttons, 0, 4);
+		table.SetColumnSpan(buttons, 2);
 		dialog.Controls.Add(table);
+		// Start at the size the rows want (after DPI scaling), the note wrapped to the boxes' width;
+		// the dialog then grows sideways only
+		dialog.Load += (_, _) =>
+		{
+			int labelWidth = table.Controls.OfType<Label>().Where(l => l != note).Max(l => l.PreferredSize.Width + l.Margin.Horizontal);
+			int rowWidth = labelWidth + dialog.LogicalToDeviceUnits(360) + boxes[0].Margin.Horizontal;
+			note.MaximumSize = new Size(rowWidth, 0);
+			var want = table.GetPreferredSize(Size.Empty);
+			note.MaximumSize = Size.Empty;
+			dialog.ClientSize = new Size(want.Width + dialog.Padding.Horizontal, want.Height + dialog.Padding.Vertical);
+			dialog.MinimumSize = dialog.Size;
+			dialog.MaximumSize = new Size(int.MaxValue, dialog.Height);
+		};
 		dialog.AcceptButton = ok;
 		dialog.CancelButton = cancel;
 		if (dialog.ShowDialog(this) != DialogResult.OK)
