@@ -144,6 +144,8 @@ internal sealed class AppSettings
 	public bool PadZeros { get; set; }
 	public int WordSize { get; set; } = 32;    // bits for twos(x) / signed(x) (owner 2026-11-07)
 	public string View { get; set; } = "History";
+	public int KeypadHeight { get; set; } = 260;    // Numeric keypad height in pixels at 96 dpi, dragged by its top edge
+	public bool KeypadScientific { get; set; }    // Numeric keypad in Scientific mode (owner 2026-11-16)
 	public bool ShowSamples { get; set; } = true;
 	public int HistoryCap { get; set; } = 1000;
 	public WindowPlacement Window { get; set; } = new();
@@ -322,6 +324,7 @@ internal static class SettingsStore
 		s.Graph ??= new GraphPrefs();
 		s.Compound ??= new CompoundPrefs();
 		s.Random ??= new RandomPrefs();
+		s.KeypadHeight = Math.Clamp(s.KeypadHeight, 120, 1000);
 		s.Crypto ??= new CryptoPrefs();
 		if (s.Crypto.Tab is not ("address" or "balance" or "watch" or "fees"))
 		{
