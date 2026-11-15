@@ -1117,9 +1117,6 @@ internal sealed partial class MainForm : Form
 			case "C":
 				SetInput(KeypadRules.ClearEntry(_input.Text));
 				break;
-			case "%":
-				SetInput(rpn ? _input.Text + "%" : KeypadRules.Percent(_input.Text));
-				break;
 			case "M+":
 			case "M-":
 				await MemoryAddAsync(id == "M-");
