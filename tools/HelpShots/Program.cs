@@ -275,6 +275,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			random.Close();
 		}
 		await CardShotsAsync();
+		await CryptoShotsAsync();
 		using (var gallery = new GraphGallery(session))
 		{
 			gallery.StartPosition = FormStartPosition.Manual;
@@ -472,6 +473,73 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			Save(name, Program.Capture(random.Handle).Picture);
 		}
 		random.Close();
+	}
+
+	// Tools > Cryptocurrency (crypto_plan C0-C2a): made-up balances and events, nothing asked of any service.
+	// The addresses are public examples: EIP-55's sample, BIP84's test wallet, a Tron sample.
+	private async Task CryptoShotsAsync()
+	{
+		const string btc = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu";
+		const string eth = "0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed";
+		const string tron = "TJDENsfBJs4RFETt1X1W8wMDc8M5XnJhCe";
+		var day = new DateTime(2026, 11, 16, 2, 0, 0, DateTimeKind.Utc);
+		var prices = new CoinPrices
+		{
+			FetchedUtc = day.AddHours(3),
+			PerCoin = new()
+			{
+				["btc"] = new() { ["thb"] = 2_200_000m, ["usd"] = 65_000m },
+				["eth"] = new() { ["thb"] = 61_500m, ["usd"] = 1_815m },
+				["usdt"] = new() { ["thb"] = 33.9m, ["usd"] = 1m },
+				["trx"] = new() { ["thb"] = 10.2m, ["usd"] = 0.3m },
+			},
+		};
+		var prefs = new CryptoPrefs();
+		using var watcher = new CryptoWatcher(null, prefs, () => Task.FromResult<CoinPrices?>(prices));
+		var entries = (List<WatchEntry>)watcher.Entries;
+		entries.Add(new WatchEntry { Label = "Exchange deposit (BTC)", Address = btc, Balances = { ["BTC"] = 0.0215m }, CheckedUtc = day,
+			ChangedUtc = day.AddHours(2.5), Status = "OK" });
+		entries.Add(new WatchEntry { Label = "USDT on Tron", Address = tron, Balances = { ["TRX"] = 62.3m, ["USDT (TRC-20)"] = 233.51m },
+			CheckedUtc = day, ChangedUtc = day.AddHours(1), Status = "OK" });
+		entries.Add(new WatchEntry { Label = "Ethereum", Address = eth, Balances = { ["ETH"] = 0.3757m, ["USDT (ERC-20)"] = 0m }, CheckedUtc = day,
+			Status = "OK" });
+		var events = (List<WatchEvent>)watcher.Events;
+		events.AddRange(new[]
+		{
+			new WatchEvent(day.AddHours(2.6), "Exchange deposit (BTC)", WatchKind.Confirmed, "+0.0015 BTC confirmed (2 confirmations).", "aa"),
+			new WatchEvent(day.AddHours(2.5), "Exchange deposit (BTC)", WatchKind.Incoming, "+0.0015 BTC arrived (pending).", "aa"),
+			new WatchEvent(day.AddHours(1.2), "USDT on Tron", WatchKind.Suspicious, "A 0 USDT transfer with TJDEN5x9…XnJhCe: likely address "
+				+ "poisoning. Never copy an address from the history.", "bb"),
+			new WatchEvent(day.AddHours(1), "USDT on Tron", WatchKind.Incoming, "+120 USDT arrived (confirmed).", "cc"),
+		});
+		using var crypto = new CryptoWindow(prefs, watcher, _ => { }, () => Task.FromResult<CoinPrices?>(prices));
+		crypto.StartPosition = FormStartPosition.Manual;
+		crypto.Location = new Point(form.Right + 20, form.Top);
+		crypto.Show(form);
+		var tabs = Program.Field<TabControl>(crypto, "_tabs");
+		tabs.SelectedIndex = 0;
+		Program.Field<TextBox>(crypto, "_address").Text = eth.ToLowerInvariant();    // valid, with the one-case warning
+		crypto.ActiveControl = null;
+		await Task.Delay(300);
+		Save("crypto-address", Program.Capture(crypto.Handle).Picture);
+		tabs.SelectedIndex = 1;
+		Program.Field<TextBox>(crypto, "_balanceInput").Text = btc;
+		var report = new BalanceReport("Bitcoin", new[] { new AssetBalance("BTC", "btc", 0.0215m, 0.0015m) }, new[]
+		{
+			new CryptoPayment(null, "BTC", 0.0015m, "pending", "4f1c2a9be07d55e3a1b8c6d0f2e4a6b8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0"),
+			new CryptoPayment(day.AddDays(-3), "BTC", -0.004m, "confirmed (6+)", "9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b"),
+			new CryptoPayment(day.AddDays(-9), "BTC", 0.0255m, "confirmed (6+)", "1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c"),
+		}, Array.Empty<string>());
+		Program.Call(crypto, "ShowReport", report, prices);
+		crypto.ActiveControl = null;
+		await Task.Delay(300);
+		Save("crypto-balance", Program.Capture(crypto.Handle).Picture);
+		tabs.SelectedIndex = 2;
+		Program.Call(crypto, "ShowWatch");
+		crypto.ActiveControl = null;
+		await Task.Delay(300);
+		Save("crypto-watch", Program.Capture(crypto.Handle).Picture);
+		crypto.Close();
 	}
 
 	private async Task ModalShotAsync(string name, string caption, int settle)

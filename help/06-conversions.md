@@ -42,6 +42,7 @@ A conversion you use often can get its own ribbon button
 | Temperature | `c f k` |
 | Time zone | `utc local` (section *Dates and time*) |
 | Currency | ISO codes such as `usd thb eur` (section *Currency*) |
+| Coins | `btc sat`, `eth gwei wei`, `trx sun` (section *Cryptocurrency*) |
 
 - Inside a tag, long names work for time (`[hours->minutes]`) and
   some area units (`sqft`, `m^2`, `hectare`, `acres`, `sqwa`).

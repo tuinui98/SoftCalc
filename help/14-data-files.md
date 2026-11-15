@@ -16,6 +16,8 @@ File > About SoftCalc... shows the folder in use, with **Open Folder**.
 | `history.jsonl` | History, the newest 1000 entries |
 | `definitions.pcf` | your variables and functions |
 | `rates.xml` | the last currency rates |
+| `prices.json` | the last coin prices |
+| `crypto.json` | addresses watched in the Cryptocurrency window, and what happened |
 | `engine\` | the calculation engine, unpacked on first start |
 
 ## What is kept

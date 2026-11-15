@@ -21,7 +21,9 @@ its result line, for example `ECB 2026-11-05`.
 - Before its first fetch SoftCalc has the rates of the day it was built;
   a currency line then fetches, and shows the built-in rates with
   `, offline` when that fails.
-- This is the only time SoftCalc uses the internet.
+- Apart from coin prices and the Cryptocurrency window's Balance and
+  Watch tabs (section *Cryptocurrency*), this is the only time SoftCalc
+  uses the internet.
 - A code the ECB does not publish gives `No ECB rate for ...`.
 
 ## With the menu

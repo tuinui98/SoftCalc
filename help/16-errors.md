@@ -26,6 +26,8 @@ $9                    => ERROR:No result $9
 | `Cannot convert in to kg` | the units are from different groups |
 | `Unknown unit 'qq'` | a unit name SoftCalc does not know (see *Unit conversions*) |
 | `No ECB rate for BGN` | the ECB does not publish that currency |
+| `Coin prices unavailable` | no coin prices yet and CoinGecko could not be reached (see *Cryptocurrency*) |
+| `No CoinGecko price of TRX in ISK` | CoinGecko gave no price for that pair |
 | `No result $9` | there are fewer results than that in History |
 | `'sin' is a reserved name` | built-in names cannot be redefined |
 | `'f' cannot call itself` | a function may not use its own name |

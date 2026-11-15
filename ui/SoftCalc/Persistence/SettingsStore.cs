@@ -116,7 +116,7 @@ internal sealed class RandomPrefs
 	public WindowPlacement? Window { get; set; }
 }
 
-// Tools > Crypto (design/crypto_plan.md): the tab, the services and the window; never an address typed in it
+// Tools > Cryptocurrency (design/crypto_plan.md): the tab, the services and the window; never an address typed in it
 internal sealed class CryptoPrefs
 {
 	public string Tab { get; set; } = "address";    // address, balance, watch or fees

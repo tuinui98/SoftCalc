@@ -49,7 +49,7 @@ internal sealed class CryptoWatcher : IDisposable
 		_tray.Icon = SvgIcon.ProgramIcon();
 		var menu = new ContextMenuStrip();
 		menu.Items.Add("&Open SoftCalc", null, (_, _) => OpenMain?.Invoke());
-		menu.Items.Add("Crypto &watch...", null, (_, _) => OpenWatch?.Invoke());
+		menu.Items.Add("Cryptocurrency &watch...", null, (_, _) => OpenWatch?.Invoke());
 		menu.Items.Add("&Check now", null, async (_, _) => await CheckNowAsync());
 		menu.Items.Add(new ToolStripSeparator());
 		menu.Items.Add("E&xit SoftCalc", null, (_, _) => ExitApp?.Invoke());
@@ -228,7 +228,7 @@ internal sealed class CryptoWatcher : IDisposable
 		string text = string.Join(Environment.NewLine, events.Take(3).Select(e => events.Count == 1 ? e.Text : $"{e.Label}: {e.Text}"));
 		if (events.Count > 3)
 		{
-			text += Environment.NewLine + $"... and {events.Count - 3} more (Tools > Crypto > Watch).";
+			text += Environment.NewLine + $"... and {events.Count - 3} more (Tools > Cryptocurrency > Watch).";
 		}
 		_tray.ShowBalloonTip(10_000, title.Length > 60 ? title[..60] : title, text.Length > 250 ? text[..250] : text,
 			warn ? ToolTipIcon.Warning : ToolTipIcon.Info);
