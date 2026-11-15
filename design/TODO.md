@@ -372,6 +372,15 @@ ends 1:1, the drag insert line is visible enough on dark.
     Scientific: with a 2nd key, modelled on the TI-89 the owner uses
     (owner works in History view otherwise). Design proposed, waiting
     for the owner's choice.
+  - Built 2026-11-16 (not released; help after the owner's test):
+    drawn keypad filling its row, a drag bar above it, Text Size. Basic
+    5x5: AC, C (the last number), % written out as A*(1+B%) after + or -,
+    memory, 0 wide, = tall. Scientific adds five TI-89-like columns with
+    2nd (next key only), STO then x/y, entry, dec/deg keys that cycle (a
+    line in Input is then worked out in the new base), func and units
+    open the Functions and Conversions menus. The owner may drop the %
+    rewrite after trying it. The engine has no nCr, cbrt or log (it has
+    log10): rand, ^(1/3) and log10 are used.
 - [x] Random tools (a section or window): built 2026-11-12/13, help
       updated; released in 1.4.0 (2026-11-15).
   - Owner 2026-11-12: a window of its own with tabs: Simple random,
