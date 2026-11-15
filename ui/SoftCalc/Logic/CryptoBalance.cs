@@ -32,11 +32,19 @@ internal sealed record BalanceReport(string Network, IReadOnlyList<AssetBalance>
 // GET (body null) or POST JSON; returns the response text
 internal delegate Task<string> CryptoFetch(string url, string? jsonBody, CancellationToken cancel);
 
+// A service that asks to slow down (429, 503) or stops answering, as public ones do when asked too fast
+internal sealed class ServiceBusyException(string host, string reason, TimeSpan? retryAfter)
+	: HttpRequestException($"{host} is busy ({reason})")
+{
+	public TimeSpan? RetryAfter { get; } = retryAfter;
+}
+
 internal static class CryptoBalance
 {
 	public const string UsdtErc20 = "0xdAC17F958D2ee523a2206206994597C13D831ec7";    // checked 2026-11-15: symbol USDT, 6 decimals
 	public const string UsdtTrc20 = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";    // checked 2026-11-15: TetherToken
 	public const int GapLimit = 20;
+	public const int HistoryAddresses = 10;
 	public static readonly string[] XpubTypes = { "Auto", "Legacy (1...)", "SegWit in P2SH (3...)", "Native SegWit (bc1q...)", "Taproot (bc1p...)" };
 
 	// Which service an address or key will be sent to
@@ -52,35 +60,99 @@ internal static class CryptoBalance
 	}
 
 	public static async Task<BalanceReport> CheckAsync(AddressCheck check, int xpubType, CryptoEndpoints endpoints, CryptoFetch fetch,
-		IProgress<string>? progress, CancellationToken cancel)
+		IProgress<string>? progress, CancellationToken cancel, Func<TimeSpan, CancellationToken, Task>? delay = null)
 	{
 		if (!check.Valid || check.Normal == null)
 		{
 			throw new InvalidOperationException("not a valid address");
 		}
+		string api = check.Network switch
+		{
+			"Ethereum" => endpoints.EthereumRpc,
+			"Tron" => endpoints.TronGrid,
+			_ => endpoints.Esplora,
+		};
+		fetch = Patient(fetch, IsLocal(api) ? TimeSpan.Zero : PublicGap, progress, delay);
 		return check.Network switch
 		{
 			"Ethereum" => await EthereumAsync(check.Normal, endpoints.EthereumRpc, fetch, cancel),
 			"Tron" => await TronAsync(check.Normal, endpoints.TronGrid, fetch, cancel),
 			_ when check.Kind?.Contains("extended public key") == true => await WalletAsync(check.Normal, xpubType, endpoints.Esplora, fetch,
 				progress, cancel),
-			_ => await BitcoinAsync(new[] { check.Normal }, endpoints.Esplora, fetch, cancel),
+			_ => await BitcoinAsync(check.Normal, endpoints.Esplora, fetch, cancel),
 		};
+	}
+
+	//==================================================================
+	//  Asking public services politely: a gap between calls, waits when busy
+	//==================================================================
+	// Checked 2026-11-16: mempool.space answered about 20 quick calls, then 429, then nothing for minutes
+	public static readonly TimeSpan PublicGap = TimeSpan.FromSeconds(1);
+	public static readonly TimeSpan[] BusyWaits = { TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60) };
+	private static readonly TimeSpan LongestWait = TimeSpan.FromMinutes(2);
+
+	internal static CryptoFetch Patient(CryptoFetch fetch, TimeSpan gap, IProgress<string>? progress,
+		Func<TimeSpan, CancellationToken, Task>? delay = null)
+	{
+		delay ??= Task.Delay;
+		var clock = System.Diagnostics.Stopwatch.StartNew();
+		var nextAt = TimeSpan.Zero;
+		return async (url, body, cancel) =>
+		{
+			for (int attempt = 0; ; attempt++)
+			{
+				var wait = nextAt - clock.Elapsed;
+				if (wait > TimeSpan.Zero)
+				{
+					await delay(wait, cancel);
+				}
+				try
+				{
+					return await fetch(url, body, cancel);
+				}
+				catch (ServiceBusyException busy) when (attempt < BusyWaits.Length)
+				{
+					var pause = busy.RetryAfter is TimeSpan after && after > TimeSpan.Zero
+						? (after < LongestWait ? after : LongestWait) : BusyWaits[attempt];
+					progress?.Report($"{busy.Message}; trying again in {pause.TotalSeconds:0} s...");
+					await delay(pause, cancel);
+				}
+				finally
+				{
+					nextAt = clock.Elapsed + gap;
+				}
+			}
+		};
+	}
+
+	// One's own node (this computer, the home network): no gap needed
+	internal static bool IsLocal(string url)
+	{
+		if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+		{
+			return false;
+		}
+		if (uri.IsLoopback || uri.Host.EndsWith(".local", StringComparison.OrdinalIgnoreCase) || !uri.Host.Contains('.'))
+		{
+			return true;
+		}
+		if (!System.Net.IPAddress.TryParse(uri.Host, out var ip) || ip.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
+		{
+			return false;
+		}
+		byte[] b = ip.GetAddressBytes();
+		return b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168);
 	}
 
 	//==================================================================
 	//  Bitcoin (Esplora): balances in satoshis, history with confirmations
 	//==================================================================
-	private static async Task<BalanceReport> BitcoinAsync(IReadOnlyList<string> addresses, string api, CryptoFetch fetch, CancellationToken cancel)
+	private static async Task<BalanceReport> BitcoinAsync(string address, string api, CryptoFetch fetch, CancellationToken cancel)
 	{
-		long confirmed = 0, pending = 0;
-		foreach (string address in addresses)
-		{
-			var stats = Object(await fetch($"{api}/address/{address}", null, cancel));
-			confirmed += Sum(stats["chain_stats"]);
-			pending += Sum(stats["mempool_stats"]);
-		}
-		var payments = await BitcoinPaymentsAsync(addresses, api, fetch, cancel);
+		var stats = Object(await fetch($"{api}/address/{address}", null, cancel));
+		long confirmed = Sum(stats["chain_stats"]);
+		long pending = Sum(stats["mempool_stats"]);
+		var payments = await BitcoinPaymentsAsync(new[] { address }, new[] { address }, api, fetch, cancel);
 		return new BalanceReport("Bitcoin", new[] { new AssetBalance("BTC", "btc", Sats(confirmed), Sats(pending)) }, payments,
 			Array.Empty<string>());
 	}
@@ -90,13 +162,14 @@ internal static class CryptoBalance
 		return Long(stats?["funded_txo_sum"]) - Long(stats?["spent_txo_sum"]);
 	}
 
-	private static async Task<List<CryptoPayment>> BitcoinPaymentsAsync(IReadOnlyList<string> addresses, string api, CryptoFetch fetch,
-		CancellationToken cancel)
+	// History of the `asked` addresses; amounts count every address in `addresses` as one's own
+	private static async Task<List<CryptoPayment>> BitcoinPaymentsAsync(IReadOnlyList<string> addresses, IEnumerable<string> asked, string api,
+		CryptoFetch fetch, CancellationToken cancel)
 	{
 		var mine = addresses.ToHashSet(StringComparer.Ordinal);
 		long tip = long.Parse((await fetch($"{api}/blocks/tip/height", null, cancel)).Trim(), CultureInfo.InvariantCulture);
 		var seen = new Dictionary<string, CryptoPayment>();
-		foreach (string address in addresses)
+		foreach (string address in asked)
 		{
 			foreach (var tx in Items(await fetch($"{api}/address/{address}/txs", null, cancel)))
 			{
@@ -141,7 +214,8 @@ internal static class CryptoBalance
 		CancellationToken cancel)
 	{
 		var (account, network, scriptType) = Account(key, type);
-		var used = new List<string>();
+		var used = new List<(string Address, uint Index)>();
+		long confirmed = 0, pending = 0;
 		int looked = 0;
 		foreach (uint chain in new uint[] { 0, 1 })
 		{
@@ -154,19 +228,21 @@ internal static class CryptoBalance
 				unused = count > 0 ? 0 : unused + 1;
 				if (count > 0)
 				{
-					used.Add(address);
+					used.Add((address, i));
+					confirmed += Sum(stats["chain_stats"]);
+					pending += Sum(stats["mempool_stats"]);
 				}
 				looked++;
 				progress?.Report($"Looked at {looked} addresses, {used.Count} used...");
 			}
 		}
-		var report = used.Count == 0
-			? new BalanceReport("Bitcoin", new[] { new AssetBalance("BTC", "btc", 0, 0) }, Array.Empty<CryptoPayment>(), Array.Empty<string>())
-			: await BitcoinAsync(used, api, fetch, cancel);
-		return report with
-		{
-			Notes = new[] { $"{used.Count} used addresses of {looked} looked at ({XpubTypes[TypeIndex(key, type)]}, gap limit {GapLimit})." },
-		};
+		// history from the newest addresses only: each one is another call
+		var newest = used.OrderByDescending(u => u.Index).Take(HistoryAddresses).Select(u => u.Address).ToList();
+		var payments = used.Count == 0 ? new List<CryptoPayment>()
+			: await BitcoinPaymentsAsync(used.Select(u => u.Address).ToList(), newest, api, fetch, cancel);
+		string note = $"{used.Count} used addresses of {looked} looked at ({XpubTypes[TypeIndex(key, type)]}, gap limit {GapLimit})"
+			+ (used.Count > newest.Count ? $"; payments of the {newest.Count} newest." : ".");
+		return new BalanceReport("Bitcoin", new[] { new AssetBalance("BTC", "btc", Sats(confirmed), Sats(pending)) }, payments, new[] { note });
 	}
 
 	// The account key in the xpub form NBitcoin reads, its network and the address type

@@ -12,6 +12,54 @@ public sealed class CryptoBalanceTests
 {
 	private static readonly CryptoEndpoints Api = new("https://esplora.test/api", "https://rpc.test", "https://tron.test");
 
+	private static Task NoWait(TimeSpan wait, CancellationToken cancel)
+	{
+		return Task.CompletedTask;
+	}
+
+	[Fact]
+	public async Task BusyServiceIsAskedAgainAfterWaits()
+	{
+		var waits = new List<TimeSpan>();
+		int calls = 0;
+		var messages = new List<string>();
+		CryptoFetch busyTwice = (_, _, _) => ++calls <= 2
+			? throw new ServiceBusyException("mempool.space", "429 Too Many Requests", calls == 2 ? TimeSpan.FromSeconds(5) : null)
+			: Task.FromResult("ok");
+		var patient = CryptoBalance.Patient(busyTwice, TimeSpan.Zero, new SyncProgress(messages), (w, _) =>
+		{
+			waits.Add(w);
+			return Task.CompletedTask;
+		});
+		Assert.Equal("ok", await patient("https://mempool.space/api/x", null, default));
+		Assert.Equal(new[] { TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(5) }, waits);    // then the service's own Retry-After
+		Assert.Contains("trying again in 15 s", messages[0]);
+		CryptoFetch alwaysBusy = (_, _, _) => throw new ServiceBusyException("mempool.space", "no answer", null);
+		var giveUp = CryptoBalance.Patient(alwaysBusy, TimeSpan.Zero, null, NoWait);
+		await Assert.ThrowsAsync<ServiceBusyException>(() => giveUp("https://mempool.space/api/x", null, default));
+	}
+
+	[Theory]
+	[InlineData("http://umbrel.local:3006/api", true)]
+	[InlineData("http://192.168.1.20:3006/api", true)]
+	[InlineData("http://localhost:8080", true)]
+	[InlineData("http://mynode/api", true)]
+	[InlineData("https://mempool.space/api", false)]
+	[InlineData("http://8.8.8.8/api", false)]
+	public void OwnNodesNeedNoGap(string url, bool local)
+	{
+		Assert.Equal(local, CryptoBalance.IsLocal(url));
+	}
+
+	// Progress<T> posts to a sync context; this one reports at once
+	private sealed class SyncProgress(List<string> messages) : IProgress<string>
+	{
+		public void Report(string value)
+		{
+			messages.Add(value);
+		}
+	}
+
 	// Answers by URL prefix (POST bodies by method); every call is recorded
 	private sealed class Fake
 	{
@@ -49,7 +97,7 @@ public sealed class CryptoBalanceTests
 		fake.Answers[$"{Api.Esplora}/address/{address}"] =
 			"""{"chain_stats":{"funded_txo_sum":5000,"spent_txo_sum":1000,"tx_count":3},"mempool_stats":{"funded_txo_sum":0,"spent_txo_sum":500,"tx_count":1}}""";
 		fake.Answers[$"{Api.Esplora}/blocks/tip/height"] = "101";
-		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(address), 0, Api, fake.Fetch, null, default);
+		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(address), 0, Api, fake.Fetch, null, default, NoWait);
 		Assert.Equal(new AssetBalance("BTC", "btc", 0.00004m, -0.000005m), report.Assets.Single());
 		Assert.Equal(2, report.Payments.Count);
 		Assert.Equal(("pending", -0.000005m), (report.Payments[0].Status, report.Payments[0].Amount));
@@ -63,7 +111,7 @@ public sealed class CryptoBalanceTests
 		fake.Answers[$"{Api.EthereumRpc} eth_getBalance"] = """{"jsonrpc":"2.0","id":1,"result":"0xde0b6b3a7640000"}""";    // 1 ETH
 		fake.Answers[$"{Api.EthereumRpc} eth_call"] = """{"jsonrpc":"2.0","id":2,"result":"0x00000000000000000000000000000000000000000000000000000000004c4b40"}""";
 		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check("0x5aAeb6053F3E94C9b9A09f33669435E7Ef1BeAed"), 0, Api, fake.Fetch, null,
-			default);
+			default, NoWait);
 		Assert.Equal(1m, report.Assets[0].Amount);
 		Assert.Equal(("USDT (ERC-20)", 5m), (report.Assets[1].Asset, report.Assets[1].Amount));
 		Assert.Empty(report.Payments);
@@ -86,7 +134,7 @@ public sealed class CryptoBalanceTests
 			+ "\"parameter\":{\"value\":{\"amount\":1500000,\"owner_address\":\"" + hex + "\",\"to_address\":\"41ff\"}}}]}}]}";
 		fake.Answers[$"{Api.TronGrid}/v1/accounts/{address}"] =
 			"{\"data\":[{\"balance\":12000000,\"trc20\":[{\"" + CryptoBalance.UsdtTrc20 + "\":\"7000000\"}]}]}";
-		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(address), 0, Api, fake.Fetch, null, default);
+		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(address), 0, Api, fake.Fetch, null, default, NoWait);
 		Assert.Equal(new[] { 12m, 7m }, report.Assets.Select(a => a.Amount));
 		Assert.Equal(new[] { ("TRX", -1.5m), ("USDT", 2.5m) }, report.Payments.Select(p => (p.Asset, p.Amount)));
 	}
@@ -126,10 +174,27 @@ public sealed class CryptoBalanceTests
 		string xpub = root.Derive(new KeyPath("m/84'/0'/0'")).Neuter().GetWif(Network.Main).ToString();
 		var fake = new Fake();
 		fake.Answers[$"{Api.Esplora}/blocks/tip/height"] = "10";
-		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(xpub), 3, Api, fake.Fetch, null, default);
+		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(xpub), 3, Api, fake.Fetch, null, default, NoWait);
 		Assert.Equal(0m, report.Assets.Single().Amount);
 		Assert.Equal(2 * CryptoBalance.GapLimit, fake.Calls.Count);    // 20 receive and 20 change, all unused
 		Assert.Contains("0 used addresses of 40", report.Notes.Single());
+	}
+
+	[Fact]
+	public async Task WalletScanAsksEachAddressOnce()
+	{
+		var root = new Mnemonic("abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about").DeriveExtKey();
+		string xpub = root.Derive(new KeyPath("m/84'/0'/0'")).Neuter().GetWif(Network.Main).ToString();
+		const string first = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu";
+		var fake = new Fake();
+		fake.Answers[$"{Api.Esplora}/blocks/tip/height"] = "10";
+		fake.Answers[$"{Api.Esplora}/address/{first}/txs"] = "[]";
+		fake.Answers[$"{Api.Esplora}/address/{first}"] =
+			"""{"chain_stats":{"funded_txo_sum":7000,"spent_txo_sum":2000,"tx_count":2},"mempool_stats":{"funded_txo_sum":0,"spent_txo_sum":0,"tx_count":0}}""";
+		var report = await CryptoBalance.CheckAsync(CryptoAddress.Check(xpub), 3, Api, fake.Fetch, null, default, NoWait);
+		Assert.Equal(0.00005m, report.Assets.Single().Amount);
+		Assert.Single(fake.Calls, c => c == $"{Api.Esplora}/address/{first}");    // the scan's answer is reused for the balance
+		Assert.Equal(21 + 20 + 2, fake.Calls.Count);    // receive 0..20, change 0..19, tip, one history
 	}
 
 	[Fact]

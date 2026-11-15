@@ -113,14 +113,24 @@ internal sealed partial class CryptoWindow
 			var progress = new Progress<string>(text => Say(text, error: false));
 			var report = await CryptoBalance.CheckAsync(check, _xpubType.SelectedIndex, Endpoints, FetchAsync, progress, _checking.Token);
 			var prices = await _prices();
+			if (check.Network == "Ethereum" && check.Kind == "account")
+			{
+				// all one case: the Address tab's warning, shown here too
+				report = report with { Notes = report.Notes.Prepend($"All one case: no checksum was checked, so a typo would not show "
+					+ $"(checksummed: {check.Normal}).").ToList() };
+			}
 			ShowReport(report, prices);
 		}
-		catch (OperationCanceledException)
+		catch (OperationCanceledException) when (_checking.IsCancellationRequested)
 		{
 			Say("Stopped.", error: false);
 		}
+		catch (ServiceBusyException ex)
+		{
+			Say($"Could not check: {ex.Message}. Try again in a few minutes, or point Services at your own node.", error: true);
+		}
 		catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or System.Text.Json.JsonException or FormatException
-			or OverflowException or InvalidOperationException or KeyNotFoundException)
+			or OverflowException or InvalidOperationException or KeyNotFoundException or OperationCanceledException)
 		{
 			Say("Could not check: " + ex.Message, error: true);
 		}
@@ -265,14 +275,26 @@ internal sealed partial class CryptoWindow
 		{
 			request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
 		}
-		using var response = await Http.SendAsync(request, cancel);
-		string text = await response.Content.ReadAsStringAsync(cancel);
-		if (!response.IsSuccessStatusCode)
+		string host = new Uri(url).Host;
+		try
 		{
-			throw new HttpRequestException($"{(int)response.StatusCode} {response.ReasonPhrase} from {new Uri(url).Host}"
-				+ (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ? " (too many requests: wait a minute)" : ""));
+			using var response = await Http.SendAsync(request, cancel);
+			string text = await response.Content.ReadAsStringAsync(cancel);
+			if (response.StatusCode is System.Net.HttpStatusCode.TooManyRequests or System.Net.HttpStatusCode.ServiceUnavailable)
+			{
+				throw new ServiceBusyException(host, $"{(int)response.StatusCode} {response.ReasonPhrase}", response.Headers.RetryAfter?.Delta);
+			}
+			if (!response.IsSuccessStatusCode)
+			{
+				throw new HttpRequestException($"{(int)response.StatusCode} {response.ReasonPhrase} from {host}");
+			}
+			return text;
 		}
-		return text;
+		catch (TaskCanceledException) when (!cancel.IsCancellationRequested)
+		{
+			// HttpClient's own timeout, not Stop: a throttling service often just stops answering
+			throw new ServiceBusyException(host, $"no answer within {Http.Timeout.TotalSeconds:0} s", null);
+		}
 	}
 
 	private static HttpClient MakeHttp()
