@@ -76,6 +76,8 @@ internal sealed partial class MainForm : Form
 	private CompoundWindow? _compoundWindow;
 	private RandomWindow? _randomWindow;
 	private CryptoWindow? _cryptoWindow;
+	private readonly CryptoWatcher _watcher;
+	private bool _exiting;    // Exit from the tray: close for real
 
 	// Set when the window closes to come back with a new theme (Program restarts)
 	public bool RestartRequested { get; private set; }
@@ -95,6 +97,16 @@ internal sealed partial class MainForm : Form
 		_session.RatesProvider = FetchRatesAsync;
 		_prices = new PriceSource(folder.PricesPath);
 		_session.PricesProvider = FetchPricesAsync;
+		_watcher = new CryptoWatcher(folder, _prefs.Crypto, PricesForWindowAsync)
+		{
+			OpenMain = ShowFromTray,
+			OpenWatch = () =>
+			{
+				ShowFromTray();
+				OpenCryptoWindow("watch");
+			},
+			ExitApp = ExitForReal,
+		};
 		Text = $"SoftCalc [v{AboutDialog.Version}]";    // owner 2026-11-10
 		Icon = SvgIcon.ProgramIcon();
 		StartPosition = FormStartPosition.CenterScreen;
@@ -117,8 +129,24 @@ internal sealed partial class MainForm : Form
 		ApplySavedWindow();
 		ApplyView(Enum.TryParse<CalcView>(_prefs.View, out var view) ? view : CalcView.History);
 		Shown += async (_, _) => await StartEngineAsync();
-		FormClosing += (_, _) => SaveOnClose();
-		FormClosed += (_, _) => _session.Dispose();
+		FormClosing += (_, e) =>
+		{
+			// Keep watching in the tray (Watch tab, crypto_plan C2a): the window hides instead
+			if (!_exiting && e.CloseReason == CloseReason.UserClosing && _prefs.Crypto.KeepInTray && _watcher.Active)
+			{
+				e.Cancel = true;
+				SaveOnClose();
+				Hide();
+				_watcher.ShowTray(hidden: true);
+				return;
+			}
+			SaveOnClose();
+		};
+		FormClosed += (_, _) =>
+		{
+			_watcher.Dispose();
+			_session.Dispose();
+		};
 	}
 
 	//==================================================================
@@ -245,17 +273,44 @@ internal sealed partial class MainForm : Form
 	}
 
 	// Tools > Crypto: address checks and fees, offline (design/crypto_plan.md C0)
-	private void OpenCryptoWindow()
+	private void OpenCryptoWindow(string? tab = null)
 	{
+		if (tab != null)
+		{
+			_prefs.Crypto.Tab = tab;
+		}
 		if (_cryptoWindow == null || _cryptoWindow.IsDisposed)
 		{
-			_cryptoWindow = new CryptoWindow(_prefs.Crypto, InsertValue, PricesForWindowAsync);
+			_cryptoWindow = new CryptoWindow(_prefs.Crypto, _watcher, InsertValue, PricesForWindowAsync);
 			_cryptoWindow.Show(this);
 		}
 		else
 		{
+			if (tab != null)
+			{
+				_cryptoWindow.ShowTab(tab);
+			}
 			_cryptoWindow.Activate();
 		}
+	}
+
+	// File > Exit, the tray's Exit and a restart close SoftCalc even when it keeps watching in the tray
+	private void ExitForReal()
+	{
+		_exiting = true;
+		Close();
+	}
+
+	// From the tray icon: the window back as it was
+	private void ShowFromTray()
+	{
+		Show();
+		if (WindowState == FormWindowState.Minimized)
+		{
+			WindowState = FormWindowState.Normal;
+		}
+		Activate();
+		_watcher.ShowTray(hidden: false);
 	}
 
 	// History and Input font (owner 2026-11-06); the Input row grows with it
@@ -356,7 +411,7 @@ internal sealed partial class MainForm : Form
 				}
 				_prefs.Theme = name;
 				RestartRequested = true;
-				Close();    // saves settings and History, then Program starts a new SoftCalc
+				ExitForReal();    // saves settings and History, then Program starts a new SoftCalc
 			};
 			menu.DropDownItems.Add(item);
 		}
@@ -458,7 +513,7 @@ internal sealed partial class MainForm : Form
 		file.DropDownItems.Add(new ToolStripMenuItem("&Load Functions && Variables...", null,
 			async (_, _) => await LoadDefinitionsAsync()));
 		file.DropDownItems.Add(new ToolStripSeparator());
-		file.DropDownItems.Add(new ToolStripMenuItem("E&xit", null, (_, _) => Close()));
+		file.DropDownItems.Add(new ToolStripMenuItem("E&xit", null, (_, _) => ExitForReal()));
 
 		var view = new ToolStripMenuItem("&View");
 		view.DropDownItems.Add(new ToolStripMenuItem("&Clear History", null, async (_, _) => await ClearHistoryAsync()));

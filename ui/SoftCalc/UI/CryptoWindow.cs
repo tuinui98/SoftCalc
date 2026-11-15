@@ -1,4 +1,4 @@
-// CryptoWindow.cs - Tools > Crypto: address checks, balances and fee sums (design/crypto_plan.md C0-C1)
+// CryptoWindow.cs - Tools > Crypto: address checks, balances, watched addresses and fee sums (design/crypto_plan.md C0-C2a)
 //
 // Owner 2026-11-15: SoftCalc only checks addresses and (later, C1-C2)
 // balances: no seed, no private key, no signing. The Address tab checks
@@ -6,7 +6,8 @@
 // looks like a secret (the box is emptied at once). The Fees tab works
 // out a Bitcoin or Ethereum fee and can put the line in Input. Those two
 // are offline; the Balance tab (CryptoWindow.Balance.cs) asks a service
-// only when Check is pressed.
+// only when Check is pressed; the Watch tab (CryptoWindow.Watch.cs) shows
+// the addresses CryptoWatcher checks on a timer.
 
 using System.Globalization;
 using SoftCalc.Engine;
@@ -17,8 +18,9 @@ namespace SoftCalc.UI;
 
 internal sealed partial class CryptoWindow : Form
 {
-	private static readonly string[] TabIds = { "address", "balance", "fees" };
+	private static readonly string[] TabIds = { "address", "balance", "watch", "fees" };
 	private readonly CryptoPrefs _prefs;
+	private readonly CryptoWatcher _watcher;
 	private readonly Action<string> _insert;
 	private readonly Func<Task<CoinPrices?>> _prices;
 	private readonly TabControl _tabs = new() { Dock = DockStyle.Fill };
@@ -35,9 +37,10 @@ internal sealed partial class CryptoWindow : Form
 	private readonly Label _btcFee = new() { AutoSize = true, Margin = new Padding(3, 8, 3, 3) };
 	private readonly Label _ethFee = new() { AutoSize = true, Margin = new Padding(3, 8, 3, 3) };
 
-	public CryptoWindow(CryptoPrefs prefs, Action<string> insert, Func<Task<CoinPrices?>>? prices = null)
+	public CryptoWindow(CryptoPrefs prefs, CryptoWatcher watcher, Action<string> insert, Func<Task<CoinPrices?>>? prices = null)
 	{
 		_prefs = prefs;
+		_watcher = watcher;
 		_insert = insert;
 		_prices = prices ?? (() => Task.FromResult<CoinPrices?>(null));
 		Text = "Crypto";
@@ -45,7 +48,7 @@ internal sealed partial class CryptoWindow : Form
 		ShowInTaskbar = false;
 		MinimizeBox = false;
 		AutoScaleMode = AutoScaleMode.Dpi;
-		Size = new Size(700, 520);
+		Size = new Size(720, 620);
 		MinimumSize = new Size(520, 380);
 		StartPosition = FormStartPosition.CenterParent;
 		if (prefs.Window is { HasPosition: true } w)
@@ -56,6 +59,7 @@ internal sealed partial class CryptoWindow : Form
 		}
 		_tabs.TabPages.Add(AddressTab());
 		_tabs.TabPages.Add(BalanceTab());
+		_tabs.TabPages.Add(WatchTab());
 		_tabs.TabPages.Add(FeesTab());
 		_tabs.SelectedIndex = Math.Max(0, Array.IndexOf(TabIds, prefs.Tab));
 		Controls.Add(_tabs);
@@ -63,7 +67,7 @@ internal sealed partial class CryptoWindow : Form
 		{
 			Dock = DockStyle.Bottom, AutoSize = true, MaximumSize = new Size(660, 0), ForeColor = SystemColors.GrayText,
 			Padding = new Padding(8, 4, 8, 6),
-			Text = "Address and Fees are offline; Balance asks a service only when you press Check. "
+			Text = "Address and Fees are offline; Balance asks a service only when you press Check, Watch every few minutes. "
 				+ "SoftCalc never asks for seed words or private keys.",
 		};
 		Controls.Add(note);
@@ -202,6 +206,11 @@ internal sealed partial class CryptoWindow : Form
 	private static string Plain(NumericUpDown box)
 	{
 		return box.Value.ToString("0.############", CultureInfo.InvariantCulture);
+	}
+
+	public void ShowTab(string id)
+	{
+		_tabs.SelectedIndex = Math.Max(0, Array.IndexOf(TabIds, id));
 	}
 
 	private void SavePrefs()

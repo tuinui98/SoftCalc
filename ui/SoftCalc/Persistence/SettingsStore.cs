@@ -119,11 +119,19 @@ internal sealed class RandomPrefs
 // Tools > Crypto (design/crypto_plan.md): the tab, the services and the window; never an address typed in it
 internal sealed class CryptoPrefs
 {
-	public string Tab { get; set; } = "address";    // address, balance or fees
+	public string Tab { get; set; } = "address";    // address, balance, watch or fees
 	public string Esplora { get; set; } = Logic.CryptoEndpoints.Default.Esplora;
 	public string EthereumRpc { get; set; } = Logic.CryptoEndpoints.Default.EthereumRpc;
 	public string TronGrid { get; set; } = Logic.CryptoEndpoints.Default.TronGrid;
 	public WindowPlacement? Window { get; set; }
+
+	// Watch (C2a, owner 2026-11-16): every 10 minutes (2-60), each minute while a payment waits;
+	// confirmations asked for; dust below this many USD; keep watching in the tray after closing
+	public int WatchMinutes { get; set; } = 10;
+	public int BtcConfirmations { get; set; } = 2;
+	public int TronConfirmations { get; set; } = 1;
+	public decimal DustUsd { get; set; } = 1;
+	public bool KeepInTray { get; set; }
 }
 
 internal sealed class AppSettings
@@ -315,7 +323,7 @@ internal static class SettingsStore
 		s.Compound ??= new CompoundPrefs();
 		s.Random ??= new RandomPrefs();
 		s.Crypto ??= new CryptoPrefs();
-		if (s.Crypto.Tab is not ("address" or "balance" or "fees"))
+		if (s.Crypto.Tab is not ("address" or "balance" or "watch" or "fees"))
 		{
 			s.Crypto.Tab = "address";
 		}
@@ -324,6 +332,10 @@ internal static class SettingsStore
 		s.Crypto.Esplora = Url(s.Crypto.Esplora, Logic.CryptoEndpoints.Default.Esplora);
 		s.Crypto.EthereumRpc = Url(s.Crypto.EthereumRpc, Logic.CryptoEndpoints.Default.EthereumRpc);
 		s.Crypto.TronGrid = Url(s.Crypto.TronGrid, Logic.CryptoEndpoints.Default.TronGrid);
+		s.Crypto.WatchMinutes = Math.Clamp(s.Crypto.WatchMinutes, 2, 60);
+		s.Crypto.BtcConfirmations = Math.Clamp(s.Crypto.BtcConfirmations, 1, 6);
+		s.Crypto.TronConfirmations = Math.Clamp(s.Crypto.TronConfirmations, 1, 19);
+		s.Crypto.DustUsd = Math.Clamp(s.Crypto.DustUsd, 0, 1000);
 		SanitizeRandom(s.Random);
 		if (s.Ribbon != null)
 		{

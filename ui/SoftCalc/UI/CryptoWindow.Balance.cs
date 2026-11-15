@@ -14,7 +14,6 @@ namespace SoftCalc.UI;
 
 internal sealed partial class CryptoWindow
 {
-	private static readonly HttpClient Http = MakeHttp();
 	private readonly TextBox _balanceInput = new() { Font = new Font("Consolas", 10.5f), Width = 380 };
 	private readonly ComboBox _xpubType = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 170, Visible = false };
 	private readonly Button _check = new() { Text = "Chec&k", AutoSize = true };
@@ -34,7 +33,9 @@ internal sealed partial class CryptoWindow
 		_xpubType.SelectedIndex = 0;
 		var services = new Button { Text = "&Services...", AutoSize = true };
 		services.Click += (_, _) => EditServices();
-		row.Controls.AddRange(new Control[] { _balanceInput, _xpubType, _check, _stop, services });
+		var watch = new Button { Text = "&Watch...", AutoSize = true };
+		watch.Click += (_, _) => AddWatched(_balanceInput.Text.Trim());
+		row.Controls.AddRange(new Control[] { _balanceInput, _xpubType, _check, _stop, watch, services });
 		_balanceInput.TextChanged += (_, _) => ShowService();
 		_check.Click += async (_, _) => await CheckBalanceAsync();
 		_stop.Click += (_, _) => _checking?.Cancel();
@@ -111,7 +112,7 @@ internal sealed partial class CryptoWindow
 		try
 		{
 			var progress = new Progress<string>(text => Say(text, error: false));
-			var report = await CryptoBalance.CheckAsync(check, _xpubType.SelectedIndex, Endpoints, FetchAsync, progress, _checking.Token);
+			var report = await CryptoBalance.CheckAsync(check, _xpubType.SelectedIndex, Endpoints, CryptoHttp.FetchAsync, progress, _checking.Token);
 			var prices = await _prices();
 			if (check.Network == "Ethereum" && check.Kind == "account")
 			{
@@ -268,42 +269,6 @@ internal sealed partial class CryptoWindow
 		ShowService();
 	}
 
-	private static async Task<string> FetchAsync(string url, string? jsonBody, CancellationToken cancel)
-	{
-		using var request = new HttpRequestMessage(jsonBody == null ? HttpMethod.Get : HttpMethod.Post, url);
-		if (jsonBody != null)
-		{
-			request.Content = new StringContent(jsonBody, System.Text.Encoding.UTF8, "application/json");
-		}
-		string host = new Uri(url).Host;
-		try
-		{
-			using var response = await Http.SendAsync(request, cancel);
-			string text = await response.Content.ReadAsStringAsync(cancel);
-			if (response.StatusCode is System.Net.HttpStatusCode.TooManyRequests or System.Net.HttpStatusCode.ServiceUnavailable)
-			{
-				throw new ServiceBusyException(host, $"{(int)response.StatusCode} {response.ReasonPhrase}", response.Headers.RetryAfter?.Delta);
-			}
-			if (!response.IsSuccessStatusCode)
-			{
-				throw new HttpRequestException($"{(int)response.StatusCode} {response.ReasonPhrase} from {host}");
-			}
-			return text;
-		}
-		catch (TaskCanceledException) when (!cancel.IsCancellationRequested)
-		{
-			// HttpClient's own timeout, not Stop: a throttling service often just stops answering
-			throw new ServiceBusyException(host, $"no answer within {Http.Timeout.TotalSeconds:0} s", null);
-		}
-	}
-
-	private static HttpClient MakeHttp()
-	{
-		var http = new HttpClient { Timeout = TimeSpan.FromSeconds(20) };
-		http.DefaultRequestHeaders.UserAgent.ParseAdd("SoftCalc/1.0");
-		return http;
-	}
-
 	private static ListView Table(params (string Name, int Width)[] columns)
 	{
 		var list = new ListView
@@ -312,7 +277,7 @@ internal sealed partial class CryptoWindow
 		};
 		foreach (var (name, width) in columns)
 		{
-			list.Columns.Add(name, width, name is "Asset" or "Date" or "Status" or "Transaction" ? HorizontalAlignment.Left : HorizontalAlignment.Right);
+			list.Columns.Add(name, width, name is "Asset" or "Date" or "Status" or "Transaction" or "Label" or "Address" or "Last change" or "Time" or "Event" ? HorizontalAlignment.Left : HorizontalAlignment.Right);
 		}
 		return list;
 	}
