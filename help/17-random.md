@@ -238,6 +238,16 @@ random they really are.
   draw then hashes your entropy with fresh bytes from System, so it is
   never weaker than System alone. **Clear mix** stops it; closing the
   window does too.
+- How the mix works: a 32-byte key starts at zero; each row mixed in
+  makes it `SHA-256(key + the row's raw bytes)`. Each 64-bit draw is then
+  `HMAC-SHA256(key, 32 new bytes from System + a counter)`, so draws
+  cannot be repeated and never depend on your entropy alone.
+- Each Mix also adds a **mix** row: its seed is `SHA-256("seed" + key)`
+  cut to 128 bits, so the same rows mixed in the same order give the
+  same seed. **Use as Seed** on it draws repeatably from what you mixed.
+  Its Entropy column is the secret bits mixed so far (at most 128); its
+  change columns compare it with the mix row before. A mix row is never
+  mixed in again.
 
 ### Card decks (the ... tab)
 

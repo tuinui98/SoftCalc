@@ -81,6 +81,11 @@ public sealed class EntropyTests(ITestOutputHelper output)
 		mixed.Mix(new byte[] { 1, 2, 3 }, 200);
 		mixed.Mix(new byte[] { 4 }, 200);
 		Assert.Equal((256d, 2), (mixed.Bits, mixed.Mixes));
+		var again = new MixedRandom();
+		again.Mix(new byte[] { 1, 2, 3 }, 1);
+		again.Mix(new byte[] { 4 }, 1);
+		Assert.Equal(mixed.SeedOfMix(), again.SeedOfMix());    // the same rows in the same order: the same seed
+		Assert.Equal(16, again.SeedOfMix().Length);
 		mixed.Clear();
 		Assert.Equal((0d, 0), (mixed.Bits, mixed.Mixes));
 	}
@@ -156,6 +161,11 @@ public sealed class EntropyTests(ITestOutputHelper output)
 		Call(window, "MixIntoSystem");
 		Assert.StartsWith("System + entropy", Field<Label>(window, "_mixed").Text);
 		Assert.Equal(10, Field<MixedRandom>(window, "_secure").Mixes);
+		Assert.Equal(11, rows.Items.Count);    // the mix row
+		Assert.Equal("mix of #1, #2, #3, #4, #5, #6, #7, #8, #9, #10", rows.Items[10].SubItems[1].Text);
+		Call(window, "MixIntoSystem");    // all rows again, but never the mix row
+		Assert.Equal(20, Field<MixedRandom>(window, "_secure").Mixes);
+		Assert.Contains("of 128", rows.Items[11].SubItems[5].Text);    // compared with the mix before
 		window.SavePrefs();
 		Assert.Equal("clock", prefs.EntropySource);
 	}

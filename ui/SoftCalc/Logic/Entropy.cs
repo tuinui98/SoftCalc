@@ -225,6 +225,13 @@ internal sealed class MixedRandom : IRandomSource
 		Mixes++;
 	}
 
+	// A seed from what was mixed (owner 2026-11-16): SHA-256("seed" + key) cut to 128 bits.
+	// The same rows mixed in the same order give the same seed; the key itself is not shown.
+	public byte[] SeedOfMix()
+	{
+		return SHA256.HashData("seed"u8.ToArray().Concat(_key).ToArray())[..Entropy.SeedBytes];
+	}
+
 	public void Clear()
 	{
 		_key = new byte[32];
