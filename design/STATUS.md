@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-16: version 1.5.0 released (Cryptocurrency window, Numeric keypad). Everything below is committed on `main` and
+Updated 2026-11-16: version 1.5.1 released (History walk, Random mix row). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -119,6 +119,14 @@ redrawn with Basic and Scientific (TI-89-like, 2nd) modes and a drag
 bar. Help 18-cryptocurrency and the keypad part of 13-views.
 
 Tests: engine `pytest` 607 passed; UI `dotnet test` 459 passed.
+
+Version 1.5.1 (2026-11-16): History highlight follows Up/Down and a
+click (Up/Down go on from the clicked line; a second click takes the
+highlight off, Esc brings back the draft); Random Mix into System adds
+a mix row whose seed (SHA-256("seed" + key), 128 bits) works with Use
+as Seed. Help 01, 15 and 17.
+
+Tests: engine `pytest` 607 passed; UI `dotnet test` 462 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

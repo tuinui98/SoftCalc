@@ -6,7 +6,8 @@
 |---|---|
 | Enter | calculate |
 | Enter on an empty Input | repeat the last History line |
-| Up / Down | earlier lines you typed; Down past the newest brings back your draft |
+| Up / Down | earlier lines you typed, highlighted in History; Down past the newest brings back your draft |
+| Esc while stepping | take the highlight off and bring back your draft |
 | an operator on an empty Input | starts with `answer` |
 | right-click | Undo, Cut, Copy, Paste, Delete, Select All, Clear Input |
 
@@ -14,7 +15,8 @@
 
 | key or mouse | does |
 |---|---|
-| click | put the line back in Input |
+| click | put the line back in Input; Up and Down go on from it |
+| click the highlighted line | take the highlight off, keep the line in Input |
 | Shift+click | insert the result at the caret |
 | Ctrl+C | copy the selected entry |
 | right-click | Use Expression, Insert Result, copy, Delete, Clear History |
