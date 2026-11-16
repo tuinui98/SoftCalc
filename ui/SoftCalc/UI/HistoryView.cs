@@ -45,6 +45,8 @@ internal sealed class HistoryView : ListBox
 	public event EventHandler<HistoryEntry>? ResultClicked;
 	public event EventHandler<HistoryEntry>? DeleteClicked;
 	public event EventHandler? ClearClicked;
+	public event EventHandler? Deselected;    // a second click on the highlighted line
+	private bool _clickedAgain;
 
 	public IReadOnlyList<HistoryEntry> Entries => _entries;
 
@@ -223,14 +225,17 @@ internal sealed class HistoryView : ListBox
 	// Right-click selects the entry under the mouse before the menu opens
 	protected override void OnMouseDown(MouseEventArgs e)
 	{
+		int index = IndexFromPoint(e.Location);
 		if (e.Button == MouseButtons.Right)
 		{
-			int index = IndexFromPoint(e.Location);
 			if (index >= 0 && index < _entries.Count)
 			{
 				SelectedIndex = index;
 			}
 		}
+		// a plain click on the line already highlighted takes the highlight off (owner 2026-11-16)
+		_clickedAgain = e.Button == MouseButtons.Left && (ModifierKeys & Keys.Shift) == 0 && index >= 0 && index < _entries.Count
+			&& index == SelectedIndex;
 		base.OnMouseDown(e);
 	}
 
@@ -238,11 +243,19 @@ internal sealed class HistoryView : ListBox
 	{
 		base.OnMouseClick(e);
 		int index = IndexFromPoint(e.Location);
-		if (index >= 0 && index < _entries.Count)
+		if (index < 0 || index >= _entries.Count)
 		{
-			var handler = (ModifierKeys & Keys.Shift) != 0 ? ResultClicked : EntryClicked;
-			handler?.Invoke(this, _entries[index]);
+			return;
 		}
+		if (_clickedAgain)
+		{
+			_clickedAgain = false;
+			SelectedIndex = -1;
+			Deselected?.Invoke(this, EventArgs.Empty);
+			return;
+		}
+		var handler = (ModifierKeys & Keys.Shift) != 0 ? ResultClicked : EntryClicked;
+		handler?.Invoke(this, _entries[index]);
 	}
 
 	protected override void OnKeyDown(KeyEventArgs e)

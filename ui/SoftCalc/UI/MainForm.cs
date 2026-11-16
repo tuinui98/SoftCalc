@@ -120,11 +120,13 @@ internal sealed partial class MainForm : Form
 		_ribbonLayout = _prefs.Ribbon != null ? RibbonLayout.Clone(_prefs.Ribbon) : RibbonLayout.Default();
 		RebuildRibbon();
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
+		_history.Deselected += (_, _) => ShowRecalled(_recall.Cancel());
 		_history.ResultClicked += (_, entry) => InsertResult(entry);
 		_history.DeleteClicked += async (_, entry) => await DeleteHistoryEntryAsync(entry);
 		_history.ClearClicked += async (_, _) => await ClearHistoryAsync();
 		_input.KeyDown += OnInputKeyDown;
 		_input.TextChanged += (_, _) => UpdateHint();
+		_input.TextChanged += (_, _) => InputEdited();
 		_input.KeyUp += (_, _) => UpdateHint();    // caret moves
 		_input.MouseUp += (_, _) => UpdateHint();
 		_input.KeyPress += OnInputKeyPress;
@@ -831,6 +833,7 @@ internal sealed partial class MainForm : Form
 			}
 			_history.Append(Stamp(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text) { Note = reply.Note }));
 			_recall.Reset();
+			_history.SelectedIndex = -1;
 			_lastWasResult = reply.Kind == "result";
 			if (reply.Kind != "error")
 			{
@@ -1028,15 +1031,49 @@ internal sealed partial class MainForm : Form
 		_input.Focus();
 	}
 
+	// A click on a line: its expression in Input, and Up/Down go on from there (owner 2026-11-16)
 	private void RecallEntry(HistoryEntry entry)
 	{
 		if (entry.Kind == "notice")
 		{
 			return;
 		}
-		_input.Text = entry.Input;
-		_input.SelectionStart = _input.TextLength;
+		ShowRecalled(_recall.Jump(RecallLines().IndexOf(entry), _input.Text));
 		_input.Focus();
+	}
+
+	// The History lines Up/Down walk through: the same list InputRecall reads
+	private List<HistoryEntry> RecallLines()
+	{
+		return _history.Entries.Where(entry => entry.Kind != "notice").ToList();
+	}
+
+	private bool _showingRecall;    // Input set by the walk, not typed
+
+	// A recalled line (or the draft back) into Input; the walk's line is the highlighted one
+	private void ShowRecalled(string? text)
+	{
+		if (text != null)
+		{
+			_showingRecall = true;
+			_input.Text = text;
+			_input.SelectionStart = _input.TextLength;
+			_showingRecall = false;
+		}
+		int position = _recall.Position;
+		var lines = RecallLines();
+		_history.SelectedIndex = position >= 0 && position < lines.Count ? _history.Entries.ToList().IndexOf(lines[position]) : -1;
+	}
+
+	// Typing ends the walk: the text typed is the draft now
+	private void InputEdited()
+	{
+		if (_showingRecall || _recall.Position < 0)
+		{
+			return;
+		}
+		_recall.Edited();
+		_history.SelectedIndex = -1;
 	}
 
 	//==================================================================
@@ -1055,9 +1092,13 @@ internal sealed partial class MainForm : Form
 			string? text = e.KeyCode == Keys.Up ? _recall.Up(_input.Text) : _recall.Down();
 			if (text != null)
 			{
-				_input.Text = text;
-				_input.SelectionStart = _input.TextLength;
+				ShowRecalled(text);
 			}
+		}
+		else if (e.KeyCode == Keys.Escape && _recall.Position >= 0)
+		{
+			e.SuppressKeyPress = true;    // Esc: the highlight goes, the draft comes back
+			ShowRecalled(_recall.Cancel());
 		}
 	}
 
@@ -1134,7 +1175,7 @@ internal sealed partial class MainForm : Form
 			case "entry":
 				if (_recall.Up(_input.Text) is string previous)
 				{
-					SetInput(previous);
+					ShowRecalled(previous);
 				}
 				break;
 			case "base":
