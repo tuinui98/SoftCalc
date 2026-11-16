@@ -262,9 +262,10 @@ internal sealed partial class RandomWindow
 		EntropyNote("Seed set: Simple and Advanced now draw repeatably from it.", false);
 	}
 
+	// Owner 2026-11-16: a mix also adds a "mix" row, whose seed can be used like any other
 	private void MixIntoSystem()
 	{
-		var rows = ChosenRows(true);
+		var rows = ChosenRows(true).Where(r => r.Source != "mix").ToList();    // a mix row comes from the mix itself
 		if (rows.Count == 0)
 		{
 			EntropyNote("Get a value first.", true);
@@ -276,8 +277,17 @@ internal sealed partial class RandomWindow
 			_secure.Mix(row.Sample.Bytes, Entropy.IsPublic(row.Source) ? 0 : row.Sample.Bits);
 		}
 		ShowMix();
+		string used = string.Join(", ", rows.Select(r => "#" + (_entropyList.IndexOf(r) + 1)));
+		byte[] seed = _secure.SeedOfMix();
+		var mixed = new EntropyRow("mix", new EntropySample($"mix of {used}", seed, _secure.Bits), seed);
+		var earlier = _entropyList.LastOrDefault(r => r.Source == "mix");    // compared with the mix before
+		_entropyList.Add(mixed);
+		_entropyRows.Items.Add(new ListViewItem(Cells(mixed, earlier)));
+		_entropyRows.Items[^1].Text = _entropyList.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		_entropyRows.EnsureVisible(_entropyRows.Items.Count - 1);
 		EntropyNote($"Mixed {rows.Count} into the system generator: +{_secure.Bits - before:0} secret bits"
-			+ " (public values add none). Every tab uses it until Clear mix or the window closes.", false);
+			+ " (public values add none). Every tab uses it until Clear mix or the window closes. The new mix row's"
+			+ " seed comes from what was mixed: Use as Seed to draw repeatably from it.", false);
 	}
 
 	private void ClearEntropy()
