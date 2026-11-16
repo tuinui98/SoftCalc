@@ -124,7 +124,9 @@ Version 1.5.1 (2026-11-16): History highlight follows Up/Down and a
 click (Up/Down go on from the clicked line; a second click takes the
 highlight off, Esc brings back the draft); Random Mix into System adds
 a mix row whose seed (SHA-256("seed" + key), 128 bits) works with Use
-as Seed. Help 01, 15 and 17.
+as Seed. Help 01, 15 and 17. Release files renamed (owner 2026-11-16):
+`SoftCalc-standalone.exe` has .NET inside, `SoftCalc.exe` needs the
+.NET 10 Desktop Runtime (was `SoftCalc.exe` / `SoftCalc-net10.exe`).
 
 Tests: engine `pytest` 607 passed; UI `dotnet test` 462 passed.
 

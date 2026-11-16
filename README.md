@@ -66,8 +66,11 @@ x64 builds:
 
 | file | size | needs |
 |---|---|---|
-| `SoftCalc.exe` | about 60 MB | nothing: .NET and the Python engine are inside |
-| `SoftCalc-net10.exe` | about 10 MB | the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (x64) |
+| `SoftCalc-standalone.exe` | about 62 MB | nothing: .NET and the Python engine are inside |
+| `SoftCalc.exe` | about 14 MB | the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (x64) |
+
+Up to 1.5.0 the names were the other way round: `SoftCalc.exe` was the
+one with .NET inside and the small one was `SoftCalc-net10.exe`.
 
 Put the exe in any folder and run it; there is no installer. SoftCalc
 keeps its data (settings, history, functions, rates) in `SoftCalc-data\`

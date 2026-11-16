@@ -4,8 +4,8 @@
 # 1. freezes the engine (build_engine.ps1, one folder) and runs the
 #    frozen-exe test; 2. zips it; 3. refreshes THIRD-PARTY-NOTICES.txt;
 # 4. publishes the UI as single files with the engine zip embedded:
-#    SoftCalc.exe self-contained and compressed, SoftCalc-net10.exe
-#    needing the .NET 10 Desktop Runtime; 5. smoke-runs each exe from
+#    SoftCalc-standalone.exe self-contained and compressed, SoftCalc.exe
+#    needing the .NET 10 Desktop Runtime (names: owner 2026-11-16); 5. smoke-runs each exe from
 #    an empty folder; 6. prints the SHA-256 of both for the release
 #    notes. The ECB rates of the day are embedded too
 #    (rates-seed.xml, used before the first fetch; skipped when the ECB
@@ -71,19 +71,20 @@ catch
 #==================================================================
 if (Test-Path $dist) { Remove-Item -Recurse -Force $dist }
 $project = Join-Path $root "ui\SoftCalc\SoftCalc.csproj"
-# SoftCalc.exe carries the .NET runtime; SoftCalc-net10.exe needs the
-# .NET 10 Desktop Runtime (x64) installed and is about 9 MB (owner 2026-11-07)
+# SoftCalc-standalone.exe carries the .NET runtime; SoftCalc.exe needs the
+# .NET 10 Desktop Runtime (x64) installed and is about 14 MB (owner 2026-11-07;
+# names swapped from SoftCalc.exe / SoftCalc-net10.exe, owner 2026-11-16)
+& $dotnet publish $project -c Release -r win-x64 --self-contained false `
+	-p:PublishSingleFile=true -p:DebugType=none "-p:EngineZip=$zip" @seedArg -o $dist --nologo -v quiet
+if ($LASTEXITCODE -ne 0) { throw "dotnet publish (framework-dependent) failed" }
+$standalone = Join-Path ([IO.Path]::GetTempPath()) ("softcalc-sc-" + [guid]::NewGuid().ToString("N"))
 & $dotnet publish $project -c Release -r win-x64 --self-contained true `
 	-p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
-	-p:DebugType=none "-p:EngineZip=$zip" @seedArg -o $dist --nologo -v quiet
+	-p:DebugType=none "-p:EngineZip=$zip" @seedArg -o $standalone --nologo -v quiet
 if ($LASTEXITCODE -ne 0) { throw "dotnet publish (self-contained) failed" }
-$shared = Join-Path ([IO.Path]::GetTempPath()) ("softcalc-fd-" + [guid]::NewGuid().ToString("N"))
-& $dotnet publish $project -c Release -r win-x64 --self-contained false `
-	-p:PublishSingleFile=true -p:DebugType=none "-p:EngineZip=$zip" @seedArg -o $shared --nologo -v quiet
-if ($LASTEXITCODE -ne 0) { throw "dotnet publish (framework-dependent) failed" }
-Move-Item (Join-Path $shared "SoftCalc.exe") (Join-Path $dist "SoftCalc-net10.exe")
-Remove-Item -Recurse -Force $shared
-$exes = @("SoftCalc.exe", "SoftCalc-net10.exe")
+Move-Item (Join-Path $standalone "SoftCalc.exe") (Join-Path $dist "SoftCalc-standalone.exe")
+Remove-Item -Recurse -Force $standalone
+$exes = @("SoftCalc.exe", "SoftCalc-standalone.exe")
 $extra = Get-ChildItem $dist | Where-Object { $exes -notcontains $_.Name }
 if ($extra) { throw "publish left more than the two exes: $($extra.Name -join ', ')" }
 foreach ($name in $exes)
@@ -135,7 +136,7 @@ finally
 #  BLOCK 5 - SHA-256 for the release notes (owner 2026-11-11)
 #==================================================================
 "SHA-256 (paste into the release notes):"
-foreach ($name in @("SoftCalc.exe", "SoftCalc-net10.exe"))
+foreach ($name in $exes)
 {
 	"$((Get-FileHash -Algorithm SHA256 (Join-Path $dist $name)).Hash.ToLower())  $name"
 }

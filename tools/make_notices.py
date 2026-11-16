@@ -1,6 +1,6 @@
 """make_notices.py - Write ui/SoftCalc/THIRD-PARTY-NOTICES.txt for the About box (M9).
 
-The published SoftCalc.exe carries the .NET runtime, a frozen Python with
+The published SoftCalc-standalone.exe carries the .NET runtime, a frozen Python with
 mpmath, the PyInstaller bootloader and IconMCP icons; their licences ask
 for their notices to travel with the binary. The ready-made district deck
 comes from Thai open government data, whose terms ask for the source. The texts are read from the
