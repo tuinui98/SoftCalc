@@ -52,6 +52,41 @@ public class InputRecallTests
 	}
 
 	[Fact]
+	public void ClickedLineIsWhereUpAndDownGoOn()
+	{
+		var recall = Make();
+		Assert.Equal("x=5", recall.Jump(1, "typing"));
+		Assert.Equal(1, recall.Position);
+		Assert.Equal("1+1", recall.Up("x=5"));
+		Assert.Equal("x=5", recall.Down());
+		Assert.Equal("2x", recall.Down());
+		Assert.Equal("typing", recall.Down());    // past the newest: what was typed before the click
+		Assert.Equal(-1, recall.Position);
+	}
+
+	[Fact]
+	public void EscapeBringsBackTheDraft()
+	{
+		var recall = Make();
+		recall.Up("draft");
+		recall.Jump(0, "2x");    // a click while walking keeps the first draft
+		Assert.Equal("draft", recall.Cancel());
+		Assert.Equal(-1, recall.Position);
+		Assert.Null(recall.Cancel());    // not walking
+	}
+
+	[Fact]
+	public void TypingEndsTheWalk()
+	{
+		var recall = Make();
+		recall.Up("");
+		recall.Edited();
+		Assert.Equal(-1, recall.Position);
+		Assert.Equal("2x", recall.Up("2x and more"));    // a new walk from the newest
+		Assert.Equal("2x and more", recall.Cancel());
+	}
+
+	[Fact]
 	public void EmptyHistoryGivesNothing()
 	{
 		_inputs.Clear();
