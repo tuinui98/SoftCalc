@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-15: version 1.4.0 released (Random window, TODO section 11). Everything below is committed on `main` and
+Updated 2026-11-16: version 1.5.0 released (Cryptocurrency window, Numeric keypad). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -109,6 +109,16 @@ Spin tab). Help 17-random rewritten, all pictures regenerated; the help
 renderer reads `####` and `\|` in tables.
 
 Tests: engine `pytest` 586 passed; UI `dotnet test` 414 passed.
+
+Version 1.5.0 (2026-11-15/16, design/crypto_plan.md, TODO section 11):
+Tools > Cryptocurrency (Address, Balance, Watch, Fees; look only, no
+secrets), coin units and CoinGecko prices in lines, polite use of
+public services (1 s apart, waits when busy), a watch list with tray
+notifications and address-poisoning warnings; the Numeric keypad
+redrawn with Basic and Scientific (TI-89-like, 2nd) modes and a drag
+bar. Help 18-cryptocurrency and the keypad part of 13-views.
+
+Tests: engine `pytest` 607 passed; UI `dotnet test` 459 passed.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
