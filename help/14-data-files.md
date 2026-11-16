@@ -2,9 +2,9 @@
 
 ## Where SoftCalc keeps its data
 
-- Next to `SoftCalc.exe`, in a folder `SoftCalc-data`, when that folder
-  can be written. Copy the exe and this folder together to take
-  everything to another computer.
+- Next to the exe (`SoftCalc.exe` or `SoftCalc-standalone.exe`), in a
+  folder `SoftCalc-data`, when that folder can be written. Copy the exe
+  and this folder together to take everything to another computer.
 - Otherwise (for example under Program Files) in
   `%APPDATA%\SoftCalc`.
 

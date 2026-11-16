@@ -21,7 +21,10 @@ Each entry shows what you typed on the left. When the line uses names or
 earlier results, the numbers it used are shown faint on the right, and
 the result is on the line below.
 
-- **Click** an entry to put its line back in Input.
+- **Click** an entry to put its line back in Input. It stays
+  highlighted, and Up and Down go on from it; click it again to take
+  the highlight off and keep the line, or press Esc to get back what
+  you had typed.
 - **Shift+click** inserts the entry's result at the caret.
 - **Right-click** for Use Expression, Insert Result, Copy Result,
   Copy Expression and Result, Copy All, Delete and Clear History.
@@ -50,7 +53,8 @@ $2+1                  => 43
 |---|---|
 | Enter | calculate the line |
 | Enter on an empty Input | repeat the last History line (`answer*2` doubles again) |
-| Up / Down | step through lines typed before; Down past the newest brings back your draft |
+| Up / Down | step through lines typed before (the History line is highlighted); Down past the newest brings back your draft |
+| Esc while stepping | take the highlight off and bring back your draft |
 
 ## The hint line
 

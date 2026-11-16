@@ -53,7 +53,7 @@ writes the one-folder build `engine\dist\softcalc-engine\` (exe +
 Release: `powershell -ExecutionPolicy Bypass -File build\publish.ps1` builds
 and tests the engine, zips it, refreshes `ui/SoftCalc/THIRD-PARTY-NOTICES.txt`
 (`tools/make_notices.py`), publishes two single files with the engine zip
-embedded, `dist\SoftCalc.exe` (self-contained) and `dist\SoftCalc-net10.exe`
+embedded, `dist\SoftCalc-standalone.exe` (self-contained) and `dist\SoftCalc.exe`
 (needs the .NET 10 Desktop Runtime), and smoke-runs each from an empty
 folder (design/m9_plan.md). It ends with the SHA-256 of both exes;
 they go into the GitHub release notes (owner 2026-11-11).
