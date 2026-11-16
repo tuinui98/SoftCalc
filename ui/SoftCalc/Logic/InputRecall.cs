@@ -4,8 +4,9 @@
 // forward, and going past the newest brings back what was being typed
 // before the walk began. Owner 2026-11-16: the walk shows as the
 // highlighted History line; a click on a line starts the walk there (Up
-// and Down go on from it), and Esc or a second click on the same line
-// ends it with the draft back. Submitting or typing ends the walk.
+// and Down go on from it); Esc ends it with the draft back, a second
+// click on the same line ends it keeping the line. Submitting or typing
+// ends the walk.
 
 namespace SoftCalc.Logic;
 
@@ -77,7 +78,7 @@ internal sealed class InputRecall
 		return inputs[position];
 	}
 
-	// Esc or a second click: the walk ends and the draft comes back; null when not walking
+	// Esc: the walk ends and the draft comes back; null when not walking
 	public string? Cancel()
 	{
 		if (_position == -1)
@@ -88,7 +89,7 @@ internal sealed class InputRecall
 		return _draft;
 	}
 
-	// The user typed: what is in Input is now the draft
+	// The user typed (or clicked the line again): the walk ends, Input stays as it is
 	public void Edited()
 	{
 		_position = -1;

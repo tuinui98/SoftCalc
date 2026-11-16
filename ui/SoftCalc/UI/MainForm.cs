@@ -120,7 +120,11 @@ internal sealed partial class MainForm : Form
 		_ribbonLayout = _prefs.Ribbon != null ? RibbonLayout.Clone(_prefs.Ribbon) : RibbonLayout.Default();
 		RebuildRibbon();
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
-		_history.Deselected += (_, _) => ShowRecalled(_recall.Cancel());
+		_history.ArrowPressed += (_, up) =>
+		{
+			_input.Focus();
+			ShowRecalled(up ? _recall.Up(_input.Text) : _recall.Down());
+		};
 		_history.ResultClicked += (_, entry) => InsertResult(entry);
 		_history.DeleteClicked += async (_, entry) => await DeleteHistoryEntryAsync(entry);
 		_history.ClearClicked += async (_, _) => await ClearHistoryAsync();
@@ -1031,14 +1035,25 @@ internal sealed partial class MainForm : Form
 		_input.Focus();
 	}
 
-	// A click on a line: its expression in Input, and Up/Down go on from there (owner 2026-11-16)
+	// A click on a line: its expression in Input, and Up/Down go on from there; a second
+	// click on the highlighted line only takes the highlight off (owner 2026-11-16)
 	private void RecallEntry(HistoryEntry entry)
 	{
 		if (entry.Kind == "notice")
 		{
 			return;
 		}
-		ShowRecalled(_recall.Jump(RecallLines().IndexOf(entry), _input.Text));
+		var lines = RecallLines();
+		int position = lines.IndexOf(entry);
+		if (_recall.Position >= 0 && _recall.Position == position)
+		{
+			_recall.Edited();    // Input keeps the line
+			_history.SelectedIndex = -1;
+		}
+		else
+		{
+			ShowRecalled(_recall.Jump(position, _input.Text));
+		}
 		_input.Focus();
 	}
 
