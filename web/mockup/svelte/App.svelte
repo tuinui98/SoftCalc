@@ -1,13 +1,14 @@
-<!-- App.svelte - Mockup B: Svelte with hand-made parts. Sci in a drawer (swipe from the left edge
-     or the Sci tab), menus and Settings as bottom sheets, Android back closes them. Wide screens show
-     Sci beside Basic. -->
+<!-- App.svelte - Mockup B: Svelte with hand-made parts. Sci in a drawer over the keys only (swipe from
+     the left edge of the keys, the Sci button or "Sci ▸"), menus and Settings as bottom sheets, Android
+     back closes them. Wide screens show Sci beside Basic; a phone on its side puts History left. -->
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./Keypad.svelte";
 	import Sheet from "./Sheet.svelte";
 	import { Calculator } from "../shared/calc";
 	import { BASIC, SCIENTIFIC, type Key } from "../shared/keys";
-	import { applyTheme, loadTheme, saveTheme, WIDE } from "../shared/page";
+	import { applyTheme, loadTheme, saveTheme, trackKeys, WIDE } from "../shared/page";
+	import { holdToRepeat } from "../shared/repeat";
 
 	const calc = new Calculator(new URL("./worker.js", document.baseURI).href);
 	const snap = () => ({
@@ -17,6 +18,8 @@
 	let view = $state(snap());
 	let input: HTMLInputElement;
 	let historyBox: HTMLElement;
+	let keysBox: HTMLElement;
+	let backBox: HTMLElement;
 	let systemKeys = $state(false);
 	let settingsOpen = $state(false);
 	let theme = $state(loadTheme());
@@ -122,7 +125,14 @@
 		const onWide = () => { wide = media.matches; if (wide) drawer = 0; };
 		media.addEventListener("change", onWide);
 		addEventListener("popstate", onBack);
-		return () => { unsubscribe(); media.removeEventListener("change", onWide); removeEventListener("popstate", onBack); };
+		const untrack = trackKeys(keysBox);
+		const unhold = holdToRepeat(backBox, () => calc.backspace());
+		return () =>
+		{
+			unsubscribe(); untrack(); unhold();
+			media.removeEventListener("change", onWide);
+			removeEventListener("popstate", onBack);
+		};
 	});
 
 	const status = $derived(view.armed ? "STO: press x or y" : view.second ? "2nd" : view.status);
@@ -228,8 +238,9 @@
 			<input bind:this={input} inputmode={systemKeys ? "text" : "none"} autocomplete="off" autocapitalize="off"
 				spellcheck="false" placeholder="0" oninput={onInput} onkeydown={onKey}
 				onclick={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)} />
+			<button bind:this={backBox} class="backspace" aria-label="Delete one character">⌫</button>
 		</div>
-		<div class="keys">
+		<div bind:this={keysBox} class="keys">
 			{#if wide}
 				<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
 					angle={view.settings.angle} onpress={press} />
@@ -244,12 +255,13 @@
 	</div>
 
 	{#if !wide}
-		{#if drawer > 0}<div class="shade" role="presentation" style="opacity: {drawer * 0.4}" onclick={() => history.back()}></div>{/if}
-		<div bind:this={drawerBox} class="drawer" class:dragging style="transform: translateX({(drawer - 1) * 100}%)"
-			onpointerdown={event => { if ((event.target as HTMLElement).closest(".key") == null) dragBegin(event); }}
-			onpointermove={dragMove} onpointerup={dragEnd} onpointercancel={dragEnd}>
-			<div class="drawer-head"><span>Scientific</span><button class="bar-button" onclick={() => history.back()}>✕</button></div>
-			<div class="drawer-keys">
+		<!-- The drawer moves inside the keys box only, so History and Input stay in view (owner 2026-11-18) -->
+		<div class="drawer-clip">
+			<div bind:this={drawerBox} class="drawer" class:dragging class:open={drawer > 0}
+				style="transform: translateX({(drawer - 1) * 100}%)"
+				onpointerdown={event => { if ((event.target as HTMLElement).closest(".key, .sci-tab") == null) dragBegin(event); }}
+				onpointermove={dragMove} onpointerup={dragEnd} onpointercancel={dragEnd}>
+				<button class="sci-tab" onclick={() => history.back()}>◂ Basic</button>
 				<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
 					angle={view.settings.angle} onpress={press} />
 			</div>
@@ -299,24 +311,21 @@
 	}
 	.bar-button:active, .bar-button.on { background: var(--line); }
 	.calc { flex: 1; min-height: 0; height: auto; }
-	.keys { position: relative; padding-top: 26px; background: var(--key-bg); }
-	.sci-tab
-	{
-		position: absolute; left: 0; top: 0; z-index: 2; border: none; background: none; color: var(--select);
-		font: inherit; font-size: 14px; padding: 6px 12px; cursor: pointer;
-	}
 	.edge { position: absolute; left: 0; top: 26px; bottom: 0; width: 18px; z-index: 2; touch-action: none; }
-	.shade { position: fixed; inset: 0; background: #000; z-index: 20; }
+	.drawer-clip
+	{
+		position: fixed; z-index: 21; overflow: hidden; pointer-events: none;
+		top: var(--keys-top); left: var(--keys-left); width: var(--keys-width); height: var(--keys-h);
+	}
 	.drawer
 	{
-		position: fixed; left: 0; bottom: 0; z-index: 21; width: min(94vw, 560px); height: min(62vh, 440px);
-		display: flex; flex-direction: column; background: var(--page); border-radius: 0 16px 0 0;
-		box-shadow: 4px 0 20px rgb(0 0 0 / 0.3); transition: transform 200ms ease-out; touch-action: pan-y;
-		padding-bottom: env(safe-area-inset-bottom);
+		position: absolute; inset: 0; display: flex; padding-top: 26px; background: var(--key-bg);
+		transition: transform 200ms ease-out; touch-action: pan-y;
 	}
+	.drawer.open, .drawer.dragging { pointer-events: auto; box-shadow: 4px 0 16px rgb(0 0 0 / 0.3); }
 	.drawer.dragging { transition: none; }
-	.drawer-head, .settings-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 16px; font-weight: 600; }
-	.drawer-keys { flex: 1; min-height: 0; }
+	.drawer > :global(.keypad) { flex: 1; }
+	.settings-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 16px; font-weight: 600; }
 	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; }
 	.settings
 	{

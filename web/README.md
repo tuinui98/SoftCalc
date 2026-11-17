@@ -61,8 +61,15 @@ an operator, tap-to-recall with the highlight, entry/Up walk):
 - **B. Svelte** (`svelte.html`): hand-made drawer that follows the
   finger (left edge, or the "Sci ▸" tab), bottom sheets, Settings as a
   sheet, Back closes the top layer. JS 19 KB gzipped.
-Wide screens (landscape, 900 px and more) show Sci beside Basic in both.
+Wide screens (landscape, at least 900 x 600) show Sci beside Basic in both.
 The ⌨ button lets the system keyboard open on Input.
+
+Owner 2026-11-18, after a first try on a tablet and a phone: the 2nd key
+is yellow; the Sci panel covers only the keys (History and Input stay in
+view), with "Sci ▸" / "◂ Basic" at the top left of the keys as on the
+desktop; a phone on its side puts History left and the keys right
+(the wide layout had made the keys flat); ⌫ beside Input deletes one
+character, and repeats while held.
 ```
 cd web
 npm install

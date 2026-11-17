@@ -92,6 +92,17 @@ export class Calculator
 		this.changed();
 	}
 
+	// ⌫ beside Input: one character before the caret (owner 2026-11-18, for touch screens)
+	backspace()
+	{
+		if (this.caret > 0)
+		{
+			this.setText(this.text.slice(0, this.caret - 1) + this.text.slice(this.caret), this.caret - 1);
+			this.highlight = -1;
+			this.changed();
+		}
+	}
+
 	moveCaret(caret: number)
 	{
 		this.caret = Math.max(0, Math.min(caret, this.text.length));

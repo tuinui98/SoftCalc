@@ -1,16 +1,18 @@
-<!-- App.vue - Mockup A: Ionic + Vue. Sci in an ion-menu (swipe from the left edge or the Sci button),
-     Functions / Conversions as action sheets, Settings in a modal. Wide screens show Sci beside Basic. -->
+<!-- App.vue - Mockup A: Ionic + Vue. Sci in an ion-menu over the keys only (swipe from the edge, the Sci
+     button or "Sci ▸"), Functions / Conversions as action sheets, Settings in a modal. Wide screens show
+     Sci beside Basic; a phone on its side puts History left and the keys right. -->
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref, shallowRef } from "vue";
 import {
 	IonApp, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu, IonModal,
 	IonSegment, IonSegmentButton, IonSelect, IonSelectOption, IonTitle, IonToolbar, actionSheetController, menuController,
 } from "@ionic/vue";
-import { closeOutline, ellipsisVertical, keypadOutline } from "ionicons/icons";
+import { ellipsisVertical, keypadOutline } from "ionicons/icons";
 import Keypad from "./Keypad.vue";
 import { Calculator } from "../shared/calc";
 import { BASIC, SCIENTIFIC, type Key } from "../shared/keys";
-import { applyTheme, loadTheme, saveTheme, WIDE } from "../shared/page";
+import { applyTheme, loadTheme, saveTheme, SIDE, trackKeys, WIDE } from "../shared/page";
+import { holdToRepeat } from "../shared/repeat";
 
 const calc = new Calculator(new URL("./worker.js", document.baseURI).href);
 const snap = () => ({
@@ -23,7 +25,11 @@ const systemKeys = ref(false);
 const settingsOpen = ref(false);
 const theme = ref(loadTheme());
 const wide = ref(matchMedia(WIDE).matches);
+const side = ref(matchMedia(SIDE).matches);
 const historyBox = ref<HTMLElement | null>(null);
+const keysBox = ref<HTMLElement | null>(null);
+const backBox = ref<HTMLElement | null>(null);
+const cleanups: (() => void)[] = [];
 
 const unsubscribe = calc.subscribe(async () =>
 {
@@ -41,9 +47,22 @@ const unsubscribe = calc.subscribe(async () =>
 	}
 });
 const media = matchMedia(WIDE);
-const onWide = () => { wide.value = media.matches; };
-onMounted(() => { media.addEventListener("change", onWide); applyTheme(theme.value); });
-onUnmounted(() => { media.removeEventListener("change", onWide); unsubscribe(); });
+const sideMedia = matchMedia(SIDE);
+const onWide = () => { wide.value = media.matches; side.value = sideMedia.matches; };
+onMounted(() =>
+{
+	media.addEventListener("change", onWide);
+	sideMedia.addEventListener("change", onWide);
+	applyTheme(theme.value);
+	cleanups.push(trackKeys(keysBox.value!), holdToRepeat(backBox.value!, () => calc.backspace()));
+});
+onUnmounted(() =>
+{
+	media.removeEventListener("change", onWide);
+	sideMedia.removeEventListener("change", onWide);
+	unsubscribe();
+	cleanups.forEach(clean => clean());
+});
 
 // Android back closes the menu and overlays by itself once in Capacitor; in a browser, Back leaves the page
 const status = computed(() => view.value.armed ? "STO: press x or y" : view.value.second ? "2nd" : view.value.status);
@@ -137,17 +156,10 @@ function setTheme(value: string)
 
 <template>
 	<ion-app>
-		<ion-menu menu-id="sci" content-id="main" side="start" type="overlay" :disabled="wide" class="sci-menu">
-			<ion-header>
-				<ion-toolbar>
-					<ion-title>Scientific</ion-title>
-					<ion-buttons slot="end">
-						<ion-button @click="menuController.close('sci')"><ion-icon slot="icon-only" :icon="closeOutline" /></ion-button>
-					</ion-buttons>
-				</ion-toolbar>
-			</ion-header>
+		<ion-menu menu-id="sci" content-id="main" :side="side ? 'end' : 'start'" type="overlay" :disabled="wide" class="sci-menu">
 			<ion-content :scroll-y="false">
 				<div class="sci-box">
+					<button class="sci-tab" @click="menuController.close('sci')">◂ Basic</button>
 					<Keypad :keys="SCIENTIFIC" sci :second="view.second" :armed="view.armed" :base="view.settings.base"
 						:angle="view.settings.angle" @press="press" />
 				</div>
@@ -185,8 +197,10 @@ function setTheme(value: string)
 						<input ref="input" :inputmode="systemKeys ? 'text' : 'none'" autocomplete="off" autocapitalize="off"
 							spellcheck="false" placeholder="0" @input="onInput" @keydown="onKey"
 							@click="calc.moveCaret(($event.target as HTMLInputElement).selectionStart ?? 0)" />
+						<button ref="backBox" class="backspace" aria-label="Delete one character">⌫</button>
 					</div>
-					<div class="keys">
+					<div ref="keysBox" class="keys">
+						<button v-if="!wide" class="sci-tab" @click="menuController.open('sci')">Sci ▸</button>
 						<Keypad v-if="wide" :keys="SCIENTIFIC" sci :second="view.second" :armed="view.armed"
 							:base="view.settings.base" :angle="view.settings.angle" @press="press" />
 						<Keypad :keys="BASIC" :second="view.second" :armed="view.armed" :base="view.settings.base"
@@ -240,7 +254,10 @@ function setTheme(value: string)
 </template>
 
 <style>
-.sci-menu { --width: min(94vw, 560px); }
-.sci-box { position: absolute; left: 0; right: 0; bottom: 0; height: min(62vh, 420px); }
+/* The Sci panel lies over the keys only; History and Input stay in view (owner 2026-11-18) */
+.sci-menu { --width: var(--keys-width, 100vw); --ion-backdrop-opacity: 0.12; }
+.sci-menu::part(container) { top: var(--keys-top, 50vh); height: var(--keys-h, 50vh); bottom: auto; }
+.sci-box { position: absolute; inset: 0; display: flex; padding-top: 26px; background: var(--key-bg); }
+.sci-box > .keypad { flex: 1; }
 .calc { position: absolute; inset: 0; }
 </style>

@@ -44,9 +44,9 @@ export function keyClass(key: Key, second: boolean, armed: boolean): string
 	{
 		names.push(key.kind);
 	}
-	if (key.id === "2nd" && second)
+	if (key.id === "2nd")
 	{
-		names.push("on");
+		names.push(second ? "second-key on" : "second-key");
 	}
 	if (key.second === "sto" && armed)
 	{
