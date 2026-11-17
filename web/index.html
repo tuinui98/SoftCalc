@@ -35,10 +35,25 @@ const history = document.getElementById("history");
 const input = document.getElementById("input");
 const status = document.getElementById("status");
 const bench = document.getElementById("bench");
-const worker = new Worker("worker.js", { type: "module" });
 const waiting = new Map();
 let nextId = 1;
 const pageStart = performance.now();
+if (location.protocol === "file:")
+{
+	status.textContent = "Open this page through a web server, not as a file: in web/, run "
+		+ "\"python serve.py\" and open the address it prints.";
+	throw new Error("opened as a file");
+}
+const worker = new Worker("worker.js", { type: "module" });
+// A worker that cannot load (a missing file, a blocked script) says so here instead of hanging
+worker.onerror = event => { status.textContent = "Engine failed to load: " + (event.message || "worker.js or Pyodide could not be loaded") + "."; };
+setTimeout(() =>
+{
+	if (!window.spikeReady && status.textContent.startsWith("Loading"))
+	{
+		status.textContent += " (still loading after 60 s: check that npm install and make_engine.py were run)";
+	}
+}, 60000);
 
 function send(op, args = {})
 {

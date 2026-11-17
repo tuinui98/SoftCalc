@@ -16,13 +16,15 @@ The Python engine running in the browser on [Pyodide](https://pyodide.org)
   `node_modules/`, not a CDN, so the page can work offline later.
 
 ## Run
+Once, in `web/`: `npm install` (gets the pinned Pyodide into `node_modules/`).
 ```
-cd web
-npm install
-python make_engine.py
-python -m http.server 8765 --bind 127.0.0.1    # open http://127.0.0.1:8765/
-node test_engine.mjs                            # engine tests in Pyodide
+python web/serve.py          # packs the engine, serves web/, opens http://127.0.0.1:8765/
+python web/serve.py --lan    # also prints an address for a phone on the same Wi-Fi
+node web/test_engine.mjs     # engine tests in Pyodide
 ```
+The page must come from a server: opened as a file (`file://`) the
+browser does not start the worker, and the page says so. If Pyodide or
+`engine.zip` cannot be loaded, the status line shows why.
 
 ## Results (2026-11-18, desktop Chrome, local server)
 - Engine tests in Pyodide: **604 passed**; 3 left out because they start a

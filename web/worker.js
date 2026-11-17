@@ -19,7 +19,12 @@ async function start()
 	const t1 = performance.now();
 	await pyodide.loadPackage("mpmath");
 	const t2 = performance.now();
-	const zip = await (await fetch("engine.zip", { cache: "no-store" })).arrayBuffer();
+	const answer = await fetch("engine.zip", { cache: "no-store" });
+	if (!answer.ok)
+	{
+		throw new Error(`engine.zip: HTTP ${answer.status} (run python make_engine.py)`);
+	}
+	const zip = await answer.arrayBuffer();
 	pyodide.unpackArchive(zip, "zip", { extractDir: "/home/pyodide" });
 	await pyodide.runPythonAsync(`
 import sys, json
