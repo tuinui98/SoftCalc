@@ -8,7 +8,12 @@
 		"mockup:prepare": "node mockup/prepare.mjs",
 		"mockup:dev": "node mockup/prepare.mjs && vite mockup --host 0.0.0.0 --port 8766",
 		"mockup:build": "node mockup/prepare.mjs && vite build mockup",
-		"mockup": "node mockup/prepare.mjs && vite build mockup && vite preview mockup --host 0.0.0.0 --port 8766"
+		"mockup": "node mockup/prepare.mjs && vite build mockup && vite preview mockup --host 0.0.0.0 --port 8766",
+		"test": "vitest run --config app/vite.config.mjs",
+		"app:prepare": "node app/prepare.mjs",
+		"app:dev": "node app/prepare.mjs && vite app --host 0.0.0.0 --port 8767",
+		"app:build": "node app/prepare.mjs && vite build app",
+		"app": "node app/prepare.mjs && vite build app && vite preview app --host 0.0.0.0 --port 8767"
 	},
 	"devDependencies": {
 		"@ionic/vue": "9.0.10",
@@ -18,6 +23,7 @@
 		"pyodide": "314.0.7",
 		"svelte": "5.57.3",
 		"vite": "8.3.5",
+		"vitest": "5.1.0",
 		"vue": "3.5.44",
 		"vue-router": "5.4.0"
 	}
