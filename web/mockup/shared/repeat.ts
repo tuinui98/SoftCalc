@@ -24,19 +24,29 @@ export function holdToRepeat(button: HTMLElement, act: () => void): () => void
 	};
 }
 
-// A backdrop that closes on the first touch (owner 2026-11-18: a tap outside the menu took two
-// tries on a phone). It closes when the finger lifts, and the click that a phone may still send
-// after that is dropped, so the touch does not also press the key that was under the backdrop.
-export function closeOnTouch(backdrop: HTMLElement, close: () => void): () => void
+// Acts on the first touch (owner 2026-11-18: a tap outside the menu, and on Cancel, took two
+// tries on a phone). It acts when the finger lifts on the same element, and the click that a
+// phone may still send after that is dropped, so the touch does not also press what was under
+// it. A click with no touch before it (keyboard, mouse) still acts once.
+export function tapOn(element: HTMLElement, act: () => void, selfOnly = false): () => void
 {
 	let downOnIt = false;
+	let done = false;
+	const inside = (target: EventTarget | null) => selfOnly ? target === element : element.contains(target as Node);
 	const down = (event: PointerEvent) =>
 	{
-		downOnIt = event.target === backdrop;
+		downOnIt = inside(event.target);
+	};
+	const click = (event: MouseEvent) =>
+	{
+		if (!done && inside(event.target))
+		{
+			act();
+		}
 	};
 	const up = (event: PointerEvent) =>
 	{
-		if (!downOnIt || event.target !== backdrop)
+		if (!downOnIt || !inside(event.target))
 		{
 			return;
 		}
@@ -45,13 +55,23 @@ export function closeOnTouch(backdrop: HTMLElement, close: () => void): () => vo
 		const swallow = (click: MouseEvent) => { click.stopPropagation(); click.preventDefault(); };
 		window.addEventListener("click", swallow, true);
 		setTimeout(() => window.removeEventListener("click", swallow, true), 400);
-		close();
+		done = true;
+		setTimeout(() => { done = false; }, 400);
+		act();
 	};
-	backdrop.addEventListener("pointerdown", down);
-	backdrop.addEventListener("pointerup", up);
+	element.addEventListener("pointerdown", down);
+	element.addEventListener("pointerup", up);
+	element.addEventListener("click", click);
 	return () =>
 	{
-		backdrop.removeEventListener("pointerdown", down);
-		backdrop.removeEventListener("pointerup", up);
+		element.removeEventListener("pointerdown", down);
+		element.removeEventListener("pointerup", up);
+		element.removeEventListener("click", click);
 	};
+}
+
+// A backdrop: only a touch on the backdrop itself closes it
+export function closeOnTouch(backdrop: HTMLElement, close: () => void): () => void
+{
+	return tapOn(backdrop, close, true);
 }
