@@ -35,6 +35,7 @@
 	padding: var(--key-gap);
 	background: var(--key-bg);
 	height: 100%;
+	box-sizing: border-box;    /* the padding stays inside the box (Svelte has no global reset) */
 	container-type: size;
 	user-select: none;
 	-webkit-user-select: none;
@@ -68,7 +69,8 @@
 .key.op { background: var(--key-op); }
 .key.equals { background: var(--key-equals); color: var(--key-equals-ink); }
 .key.mode { font-size: clamp(13px, 6.5cqmin, 22px); }
-.key.on { outline: 3px solid var(--key-second); outline-offset: -3px; }
+.key.second-key { color: var(--key-second); font-weight: 600; }
+.key.second-key.on { background: var(--key-second); color: #000; }
 .key.armed { background: var(--key-armed); color: #000; }
 .key .second
 {

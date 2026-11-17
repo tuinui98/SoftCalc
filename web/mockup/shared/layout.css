@@ -40,6 +40,23 @@
 .history { grid-area: history; overflow-y: auto; overscroll-behavior: contain; }
 .hint { grid-area: hint; padding: 2px 14px; color: var(--faint); font-size: 13px; font-style: italic; min-height: 1.4em; }
 .input-row { grid-area: input; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-top: 1px solid var(--line); }
+.input-row .backspace
+{
+	flex: none;
+	width: 52px;
+	height: 44px;
+	border: none;
+	border-radius: 22px;
+	background: none;
+	color: var(--ink);
+	font-size: 24px;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	touch-action: manipulation;
+	user-select: none;
+	-webkit-user-select: none;
+}
+.input-row .backspace:active { background: var(--line); }
 .input-row input
 {
 	flex: 1;
@@ -53,7 +70,12 @@
 	color: var(--ink);
 	caret-color: var(--select);
 }
-.keys { grid-area: keys; display: flex; min-height: 0; }
+.keys { grid-area: keys; position: relative; display: flex; min-height: 0; padding-top: 26px; background: var(--key-bg); }
+.sci-tab
+{
+	position: absolute; left: 0; top: 0; height: 26px; z-index: 2; border: none; background: none;
+	color: var(--select); font: inherit; font-size: 14px; padding: 0 12px; cursor: pointer;
+}
 .keys > .keypad { flex: 1; }
 .keys > .keypad.sci { flex: 1; }
 
@@ -67,7 +89,20 @@
 .entry.selected .sub { color: var(--select-ink); }
 .empty-history { padding: 24px 14px; color: var(--faint); }
 
-@media (min-width: 900px) and (orientation: landscape)
+@media (orientation: landscape) and (max-height: 599px)
+{
+	.calc
+	{
+		grid-template-rows: 1fr auto auto;
+		grid-template-columns: 1fr 1fr;
+		grid-template-areas: "history keys" "hint keys" "input keys";
+	}
+	.keys { border-left: 1px solid var(--line); }
+	.entry { padding: 4px 12px; }
+	.entry .result { font-size: 18px; }
+}
+
+@media (orientation: landscape) and (min-width: 900px) and (min-height: 600px)
 {
 	.calc
 	{

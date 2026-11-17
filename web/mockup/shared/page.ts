@@ -1,7 +1,28 @@
 // page.ts - Page-wide helpers for both mockups: wide layout query and the theme
 
-// The same query as layout.css: Sci beside Basic instead of from the side
-export const WIDE = "(min-width: 900px) and (orientation: landscape)";
+// The same queries as layout.css. WIDE: Sci beside Basic. SIDE: History left, keys right (a phone
+// on its side), Sci from the side over the keys. Owner 2026-11-18: a phone on its side was too flat.
+export const WIDE = "(orientation: landscape) and (min-width: 900px) and (min-height: 600px)";
+export const SIDE = "(orientation: landscape) and (max-height: 599px)";
+
+// The Sci panel covers exactly the keys box, so History and Input stay in view (owner 2026-11-18)
+export function trackKeys(box: HTMLElement): () => void
+{
+	const update = () =>
+	{
+		const r = box.getBoundingClientRect();
+		const style = document.documentElement.style;
+		style.setProperty("--keys-top", `${r.top}px`);
+		style.setProperty("--keys-left", `${r.left}px`);
+		style.setProperty("--keys-width", `${r.width}px`);
+		style.setProperty("--keys-h", `${r.height}px`);
+	};
+	const watcher = new ResizeObserver(update);
+	watcher.observe(box);
+	addEventListener("resize", update);
+	update();
+	return () => { watcher.disconnect(); removeEventListener("resize", update); };
+}
 
 const DARK = matchMedia("(prefers-color-scheme: dark)");
 
