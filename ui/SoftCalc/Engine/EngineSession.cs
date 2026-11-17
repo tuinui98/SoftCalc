@@ -336,10 +336,10 @@ internal sealed class EngineSession : IDisposable
 		}
 	}
 
-	// One number literal in the output base for the hint line, or null (protocol `literal`)
-	public async Task<string?> LiteralAsync(string text)
+	// The hint line under Input for the caret, or null (protocol `hint`, engine hints.py)
+	public async Task<string?> HintAsync(string text, int caret)
 	{
-		var reply = await GuardedAsync("literal", new JsonObject { ["text"] = text });
+		var reply = await GuardedAsync("hint", new JsonObject { ["text"] = text, ["caret"] = caret });
 		return (string?)reply["text"];
 	}
 

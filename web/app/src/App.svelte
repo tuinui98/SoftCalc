@@ -10,7 +10,7 @@
 	import { Calculator } from "./lib/calc";
 	import { Engine } from "./lib/engine";
 	import { BASIC, SCIENTIFIC, type Key } from "./lib/keys";
-	import { applyTheme, loadTheme, saveTheme, WIDE } from "./lib/page";
+	import { applyTheme, loadHints, loadTheme, saveHints, saveTheme, WIDE } from "./lib/page";
 	import { closeOnTouch, holdToRepeat } from "./lib/repeat";
 	import type { Store } from "./lib/store";
 	import { swipeOn } from "./lib/swipe";
@@ -19,8 +19,9 @@
 	// The store is given once at start and never changes
 	// svelte-ignore state_referenced_locally
 	const calc = new Calculator(new Engine(new URL("./worker.js", document.baseURI).href), store);
+	calc.showHints = loadHints();
 	const snap = () => ({
-		text: calc.text, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
+		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
 		second: calc.second, armed: calc.storeArmed, status: calc.status,
 	});
 	let view = $state(snap());
@@ -31,6 +32,8 @@
 	let systemKeys = $state(false);
 	let settingsOpen = $state(false);
 	let theme = $state(loadTheme());
+	let showHints = $state(calc.showHints);
+	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
 
@@ -167,6 +170,10 @@
 		const unsubscribe = calc.subscribe(async () =>
 		{
 			const before = view.entries.length;
+			if (calc.hint !== view.hint)
+			{
+				hintOpen = false;
+			}
 			view = snap();
 			await tick();
 			input.value = calc.text;
@@ -242,6 +249,13 @@
 
 	const outside = (box: HTMLElement) => ({ destroy: closeOnTouch(box, () => { settingsOpen = false; }) });
 
+	function setHints(on: boolean)
+	{
+		showHints = on;
+		saveHints(on);
+		calc.setShowHints(on);
+	}
+
 	function setTheme(value: string)
 	{
 		theme = value;
@@ -288,9 +302,14 @@
 		<div class="input-row">
 			<input bind:this={input} inputmode={systemKeys ? "text" : "none"} autocomplete="off" autocapitalize="off"
 				spellcheck="false" placeholder="0" oninput={onInput} onkeydown={onKey}
-				onclick={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)} />
+				onclick={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)}
+				onkeyup={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)} />
 			<button bind:this={backBox} class="backspace" aria-label="Delete one character">⌫</button>
 		</div>
+		{#if showHints}
+			<div class="input-hint" class:open={hintOpen} role="button" tabindex="-1"
+				onclick={() => { hintOpen = !hintOpen; focusInput(); }} onkeydown={() => {}}>{view.hint}</div>
+		{/if}
 		<div bind:this={pagesBox} class="keys pages" class:wide>
 			{#if wide}
 				<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
@@ -328,6 +347,10 @@
 			<div class="row"><span>Output base</span><div class="seg">
 				{#each ["dec", "hex", "oct", "bin"] as base}
 					<button class:on={view.settings.base === base} onclick={() => calc.setSetting("base", base)}>{base}</button>
+				{/each}</div></div>
+			<div class="row"><span>Input hints</span><div class="seg">
+				{#each [true, false] as on}
+					<button class:on={showHints === on} onclick={() => setHints(on)}>{on ? "show" : "hide"}</button>
 				{/each}</div></div>
 			<div class="row"><span>Theme</span><div class="seg">
 				{#each ["system", "light", "dark"] as value}

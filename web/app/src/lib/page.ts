@@ -50,6 +50,31 @@ export function saveTheme(value: string)
 	}
 }
 
+// Settings > Show Input Hints (desktop View > Show Input Hints), on unless turned off
+export function loadHints(): boolean
+{
+	try
+	{
+		return localStorage.getItem("softcalc-hints") !== "off";
+	}
+	catch
+	{
+		return true;
+	}
+}
+
+export function saveHints(on: boolean)
+{
+	try
+	{
+		localStorage.setItem("softcalc-hints", on ? "on" : "off");
+	}
+	catch
+	{
+		// private mode: the choice just is not remembered
+	}
+}
+
 // "dark" for our CSS, "ion-palette-dark" for Ionic's own colours
 export function applyTheme(value: string)
 {

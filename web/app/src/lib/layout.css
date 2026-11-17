@@ -30,8 +30,8 @@
 .calc
 {
 	display: grid;
-	grid-template-rows: 1fr auto auto var(--keys-height, 46%);
-	grid-template-areas: "history" "hint" "input" "keys";
+	grid-template-rows: 1fr auto auto auto var(--keys-height, 46%);
+	grid-template-areas: "history" "hint" "input" "help" "keys";
 	height: 100%;
 	background: var(--page);
 	color: var(--ink);
@@ -39,6 +39,13 @@
 
 .history { grid-area: history; overflow-y: auto; overscroll-behavior: contain; }
 .hint { grid-area: hint; padding: 2px 14px; color: var(--faint); font-size: 13px; font-style: italic; min-height: 1.4em; }
+/* The hint line under Input: one line, cut with ..., so the keys do not move; a tap shows all of it */
+.input-hint
+{
+	grid-area: help; padding: 0 14px 4px; min-height: 1.4em; color: var(--faint); font-size: 13px;
+	white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.input-hint.open { white-space: normal; overflow-wrap: anywhere; }
 .input-row { grid-area: input; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-top: 1px solid var(--line); }
 .input-row .backspace
 {
@@ -93,9 +100,9 @@
 {
 	.calc
 	{
-		grid-template-rows: 1fr auto auto;
+		grid-template-rows: 1fr auto auto auto;
 		grid-template-columns: 1fr 1fr;
-		grid-template-areas: "history keys" "hint keys" "input keys";
+		grid-template-areas: "history keys" "hint keys" "input keys" "help keys";
 	}
 	.keys { border-left: 1px solid var(--line); }
 	.entry { padding: 4px 12px; }
@@ -106,9 +113,9 @@
 {
 	.calc
 	{
-		grid-template-rows: 1fr auto auto;
+		grid-template-rows: 1fr auto auto auto;
 		grid-template-columns: minmax(320px, 1fr) minmax(560px, 1.4fr);
-		grid-template-areas: "history keys" "hint keys" "input keys";
+		grid-template-areas: "history keys" "hint keys" "input keys" "help keys";
 	}
 	.keys { border-left: 1px solid var(--line); }
 }

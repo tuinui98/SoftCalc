@@ -84,6 +84,7 @@ class Dispatcher:
             "plot_equation": self.op_plot_equation,
             "equation_at": self.op_equation_at,
             "literal": self.op_literal,
+            "hint": self.op_hint,
             "delete_result": self.op_delete_result,
             "pcf_export": lambda request: {"text": self.engine.export_pcf()},
             "pcf_import": self.op_pcf_import,
@@ -204,6 +205,9 @@ class Dispatcher:
 
     def op_literal(self, request):
         return {"text": self.engine.literal_hint(argument(request, "text", str))}
+
+    def op_hint(self, request):
+        return {"text": self.engine.hint(argument(request, "text", str), argument(request, "caret", int))}
 
     def op_delete_result(self, request):
         self.engine.delete_result(argument(request, "n", int))
