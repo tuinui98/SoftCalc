@@ -65,17 +65,25 @@
 			dir = -dir;
 		}
 		await tick();
-		requestAnimationFrame(() =>
-		{
-			sliding = true;
-			dx = 0;
-		});
+		startSlide();
 	}
+
+	// The start place is drawn first (reading the size makes the browser apply it), then the
+	// transition takes the pages to dx 0. No requestAnimationFrame: it may not run at all.
+	function startSlide()
+	{
+		void pagesBox.offsetWidth;
+		sliding = true;
+		dx = 0;
+		const slide = ++slideCount;
+		setTimeout(() => { if (slide === slideCount) sliding = false; }, 400);    // in case no transitionend comes
+	}
+	let slideCount = 0;
 
 	function dragEnd(offset: number, velocity: number)
 	{
 		const far = Math.abs(offset) > pageWidth * 0.3;
-		const flick = Math.abs(velocity) > 0.4 && Math.sign(velocity) === Math.sign(offset);
+		const flick = Math.abs(offset) > 40 && Math.abs(velocity) > 0.6 && Math.sign(velocity) === Math.sign(offset);
 		settle(offset !== 0 && (far || flick));
 	}
 
@@ -93,16 +101,17 @@
 		dx = toSci ? -pageWidth : pageWidth;
 		dir = toSci ? -1 : 1;
 		await tick();
-		requestAnimationFrame(() => requestAnimationFrame(() =>
-		{
-			sliding = true;
-			dx = 0;
-		}));
+		startSlide();
 	}
 
-	function slid()
+	// Only the page's own slide counts: a key's press effect also ends with a transitionend that
+	// bubbles up, and stopping the slide on it made the pages jump on a phone (owner 2026-11-18)
+	function slid(event: TransitionEvent)
 	{
-		sliding = false;
+		if (event.target === event.currentTarget && event.propertyName === "transform")
+		{
+			sliding = false;
+		}
 	}
 
 	//==================================================================
@@ -264,11 +273,14 @@
 				<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
 					angle={view.settings.angle} onpress={press} />
 			{:else}
-				<div class="page" class:sliding style={shown} ontransitionend={slid}>
-					{#if sci}{@render sciPage()}{:else}{@render basicPage()}{/if}
+				<!-- Each page keeps its keys; only the places change, so no keys are rebuilt mid-swipe -->
+				<div class="page" class:sliding class:hidden={sci && !otherVisible} style={sci ? other : shown}
+					aria-hidden={sci} ontransitionend={slid}>
+					{@render basicPage()}
 				</div>
-				<div class="page" class:sliding class:hidden={!otherVisible} style={other} aria-hidden="true">
-					{#if sci}{@render basicPage()}{:else}{@render sciPage()}{/if}
+				<div class="page" class:sliding class:hidden={!sci && !otherVisible} style={sci ? shown : other}
+					aria-hidden={!sci} ontransitionend={slid}>
+					{@render sciPage()}
 				</div>
 			{/if}
 		</div>
