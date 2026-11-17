@@ -135,6 +135,7 @@
 		const group = await pick("Functions", Object.keys(calc.catalog.functions));
 		const name = group && await pick(group, calc.catalog.functions[group]);
 		if (name) await calc.insertFunction(name);
+		focusInput();
 	}
 
 	async function openConversions()
@@ -145,6 +146,7 @@
 		const source = group && await pick(`${group}: from`, units);
 		const target = source && await pick(`${source} to`, units.filter(unit => unit !== source));
 		if (source && target) await calc.insertConversion(source, target);
+		focusInput();
 	}
 
 	async function openMore()
@@ -182,7 +184,7 @@
 			end: (offset, velocity) => { if (!wide) dragEnd(offset, velocity); },
 			up: () => { openMore(); },
 		});
-		const unhold = holdToRepeat(backBox, () => calc.backspace());
+		const unhold = holdToRepeat(backBox, () => { focusInput(); calc.backspace(); });
 		const sizer = new ResizeObserver(() => { pageWidth = pagesBox.clientWidth || 1; });
 		sizer.observe(pagesBox);
 		return () =>
@@ -195,11 +197,25 @@
 	const status = $derived(view.armed ? "STO: press x or y" : view.second ? "2nd"
 		: kept ? view.status : view.status + " (this browser does not keep History)");
 
+	// Every key, ⌫, a History tap and a menu pick bring the focus back to Input, so the caret
+	// shows and the next key needs no tap on Input first (owner 2026-11-18). Only when it is not
+	// already there: with the system keyboard on, refocusing would bring back a keyboard the
+	// user just put away.
+	function focusInput()
+	{
+		if (document.activeElement !== input)
+		{
+			input.focus({ preventScroll: true });
+		}
+	}
+
 	async function press(key: Key)
 	{
+		focusInput();
 		const menu = await calc.press(calc.resolve(key));
 		if (menu === "func") await openFunctions();
 		else if (menu === "units") await openConversions();
+		focusInput();
 	}
 
 	function onInput(event: Event)
@@ -235,13 +251,15 @@
 </script>
 
 {#snippet basicPage()}
-	<button class="sci-tab" onclick={() => flipTo(true)}>Sci ▸</button>
+	<button class="sci-tab" onpointerdown={event => event.preventDefault()}
+		onclick={() => { focusInput(); flipTo(true); }}>Sci ▸</button>
 	<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
 		angle={view.settings.angle} onpress={press} />
 {/snippet}
 
 {#snippet sciPage()}
-	<button class="sci-tab" onclick={() => flipTo(false)}>◂ Basic</button>
+	<button class="sci-tab" onpointerdown={event => event.preventDefault()}
+		onclick={() => { focusInput(); flipTo(false); }}>◂ Basic</button>
 	<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
 		angle={view.settings.angle} onpress={press} />
 {/snippet}
@@ -259,7 +277,7 @@
 				Swipe the keys left or right for Sci, up for the menu.</div>{/if}
 			{#each view.entries as entry, index}
 				<div class="entry {entry.kind}" class:selected={index === view.highlight} role="button" tabindex="-1"
-					onclick={() => calc.tapEntry(index)} onkeydown={() => {}}>
+					onclick={() => { calc.tapEntry(index); focusInput(); }} onkeydown={() => {}}>
 					<div class="top"><span>{entry.input}</span>
 						{#if entry.display !== entry.input}<span class="sub">{entry.display}</span>{/if}</div>
 					<div class="result">{entry.text}</div>
