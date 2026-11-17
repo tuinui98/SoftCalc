@@ -1,14 +1,17 @@
-<!-- App.svelte - Mockup B: Svelte with hand-made parts. Sci in a drawer over the keys only (swipe from
-     the left edge of the keys, the Sci button or "Sci ▸"), menus and Settings as bottom sheets, Android
-     back closes them. Wide screens show Sci beside Basic; a phone on its side puts History left. -->
+<!-- App.svelte - Mockup B: Svelte with hand-made parts (the owner's choice, 2026-11-18).
+     Keys: Basic and Sci are two pages; a swipe left or right on the keys flips between them and the
+     keys follow the finger, a swipe up opens the menu, "Sci ▸" / "◂ Basic" flip too. The system's
+     own gestures and Back are left alone. Menus and Settings are bottom sheets. Wide screens show
+     Sci beside Basic; a phone on its side puts History left and the keys right. -->
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./Keypad.svelte";
 	import Sheet from "./Sheet.svelte";
 	import { Calculator } from "../shared/calc";
 	import { BASIC, SCIENTIFIC, type Key } from "../shared/keys";
-	import { applyTheme, loadTheme, saveTheme, trackKeys, WIDE } from "../shared/page";
+	import { applyTheme, loadTheme, saveTheme, WIDE } from "../shared/page";
 	import { holdToRepeat } from "../shared/repeat";
+	import { swipeOn } from "../shared/swipe";
 
 	const calc = new Calculator(new URL("./worker.js", document.baseURI).href);
 	const snap = () => ({
@@ -18,7 +21,7 @@
 	let view = $state(snap());
 	let input: HTMLInputElement;
 	let historyBox: HTMLElement;
-	let keysBox: HTMLElement;
+	let pagesBox: HTMLElement;
 	let backBox: HTMLElement;
 	let systemKeys = $state(false);
 	let settingsOpen = $state(false);
@@ -27,80 +30,117 @@
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
 
 	//==================================================================
-	//  Drawer: 0 closed .. 1 open; dragging follows the finger
+	//  Pages: the shown one moves by dx; the other one sits next to it,
+	//  on the side the finger comes from (dir), and follows
 	//==================================================================
-	let drawer = $state(0);
-	let dragging = $state(false);
-	let drawerBox: HTMLElement;
-	let dragFrom = 0, dragStart = 0, dragWidth = 1;
-	let ignoreBack = 0;    // our own history.back() after a pick, not the user's Back
+	let sci = $state(false);
+	let dx = $state(0);
+	let dir = $state(1);           // +1: the other page is on the left; -1: on the right
+	let sliding = $state(false);   // CSS transition on (a finished swipe, or a tap on Sci / Basic)
+	let pageWidth = 1;
 
-	function dragBegin(event: PointerEvent)
-	{
-		dragging = true;
-		dragFrom = event.clientX;
-		dragStart = drawer;
-		dragWidth = drawerBox.getBoundingClientRect().width || 1;
-		(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-	}
+	const shown = $derived(`transform: translateX(${dx}px)`);
+	const other = $derived(`transform: translateX(${dx + (dir > 0 ? -pageWidth : pageWidth)}px)`);
+	const otherVisible = $derived(dx !== 0 || sliding);
 
-	function dragMove(event: PointerEvent)
+	function dragMove(offset: number)
 	{
-		if (dragging)
+		sliding = false;
+		pageWidth = pagesBox.clientWidth || 1;
+		dx = offset;
+		if (offset !== 0)
 		{
-			drawer = Math.max(0, Math.min(1, dragStart + (event.clientX - dragFrom) / dragWidth));
+			dir = offset > 0 ? 1 : -1;
 		}
 	}
 
-	function dragEnd()
+	// From where the pages are now, flip (or settle back) with the CSS transition
+	async function settle(flip: boolean)
 	{
-		if (!dragging)
+		if (flip)
+		{
+			// The incoming page becomes the shown one, at the same place on the screen
+			sci = !sci;
+			dx = dx - dir * pageWidth;
+			dir = -dir;
+		}
+		await tick();
+		requestAnimationFrame(() =>
+		{
+			sliding = true;
+			dx = 0;
+		});
+	}
+
+	function dragEnd(offset: number, velocity: number)
+	{
+		const far = Math.abs(offset) > pageWidth * 0.3;
+		const flick = Math.abs(velocity) > 0.4 && Math.sign(velocity) === Math.sign(offset);
+		settle(offset !== 0 && (far || flick));
+	}
+
+	// A tap on "Sci ▸" (Sci comes from the left) or "◂ Basic" (Basic comes from the right)
+	async function flipTo(toSci: boolean)
+	{
+		if (sci === toSci)
 		{
 			return;
 		}
-		dragging = false;
-		setDrawer(drawer > (dragStart > 0.5 ? 0.7 : 0.3));
+		pageWidth = pagesBox.clientWidth || 1;
+		sliding = false;
+		// The incoming page starts beside the old one (which is still in place), then both slide
+		sci = toSci;
+		dx = toSci ? -pageWidth : pageWidth;
+		dir = toSci ? -1 : 1;
+		await tick();
+		requestAnimationFrame(() => requestAnimationFrame(() =>
+		{
+			sliding = true;
+			dx = 0;
+		}));
 	}
 
-	function setDrawer(open: boolean)
+	function slid()
 	{
-		const was = drawer > 0;
-		drawer = open ? 1 : 0;
-		if (open && !was)
-		{
-			history.pushState({ layer: "drawer" }, "");
-		}
+		sliding = false;
 	}
 
-	// Android back (and the browser's Back) closes the top layer first
-	function onBack()
-	{
-		if (ignoreBack > 0)
-		{
-			ignoreBack--;
-			return;
-		}
-		if (sheet)
-		{
-			sheet.done(null);
-		}
-		else if (settingsOpen)
-		{
-			settingsOpen = false;
-		}
-		else if (drawer > 0)
-		{
-			drawer = 0;
-		}
-	}
-
+	//==================================================================
+	//  Sheets
+	//==================================================================
 	function pick(title: string, items: string[]): Promise<string | null>
 	{
-		history.pushState({ layer: "sheet" }, "");
 		return new Promise(resolve =>
 		{
 			sheet = { title, items, done: item => { sheet = null; resolve(item); } };
 		});
+	}
+
+	async function openFunctions()
+	{
+		const group = await pick("Functions", Object.keys(calc.catalog.functions));
+		const name = group && await pick(group, calc.catalog.functions[group]);
+		if (name) await calc.insertFunction(name);
+	}
+
+	async function openConversions()
+	{
+		const groups = Object.keys(calc.catalog.conversions).filter(group => group !== "Currency");
+		const group = await pick("Conversions", groups);
+		const units = group ? calc.catalog.conversions[group] : [];
+		const source = group && await pick(`${group}: from`, units);
+		const target = source && await pick(`${source} to`, units.filter(unit => unit !== source));
+		if (source && target) await calc.insertConversion(source, target);
+	}
+
+	async function openMore()
+	{
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Settings", "Clear History", "Ionic mockup"]);
+		if (choice === "Functions") await openFunctions();
+		else if (choice === "Conversions") await openConversions();
+		else if (choice === "Settings") settingsOpen = true;
+		else if (choice === "Clear History") calc.clearHistory();
+		else if (choice === "Ionic mockup") location.href = "ionic.html";
 	}
 
 	//==================================================================
@@ -122,16 +162,18 @@
 			}
 		});
 		const media = matchMedia(WIDE);
-		const onWide = () => { wide = media.matches; if (wide) drawer = 0; };
+		const onWide = () => { wide = media.matches; dx = 0; sliding = false; };
 		media.addEventListener("change", onWide);
-		addEventListener("popstate", onBack);
-		const untrack = trackKeys(keysBox);
+		const unswipe = swipeOn(pagesBox, {
+			move: offset => { if (!wide) dragMove(offset); },
+			end: (offset, velocity) => { if (!wide) dragEnd(offset, velocity); },
+			up: () => { openMore(); },
+		});
 		const unhold = holdToRepeat(backBox, () => calc.backspace());
 		return () =>
 		{
-			unsubscribe(); untrack(); unhold();
+			unsubscribe(); unswipe(); unhold();
 			media.removeEventListener("change", onWide);
-			removeEventListener("popstate", onBack);
 		};
 	});
 
@@ -142,45 +184,6 @@
 		const menu = await calc.press(calc.resolve(key));
 		if (menu === "func") await openFunctions();
 		else if (menu === "units") await openConversions();
-	}
-
-	// A sheet closed by a pick leaves its history entry; drop it so Back stays in step
-	async function chosen(item: string | null)
-	{
-		if (item !== null && history.state?.layer === "sheet")
-		{
-			ignoreBack++;
-			history.back();
-			await new Promise(resolve => setTimeout(resolve, 30));
-		}
-		return item;
-	}
-
-	async function openFunctions()
-	{
-		const group = await chosen(await pick("Functions", Object.keys(calc.catalog.functions)));
-		const name = group && await chosen(await pick(group, calc.catalog.functions[group]));
-		if (name) await calc.insertFunction(name);
-	}
-
-	async function openConversions()
-	{
-		const groups = Object.keys(calc.catalog.conversions).filter(group => group !== "Currency");
-		const group = await chosen(await pick("Conversions", groups));
-		const units = group ? calc.catalog.conversions[group] : [];
-		const source = group && await chosen(await pick(`${group}: from`, units));
-		const target = source && await chosen(await pick(`${source} to`, units.filter(unit => unit !== source)));
-		if (source && target) await calc.insertConversion(source, target);
-	}
-
-	async function openMore()
-	{
-		const choice = await chosen(await pick("SoftCalc", ["Functions", "Conversions", "Settings", "Clear History", "Ionic mockup"]));
-		if (choice === "Functions") await openFunctions();
-		else if (choice === "Conversions") await openConversions();
-		else if (choice === "Settings") { settingsOpen = true; history.pushState({ layer: "settings" }, ""); }
-		else if (choice === "Clear History") calc.clearHistory();
-		else if (choice === "Ionic mockup") location.href = "ionic.html";
 	}
 
 	function onInput(event: Event)
@@ -213,9 +216,20 @@
 	}
 </script>
 
+{#snippet basicPage()}
+	<button class="sci-tab" onclick={() => flipTo(true)}>Sci ▸</button>
+	<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
+		angle={view.settings.angle} onpress={press} />
+{/snippet}
+
+{#snippet sciPage()}
+	<button class="sci-tab" onclick={() => flipTo(false)}>◂ Basic</button>
+	<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
+		angle={view.settings.angle} onpress={press} />
+{/snippet}
+
 <div class="app">
 	<header>
-		{#if !wide}<button class="bar-button" onclick={() => setDrawer(true)}>Sci</button>{/if}
 		<h1>SoftCalc</h1>
 		<button class="bar-button" class:on={systemKeys} onclick={toggleKeyboard} aria-label="System keyboard">⌨</button>
 		<button class="bar-button" onclick={openMore} aria-label="More">⋮</button>
@@ -223,7 +237,8 @@
 
 	<div class="calc">
 		<div bind:this={historyBox} class="history">
-			{#if view.entries.length === 0}<div class="empty-history">Type with the keys; tap a line to use it again.</div>{/if}
+			{#if view.entries.length === 0}<div class="empty-history">Type with the keys; tap a line to use it again.
+				Swipe the keys left or right for Sci, up for the menu.</div>{/if}
 			{#each view.entries as entry, index}
 				<div class="entry {entry.kind}" class:selected={index === view.highlight} role="button" tabindex="-1"
 					onclick={() => calc.tapEntry(index)} onkeydown={() => {}}>
@@ -240,40 +255,29 @@
 				onclick={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)} />
 			<button bind:this={backBox} class="backspace" aria-label="Delete one character">⌫</button>
 		</div>
-		<div bind:this={keysBox} class="keys">
+		<div bind:this={pagesBox} class="keys pages" class:wide>
 			{#if wide}
 				<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
 					angle={view.settings.angle} onpress={press} />
+				<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
+					angle={view.settings.angle} onpress={press} />
 			{:else}
-				<button class="sci-tab" onclick={() => setDrawer(true)} aria-label="Scientific keys">Sci ▸</button>
-				<div class="edge" role="presentation" onpointerdown={dragBegin} onpointermove={dragMove}
-					onpointerup={dragEnd} onpointercancel={dragEnd}></div>
+				<div class="page" class:sliding style={shown} ontransitionend={slid}>
+					{#if sci}{@render sciPage()}{:else}{@render basicPage()}{/if}
+				</div>
+				<div class="page" class:sliding class:hidden={!otherVisible} style={other} aria-hidden="true">
+					{#if sci}{@render basicPage()}{:else}{@render sciPage()}{/if}
+				</div>
 			{/if}
-			<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
-				angle={view.settings.angle} onpress={press} />
 		</div>
 	</div>
 
-	{#if !wide}
-		<!-- The drawer moves inside the keys box only, so History and Input stay in view (owner 2026-11-18) -->
-		<div class="drawer-clip">
-			<div bind:this={drawerBox} class="drawer" class:dragging class:open={drawer > 0}
-				style="transform: translateX({(drawer - 1) * 100}%)"
-				onpointerdown={event => { if ((event.target as HTMLElement).closest(".key, .sci-tab") == null) dragBegin(event); }}
-				onpointermove={dragMove} onpointerup={dragEnd} onpointercancel={dragEnd}>
-				<button class="sci-tab" onclick={() => history.back()}>◂ Basic</button>
-				<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
-					angle={view.settings.angle} onpress={press} />
-			</div>
-		</div>
-	{/if}
-
-	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => item === null ? history.back() : sheet?.done(item)} />{/if}
+	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => sheet?.done(item)} />{/if}
 
 	{#if settingsOpen}
-		<div class="backdrop" role="presentation" onclick={() => history.back()}></div>
+		<div class="backdrop" role="presentation" onclick={() => settingsOpen = false}></div>
 		<div class="settings" role="dialog" aria-label="Settings">
-			<div class="settings-head"><span>Settings</span><button class="bar-button" onclick={() => history.back()}>Done</button></div>
+			<div class="settings-head"><span>Settings</span><button class="bar-button" onclick={() => settingsOpen = false}>Done</button></div>
 			<div class="row"><span>Precision</span><div class="seg">
 				{#each [32, 64, 128, 512] as digits}
 					<button class:on={view.settings.precision === digits} onclick={() => calc.setSetting("precision", digits)}>{digits}</button>
@@ -311,21 +315,19 @@
 	}
 	.bar-button:active, .bar-button.on { background: var(--line); }
 	.calc { flex: 1; min-height: 0; height: auto; }
-	.edge { position: absolute; left: 0; top: 26px; bottom: 0; width: 18px; z-index: 2; touch-action: none; }
-	.drawer-clip
-	{
-		position: fixed; z-index: 21; overflow: hidden; pointer-events: none;
-		top: var(--keys-top); left: var(--keys-left); width: var(--keys-width); height: var(--keys-h);
-	}
-	.drawer
+
+	/* Keys: two pages side by side; only the shown one is in place */
+	.pages { padding-top: 0; overflow: hidden; touch-action: none; }
+	.pages.wide { padding-top: 0; }
+	.page
 	{
 		position: absolute; inset: 0; display: flex; padding-top: 26px; background: var(--key-bg);
-		transition: transform 200ms ease-out; touch-action: pan-y;
+		will-change: transform;
 	}
-	.drawer.open, .drawer.dragging { pointer-events: auto; box-shadow: 4px 0 16px rgb(0 0 0 / 0.3); }
-	.drawer.dragging { transition: none; }
-	.drawer > :global(.keypad) { flex: 1; }
-	.settings-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 16px; font-weight: 600; }
+	.page.sliding { transition: transform 220ms ease-out; }
+	.page.hidden { visibility: hidden; }
+	.page > :global(.keypad) { flex: 1; }
+
 	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; }
 	.settings
 	{
@@ -333,6 +335,7 @@
 		padding: 4px 0 calc(16px + env(safe-area-inset-bottom)); max-width: 640px; margin: 0 auto;
 		box-shadow: 0 -4px 20px rgb(0 0 0 / 0.25);
 	}
+	.settings-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 16px; font-weight: 600; }
 	.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; flex-wrap: wrap; }
 	.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 	.seg button { border: none; background: none; color: var(--ink); font: inherit; padding: 8px 12px; cursor: pointer; }

@@ -70,6 +70,13 @@ view), with "Sci ▸" / "◂ Basic" at the top left of the keys as on the
 desktop; a phone on its side puts History left and the keys right
 (the wide layout had made the keys flat); ⌫ beside Input deletes one
 character, and repeats while held.
+
+Owner 2026-11-18, second try: **Svelte chosen** (lighter; both looked the
+same). The phones use gesture navigation (edge swipe = Back, swipe from
+the bottom = app list), so mockup B no longer uses edge swipes or the
+Back button: Basic and Sci are two pages, a swipe left or right on the
+keys flips them and the keys follow the finger, a swipe up on the keys
+opens the menu, taps press keys as before (`shared/swipe.ts`).
 ```
 cd web
 npm install
