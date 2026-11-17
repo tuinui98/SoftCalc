@@ -37,7 +37,7 @@
 	let dx = $state(0);
 	let dir = $state(1);           // +1: the other page is on the left; -1: on the right
 	let sliding = $state(false);   // CSS transition on (a finished swipe, or a tap on Sci / Basic)
-	let pageWidth = 1;
+	let pageWidth = $state(1);    // state: the other page's place depends on it (owner 2026-11-18: glitch on the first swipe)
 
 	const shown = $derived(`transform: translateX(${dx}px)`);
 	const other = $derived(`transform: translateX(${dx + (dir > 0 ? -pageWidth : pageWidth)}px)`);
@@ -170,9 +170,11 @@
 			up: () => { openMore(); },
 		});
 		const unhold = holdToRepeat(backBox, () => calc.backspace());
+		const sizer = new ResizeObserver(() => { pageWidth = pagesBox.clientWidth || 1; });
+		sizer.observe(pagesBox);
 		return () =>
 		{
-			unsubscribe(); unswipe(); unhold();
+			unsubscribe(); unswipe(); unhold(); sizer.disconnect();
 			media.removeEventListener("change", onWide);
 		};
 	});
