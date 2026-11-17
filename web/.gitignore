@@ -3,3 +3,6 @@ engine.zip
 mockup/public/pyodide/
 mockup/public/engine.zip
 mockup/dist/
+app/public/pyodide-*/
+app/public/engine.zip
+app/dist/

@@ -85,3 +85,33 @@ npm run mockup        # prepare, build, serve on the network: open http://<this 
 Versions are pinned (exact, at least two weeks old): vite 8.3.5, vue
 3.5.44, @ionic/vue 9.0.10, vue-router 5.4.0 (Ionic imports it),
 ionicons 8.1.0, svelte 5.57.3, @sveltejs/vite-plugin-svelte 7.3.1.
+
+## The app (step 1, owner 2026-11-18)
+`app/` is the real web app, in Svelte, built from mockup B:
+- `src/lib/calc.ts`: the calculator (keys, History walk, menus), with the
+  engine and the store passed in; `tests/calc.test.ts` checks its rules
+  (ported from the desktop KeypadRules, InputRules and InputRecall tests)
+  and its saving, against a fake engine. `npm test` runs them.
+- `src/lib/store.ts`: settings, definitions (`pcf_export` text) and the
+  last 1000 History lines in IndexedDB, on the device only. On start, as
+  on the desktop: settings, `pcf_import`, then `restore_results` so `$n`
+  works again. A browser that refuses IndexedDB still works, without
+  keeping anything (the status line says so).
+- `public/sw.js`: a service worker, so the app works offline and keeps
+  Pyodide (in `pyodide-<version>/`) and the build files; the page,
+  `worker.js` and `engine.zip` come from the network first. It needs a
+  secure page: `https`, or `localhost` / `127.0.0.1`. On a plain
+  `http://192.168.x.x` address it does not start (everything else works).
+- `public/manifest.webmanifest` and icons from `softcalc.ico`: the app can
+  be installed ("Add to Home screen") from a secure page.
+```
+cd web
+npm install
+npm test             # app rules
+npm run app          # prepare, build, serve on the network: http://<this PC>:8767/
+```
+Verified in desktop Chrome (2026-11-18): History, definitions and `$n`
+come back after a reload; with the server stopped the app starts from
+the cache and calculates. A cached file has to be matched with
+`ignoreVary`: the server sends `Vary: Origin` and module scripts are
+asked for with an Origin header.
