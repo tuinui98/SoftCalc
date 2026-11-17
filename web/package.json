@@ -1,0 +1,12 @@
+{
+	"name": "softcalc-web",
+	"private": true,
+	"description": "SoftCalc in the browser: the Python engine on Pyodide (spike)",
+	"type": "module",
+	"scripts": {
+		"test-engine": "node test_engine.mjs"
+	},
+	"devDependencies": {
+		"pyodide": "314.0.7"
+	}
+}

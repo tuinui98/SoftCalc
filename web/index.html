@@ -1,0 +1,169 @@
+<!doctype html>
+<!-- index.html - SoftCalc web spike: Input, History, and engine measurements -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoftCalc Web</title>
+<style>
+	:root { --bg: #ffffff; --fg: #1b1b1b; --faint: #707070; --line: #dddddd; --sel: #0a64c8; --err: #c42b1c; }
+	@media (prefers-color-scheme: dark) { :root { --bg: #1e1e1e; --fg: #e8e8e8; --faint: #9a9a9a; --line: #3a3a3a; --sel: #2f7fd8; --err: #ff6b5b; } }
+	* { box-sizing: border-box; }
+	body { margin: 0; background: var(--bg); color: var(--fg); font: 16px system-ui, sans-serif; display: flex; flex-direction: column; height: 100dvh; }
+	#history { flex: 1; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+	#history li { padding: 6px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+	#history li .in { display: flex; justify-content: space-between; gap: 16px; }
+	#history li .sub { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	#history li .out { padding-left: 32px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+	#history li.error .out { color: var(--err); }
+	#history li.notice { color: var(--faint); font-style: italic; cursor: default; }
+	#bar { display: flex; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--line); }
+	#input { flex: 1; font: inherit; padding: 8px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; }
+	button { font: inherit; padding: 8px 12px; }
+	#status { padding: 4px 12px; color: var(--faint); font-size: 13px; min-height: 1.5em; }
+</style>
+</head>
+<body>
+<ul id="history"></ul>
+<div id="status">Loading engine...</div>
+<div id="bar">
+	<input id="input" autocomplete="off" autocapitalize="off" spellcheck="false" disabled>
+	<button id="bench" disabled>Measure</button>
+</div>
+<script>
+const history = document.getElementById("history");
+const input = document.getElementById("input");
+const status = document.getElementById("status");
+const bench = document.getElementById("bench");
+const worker = new Worker("worker.js", { type: "module" });
+const waiting = new Map();
+let nextId = 1;
+const pageStart = performance.now();
+
+function send(op, args = {})
+{
+	const id = nextId++;
+	return new Promise(resolve =>
+	{
+		waiting.set(id, resolve);
+		worker.postMessage({ id, op, ...args });
+	});
+}
+
+function addLine(kind, top, right, bottom)
+{
+	const item = document.createElement("li");
+	item.className = kind;
+	const line = document.createElement("div");
+	line.className = "in";
+	const left = document.createElement("span");
+	left.textContent = top;
+	line.append(left);
+	if (right)
+	{
+		const sub = document.createElement("span");
+		sub.className = "sub";
+		sub.textContent = right;
+		line.append(sub);
+	}
+	const out = document.createElement("div");
+	out.className = "out";
+	out.textContent = bottom;
+	item.append(line, out);
+	if (kind !== "notice")
+	{
+		item.addEventListener("click", () => { input.value = top; input.focus(); });
+	}
+	history.append(item);
+	history.scrollTop = history.scrollHeight;
+}
+
+worker.onmessage = event =>
+{
+	const message = event.data;
+	if (message.op === "ready")
+	{
+		const t = message.timings;
+		const total = (performance.now() - pageStart) / 1000;
+		status.textContent = `Engine ${message.version} ready in ${total.toFixed(1)} s`
+			+ ` (Pyodide ${(t.pyodide / 1000).toFixed(1)} s, mpmath ${(t.mpmath / 1000).toFixed(1)} s, engine ${(t.engine / 1000).toFixed(1)} s)`;
+		const c = message.clock;
+		addLine("notice", "Clock", "", `Python ${c.python_now} (${c.python_tzname}, ${c.python_offset}); JS offset ${c.js_offset_minutes} min`);
+		window.spikeReady = { total, ...t, clock: c };
+		input.disabled = false;
+		bench.disabled = false;
+		input.focus();
+		return;
+	}
+	if (message.op === "failed")
+	{
+		status.textContent = "Engine failed: " + message.error;
+		return;
+	}
+	const resolve = waiting.get(message.id);
+	waiting.delete(message.id);
+	resolve?.(message);
+};
+
+input.addEventListener("keydown", async event =>
+{
+	if (event.key !== "Enter")
+	{
+		return;
+	}
+	const line = input.value;
+	const answer = await send("eval", { input: line });
+	if (!answer.ok)
+	{
+		addLine("error", line, "", answer.error);
+		return;
+	}
+	if (answer.kind === "empty")
+	{
+		return;
+	}
+	if (answer.kind === "rates_needed")
+	{
+		addLine("notice", line, "", "Currency rates are not in this spike.");
+		return;
+	}
+	addLine(answer.kind, answer.input, answer.display_input !== answer.input ? answer.display_input : "", answer.text);
+	status.textContent = `${answer.ms.toFixed(1)} ms`;
+	if (answer.kind !== "error")
+	{
+		input.value = "";
+	}
+});
+
+// Spike measurements: each line timed in the engine, and a 400-point plot
+const BENCH = [
+	["precision 64", { op: "settings", precision: 64 }],
+	["1/3", null], ["2^(1/3)", null], ["sin(1)", null], ["(1/3)!", null], ["500!", null],
+	["fv(0.05/12, 120, -100)", null], ["now [longdatetime]", null], ["fromepoch(0) [utc->local]", null],
+	["100 [km->mile]", null],
+	["precision 512", { op: "settings", precision: 512 }],
+	["1/3", null], ["2^(1/3)", null], ["sin(1)", null], ["(1/3)!", null],
+	["precision 64", { op: "settings", precision: 64 }],
+	["f(x)=sin(x)*x", null],
+	["plot f, 400 points", { op: "plot", function: "f", mode: "xy", start: -10, end: 10, samples: 400 }],
+	["g(x)=x^2/(1+x!)", null],
+	["plot g, 400 points", { op: "plot", function: "g", mode: "xy", start: -10, end: 10, samples: 400 }],
+];
+
+bench.addEventListener("click", async () =>
+{
+	bench.disabled = true;
+	const rows = [];
+	for (const [label, request] of BENCH)
+	{
+		const answer = request ? await send(request.op, request) : await send("eval", { input: label });
+		const shown = request?.op === "plot" ? `${answer.points?.length} points` : (answer.text ?? JSON.stringify(answer).slice(0, 60));
+		rows.push({ label, ms: Math.round(answer.ms * 10) / 10, shown });
+		addLine("notice", label, "", `${answer.ms.toFixed(1)} ms  ${shown}`);
+	}
+	window.spikeBench = rows;
+	bench.disabled = false;
+});
+</script>
+</body>
+</html>
