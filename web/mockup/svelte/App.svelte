@@ -10,7 +10,7 @@
 	import { Calculator } from "../shared/calc";
 	import { BASIC, SCIENTIFIC, type Key } from "../shared/keys";
 	import { applyTheme, loadTheme, saveTheme, WIDE } from "../shared/page";
-	import { holdToRepeat } from "../shared/repeat";
+	import { closeOnTouch, holdToRepeat } from "../shared/repeat";
 	import { swipeOn } from "../shared/swipe";
 
 	const calc = new Calculator(new URL("./worker.js", document.baseURI).href);
@@ -219,6 +219,8 @@
 		input.focus();
 	}
 
+	const outside = (box: HTMLElement) => ({ destroy: closeOnTouch(box, () => { settingsOpen = false; }) });
+
 	function setTheme(value: string)
 	{
 		theme = value;
@@ -289,7 +291,7 @@
 	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => sheet?.done(item)} />{/if}
 
 	{#if settingsOpen}
-		<div class="backdrop" role="presentation" onclick={() => settingsOpen = false}></div>
+		<div class="backdrop" role="presentation" use:outside></div>
 		<div class="settings" role="dialog" aria-label="Settings">
 			<div class="settings-head"><span>Settings</span><button class="bar-button" onclick={() => settingsOpen = false}>Done</button></div>
 			<div class="row"><span>Precision</span><div class="seg">
@@ -342,7 +344,7 @@
 	.page.hidden { visibility: hidden; }
 	.page > :global(.keypad) { flex: 1; }
 
-	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; }
+	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; touch-action: none; }
 	.settings
 	{
 		position: fixed; left: 0; right: 0; bottom: 0; z-index: 31; background: var(--page); border-radius: 16px 16px 0 0;

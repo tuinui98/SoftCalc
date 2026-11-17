@@ -1,9 +1,12 @@
 <!-- Sheet.svelte - A bottom sheet with a title and a list to pick from (menus of mockup B) -->
 <script lang="ts">
+	import { closeOnTouch } from "../shared/repeat";
+
 	let { title, items, onpick }: { title: string; items: string[]; onpick: (item: string | null) => void } = $props();
+	const outside = (box: HTMLElement) => ({ destroy: closeOnTouch(box, () => onpick(null)) });
 </script>
 
-<div class="backdrop" role="presentation" onclick={() => onpick(null)}></div>
+<div class="backdrop" role="presentation" use:outside></div>
 <div class="sheet" role="dialog" aria-label={title}>
 	<div class="grip"></div>
 	<div class="title">{title}</div>
@@ -16,7 +19,7 @@
 </div>
 
 <style>
-	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; animation: fade 150ms; }
+	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; animation: fade 150ms; touch-action: none; }
 	.sheet
 	{
 		position: fixed; left: 0; right: 0; bottom: 0; z-index: 31; max-height: 70vh; display: flex; flex-direction: column;
