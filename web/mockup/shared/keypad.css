@@ -1,0 +1,82 @@
+/* keypad.css - Keys for both mockups: a grid that fills its box, labels that grow with it */
+
+:root
+{
+	--key-bg: #eceff3;
+	--key-digit: #ffffff;
+	--key-op: #dfe7f5;
+	--key-equals: #1a73e8;
+	--key-equals-ink: #ffffff;
+	--key-ink: #1b1b1b;
+	--key-mode: #e4e4e4;
+	--key-second: #b58900;      /* 2nd labels: yellow, darker on light for contrast */
+	--key-armed: #f5c518;
+	--key-gap: 6px;
+}
+
+.dark
+{
+	--key-bg: #1b1d21;
+	--key-digit: #3a3d43;
+	--key-op: #2d3a52;
+	--key-equals: #4c8df6;
+	--key-equals-ink: #0b0b0b;
+	--key-ink: #eeeeee;
+	--key-mode: #2a2c30;
+	--key-second: #f5c518;
+}
+
+.keypad
+{
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	grid-template-rows: repeat(5, 1fr);
+	gap: var(--key-gap);
+	padding: var(--key-gap);
+	background: var(--key-bg);
+	height: 100%;
+	container-type: size;
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+}
+
+.key
+{
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	min-height: 0;
+	border: none;
+	border-radius: 12px;
+	background: var(--key-mode);
+	color: var(--key-ink);
+	font: inherit;
+	font-size: clamp(16px, 11cqmin, 36px);
+	line-height: 1.1;
+	padding: 2px;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+	transition: filter 80ms, transform 80ms;
+}
+
+.key:active { filter: brightness(0.85); transform: scale(0.97); }
+.key.digit { background: var(--key-digit); }
+.key.op { background: var(--key-op); }
+.key.equals { background: var(--key-equals); color: var(--key-equals-ink); }
+.key.mode { font-size: clamp(13px, 6.5cqmin, 22px); }
+.key.on { outline: 3px solid var(--key-second); outline-offset: -3px; }
+.key.armed { background: var(--key-armed); color: #000; }
+.key .second
+{
+	font-size: 0.62em;
+	color: var(--key-second);
+	white-space: nowrap;
+}
+.key .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.keypad.sci .key { font-size: clamp(14px, 8cqmin, 28px); }
+.keypad.sci .key.second-on .second { font-weight: 700; }
+.keypad.sci .key.mode { font-size: clamp(12px, 6cqmin, 20px); }

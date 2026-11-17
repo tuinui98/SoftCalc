@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- index.html - Pick a mockup: A (Ionic + Vue) or B (Svelte) -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>SoftCalc Mockups</title>
+<style>
+	:root { --page: #ffffff; --ink: #1b1b1b; --faint: #666666; --line: #dddddd; --accent: #1a73e8; }
+	@media (prefers-color-scheme: dark) { :root { --page: #121316; --ink: #ececec; --faint: #9a9a9a; --line: #2c2e33; --accent: #4c8df6; } }
+	body { margin: 0; padding: 24px 16px; background: var(--page); color: var(--ink); font: 17px system-ui, sans-serif; }
+	main { max-width: 560px; margin: 0 auto; }
+	a { display: block; padding: 18px; margin: 12px 0; border: 1px solid var(--line); border-radius: 14px; color: inherit; text-decoration: none; }
+	a strong { color: var(--accent); font-size: 20px; }
+	a span { display: block; color: var(--faint); margin-top: 6px; font-size: 15px; }
+</style>
+</head>
+<body>
+<main>
+	<h1>SoftCalc mockups</h1>
+	<p>Same engine, keys and rules; only the parts around them differ. Try typing, the Sci keys (swipe from the left edge
+	or the Sci button), func / units, the ⋮ menu, Settings, and the Android Back button.</p>
+	<a href="ionic.html"><strong>A. Ionic + Vue</strong><span>Ready-made Android-style parts: side menu, action sheets,
+		Settings in a full-screen modal.</span></a>
+	<a href="svelte.html"><strong>B. Svelte</strong><span>Hand-made parts: drawer that follows the finger, bottom sheets,
+		Settings as a sheet.</span></a>
+</main>
+</body>
+</html>
