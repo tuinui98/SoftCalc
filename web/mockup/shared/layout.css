@@ -1,0 +1,79 @@
+/* layout.css - History, Input and keypad areas shared by both mockups
+ *
+ * Narrow (phone, portrait tablet): History on top, Input, then Basic keys;
+ * Sci comes from the side. Wide (landscape tablet, 900px and more):
+ * History on the left, Sci and Basic side by side on the right.
+ */
+
+:root
+{
+	--page: #ffffff;
+	--ink: #1b1b1b;
+	--faint: #6b6b6b;
+	--line: #e2e2e2;
+	--select: #1a73e8;
+	--select-ink: #ffffff;
+	--error: #c42b1c;
+}
+
+.dark
+{
+	--page: #121316;
+	--ink: #ececec;
+	--faint: #9a9a9a;
+	--line: #2c2e33;
+	--select: #4c8df6;
+	--select-ink: #0b0b0b;
+	--error: #ff6b5b;
+}
+
+.calc
+{
+	display: grid;
+	grid-template-rows: 1fr auto auto var(--keys-height, 46%);
+	grid-template-areas: "history" "hint" "input" "keys";
+	height: 100%;
+	background: var(--page);
+	color: var(--ink);
+}
+
+.history { grid-area: history; overflow-y: auto; overscroll-behavior: contain; }
+.hint { grid-area: hint; padding: 2px 14px; color: var(--faint); font-size: 13px; font-style: italic; min-height: 1.4em; }
+.input-row { grid-area: input; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-top: 1px solid var(--line); }
+.input-row input
+{
+	flex: 1;
+	min-width: 0;
+	font: inherit;
+	font-size: 22px;
+	padding: 8px 6px;
+	border: none;
+	outline: none;
+	background: transparent;
+	color: var(--ink);
+	caret-color: var(--select);
+}
+.keys { grid-area: keys; display: flex; min-height: 0; }
+.keys > .keypad { flex: 1; }
+.keys > .keypad.sci { flex: 1; }
+
+.entry { padding: 8px 14px; border-bottom: 1px solid var(--line); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.entry .top { display: flex; justify-content: space-between; gap: 16px; font-size: 16px; }
+.entry .top .sub { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entry .result { padding-left: 28px; font-size: 20px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.entry.error .result { color: var(--error); }
+.entry.notice { color: var(--faint); font-style: italic; cursor: default; }
+.entry.selected { background: var(--select); color: var(--select-ink); }
+.entry.selected .sub { color: var(--select-ink); }
+.empty-history { padding: 24px 14px; color: var(--faint); }
+
+@media (min-width: 900px) and (orientation: landscape)
+{
+	.calc
+	{
+		grid-template-rows: 1fr auto auto;
+		grid-template-columns: minmax(320px, 1fr) minmax(560px, 1.4fr);
+		grid-template-areas: "history keys" "hint keys" "input keys";
+	}
+	.keys { border-left: 1px solid var(--line); }
+}

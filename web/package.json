@@ -4,9 +4,21 @@
 	"description": "SoftCalc in the browser: the Python engine on Pyodide (spike)",
 	"type": "module",
 	"scripts": {
-		"test-engine": "node test_engine.mjs"
+		"test-engine": "node test_engine.mjs",
+		"mockup:prepare": "node mockup/prepare.mjs",
+		"mockup:dev": "node mockup/prepare.mjs && vite mockup --host 0.0.0.0 --port 8766",
+		"mockup:build": "node mockup/prepare.mjs && vite build mockup",
+		"mockup": "node mockup/prepare.mjs && vite build mockup && vite preview mockup --host 0.0.0.0 --port 8766"
 	},
 	"devDependencies": {
-		"pyodide": "314.0.7"
+		"@ionic/vue": "9.0.10",
+		"@sveltejs/vite-plugin-svelte": "7.3.1",
+		"@vitejs/plugin-vue": "6.0.10",
+		"ionicons": "8.1.0",
+		"pyodide": "314.0.7",
+		"svelte": "5.57.3",
+		"vite": "8.3.5",
+		"vue": "3.5.44",
+		"vue-router": "5.4.0"
 	}
 }

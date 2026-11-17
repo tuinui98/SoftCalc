@@ -49,3 +49,25 @@ browser does not start the worker, and the page says so. If Pyodide or
 
 Typing a line answers at once; only heavy lines and plots of
 factorials are noticeably slower (1.4-4x).
+
+## Mockups (owner 2026-11-18: try both before choosing)
+`mockup/` has two versions of the same main screen, on the same engine,
+keys (`shared/keys.ts`, from the desktop `Keypad.cs`) and rules
+(`shared/calc.ts`: C, %, memory keys, STO, base cycling, `answer` before
+an operator, tap-to-recall with the highlight, entry/Up walk):
+- **A. Ionic + Vue** (`ionic.html`): Sci in an `ion-menu` (swipe from the
+  left edge or the Sci button), func / units and the ⋮ menu as action
+  sheets, Settings in a full-screen modal. JS 246 KB gzipped.
+- **B. Svelte** (`svelte.html`): hand-made drawer that follows the
+  finger (left edge, or the "Sci ▸" tab), bottom sheets, Settings as a
+  sheet, Back closes the top layer. JS 19 KB gzipped.
+Wide screens (landscape, 900 px and more) show Sci beside Basic in both.
+The ⌨ button lets the system keyboard open on Input.
+```
+cd web
+npm install
+npm run mockup        # prepare, build, serve on the network: open http://<this PC>:8766/ on the tablet
+```
+Versions are pinned (exact, at least two weeks old): vite 8.3.5, vue
+3.5.44, @ionic/vue 9.0.10, vue-router 5.4.0 (Ionic imports it),
+ionicons 8.1.0, svelte 5.57.3, @sveltejs/vite-plugin-svelte 7.3.1.

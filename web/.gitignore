@@ -1,2 +1,5 @@
 node_modules/
 engine.zip
+mockup/public/pyodide/
+mockup/public/engine.zip
+mockup/dist/
