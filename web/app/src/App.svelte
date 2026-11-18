@@ -359,7 +359,8 @@
 
 	//==================================================================
 	//  System Back closes the top layer first (menu, Variables, Settings),
-	//  then leaves the app; in Help it goes topic, topics list, ⋮ menu.
+	//  then leaves the app. Help, Variables and Settings go back to the ⋮
+	//  menu that opened them; in Help a topic goes to the topics list first.
 	//  Each level has one history entry. Entries are pushed only after a
 	//  tap opened that level: Chrome on Android skips an entry pushed
 	//  without one (from popstate), and Back then leaves the app (owner
@@ -369,12 +370,16 @@
 	//==================================================================
 	function layerDepth(): number
 	{
+		// Help, Variables and Settings stand on the ⋮ menu that opened them
 		if (helpOpen)
 		{
-			// Help stands on the ⋮ menu that opened it
 			return helpTopic ? 3 : 2;
 		}
-		return sheet !== null || settingsOpen || namesOpen ? 1 : 0;
+		if (settingsOpen || namesOpen)
+		{
+			return 2;
+		}
+		return sheet !== null ? 1 : 0;
 	}
 	const depth = $derived(layerDepth());
 	let pushed = 0;
@@ -410,13 +415,13 @@
 		pushed = Math.max(0, pushed - 1);
 		if (sheet) sheet.done(null);
 		else if (helpOpen && helpTopic) helpTopic = null;
-		else if (helpOpen)
+		else if (helpOpen || namesOpen || settingsOpen)
 		{
 			helpOpen = false;
+			namesOpen = false;
+			settingsOpen = false;
 			void openMore();
 		}
-		else if (namesOpen) namesOpen = false;
-		else if (settingsOpen) settingsOpen = false;
 	}
 
 	function setTextSize(size: number)
