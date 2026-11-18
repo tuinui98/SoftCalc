@@ -11,7 +11,10 @@ mount(App, { target: document.getElementById("app")!, props: { store, kept } });
 
 // Offline and quick second starts. A service worker needs a secure page:
 // https, or localhost; a plain http address on the network has none.
-if ("serviceWorker" in navigator && isSecureContext)
+// The Android app has its files inside the APK, and a service worker
+// there could keep serving an old version after an update.
+const inApp = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
+if ("serviceWorker" in navigator && isSecureContext && !inApp)
 {
 	navigator.serviceWorker.register("./sw.js").catch(error => console.warn("service worker:", error));
 	// The files this first visit loaded before the service worker was in charge
