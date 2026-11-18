@@ -8,6 +8,10 @@ export class Engine
 	private waiting = new Map<number, (answer: Answer) => void>();
 	private nextId = 1;
 	readonly ready: Promise<string>;
+	// When each start step ended, in ms on the page's clock (performance.now):
+	// "page" (the page loaded up to here), then the worker's steps
+	readonly marks: { name: string; at: number }[] = [{ name: "page", at: performance.now() }];
+	onstep: ((name: string) => void) | null = null;
 
 	constructor(url: string)
 	{
@@ -21,7 +25,12 @@ export class Engine
 			const message = event.data;
 			if (message.id === 0)
 			{
-				if (message.op === "ready")
+				if (message.op === "step")
+				{
+					this.marks.push({ name: message.name, at: message.at - performance.timeOrigin });
+					this.onstep?.(message.name);
+				}
+				else if (message.op === "ready")
 				{
 					started(message.version);
 				}

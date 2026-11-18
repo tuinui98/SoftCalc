@@ -21,8 +21,14 @@ import type { Store } from "./store";
 export interface EngineLike
 {
 	readonly ready: Promise<string>;
+	readonly marks?: { name: string; at: number }[];
+	onstep?: ((name: string) => void) | null;   // called as each start step ends
 	send(op: string, args?: Record<string, unknown>): Promise<Answer>;
 }
+
+// The status line while the engine loads, by the step just done
+const LOADING: Record<string, string> = { worker: "Loading Python...", python: "Loading the engine...",
+	unpack: "Loading the engine...", import: "Restoring History..." };
 
 export interface Entry
 {
@@ -64,7 +70,9 @@ export class Calculator
 	settings: Settings = { precision: 64, angle: "deg", base: "dec" };
 	second = false;
 	storeArmed = false;
-	status = "Loading engine...";
+	status = "Loading Python...";
+	loading = "page";          // the last start step done: page, worker, python, unpack, import, then done or failed
+	startTimes = "";           // how long each start step took (Settings), "" until started
 	ready = false;
 	catalog: Catalog = { functions: {}, conversions: {} };
 	definitions: Definitions = { variables: [], functions: [] };
@@ -73,6 +81,7 @@ export class Calculator
 	private hintAsked = 0;     // newest hint request; older replies are dropped
 	private hintFor = "";      // text and caret of the last request, so a redraw does not ask again
 	private lastWasResult = false;
+	private waitingEngine = false;   // a submit waits for the engine to load
 	private hasMemory = false;
 	private draft = "";
 	private listeners = new Set<() => void>();
@@ -87,14 +96,23 @@ export class Calculator
 		this.store = store;
 		this.rates = net.rates ?? new RatesSource(store);
 		this.prices = net.prices ?? new PriceSource(store);
-		const t0 = performance.now();
+		engine.onstep = name =>
+		{
+			this.loading = name;
+			this.status = LOADING[name] ?? this.status;
+			this.changed();
+		};
 		this.started = this.start().then(version =>
 		{
 			this.ready = true;
-			this.status = `Engine ${version} ready in ${((performance.now() - t0) / 1000).toFixed(1)} s`;
+			this.loading = "done";
+			const done = performance.now();
+			this.status = `Engine ${version} ready in ${(done / 1000).toFixed(1)} s`;
+			this.startTimes = startSteps([...(this.engine.marks ?? []), { name: "History", at: done }]);
 			this.changed();
 		}, error =>
 		{
+			this.loading = "failed";
 			this.status = "Engine failed to load: " + (error instanceof Error ? error.message : String(error));
 			this.changed();
 		});
@@ -105,8 +123,11 @@ export class Calculator
 	//==================================================================
 	private async start(): Promise<string>
 	{
-		const version = await this.engine.ready;
+		// History is on the screen while the engine is still loading
 		const saved = await this.store.load();
+		this.entries = [...saved.entries];
+		this.changed();
+		const version = await this.engine.ready;
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
 		this.settings = settingsOf(await this.engine.send("settings", wanted));
 		// Kept rates and prices go in first; they are fetched only when a line needs newer ones
@@ -118,11 +139,10 @@ export class Calculator
 			const skipped = (imported.skipped ?? []) as unknown[];
 			if (skipped.length > 0)
 			{
-				saved.entries.push({ kind: "notice", input: "", display: "(some saved definitions were skipped)",
+				this.entries.push({ kind: "notice", input: "", display: "(some saved definitions were skipped)",
 					text: `${skipped.length} line(s)` });
 			}
 		}
-		this.entries = saved.entries;
 		const results = saved.entries.filter(entry => entry.kind === "result").map(entry => entry.text);
 		if (results.length > 0)
 		{
@@ -304,9 +324,20 @@ export class Calculator
 	async submit(line = this.text)
 	{
 		const toRun = line.length > 0 ? line : this.entries.at(-1)?.input;
-		if (!toRun || !this.ready)
+		if (!toRun || this.waitingEngine)
 		{
 			return;
+		}
+		// = while the engine is still loading: the line runs once it is ready
+		if (!this.ready)
+		{
+			this.waitingEngine = true;
+			await this.started;
+			this.waitingEngine = false;
+			if (!this.ready)
+			{
+				return;
+			}
 		}
 		const answer = await this.evaluate(toRun);
 		this.highlight = -1;
@@ -673,4 +704,18 @@ export function memoryAdd(input: string, hasMemory: boolean, subtract: boolean):
 		return `memory=memory${sign}${operand}`;
 	}
 	return subtract ? `memory=-${operand}` : `memory=${operand}`;
+}
+
+// "page 0.4 · worker 0.2 · python 3.1 ... s": each step's own time, from
+// the page's start
+export function startSteps(marks: { name: string; at: number }[]): string
+{
+	let before = 0;
+	const parts = marks.map(mark =>
+	{
+		const took = (mark.at - before) / 1000;
+		before = mark.at;
+		return `${mark.name} ${took.toFixed(1)}`;
+	});
+	return parts.join(" · ") + " s";
 }
