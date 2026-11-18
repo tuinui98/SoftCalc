@@ -33,3 +33,22 @@ uses a scratch data folder. Rerun it after a UI change.
 `HelpShots.exe <folder> light help` (or `dark`) only checks the Help
 window: it saves `check-help-*.png` to the folder (not for `help/img`)
 and prints Input after a simulated example click.
+
+## Desktop and web app
+
+The web app (web/README.md) shows topics 01 to 09, 16 and 18 too. Where
+the two differ, mark whole paragraphs or lists, each marker on a line of
+its own:
+
+    <!-- desktop -->
+    View > Word Size is used.
+    <!-- /desktop -->
+
+    <!-- web -->
+    Settings > Word size is used.
+    <!-- /web -->
+
+The desktop Help leaves out `web` blocks, the web app `desktop` blocks
+and all pictures. Leave a blank line after a block that ends a list.
+`web/app/help/` holds the web's own version of a topic (Getting
+started), checked by the same example test.

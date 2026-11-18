@@ -6,3 +6,4 @@ mockup/dist/
 app/public/pyodide-*/
 app/public/engine.zip
 app/dist/
+app/src/generated/

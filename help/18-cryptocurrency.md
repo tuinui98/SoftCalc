@@ -1,9 +1,17 @@
 # Cryptocurrency
 
+<!-- desktop -->
 SoftCalc works out coin amounts and fees, checks that an address is
 written correctly, and shows balances of Bitcoin, Ethereum and Tron
 addresses. It only looks: it never asks for seed words or private keys,
 cannot send coins, and refuses text that looks like a secret.
+<!-- /desktop -->
+
+<!-- web -->
+SoftCalc works out coin amounts and converts coins to money at today's
+price. It never asks for seed words or private keys and cannot send
+coins.
+<!-- /web -->
 
 ## Coin units
 
@@ -49,6 +57,7 @@ A coin to a currency, or one coin to another, uses today's price:
 - One coin to another goes through the US dollar.
 - `usdt` is a price only; it has no small unit.
 
+<!-- desktop -->
 ## The Cryptocurrency window
 
 Tools > Cryptocurrency... has four tabs. Address and Fees work offline;
@@ -164,3 +173,11 @@ Input, such as `141*10 [sat->btc]`.
   check to each other and to you; an xpub shows it every address of the
   wallet, past and future. Your own node avoids this.
 - Price requests carry no address.
+<!-- /desktop -->
+
+<!-- web -->
+## Privacy
+
+- Price requests name coins and currencies, never an address. CoinGecko
+  sees your IP address, as any website does.
+<!-- /web -->

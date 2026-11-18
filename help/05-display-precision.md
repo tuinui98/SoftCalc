@@ -8,6 +8,7 @@ Two separate things decide what a result looks like:
 
 ## Precision
 
+<!-- desktop -->
 View > Advanced Options (Customize Ribbon can add a **Prec** button,
 see *Ribbon*):
 
@@ -17,6 +18,11 @@ see *Ribbon*):
 | Medium Precision | 64 |
 | High Precision | 128 |
 | Extreme Precision | 512 (slow) |
+<!-- /desktop -->
+
+<!-- web -->
+Settings > Precision: 32, 64, 128 or 512 (slow) significant digits.
+<!-- /web -->
 
 A result with more digits than the precision allows is written in
 scientific form: `2^200` at 32 digits is
@@ -24,6 +30,7 @@ scientific form: `2^200` at 32 digits is
 
 ## Decimal places
 
+<!-- desktop -->
 ![The ribbon: Angle, Decimals, Tools, View, History and Window groups](img/ribbon.light.png)
 
 Ribbon **Decimals** group, or View > Decimal Places:
@@ -34,13 +41,31 @@ Ribbon **Decimals** group, or View > Decimal Places:
 - **Pad with Zeros** writes `2.50` instead of `2.5`.
 
 The group's caption shows the current setting, such as `0.00` or `all`.
+<!-- /desktop -->
+
+<!-- web -->
+Settings > Decimals:
+
+- **−** / **+** step the places from 0 to 30; from all they start at 2;
+- **all** shows every digit the precision gives (the default); the
+  count then reads `*`;
+- Settings > Pad zeros writes `2.50` instead of `2.5`.
+<!-- /web -->
+
 Decimal places round half away from zero and apply to decimal output
 only.
 
 ## Output base
 
+<!-- desktop -->
 View > Hexadecimal / Decimal / Octal / Binary Output (Customize Ribbon
 can add Dec, Hex, Bin and Oct buttons):
+<!-- /desktop -->
+
+<!-- web -->
+Settings > Output base, or the **dec ▸** key (each tap: dec, hex, oct,
+bin):
+<!-- /web -->
 
 ```calc
 255                   => 255

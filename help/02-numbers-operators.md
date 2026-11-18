@@ -30,8 +30,15 @@
 | octal | `0o17` |
 | decimal | `12` or `0d12` |
 
+<!-- desktop -->
 You can mix bases in one line. View > Hexadecimal / Decimal / Binary /
 Octal Output picks how results are written.
+<!-- /desktop -->
+
+<!-- web -->
+You can mix bases in one line. Settings > Output base, or the **dec ▸**
+key, picks how results are written.
+<!-- /web -->
 
 ## Operators, strongest first
 
@@ -89,6 +96,13 @@ abs(3+4i)             => 5
 
 ## Precision
 
+<!-- desktop -->
 View > Advanced Options sets the precision: Low (32), Medium (64),
-High (128) or Extreme (512) significant digits. A result that needs more
+High (128) or Extreme (512) significant digits.
+<!-- /desktop -->
+
+<!-- web -->
+Settings > Precision sets the precision: 32, 64, 128 or 512 significant
+digits.
+<!-- /web --> A result that needs more
 digits than that is written in scientific form, such as `1.5e32`.

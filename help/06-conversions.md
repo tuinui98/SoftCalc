@@ -19,6 +19,7 @@ Put a tag `[from->to]` after a value:
 
 You do not need to remember unit names:
 
+<!-- desktop -->
 1. Type the value, for example `5`.
 2. Open **Conversions**, pick the group, the unit you have, then the unit
    you want: Conversions > Length > ft > m.
@@ -29,6 +30,15 @@ You do not need to remember unit names:
 The ribbon's **Conversions** button (Tools group) opens the same menu.
 A conversion you use often can get its own ribbon button
 (section *Ribbon*).
+<!-- /desktop -->
+
+<!-- web -->
+1. Type the value, for example `5`.
+2. Open **Conversions** (the **units** key on the Sci keys, or ⋮ >
+   Conversions), pick the group, the unit you have, then the unit you
+   want: Conversions > Length > ft > m.
+3. Input now reads `5 [ft->m]`; press =.
+<!-- /web -->
 
 ## Units
 

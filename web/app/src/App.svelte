@@ -6,6 +6,7 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
+	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
 	import { Calculator, stepDecimals } from "./lib/calc";
@@ -37,6 +38,8 @@
 	let showHints = $state(calc.showHints);
 	let textSize = $state(loadTextSize());
 	let namesOpen = $state(false);
+	let helpOpen = $state(false);
+	let helpTopic: string | null = $state(null);
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
@@ -169,11 +172,12 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
+		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
 		else if (choice === "Clear History") calc.clearHistory();
 	}
 
@@ -355,30 +359,48 @@
 
 	//==================================================================
 	//  System Back closes the top layer first (menu, Variables, Settings),
-	//  then leaves the app. One history entry stands for "a layer is open";
-	//  closing in the app takes it off again. The check waits a moment, so
-	//  a menu that opens the next one (Functions, then a group) keeps it.
+	//  then leaves the app. Help, Variables and Settings go back to the ⋮
+	//  menu that opened them; in Help a topic goes to the topics list first.
+	//  Each level has one history entry. Entries are pushed only after a
+	//  tap opened that level: Chrome on Android skips an entry pushed
+	//  without one (from popstate), and Back then leaves the app (owner
+	//  2026-11-18). Back only takes a level off; closing in the app takes
+	//  its entries off too. The check waits a moment, so a menu that opens
+	//  the next one (Functions, then a group) keeps its entry.
 	//==================================================================
-	const anyLayer = $derived(sheet !== null || settingsOpen || namesOpen);
-	let layerPushed = false;
+	function layerDepth(): number
+	{
+		// Help, Variables and Settings stand on the ⋮ menu that opened them
+		if (helpOpen)
+		{
+			return helpTopic ? 3 : 2;
+		}
+		if (settingsOpen || namesOpen)
+		{
+			return 2;
+		}
+		return sheet !== null ? 1 : 0;
+	}
+	const depth = $derived(layerDepth());
+	let pushed = 0;
 	let skipPop = false;
 
 	$effect(() =>
 	{
-		void anyLayer;
+		void depth;
 		setTimeout(() =>
 		{
-			const open = sheet !== null || settingsOpen || namesOpen;
-			if (open && !layerPushed)
+			const wanted = layerDepth();
+			while (pushed < wanted)
 			{
-				history.pushState({ softcalcLayer: true }, "");
-				layerPushed = true;
+				history.pushState({ softcalcLayer: pushed + 1 }, "");
+				pushed++;
 			}
-			else if (!open && layerPushed)
+			if (pushed > wanted)
 			{
-				layerPushed = false;
 				skipPop = true;
-				history.back();
+				history.go(wanted - pushed);
+				pushed = wanted;
 			}
 		}, 0);
 	});
@@ -390,10 +412,16 @@
 			skipPop = false;
 			return;
 		}
-		layerPushed = false;
+		pushed = Math.max(0, pushed - 1);
 		if (sheet) sheet.done(null);
-		else if (namesOpen) namesOpen = false;
-		else if (settingsOpen) settingsOpen = false;
+		else if (helpOpen && helpTopic) helpTopic = null;
+		else if (helpOpen || namesOpen || settingsOpen)
+		{
+			helpOpen = false;
+			namesOpen = false;
+			settingsOpen = false;
+			void openMore();
+		}
 	}
 
 	function setTextSize(size: number)
@@ -491,6 +519,11 @@
 	</div>
 
 	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => sheet?.done(item)} />{/if}
+
+	{#if helpOpen}
+		<HelpView bind:topic={helpTopic} onclose={() => { helpOpen = false; focusInput(); }}
+			onexample={line => { helpOpen = false; calc.typed(line, line.length); focusInput(); }} />
+	{/if}
 
 	{#if namesOpen}
 		<NamesSheet definitions={view.definitions} onclose={() => { namesOpen = false; focusInput(); }}

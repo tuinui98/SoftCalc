@@ -27,7 +27,7 @@ internal static class HelpTopics
 		{
 			using var stream = assembly.GetManifestResourceStream(name)!;
 			using var reader = new StreamReader(stream);
-			string markdown = reader.ReadToEnd();
+			string markdown = HelpMarkdown.ForDesktop(reader.ReadToEnd());
 			string id = name[Prefix.Length..^3];
 			string title = markdown.Split('\n').Select(line => line.Trim())
 				.FirstOrDefault(line => line.StartsWith("# "))?[2..] ?? id;
