@@ -163,6 +163,20 @@ asked for with an Origin header.
 - A `calc` example is a button that puts its line in Input; the engine
   test `test_help_examples.py` checks the web's own topics too.
 
+### Start time (owner 2026-11-19)
+The owner timed 4-5 s on a desktop and 7-8 s on a phone. Pyodide ships
+Python's library and mpmath as `.py` files and writes no `.pyc`, so each
+start compiled them all again. `make_engine.py` now compiles them with
+this machine's Python (it must be Pyodide's 3.x): `engine.zip` holds
+`softcalc_engine/` and `mpmath/` as `.pyc`, `python_stdlib_pyc.zip` is
+Pyodide's library as `.pyc` (passed as `stdLibURL`). The engine worker
+starts before the store opens, engine.zip downloads while Python starts,
+History shows at once, and = waits for the engine. A bar on top of Input
+moves with the start steps; Settings > Start shows each step's time.
+
+Desktop Chrome, files cached: Python 3.8 s to 0.7 s, mpmath + engine
+1.3 s to 0.1-0.2 s; ready in 1.3-2.5 s instead of 6.1 s.
+
 ## The Android app (owner 2026-11-18)
 
 Capacitor 8.6.0 puts the built web app (`app/dist`) into an Android app in

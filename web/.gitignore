@@ -1,5 +1,6 @@
 node_modules/
 engine.zip
+python_stdlib_pyc.zip
 mockup/public/pyodide/
 mockup/public/engine.zip
 mockup/dist/

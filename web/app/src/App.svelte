@@ -11,7 +11,7 @@
 	import Sheet from "./components/Sheet.svelte";
 	import { Calculator, stepDecimals } from "./lib/calc";
 	import { copyText } from "./lib/clipboard";
-	import { Engine } from "./lib/engine";
+	import type { Engine } from "./lib/engine";
 	import { BASIC, SCIENTIFIC, type Key } from "./lib/keys";
 	import { applyTheme, loadHints, loadTextSize, loadTheme, saveHints, saveTextSize, saveTheme, TEXT_SIZES, WIDE } from "./lib/page";
 	import { closeOnTouch, holdToRepeat } from "./lib/repeat";
@@ -19,14 +19,14 @@
 	import { swipeOn } from "./lib/swipe";
 	import { keyTaps } from "./lib/keytap";
 
-	let { store, kept }: { store: Store; kept: boolean } = $props();
-	// The store is given once at start and never changes
+	let { engine, store, kept }: { engine: Engine; store: Store; kept: boolean } = $props();
+	// The engine and the store are given once at start and never change
 	// svelte-ignore state_referenced_locally
-	const calc = new Calculator(new Engine(new URL("./worker.js", document.baseURI).href), store);
+	const calc = new Calculator(engine, store);
 	calc.showHints = loadHints();
 	const snap = () => ({
 		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
-		second: calc.second, armed: calc.storeArmed, status: calc.status, definitions: calc.definitions,
+		second: calc.second, armed: calc.storeArmed, status: calc.status, loading: calc.loading, startTimes: calc.startTimes, definitions: calc.definitions,
 	});
 	let view = $state(snap());
 	let input: HTMLInputElement;
@@ -226,6 +226,16 @@
 			media.removeEventListener("change", onWide);
 		};
 	});
+
+	// The bar on top of Input while the engine loads (owner 2026-11-19): after each step, how far it
+	// goes and in how many ms, about a phone's time for the next step. It slows as it nears the mark,
+	// and a quicker step only makes it jump on to the next one.
+	const LOAD_BAR: Record<string, [number, number]> = {
+		page: [0.15, 600], worker: [0.65, 2500], python: [0.75, 300], unpack: [0.92, 800], import: [1, 400], done: [1, 150],
+	};
+	let barMoving = $state(false);    // first drawn empty, so its first move shows
+	onMount(() => { requestAnimationFrame(() => requestAnimationFrame(() => { barMoving = true; })); });
+	const bar = $derived(barMoving ? LOAD_BAR[view.loading] ?? [1, 150] : [0, 0]);
 
 	const status = $derived(view.armed ? "STO: press x or y" : view.second ? "2nd"
 		: kept ? view.status : view.status + " (this browser does not keep History)");
@@ -494,6 +504,9 @@
 		</div>
 		<div class="hint">{status}</div>
 		<div class="input-row">
+			{#if view.loading !== "failed"}
+				<div class="load-bar" class:gone={view.loading === "done"} style:--to={bar[0]} style:--ms="{bar[1]}ms"></div>
+			{/if}
 			<input bind:this={input} inputmode={systemKeys ? "text" : "none"} autocomplete="off" autocapitalize="off"
 				spellcheck="false" placeholder="0" oninput={onInput} onkeydown={onKey}
 				onclick={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)}
@@ -579,6 +592,7 @@
 				{#each ["system", "light", "dark"] as value}
 					<button class:on={theme === value} onclick={() => setTheme(value)}>{value}</button>
 				{/each}</div></div>
+			{#if view.startTimes}<div class="row start-times"><span>Start</span><span>{view.startTimes}</span></div>{/if}
 		</div>
 	{/if}
 </div>
@@ -603,6 +617,14 @@
 	}
 	.bar-button:active, .bar-button.on { background: var(--line); }
 	.calc { flex: 1; min-height: 0; height: auto; }
+	.input-row { position: relative; }
+	.load-bar
+	{
+		position: absolute; left: 0; right: 0; top: -2px; height: 3px; background: var(--key-armed);
+		transform-origin: left; transform: scaleX(var(--to)); transition: transform var(--ms) ease-out, opacity 400ms 300ms;
+		pointer-events: none;
+	}
+	.load-bar.gone { opacity: 0; }
 
 	/* Keys: two pages side by side; only the shown one is in place */
 	.pages { padding-top: 0; overflow: hidden; touch-action: none; }
@@ -626,6 +648,7 @@
 	}
 	.settings-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 16px; font-weight: 600; }
 	.row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; flex-wrap: wrap; }
+	.start-times > span:last-child { font-size: 13px; opacity: 0.75; }
 	.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 	.seg button { border: none; background: none; color: var(--ink); font: inherit; padding: 8px 12px; cursor: pointer; }
 	.seg button.on { background: var(--select); color: var(--select-ink); }

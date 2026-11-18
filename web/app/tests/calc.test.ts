@@ -282,6 +282,32 @@ describe("saving between visits", () =>
 		expect(restored?.args.texts).toEqual(["42"]);
 	});
 
+	it("History shows while the engine loads; = then waits for it (owner 2026-11-19)", async () =>
+	{
+		const store = new MemoryStore();
+		const first = await started(store);
+		await press(first.calc, "6", "*", "7", "=");
+		await new Promise(resolve => setTimeout(resolve, 0));
+
+		let load!: (version: string) => void;
+		const slow = new FakeEngine();
+		(slow as { ready: Promise<string> }).ready = new Promise(resolve => { load = resolve; });
+		const calc = new Calculator(slow, store);
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(calc.ready).toBe(false);
+		expect(calc.entries.map(entry => entry.input)).toEqual(["6*7"]);
+
+		await press(calc, "1", "+", "2");
+		const equals = calc.press("=");
+		const twice = calc.press("=");     // a second = while waiting adds nothing
+		load("test");
+		await Promise.all([equals, twice]);
+		expect(calc.entries.map(entry => entry.input)).toEqual(["6*7", "1+2"]);
+		expect(calc.entries.at(-1)?.text).toBe("3");
+		expect(slow.sent.findIndex(message => message.op === "restore_results"))
+			.toBeLessThan(slow.sent.findIndex(message => message.op === "eval"));
+	});
+
 	it("the angle starts in degrees when nothing was saved", async () =>
 	{
 		const { calc } = await started();

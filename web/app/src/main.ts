@@ -1,13 +1,16 @@
-// main.ts - Start the SoftCalc web app: open the store, show the screen, register the service worker
+// main.ts - Start the SoftCalc web app: start the engine, open the store, show the screen, register the service worker
 
 import { mount } from "svelte";
 import App from "./App.svelte";
+import { Engine } from "./lib/engine";
 import { openStore } from "./lib/store";
 import "./lib/layout.css";
 import "./lib/keypad.css";
 
+// The engine takes longest, so it starts first, while the store opens
+const engine = new Engine(new URL("./worker.js", document.baseURI).href);
 const { store, kept } = await openStore();
-mount(App, { target: document.getElementById("app")!, props: { store, kept } });
+mount(App, { target: document.getElementById("app")!, props: { engine, store, kept } });
 
 // Offline and quick second starts. A service worker needs a secure page:
 // https, or localhost; a plain http address on the network has none.
