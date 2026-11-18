@@ -115,3 +115,20 @@ come back after a reload; with the server stopped the app starts from
 the cache and calculates. A cached file has to be matched with
 `ignoreVary`: the server sends `Vary: Origin` and module scripts are
 asked for with an Origin header.
+
+### Steps 2 to 4 (owner 2026-11-18)
+- Every key, ⌫, Sci / Basic, a History tap and a menu pick bring the
+  focus back to Input.
+- The hint line under Input comes from the engine (`hint`,
+  `softcalc_engine/hints.py`), the same rules as the desktop. One line,
+  cut with ...; a tap shows all of it. Settings > Input hints.
+- ⋮ > Variables lists the user's variables and functions: a tap puts the
+  name in Input, ✕ then "Delete?" removes it. Functions has "Your
+  functions" first when there are any.
+- A long press (or a right click) on a History line: Copy result, Copy
+  line, Delete line (a result line also leaves `$n`, as on the desktop).
+  Copy falls back to the old copy command on a page that is not secure.
+- System Back closes the open menu, Variables or Settings first.
+- Settings: decimals (all, or − / + from 2, 0 to 30), pad zeros, word
+  size, text size (100 to 200%, History and Input).
+- RPN is not in the web app (owner 2026-11-18).

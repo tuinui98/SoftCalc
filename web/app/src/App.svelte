@@ -6,11 +6,13 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
+	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
-	import { Calculator } from "./lib/calc";
+	import { Calculator, stepDecimals } from "./lib/calc";
+	import { copyText } from "./lib/clipboard";
 	import { Engine } from "./lib/engine";
 	import { BASIC, SCIENTIFIC, type Key } from "./lib/keys";
-	import { applyTheme, loadHints, loadTheme, saveHints, saveTheme, WIDE } from "./lib/page";
+	import { applyTheme, loadHints, loadTextSize, loadTheme, saveHints, saveTextSize, saveTheme, TEXT_SIZES, WIDE } from "./lib/page";
 	import { closeOnTouch, holdToRepeat } from "./lib/repeat";
 	import type { Store } from "./lib/store";
 	import { swipeOn } from "./lib/swipe";
@@ -22,7 +24,7 @@
 	calc.showHints = loadHints();
 	const snap = () => ({
 		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
-		second: calc.second, armed: calc.storeArmed, status: calc.status,
+		second: calc.second, armed: calc.storeArmed, status: calc.status, definitions: calc.definitions,
 	});
 	let view = $state(snap());
 	let input: HTMLInputElement;
@@ -33,6 +35,8 @@
 	let settingsOpen = $state(false);
 	let theme = $state(loadTheme());
 	let showHints = $state(calc.showHints);
+	let textSize = $state(loadTextSize());
+	let namesOpen = $state(false);
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
@@ -133,10 +137,13 @@
 		});
 	}
 
+	const YOURS = "Your functions";
+
 	async function openFunctions()
 	{
-		const group = await pick("Functions", Object.keys(calc.catalog.functions));
-		const name = group && await pick(group, calc.catalog.functions[group]);
+		const mine = calc.definitions.functions.map(fn => fn.name);
+		const group = await pick("Functions", [...(mine.length > 0 ? [YOURS] : []), ...Object.keys(calc.catalog.functions)]);
+		const name = group && await pick(group, group === YOURS ? mine : calc.catalog.functions[group]);
 		if (name) await calc.insertFunction(name);
 		focusInput();
 	}
@@ -154,9 +161,10 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Settings", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
+		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
 		else if (choice === "Clear History") calc.clearHistory();
 	}
@@ -249,6 +257,139 @@
 
 	const outside = (box: HTMLElement) => ({ destroy: closeOnTouch(box, () => { settingsOpen = false; }) });
 
+	//==================================================================
+	//  History line menu: a long press (or a right click) on a line
+	//==================================================================
+	async function openEntryMenu(index: number)
+	{
+		const entry = calc.entries[index];
+		if (!entry || entry.kind === "notice")
+		{
+			return;
+		}
+		const choice = await pick(entry.input, ["Copy result", "Copy line", "Delete line"]);
+		if (choice === "Copy result" || choice === "Copy line")
+		{
+			const done = await copyText(choice === "Copy result" ? entry.text : entry.input);
+			calc.say(done ? "Copied" : "Could not copy");
+		}
+		else if (choice === "Delete line")
+		{
+			await calc.deleteEntry(index);
+		}
+		focusInput();
+	}
+
+	// Fires after 500 ms without the finger moving; the tap that follows the lift is dropped,
+	// so the line is not also recalled. The browser's own long-press menu is kept away.
+	function longPress(line: HTMLElement, index: number)
+	{
+		let timer: ReturnType<typeof setTimeout> | undefined;
+		let start = { x: 0, y: 0 };
+		let fired = false;
+		const stop = () => { clearTimeout(timer); timer = undefined; };
+		const fire = () =>
+		{
+			stop();
+			fired = true;
+			setTimeout(() => { fired = false; }, 600);
+			openEntryMenu(index);
+		};
+		const down = (event: PointerEvent) =>
+		{
+			start = { x: event.clientX, y: event.clientY };
+			stop();
+			timer = setTimeout(fire, 500);
+		};
+		const move = (event: PointerEvent) =>
+		{
+			if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > 10)
+			{
+				stop();    // a scroll, not a press
+			}
+		};
+		const menu = (event: Event) =>
+		{
+			event.preventDefault();
+			if (!fired)
+			{
+				fire();
+			}
+		};
+		const click = (event: MouseEvent) =>
+		{
+			if (fired)
+			{
+				event.stopImmediatePropagation();
+				event.preventDefault();
+			}
+		};
+		line.addEventListener("pointerdown", down);
+		line.addEventListener("pointermove", move);
+		for (const name of ["pointerup", "pointercancel", "pointerleave"])
+		{
+			line.addEventListener(name, stop);
+		}
+		line.addEventListener("contextmenu", menu);
+		line.addEventListener("click", click, true);
+		return {
+			update(next: number) { index = next; },
+			destroy() { stop(); },
+		};
+	}
+
+	//==================================================================
+	//  System Back closes the top layer first (menu, Variables, Settings),
+	//  then leaves the app. One history entry stands for "a layer is open";
+	//  closing in the app takes it off again. The check waits a moment, so
+	//  a menu that opens the next one (Functions, then a group) keeps it.
+	//==================================================================
+	const anyLayer = $derived(sheet !== null || settingsOpen || namesOpen);
+	let layerPushed = false;
+	let skipPop = false;
+
+	$effect(() =>
+	{
+		void anyLayer;
+		setTimeout(() =>
+		{
+			const open = sheet !== null || settingsOpen || namesOpen;
+			if (open && !layerPushed)
+			{
+				history.pushState({ softcalcLayer: true }, "");
+				layerPushed = true;
+			}
+			else if (!open && layerPushed)
+			{
+				layerPushed = false;
+				skipPop = true;
+				history.back();
+			}
+		}, 0);
+	});
+
+	function onBack()
+	{
+		if (skipPop)
+		{
+			skipPop = false;
+			return;
+		}
+		layerPushed = false;
+		if (sheet) sheet.done(null);
+		else if (namesOpen) namesOpen = false;
+		else if (settingsOpen) settingsOpen = false;
+	}
+
+	function setTextSize(size: number)
+	{
+		textSize = size;
+		saveTextSize(size);
+	}
+
+	const decimalsShown = $derived(view.settings.decimals === null || view.settings.decimals === undefined
+		? "all" : String(view.settings.decimals));
+
 	function setHints(on: boolean)
 	{
 		showHints = on;
@@ -278,7 +419,9 @@
 		angle={view.settings.angle} onpress={press} />
 {/snippet}
 
-<div class="app">
+<svelte:window onpopstate={onBack} />
+
+<div class="app" style="--text-scale: {textSize / 100}">
 	<header>
 		<h1>SoftCalc</h1>
 		<button class="bar-button" class:on={systemKeys} onclick={toggleKeyboard} aria-label="System keyboard">⌨</button>
@@ -291,6 +434,7 @@
 				Swipe the keys left or right for Sci, up for the menu.</div>{/if}
 			{#each view.entries as entry, index}
 				<div class="entry {entry.kind}" class:selected={index === view.highlight} role="button" tabindex="-1"
+					use:longPress={index}
 					onclick={() => { calc.tapEntry(index); focusInput(); }} onkeydown={() => {}}>
 					<div class="top"><span>{entry.input}</span>
 						{#if entry.display !== entry.input}<span class="sub">{entry.display}</span>{/if}</div>
@@ -332,6 +476,12 @@
 
 	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => sheet?.done(item)} />{/if}
 
+	{#if namesOpen}
+		<NamesSheet definitions={view.definitions} onclose={() => { namesOpen = false; focusInput(); }}
+			oninsert={(name, isFunction) => { namesOpen = false; calc.insertName(name, isFunction); focusInput(); }}
+			ondelete={name => calc.deleteName(name)} />
+	{/if}
+
 	{#if settingsOpen}
 		<div class="backdrop" role="presentation" use:outside></div>
 		<div class="settings" role="dialog" aria-label="Settings">
@@ -347,6 +497,24 @@
 			<div class="row"><span>Output base</span><div class="seg">
 				{#each ["dec", "hex", "oct", "bin"] as base}
 					<button class:on={view.settings.base === base} onclick={() => calc.setSetting("base", base)}>{base}</button>
+				{/each}</div></div>
+			<div class="row"><span>Decimals</span><div class="seg">
+				<button class:on={decimalsShown === "all"} onclick={() => calc.setSetting("decimals", null)}>all</button>
+				<button aria-label="Fewer decimals" onclick={() => calc.setSetting("decimals", stepDecimals(view.settings.decimals as number | null, -1))}>−</button>
+				<span class="count">{decimalsShown === "all" ? "–" : decimalsShown}</span>
+				<button aria-label="More decimals" onclick={() => calc.setSetting("decimals", stepDecimals(view.settings.decimals as number | null, +1))}>+</button>
+				</div></div>
+			<div class="row"><span>Pad zeros</span><div class="seg">
+				{#each [true, false] as on}
+					<button class:on={(view.settings.pad_zeros === true) === on} onclick={() => calc.setSetting("pad_zeros", on)}>{on ? "on" : "off"}</button>
+				{/each}</div></div>
+			<div class="row"><span>Word size</span><div class="seg">
+				{#each [8, 16, 32, 64] as bits}
+					<button class:on={view.settings.word_size === bits} onclick={() => calc.setSetting("word_size", bits)}>{bits}</button>
+				{/each}</div></div>
+			<div class="row"><span>Text size</span><div class="seg">
+				{#each TEXT_SIZES as size}
+					<button class:on={textSize === size} onclick={() => setTextSize(size)}>{size}%</button>
 				{/each}</div></div>
 			<div class="row"><span>Input hints</span><div class="seg">
 				{#each [true, false] as on}
@@ -395,6 +563,7 @@
 	{
 		position: fixed; left: 0; right: 0; bottom: 0; z-index: 31; background: var(--page); border-radius: 16px 16px 0 0;
 		padding: 4px 0 calc(16px + env(safe-area-inset-bottom)); max-width: 640px; margin: 0 auto;
+		max-height: 85vh; overflow-y: auto; overscroll-behavior: contain;
 		box-shadow: 0 -4px 20px rgb(0 0 0 / 0.25);
 	}
 	.settings-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 6px 6px 16px; font-weight: 600; }
@@ -402,4 +571,5 @@
 	.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
 	.seg button { border: none; background: none; color: var(--ink); font: inherit; padding: 8px 12px; cursor: pointer; }
 	.seg button.on { background: var(--select); color: var(--select-ink); }
+	.seg .count { min-width: 2.4em; padding: 8px 4px; text-align: center; font-variant-numeric: tabular-nums; }
 </style>

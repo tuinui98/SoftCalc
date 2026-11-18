@@ -4,7 +4,7 @@
 // Pyodide; the real engine has its own tests (test_engine.mjs).
 
 import { describe, expect, it } from "vitest";
-import { Calculator, clearEntry, memoryAdd, type EngineLike } from "../src/lib/calc";
+import { Calculator, clearEntry, memoryAdd, stepDecimals, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { MemoryStore } from "../src/lib/store";
 
@@ -27,7 +27,23 @@ class FakeEngine implements EngineLike
 			case "catalog":
 				return ok({ functions: { Trig: ["sin"] }, conversions: { Length: ["m", "km"] } });
 			case "state":
-				return ok({ variables: this.definitions.includes("memory") ? [{ name: "memory" }] : [] });
+			{
+				// "name=value" lines are variables, "f(x)=..." lines functions
+				const lines = this.definitions.split("\n").filter(line => line.includes("="));
+				const variables = lines.filter(line => !/^\w+\(/.test(line)).map(line =>
+				{
+					const [name, value] = line.split("=");
+					return { name, value };
+				});
+				const functions = lines.filter(line => /^\w+\(/.test(line)).map(line => ({ name: line.split("(")[0], source: line }));
+				return ok({ variables, functions });
+			}
+			case "delete":
+			{
+				const before = this.definitions;
+				this.definitions = before.split("\n").filter(line => !line.startsWith(`${args.name}=`) && !line.startsWith(`${args.name}(`)).join("\n");
+				return before === this.definitions ? { id: 1, ok: false, error: "no such name" } as Answer : ok({ deleted: "variable" });
+			}
 			case "pcf_export":
 				return ok({ text: this.definitions });
 			case "pcf_import":
@@ -52,7 +68,7 @@ class FakeEngine implements EngineLike
 
 	private evaluate(input: string): Record<string, unknown>
 	{
-		if (/^\w+\s*=/.test(input))
+		if (/^\w+(\([^)]*\))?\s*=/.test(input))
 		{
 			this.definitions += input + "\n";
 			return { kind: "definition", input, display_input: input, text: "Variable Defined" };
@@ -346,5 +362,77 @@ describe("hint line (engine `hint`, owner 2026-11-18)", () =>
 		await settle();
 		expect(calc.hint).toBe("");
 		expect(engine.sent.filter(message => message.op === "hint")).toHaveLength(1);
+	});
+});
+
+describe("names and History lines (owner 2026-11-18)", () =>
+{
+	it("a definition shows in the Variables list; deleting it saves the definitions again", async () =>
+	{
+		const store = new MemoryStore();
+		const { calc } = await started(store);
+		calc.typed("rate=5", 6);
+		await calc.press("=");
+		calc.typed("f(x)=x^2", 8);
+		await calc.press("=");
+		expect(calc.definitions.variables).toEqual([{ name: "rate", value: "5" }]);
+		expect(calc.definitions.functions.map(fn => fn.name)).toEqual(["f"]);
+		await calc.deleteName("rate");
+		expect(calc.definitions.variables).toEqual([]);
+		expect(store.data.definitions).not.toContain("rate=");
+	});
+
+	it("a deleted memory is defined again by M+, not added to", async () =>
+	{
+		const store = new MemoryStore();
+		store.data.definitions = "memory=3\n";
+		const { calc } = await started(store);
+		await calc.deleteName("memory");
+		await press(calc, "2", "M+");
+		expect(calc.entries.at(-1)?.input).toBe("memory=(2)");
+	});
+
+	it("a name from the list goes in at the caret; a function wraps the line", async () =>
+	{
+		const { calc } = await started();
+		calc.typed("2*", 2);
+		await calc.insertName("rate", false);
+		expect(calc.text).toBe("2*rate");
+		await calc.insertName("f", true);
+		expect(calc.text).toBe("2*ratef()");
+	});
+
+	it("deleting a result line tells the engine its $n (1 = newest)", async () =>
+	{
+		const store = new MemoryStore();
+		const { calc, engine } = await started(store);
+		for (const line of ["1", "2", "3"])
+		{
+			calc.typed(line, 1);
+			await calc.press("=");
+		}
+		await calc.deleteEntry(0);
+		expect(engine.sent.find(message => message.op === "delete_result")?.args).toEqual({ n: 3 });
+		expect(calc.entries.map(entry => entry.input)).toEqual(["2", "3"]);
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(store.data.entries.map(entry => entry.input)).toEqual(["2", "3"]);
+	});
+
+	it("deleting a definition line leaves $n alone", async () =>
+	{
+		const { calc, engine } = await started();
+		calc.typed("rate=5", 6);
+		await calc.press("=");
+		await calc.deleteEntry(0);
+		expect(engine.sent.some(message => message.op === "delete_result")).toBe(false);
+		expect(calc.entries).toEqual([]);
+	});
+
+	it("decimals step from all to 2, then by one within 0 to 30", () =>
+	{
+		expect(stepDecimals(null, 1)).toBe(2);
+		expect(stepDecimals(2, -1)).toBe(1);
+		expect(stepDecimals(0, -1)).toBe(0);
+		expect(stepDecimals(30, 1)).toBe(30);
 	});
 });

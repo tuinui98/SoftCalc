@@ -10,7 +10,8 @@
 // Start, as MainForm.Persistence.cs: settings, then definitions
 // (pcf_import), then the saved History with its results back as $n
 // (restore_results). After a definition the definitions are saved again
-// (pcf_export); History and settings are saved as they change.
+// (pcf_export); History and settings are saved as they change. Infix
+// only: RPN is not in the web app (owner 2026-11-18).
 
 import type { Answer } from "./engine";
 import type { Store } from "./store";
@@ -39,6 +40,13 @@ export interface Settings
 
 export type Catalog = { functions: Record<string, string[]>; conversions: Record<string, string[]> };
 
+// The user's own names (engine `state`), for the Variables sheet and Functions > Your functions
+export interface Definitions
+{
+	variables: { name: string; value: string }[];
+	functions: { name: string; source: string }[];
+}
+
 const OPERATORS = "+-*/^!%";
 
 export class Calculator
@@ -56,6 +64,7 @@ export class Calculator
 	status = "Loading engine...";
 	ready = false;
 	catalog: Catalog = { functions: {}, conversions: {} };
+	definitions: Definitions = { variables: [], functions: [] };
 	hint = "";                 // the line under Input (engine `hint`), "" for none
 	showHints = true;
 	private hintAsked = 0;     // newest hint request; older replies are dropped
@@ -107,10 +116,29 @@ export class Calculator
 		{
 			await this.engine.send("restore_results", { texts: results });
 		}
-		const state = await this.engine.send("state");
-		this.hasMemory = ((state.variables ?? []) as { name: string }[]).some(v => v.name.toLowerCase() === "memory");
+		await this.refreshDefinitions();
 		this.catalog = (await this.engine.send("catalog")) as unknown as Catalog;
 		return version;
+	}
+
+	// Variables show in the current precision and base, so this follows settings too
+	private async refreshDefinitions()
+	{
+		const state = await this.engine.send("state");
+		this.definitions = {
+			variables: ((state.variables ?? []) as Definitions["variables"]).map(({ name, value }) => ({ name, value })),
+			functions: ((state.functions ?? []) as Definitions["functions"]).map(({ name, source }) => ({ name, source })),
+		};
+		this.hasMemory = this.definitions.variables.some(variable => variable.name.toLowerCase() === "memory");
+	}
+
+	private async saveDefinitions()
+	{
+		const exported = await this.engine.send("pcf_export");
+		if (exported.ok)
+		{
+			this.save(this.store.saveDefinitions(String(exported.text ?? "")));
+		}
 	}
 
 	// A failed save is shown, not thrown: the calculation itself went fine
@@ -284,15 +312,8 @@ export class Calculator
 			this.entries.push({ kind: answer.kind, input: answer.input, display: answer.display_input, text: answer.text });
 			if (answer.kind === "definition")
 			{
-				if (/^\s*memory\s*=/i.test(toRun))
-				{
-					this.hasMemory = true;
-				}
-				const exported = await this.engine.send("pcf_export");
-				if (exported.ok)
-				{
-					this.save(this.store.saveDefinitions(String(exported.text ?? "")));
-				}
+				await this.saveDefinitions();
+				await this.refreshDefinitions();
 			}
 		}
 		this.save(this.store.saveEntries(this.entries.filter(entry => entry.kind !== "notice")));
@@ -375,6 +396,72 @@ export class Calculator
 		}
 	}
 
+	// The $n of a result line: 1 for the newest result
+	private resultNumber(index: number): number
+	{
+		return this.entries.slice(index).filter(entry => entry.kind === "result").length;
+	}
+
+	// One History line goes; a result line also leaves $n, so later ones renumber (desktop DeleteHistoryEntryAsync)
+	async deleteEntry(index: number)
+	{
+		const entry = this.entries[index];
+		if (!entry || !this.ready)
+		{
+			return;
+		}
+		if (entry.kind === "result")
+		{
+			const answer = await this.engine.send("delete_result", { n: this.resultNumber(index) });
+			if (!answer.ok)
+			{
+				this.status = "Not deleted: " + (answer.error ?? "");
+				this.changed();
+				return;
+			}
+		}
+		this.entries.splice(index, 1);
+		if (this.highlight >= 0)
+		{
+			this.show(-1);    // the walk's numbering is gone with the line
+		}
+		this.save(this.store.saveEntries(this.entries.filter(item => item.kind !== "notice")));
+		this.changed();
+		void this.updateHint(true);
+	}
+
+	// A user variable or function goes (the Variables sheet)
+	async deleteName(name: string)
+	{
+		const answer = await this.engine.send("delete", { name });
+		if (answer.ok)
+		{
+			await this.saveDefinitions();
+		}
+		await this.refreshDefinitions();
+		this.changed();
+		void this.updateHint(true);
+	}
+
+	// A variable name goes in at the caret; a function wraps the line, as the Functions menu does
+	async insertName(name: string, isFunction: boolean)
+	{
+		if (isFunction)
+		{
+			await this.insertFunction(name);
+			return;
+		}
+		this.insertTyped(name);
+		this.changed();
+	}
+
+	// A short word in the status line ("Copied")
+	say(text: string)
+	{
+		this.status = text;
+		this.notify();
+	}
+
 	clearHistory()
 	{
 		this.entries = [];
@@ -394,6 +481,7 @@ export class Calculator
 		{
 			this.settings = settingsOf(answer);
 			this.save(this.store.saveSettings(this.settings));
+			await this.refreshDefinitions();
 		}
 		this.notify();
 		void this.updateHint(true);    // a literal shows in the new base
@@ -504,6 +592,19 @@ function settingsOf(answer: Answer): Settings
 {
 	const { id, ok, error, ...settings } = answer;
 	return settings as Settings;
+}
+
+// Settings > Decimals: − / + step from the setting, all digits starts at 2 (desktop DecimalSteps)
+export const DECIMALS_START = 2;
+export const DECIMALS_MAX = 30;
+
+export function stepDecimals(current: number | null | undefined, delta: number): number
+{
+	if (current === null || current === undefined)
+	{
+		return DECIMALS_START;
+	}
+	return Math.max(0, Math.min(current + delta, DECIMALS_MAX));
 }
 
 // C: the last number or name (or the last other character) goes, with spaces before it (KeypadRules.ClearEntry)
