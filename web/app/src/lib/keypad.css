@@ -11,6 +11,7 @@
 	--key-mode: #e4e4e4;
 	--key-second: #b58900;      /* 2nd labels: yellow, darker on light for contrast */
 	--key-armed: #f5c518;
+	--key-second-bg: #f8efc8;  /* 2nd key: faint yellow, as faint as the operator keys */
 	--key-gap: 6px;
 }
 
@@ -24,6 +25,7 @@
 	--key-ink: #eeeeee;
 	--key-mode: #2a2c30;
 	--key-second: #f5c518;
+	--key-second-bg: #4a4224;
 }
 
 .keypad
@@ -70,8 +72,9 @@
 .key.op { background: var(--key-op); }
 .key.equals { background: var(--key-equals); color: var(--key-equals-ink); }
 .key.mode { font-size: clamp(13px, min(6.5cqmin * var(--text-scale, 1), 9cqmin, 7cqw), calc(22px * var(--text-scale, 1))); }
-.key.second-key { color: var(--key-second); font-weight: 600; }
-.key.second-key.on { background: var(--key-second); color: #000; }
+/* 2nd: faint yellow; once pressed, full yellow, as strong as = */
+.key.second-key { background: var(--key-second-bg); color: var(--key-second); font-weight: 600; }
+.key.second-key.on { background: var(--key-armed); color: #000; }
 .key.armed { background: var(--key-armed); color: #000; }
 .key .second
 {

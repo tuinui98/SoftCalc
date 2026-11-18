@@ -16,6 +16,10 @@
 		"app": "node app/prepare.mjs && vite build app && vite preview app --host 0.0.0.0 --port 8767"
 	},
 	"devDependencies": {
+		"@capacitor/android": "8.6.0",
+		"@capacitor/app": "8.1.2",
+		"@capacitor/cli": "8.6.0",
+		"@capacitor/core": "8.6.0",
 		"@ionic/vue": "9.0.10",
 		"@sveltejs/vite-plugin-svelte": "7.3.1",
 		"@vitejs/plugin-vue": "6.0.10",
