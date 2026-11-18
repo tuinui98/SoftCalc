@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { Calculator, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { parsePrices, PriceSource, PRICES_URL } from "../src/lib/prices";
-import { easterSunday, ECB_URL, isWorkingDay, latestPublication, nextCheckMs, parseEcbCsv, publicationMs,
+import { easterSunday, ecbUrl, isWorkingDay, latestPublication, nextCheckMs, parseEcbCsv, publicationMs,
 	RatesSource } from "../src/lib/rates";
 import { MemoryStore } from "../src/lib/store";
 
@@ -63,7 +63,8 @@ describe("ECB rates", () =>
 		const asked: string[] = [];
 		const good = new RatesSource(store, async url => { asked.push(url); return CSV; }, () => now);
 		const fetched = await good.fetch();
-		expect(asked).toEqual([ECB_URL]);
+		expect(asked).toEqual(["https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?startPeriod=2026-11-07&format=csvdata&detail=dataonly"]);
+		expect(ecbUrl(now)).toBe(asked[0]);
 		expect(fetched).toMatchObject({ date: "2026-11-17", stale: false, rates: { USD: "1.0989" } });
 		expect(fetched.next_check).toBe(utc("2026-11-18T15:00:00Z") / 1000);
 

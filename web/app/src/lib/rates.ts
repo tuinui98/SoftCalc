@@ -9,11 +9,17 @@
 // closed); a fetch is skipped while the kept rates are the latest, and a
 // failed or early fetch is tried again after an hour (EcbRates.cs).
 
-export const ECB_URL = "https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?lastNObservations=1&format=csvdata";
+// The last 10 days (the longest ECB gap, Easter, is 4 days); the newest day is used. Not
+// lastNObservations=1: the API keeps answers per page origin for 30 s only, and for a new origin
+// that query took 60 to 90 s, this one 3 to 12 s (2026-11-18, owner's phone: "unavailable").
+export function ecbUrl(nowMs: number): string
+{
+	const from = new Date(nowMs - 10 * 86400000).toISOString().slice(0, 10);
+	return `https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?startPeriod=${from}&format=csvdata&detail=dataonly`;
+}
 // The desktop waits an hour after a failed fetch; here the Data API is the one way in and it is
 // sometimes slow (0.6 s mostly, 15 s and over 40 s seen on 2026-11-18), so: with no rates at all,
-// the next currency line tries again; with older rates kept, after 5 minutes (owner 2026-11-18:
-// "Currency rates unavailable" on the phone)
+// the next currency line tries again; with older rates kept, after 5 minutes
 const RETRY_MS = 5 * 60 * 1000;
 const RETRY_NONE_MS = 10 * 1000;    // just past this line, so it answers "unavailable" instead of asking again
 const TIMEOUT_MS = 30000;
@@ -251,7 +257,7 @@ export class RatesSource
 		let fetched: Rates | null = null;
 		try
 		{
-			fetched = parseEcbCsv(await this.download(ECB_URL));
+			fetched = parseEcbCsv(await this.download(ecbUrl(this.now())));
 			this.lastError = fetched ? "" : "not the ECB's rates";
 		}
 		catch (error)
