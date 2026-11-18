@@ -2,5 +2,8 @@
 	"appId": "io.github.tuinui98.softcalc",
 	"appName": "SoftCalc",
 	"webDir": "app/dist",
-	"android": { "path": "android" }
+	"android": {
+		"path": "android"
+	},
+	"backgroundColor": "#121316"
 }

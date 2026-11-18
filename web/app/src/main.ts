@@ -12,6 +12,16 @@ const engine = new Engine(new URL("./worker.js", document.baseURI).href);
 const { store, kept } = await openStore();
 mount(App, { target: document.getElementById("app")!, props: { engine, store, kept } });
 
+// The start screen (index.html) stays SPLASH_MS from the page's start, then fades; the app
+// under it is already working, so a slow engine shows on its own load bar (owner 2026-11-19)
+const SPLASH_MS = 1500;
+const splash = document.getElementById("splash");
+setTimeout(() =>
+{
+	splash?.classList.add("gone");
+	setTimeout(() => splash?.remove(), 400);
+}, Math.max(0, SPLASH_MS - performance.now()));
+
 // Offline and quick second starts. A service worker needs a secure page:
 // https, or localhost; a plain http address on the network has none.
 // The Android app has its files inside the APK, and a service worker
