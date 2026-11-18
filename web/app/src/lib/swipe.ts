@@ -14,12 +14,28 @@ export interface SwipeHandlers
 
 const DECIDE = 12;     // px before a move counts as a swipe, not a tap
 const UP_MIN = 50;     // px up for the menu
+const SPEED_MS = 100;  // the flick speed is taken over the last this many ms of the drag
 
 export function swipeOn(box: HTMLElement, on: SwipeHandlers): () => void
 {
 	let id = -1, x0 = 0, y0 = 0, axis: "" | "x" | "y" = "";
-	let lastX = 0, lastT = 0, speed = 0;
+	// Recent finger places for the flick speed: an Android WebView sends moves further
+	// apart than Chrome, so one last step was often too old and counted as no flick
+	let track: { x: number; t: number }[] = [];
 	let swallowClick = false;
+
+	const remember = (event: PointerEvent) =>
+	{
+		for (const sample of event.getCoalescedEvents?.() ?? [])
+		{
+			track.push({ x: sample.clientX, t: sample.timeStamp });
+		}
+		track.push({ x: event.clientX, t: event.timeStamp });
+		while (track.length > 2 && event.timeStamp - track[0].t > SPEED_MS)
+		{
+			track.shift();
+		}
+	};
 
 	const down = (event: PointerEvent) =>
 	{
@@ -28,10 +44,9 @@ export function swipeOn(box: HTMLElement, on: SwipeHandlers): () => void
 			return;
 		}
 		id = event.pointerId;
-		x0 = lastX = event.clientX;
+		x0 = event.clientX;
 		y0 = event.clientY;
-		lastT = event.timeStamp;
-		speed = 0;
+		track = [{ x: x0, t: event.timeStamp }];
 		axis = "";
 	};
 
@@ -54,13 +69,7 @@ export function swipeOn(box: HTMLElement, on: SwipeHandlers): () => void
 		}
 		if (axis === "x")
 		{
-			const dt = event.timeStamp - lastT;
-			if (dt > 0)
-			{
-				speed = (event.clientX - lastX) / dt;
-			}
-			lastX = event.clientX;
-			lastT = event.timeStamp;
+			remember(event);
 			on.move(dx);
 		}
 	};
@@ -74,7 +83,9 @@ export function swipeOn(box: HTMLElement, on: SwipeHandlers): () => void
 		const dx = event.clientX - x0, dy = event.clientY - y0;
 		if (axis === "x")
 		{
-			on.end(dx, event.timeStamp - lastT > 80 ? 0 : speed);
+			remember(event);
+			const first = track[0], last = track[track.length - 1];
+			on.end(dx, last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0);
 		}
 		else if (axis === "y" && dy < -UP_MIN)
 		{

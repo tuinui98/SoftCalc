@@ -578,11 +578,12 @@
 </div>
 
 <style>
-	:global(html), :global(body) { margin: 0; height: 100%; font-family: system-ui, Roboto, sans-serif; background: var(--page); }
+	:global(html), :global(body) { margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none; font-family: system-ui, Roboto, sans-serif; background: var(--page); }
 	:global(#app) { height: 100%; }
-	/* 100dvh: the height the phone shows now; 100% counts the room under Chrome's address bar, which
-	   pushed the bottom key row off the screen (owner 2026-11-18) */
-	.app { display: flex; flex-direction: column; height: 100%; height: 100dvh; overflow: hidden; color: var(--ink); background: var(--page); }
+	/* Fixed to the screen's edges: the box Chrome on a phone shows now, with or without its address
+	   bar; 100% or 100dvh with a page that could scroll pushed the bottom key row off the screen
+	   (owner 2026-11-18, twice) */
+	.app { position: fixed; inset: 0; display: flex; flex-direction: column; overflow: hidden; color: var(--ink); background: var(--page); }
 	header
 	{
 		display: flex; align-items: center; gap: 4px; padding: 4px 6px; padding-top: max(4px, env(safe-area-inset-top));
