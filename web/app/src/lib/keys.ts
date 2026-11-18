@@ -21,7 +21,7 @@ const k = (id: string, label: string, row: number, col: number, extra: Partial<K
 	({ id, label, row, col, ...extra });
 
 export const BASIC: Key[] = [
-	k("AC", "AC", 0, 0), k("C", "C", 0, 1), k("%", "%", 0, 2), k("/", "÷", 0, 3, { kind: "op" }), k("*", "×", 0, 4, { kind: "op" }),
+	k("AC", "AC", 0, 0), k("C", "C", 0, 1), k("%", "%", 0, 2, { kind: "op" }), k("/", "÷", 0, 3, { kind: "op" }), k("*", "×", 0, 4, { kind: "op" }),
 	k("MR", "MR", 1, 0), k("7", "7", 1, 1, { kind: "digit" }), k("8", "8", 1, 2, { kind: "digit" }), k("9", "9", 1, 3, { kind: "digit" }),
 	k("-", "−", 1, 4, { kind: "op" }),
 	k("M+", "M+", 2, 0), k("4", "4", 2, 1, { kind: "digit" }), k("5", "5", 2, 2, { kind: "digit" }), k("6", "6", 2, 3, { kind: "digit" }),

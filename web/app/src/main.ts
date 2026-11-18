@@ -14,6 +14,24 @@ mount(App, { target: document.getElementById("app")!, props: { store, kept } });
 // The Android app has its files inside the APK, and a service worker
 // there could keep serving an old version after an update.
 const inApp = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
+
+// In the Android app the system Back closes the app unless it is handed
+// to the page: there it goes back through the open layers (App.svelte),
+// and leaves the app only from the main screen.
+if (inApp)
+{
+	import("@capacitor/app").then(({ App: Native }) =>
+	{
+		void Native.addListener("backButton", ({ canGoBack }) =>
+		{
+			if (canGoBack)
+				history.back();
+			else
+				void Native.exitApp();
+		});
+	});
+}
+
 if ("serviceWorker" in navigator && isSecureContext && !inApp)
 {
 	navigator.serviceWorker.register("./sw.js").catch(error => console.warn("service worker:", error));
