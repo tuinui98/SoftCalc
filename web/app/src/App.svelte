@@ -17,6 +17,7 @@
 	import { closeOnTouch, holdToRepeat } from "./lib/repeat";
 	import type { Store } from "./lib/store";
 	import { swipeOn } from "./lib/swipe";
+	import { keyTaps } from "./lib/keytap";
 
 	let { store, kept }: { store: Store; kept: boolean } = $props();
 	// The store is given once at start and never changes
@@ -31,6 +32,8 @@
 	let input: HTMLInputElement;
 	let historyBox: HTMLElement;
 	let pagesBox: HTMLElement;
+	let basicPageBox: HTMLElement | undefined = $state();
+	let sciPageBox: HTMLElement | undefined = $state();
 	let backBox: HTMLElement;
 	let systemKeys = $state(false);
 	let settingsOpen = $state(false);
@@ -212,11 +215,14 @@
 			up: () => { openMore(); },
 		});
 		const unhold = holdToRepeat(backBox, () => { focusInput(); calc.backspace(); });
+		// The key is the one on the page being shown, where it will be when the slide ends
+		const untap = keyTaps(pagesBox, () => (wide ? pagesBox : sci ? sciPageBox : basicPageBox) ?? pagesBox,
+			id => { const key = [...BASIC, ...SCIENTIFIC].find(item => item.id === id); if (key) void press(key); });
 		const sizer = new ResizeObserver(() => { pageWidth = pagesBox.clientWidth || 1; });
 		sizer.observe(pagesBox);
 		return () =>
 		{
-			unsubscribe(); unswipe(); unhold(); sizer.disconnect();
+			unsubscribe(); unswipe(); unhold(); untap(); sizer.disconnect();
 			media.removeEventListener("change", onWide);
 		};
 	});
@@ -506,11 +512,11 @@
 					angle={view.settings.angle} onpress={press} />
 			{:else}
 				<!-- Each page keeps its keys; only the places change, so no keys are rebuilt mid-swipe -->
-				<div class="page" class:sliding class:hidden={sci && !otherVisible} style={sci ? other : shown}
+				<div class="page" bind:this={basicPageBox} class:sliding class:hidden={sci && !otherVisible} style={sci ? other : shown}
 					aria-hidden={sci} ontransitionend={slid}>
 					{@render basicPage()}
 				</div>
-				<div class="page" class:sliding class:hidden={!sci && !otherVisible} style={sci ? shown : other}
+				<div class="page" bind:this={sciPageBox} class:sliding class:hidden={!sci && !otherVisible} style={sci ? shown : other}
 					aria-hidden={!sci} ontransitionend={slid}>
 					{@render sciPage()}
 				</div>
