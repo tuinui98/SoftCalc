@@ -20,5 +20,8 @@
         <item name="android:background">@drawable/splash</item>
         <!-- Android 12 and later draw their own start screen: the launcher icon on this colour -->
         <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <!-- MainActivity keeps this screen a moment, then the app's own theme follows -->
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

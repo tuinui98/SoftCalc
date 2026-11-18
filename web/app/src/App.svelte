@@ -620,7 +620,8 @@
 	.input-row { position: relative; }
 	.load-bar
 	{
-		position: absolute; left: 0; right: 0; top: -2px; height: 3px; background: var(--key-armed);
+		/* faint: the yellow was too loud (owner 2026-11-19) */
+		position: absolute; left: 0; right: 0; top: -1px; height: 2px; background: var(--faint); opacity: 0.45;
 		transform-origin: left; transform: scaleX(var(--to)); transition: transform var(--ms) ease-out, opacity 400ms 300ms;
 		pointer-events: none;
 	}
