@@ -4,7 +4,7 @@
 // and ./engine.zip next to it in development and in the build.
 //   node app/prepare.mjs
 
-import { copyFileSync, mkdirSync, readFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,6 +19,14 @@ mkdirSync(target, { recursive: true });
 for (const name of ["pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "pyodide-lock.json"])
 {
 	copyFileSync(path.join(source, name), path.join(target, name));
+}
+// mpmath's wheel is not in the npm package: Pyodide downloads it into its own folder on first
+// use, checked against the SHA-256 in pyodide-lock.json (a fresh checkout, as on GitHub Actions)
+const lock = JSON.parse(readFileSync(path.join(source, "pyodide-lock.json"), "utf8"));
+if (!existsSync(path.join(source, lock.packages.mpmath.file_name)))
+{
+	const { loadPyodide } = await import(new URL("../node_modules/pyodide/pyodide.mjs", import.meta.url).href);
+	await (await loadPyodide()).loadPackage("mpmath");
 }
 execFileSync("python", [path.join(web, "make_engine.py")], { stdio: "inherit" });
 copyFileSync(path.join(web, "engine.zip"), path.join(here, "public", "engine.zip"));
