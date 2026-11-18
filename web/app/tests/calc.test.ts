@@ -402,6 +402,20 @@ describe("names and History lines (owner 2026-11-18)", () =>
 		expect(calc.text).toBe("2*ratef()");
 	});
 
+	it("a History result or line goes in at the caret, a negative result in brackets", async () =>
+	{
+		const { calc } = await started();
+		await press(calc, "5", "=");
+		calc.insertText("-5", true);
+		expect(calc.text).toBe("(-5)");
+		await calc.press("AC");
+		calc.insertText("-5", false);
+		expect(calc.text).toBe("-5");    // no answer in front: not an operator typed after a result
+		calc.typed("2*", 2);
+		calc.insertText("1+2", false);
+		expect(calc.text).toBe("2*1+2");
+	});
+
 	it("deleting a result line tells the engine its $n (1 = newest)", async () =>
 	{
 		const store = new MemoryStore();

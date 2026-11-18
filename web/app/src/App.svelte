@@ -267,8 +267,15 @@
 		{
 			return;
 		}
-		const choice = await pick(entry.input, ["Copy result", "Copy line", "Delete line"]);
-		if (choice === "Copy result" || choice === "Copy line")
+		// Only a calculated line has a result worth using again (not "Variable Added" or an error)
+		const result = entry.kind === "result";
+		const choice = await pick(entry.input, [...(result ? ["Insert result"] : []), "Insert line",
+			...(result ? ["Copy result"] : []), "Copy line", "Delete line"]);
+		if (choice === "Insert result" || choice === "Insert line")
+		{
+			calc.insertText(choice === "Insert result" ? entry.text : entry.input, choice === "Insert result");
+		}
+		else if (choice === "Copy result" || choice === "Copy line")
 		{
 			const done = await copyText(choice === "Copy result" ? entry.text : entry.input);
 			calc.say(done ? "Copied" : "Could not copy");
@@ -501,7 +508,7 @@
 			<div class="row"><span>Decimals</span><div class="seg">
 				<button class:on={decimalsShown === "all"} onclick={() => calc.setSetting("decimals", null)}>all</button>
 				<button aria-label="Fewer decimals" onclick={() => calc.setSetting("decimals", stepDecimals(view.settings.decimals as number | null, -1))}>−</button>
-				<span class="count">{decimalsShown === "all" ? "–" : decimalsShown}</span>
+				<span class="count">{decimalsShown === "all" ? "*" : decimalsShown}</span>
 				<button aria-label="More decimals" onclick={() => calc.setSetting("decimals", stepDecimals(view.settings.decimals as number | null, +1))}>+</button>
 				</div></div>
 			<div class="row"><span>Pad zeros</span><div class="seg">

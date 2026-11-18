@@ -443,6 +443,14 @@ export class Calculator
 		void this.updateHint(true);
 	}
 
+	// A History line or result goes in at the caret (owner 2026-11-18); a negative result in
+	// brackets, so 2* and -5 make 2*(-5). No `answer` in front: this is not typing an operator.
+	insertText(piece: string, isResult: boolean)
+	{
+		this.insert(isResult && piece.startsWith("-") ? `(${piece})` : piece);
+		this.changed();
+	}
+
 	// A variable name goes in at the caret; a function wraps the line, as the Functions menu does
 	async insertName(name: string, isFunction: boolean)
 	{
