@@ -341,14 +341,18 @@ export class Calculator
 	{
 		let answer = await this.engine.send("eval", { input: line });
 		const before = this.status;
+		let failed = "";
 		for (let round = 0; round < 2 && answer.ok && (answer.kind === "rates_needed" || answer.kind === "prices_needed"); round++)
 		{
 			const rates = answer.kind === "rates_needed";
 			this.say(rates ? "Getting ECB rates..." : "Getting coin prices...");
-			await this.engine.send(rates ? "set_rates" : "set_prices", { ...await (rates ? this.rates.fetch() : this.prices.fetch()) });
+			const given = rates ? await this.rates.fetch() : await this.prices.fetch();
+			await this.engine.send(rates ? "set_rates" : "set_prices", { ...given });
+			// The reason stays in the status line, so a failure on a phone can be told apart
+			failed = given.stale ? `${rates ? "ECB rates" : "Coin prices"} not fetched: ${(rates ? this.rates : this.prices).lastError}` : failed;
 			answer = await this.engine.send("eval", { input: line });
-			this.status = before;
 		}
+		this.status = failed || before;
 		return answer;
 	}
 

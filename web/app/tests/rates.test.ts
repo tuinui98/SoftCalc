@@ -71,7 +71,17 @@ describe("ECB rates", () =>
 		expect((await offline.loadKept()).rates.USD).toBe("1.0989");
 		const failed = await offline.fetch();
 		expect(failed).toMatchObject({ date: "2026-11-17", stale: true });
-		expect(failed.next_check).toBe((now + 3600000) / 1000);
+		expect(failed.next_check).toBe((now + 5 * 60000) / 1000);    // older rates kept: again in 5 minutes
+		expect(offline.lastError).toBe("offline");
+	});
+
+	it("no rates at all and the fetch fails: the next currency line tries again", async () =>
+	{
+		const now = utc("2026-11-17T16:00:00Z");
+		const source = new RatesSource(new MemoryStore(), async () => { throw new DOMException("late", "TimeoutError"); }, () => now);
+		const failed = await source.fetch();
+		expect(failed).toEqual({ date: null, rates: {}, stale: true, next_check: now / 1000 + 10 });
+		expect(source.lastError).toBe("no answer in 30 s");
 	});
 
 	it("nothing kept yet: no rates, due at once", async () =>
@@ -158,6 +168,18 @@ describe("a currency line fetches, then calculates (desktop M8)", () =>
 		await calc.press("=");
 		expect(calc.entries.at(-1)).toMatchObject({ kind: "result", text: "2.6350", note: "ECB 2026-11-17" });
 		expect(engine.sent.filter(op => op === "eval")).toHaveLength(2);
+	});
+
+	it("a failed fetch says why in the status line", async () =>
+	{
+		const engine = new RateEngine();
+		const store = new MemoryStore();
+		const rates = new RatesSource(store, async () => { throw new TypeError("Failed to fetch"); });
+		const calc = new Calculator(engine, store, { rates });
+		await calc.started;
+		calc.typed("100 [THB->USD]", 14);
+		await calc.press("=");
+		expect(calc.status).toBe("ECB rates not fetched: Failed to fetch");
 	});
 
 	it("prices_needed: the prices are fetched", async () =>

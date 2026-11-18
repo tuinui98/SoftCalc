@@ -7,7 +7,7 @@
 // used and shown `, offline`. The request carries only the coins and the
 // currencies. CoinGecko allows web pages to read it (CORS `*`).
 
-import { fetchText, type Fetcher, type Kept } from "./rates";
+import { failure, fetchText, type Fetcher, type Kept } from "./rates";
 
 const API = "https://api.coingecko.com/api/v3/simple/price";
 const FRESH_MS = 5 * 60 * 1000;
@@ -71,6 +71,7 @@ export function parsePrices(json: string, fetched: number): Prices | null
 export class PriceSource
 {
 	private held: Prices | null = null;
+	lastError = "";    // why the last fetch failed, "" when it worked
 
 	constructor(private readonly kept: Kept, private readonly download: Fetcher = fetchText,
 		private readonly now: () => number = Date.now)
@@ -97,10 +98,11 @@ export class PriceSource
 		try
 		{
 			fetched = parsePrices(await this.download(PRICES_URL), now);
+			this.lastError = fetched ? "" : "not CoinGecko's prices";
 		}
-		catch
+		catch (error)
 		{
-			// offline, refused (CoinGecko limits free requests) or too slow
+			this.lastError = failure(error);    // offline, refused (CoinGecko limits free requests) or too slow
 		}
 		if (!fetched)
 		{

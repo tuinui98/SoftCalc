@@ -10,8 +10,13 @@
 // failed or early fetch is tried again after an hour (EcbRates.cs).
 
 export const ECB_URL = "https://data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A?lastNObservations=1&format=csvdata";
-const RETRY_MS = 60 * 60 * 1000;
-const TIMEOUT_MS = 15000;    // the Data API answered in 0.2 s, but once took over 40 s (2026-11-18)
+// The desktop waits an hour after a failed fetch; here the Data API is the one way in and it is
+// sometimes slow (0.6 s mostly, 15 s and over 40 s seen on 2026-11-18), so: with no rates at all,
+// the next currency line tries again; with older rates kept, after 5 minutes (owner 2026-11-18:
+// "Currency rates unavailable" on the phone)
+const RETRY_MS = 5 * 60 * 1000;
+const RETRY_NONE_MS = 10 * 1000;    // just past this line, so it answers "unavailable" instead of asking again
+const TIMEOUT_MS = 30000;
 const ECB_ZONE = "Europe/Berlin";    // CET / CEST, as the desktop's Central European time
 const PUBLISH_HOUR = 16;
 
@@ -211,9 +216,20 @@ export async function fetchText(url: string): Promise<string>
 	return answer.text();
 }
 
+// Why a fetch failed, in a few words for the status line
+export function failure(error: unknown): string
+{
+	if (error instanceof DOMException && (error.name === "TimeoutError" || error.name === "AbortError"))
+	{
+		return "no answer in 30 s";
+	}
+	return error instanceof Error ? error.message : String(error);
+}
+
 export class RatesSource
 {
 	private held: Rates | null = null;
+	lastError = "";    // why the last fetch failed, "" when it worked
 
 	constructor(private readonly kept: Kept, private readonly download: Fetcher = fetchText,
 		private readonly now: () => number = Date.now)
@@ -236,15 +252,16 @@ export class RatesSource
 		try
 		{
 			fetched = parseEcbCsv(await this.download(ECB_URL));
+			this.lastError = fetched ? "" : "not the ECB's rates";
 		}
-		catch
+		catch (error)
 		{
-			// offline, refused or too slow: the kept rates, marked stale
+			this.lastError = failure(error);    // offline, refused or too slow: the kept rates, marked stale
 		}
 		const now = this.now();
 		if (!fetched)
 		{
-			return payload(this.held, true, now + RETRY_MS);
+			return payload(this.held, true, now + (this.held ? RETRY_MS : RETRY_NONE_MS));
 		}
 		this.held = fetched;
 		await this.kept.put("rates", fetched).catch(() => undefined);
