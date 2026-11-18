@@ -18,6 +18,9 @@ export interface Saved
 export interface Store
 {
 	load(): Promise<Saved>;
+	// Anything else kept by name: the ECB rates ("rates") and coin prices ("prices")
+	get(key: string): Promise<unknown>;
+	put(key: string, value: unknown): Promise<void>;
 	saveSettings(settings: Record<string, unknown>): Promise<void>;
 	saveDefinitions(text: string): Promise<void>;
 	saveEntries(entries: Entry[]): Promise<void>;
@@ -28,6 +31,17 @@ export const HISTORY_LIMIT = 1000;    // older lines are dropped when saving
 export class MemoryStore implements Store
 {
 	data: Saved = { settings: {}, definitions: "", entries: [] };
+	other: Record<string, unknown> = {};
+
+	async get(key: string): Promise<unknown>
+	{
+		return structuredClone(this.other[key]);
+	}
+
+	async put(key: string, value: unknown)
+	{
+		this.other[key] = structuredClone(value);
+	}
 
 	async load(): Promise<Saved>
 	{
@@ -79,12 +93,17 @@ export class IndexedStore implements Store
 		});
 	}
 
-	private get<T>(key: string, fallback: T): Promise<T>
+	private read<T>(key: string, fallback: T): Promise<T>
 	{
 		return this.run("readonly", table => table.get(key)).then(value => (value ?? fallback) as T);
 	}
 
-	private put(key: string, value: unknown): Promise<void>
+	get(key: string): Promise<unknown>
+	{
+		return this.read<unknown>(key, undefined);
+	}
+
+	put(key: string, value: unknown): Promise<void>
 	{
 		return this.run("readwrite", table => table.put(value, key)).then(() => undefined);
 	}
@@ -92,9 +111,9 @@ export class IndexedStore implements Store
 	async load(): Promise<Saved>
 	{
 		return {
-			settings: await this.get("settings", {}),
-			definitions: await this.get("definitions", ""),
-			entries: await this.get("entries", []),
+			settings: await this.read("settings", {}),
+			definitions: await this.read("definitions", ""),
+			entries: await this.read("entries", []),
 		};
 	}
 

@@ -148,11 +148,19 @@
 		focusInput();
 	}
 
+	// Currency: the common ones first, then the coins (prices from CoinGecko), then the other ECB codes
+	function currencyCodes(): string[]
+	{
+		const common = calc.catalog.conversions.Currency ?? [];
+		const all = ((calc.catalog as unknown as { currencies?: string[] }).currencies ?? []).filter(code => !common.includes(code));
+		return [...common, "BTC", "ETH", "TRX", "USDT", ...all];
+	}
+
 	async function openConversions()
 	{
-		const groups = Object.keys(calc.catalog.conversions).filter(group => group !== "Currency");
+		const groups = Object.keys(calc.catalog.conversions);
 		const group = await pick("Conversions", groups);
-		const units = group ? calc.catalog.conversions[group] : [];
+		const units = group === "Currency" ? currencyCodes() : group ? calc.catalog.conversions[group] : [];
 		const source = group && await pick(`${group}: from`, units);
 		const target = source && await pick(`${source} to`, units.filter(unit => unit !== source));
 		if (source && target) await calc.insertConversion(source, target);
@@ -446,6 +454,7 @@
 					<div class="top"><span>{entry.input}</span>
 						{#if entry.display !== entry.input}<span class="sub">{entry.display}</span>{/if}</div>
 					<div class="result">{entry.text}</div>
+					{#if entry.note}<div class="note">{entry.note}</div>{/if}
 				</div>
 			{/each}
 		</div>

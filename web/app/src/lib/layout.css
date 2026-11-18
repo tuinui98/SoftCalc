@@ -97,6 +97,8 @@
 .entry .top { display: flex; justify-content: space-between; gap: 16px; font-size: calc(16px * var(--text-scale, 1)); }
 .entry .top .sub { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .entry .result { padding-left: 28px; font-size: calc(20px * var(--text-scale, 1)); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.entry .note { padding-left: 28px; color: var(--faint); font-size: 12px; font-style: italic; }
+.entry.selected .note { color: var(--select-ink); }
 .entry.error .result { color: var(--error); }
 .entry.notice { color: var(--faint); font-style: italic; cursor: default; }
 .entry.selected { background: var(--select); color: var(--select-ink); }
