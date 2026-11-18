@@ -14,6 +14,8 @@
 // only: RPN is not in the web app (owner 2026-11-18).
 
 import type { Answer } from "./engine";
+import { PriceSource } from "./prices";
+import { RatesSource } from "./rates";
 import type { Store } from "./store";
 
 export interface EngineLike
@@ -28,6 +30,7 @@ export interface Entry
 	input: string;
 	display: string;       // the History expression line (numbers substituted)
 	text: string;
+	note?: string;         // where a rate came from: "ECB 2026-11-17", "CoinGecko 2026-11-18 08:00", ", offline"
 }
 
 export interface Settings
@@ -74,10 +77,16 @@ export class Calculator
 	private draft = "";
 	private listeners = new Set<() => void>();
 
-	constructor(engine: EngineLike, store: Store)
+	private readonly rates: RatesSource;
+	private readonly prices: PriceSource;
+
+	// net: the rate and price sources (tests pass ones with a fake download)
+	constructor(engine: EngineLike, store: Store, net: { rates?: RatesSource; prices?: PriceSource } = {})
 	{
 		this.engine = engine;
 		this.store = store;
+		this.rates = net.rates ?? new RatesSource(store);
+		this.prices = net.prices ?? new PriceSource(store);
 		const t0 = performance.now();
 		this.started = this.start().then(version =>
 		{
@@ -100,6 +109,9 @@ export class Calculator
 		const saved = await this.store.load();
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
 		this.settings = settingsOf(await this.engine.send("settings", wanted));
+		// Kept rates and prices go in first; they are fetched only when a line needs newer ones
+		await this.engine.send("set_rates", { ...await this.rates.loadKept() });
+		await this.engine.send("set_prices", { ...await this.prices.loadKept() });
 		if (saved.definitions.trim().length > 0)
 		{
 			const imported = await this.engine.send("pcf_import", { text: saved.definitions });
@@ -296,20 +308,17 @@ export class Calculator
 		{
 			return;
 		}
-		const answer = await this.engine.send("eval", { input: toRun });
+		const answer = await this.evaluate(toRun);
 		this.highlight = -1;
 		this.draft = "";
 		if (!answer.ok)
 		{
 			this.entries.push({ kind: "error", input: toRun, display: toRun, text: answer.error ?? "" });
 		}
-		else if (answer.kind === "rates_needed")
-		{
-			this.entries.push({ kind: "notice", input: toRun, display: toRun, text: "Currency rates are not in the mockup." });
-		}
 		else if (answer.kind !== "empty")
 		{
-			this.entries.push({ kind: answer.kind, input: answer.input, display: answer.display_input, text: answer.text });
+			const note = typeof answer.note === "string" && answer.note.length > 0 ? answer.note : undefined;
+			this.entries.push({ kind: answer.kind, input: answer.input, display: answer.display_input, text: answer.text, note });
 			if (answer.kind === "definition")
 			{
 				await this.saveDefinitions();
@@ -323,6 +332,28 @@ export class Calculator
 			this.setText("");
 		}
 		this.changed();
+	}
+
+	// eval, and when the line needs currency rates or coin prices the engine does not have yet:
+	// fetch them, hand them over and evaluate again (desktop M8 / crypto_plan C1). A line may need
+	// both (BTC to an ECB currency), so up to two rounds; then the engine answers with what it has.
+	private async evaluate(line: string): Promise<Answer>
+	{
+		let answer = await this.engine.send("eval", { input: line });
+		const before = this.status;
+		let failed = "";
+		for (let round = 0; round < 2 && answer.ok && (answer.kind === "rates_needed" || answer.kind === "prices_needed"); round++)
+		{
+			const rates = answer.kind === "rates_needed";
+			this.say(rates ? "Getting ECB rates..." : "Getting coin prices...");
+			const given = rates ? await this.rates.fetch() : await this.prices.fetch();
+			await this.engine.send(rates ? "set_rates" : "set_prices", { ...given });
+			// The reason stays in the status line, so a failure on a phone can be told apart
+			failed = given.stale ? `${rates ? "ECB rates" : "Coin prices"} not fetched: ${(rates ? this.rates : this.prices).lastError}` : failed;
+			answer = await this.engine.send("eval", { input: line });
+		}
+		this.status = failed || before;
+		return answer;
 	}
 
 	private recallLines(): number[]

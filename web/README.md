@@ -132,3 +132,20 @@ asked for with an Origin header.
 - Settings: decimals (all, or − / + from 2, 0 to 30), pad zeros, word
   size, text size (100 to 200%, History and Input).
 - RPN is not in the web app (owner 2026-11-18).
+
+### Currency and coin prices (owner 2026-11-18)
+- `100 [THB->USD]`: on `rates_needed` the app fetches the ECB reference
+  rates and evaluates again (`src/lib/rates.ts`, the desktop RatesSource
+  and EcbCalendar). The desktop's eurofxref-daily.xml cannot be read by a
+  web page (no CORS header); the ECB Data API
+  (`data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A`, CSV, about
+  5 KB) gives the same rates with `Access-Control-Allow-Origin: *`. It
+  asks for the last 10 days (`startPeriod`) and uses the newest day: the
+  API keeps answers per page origin for 30 s only, and for a new origin
+  `lastNObservations=1` took 60 to 90 s, `startPeriod` 3 to 12 s.
+- `1 [BTC->THB]`, `1000 [sat->USD]`: on `prices_needed` the app fetches
+  CoinGecko (`src/lib/prices.ts`, the desktop PriceSource); good for 5
+  minutes.
+- Both are kept in IndexedDB; a failed fetch uses them, shown `, offline`.
+  The History line shows where the rate came from (`ECB 2026-11-17`).
+- Conversions > Currency lists the common codes, the coins, then the rest.
