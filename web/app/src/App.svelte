@@ -359,30 +359,43 @@
 
 	//==================================================================
 	//  System Back closes the top layer first (menu, Variables, Settings),
-	//  then leaves the app; in Help it goes topic, topics list, ⋮ menu. One history entry stands for "a layer is open";
-	//  closing in the app takes it off again. The check waits a moment, so
-	//  a menu that opens the next one (Functions, then a group) keeps it.
+	//  then leaves the app; in Help it goes topic, topics list, ⋮ menu.
+	//  Each level has one history entry. Entries are pushed only after a
+	//  tap opened that level: Chrome on Android skips an entry pushed
+	//  without one (from popstate), and Back then leaves the app (owner
+	//  2026-11-18). Back only takes a level off; closing in the app takes
+	//  its entries off too. The check waits a moment, so a menu that opens
+	//  the next one (Functions, then a group) keeps its entry.
 	//==================================================================
-	const anyLayer = $derived(sheet !== null || settingsOpen || namesOpen || helpOpen);
-	let layerPushed = false;
+	function layerDepth(): number
+	{
+		if (helpOpen)
+		{
+			// Help stands on the ⋮ menu that opened it
+			return helpTopic ? 3 : 2;
+		}
+		return sheet !== null || settingsOpen || namesOpen ? 1 : 0;
+	}
+	const depth = $derived(layerDepth());
+	let pushed = 0;
 	let skipPop = false;
 
 	$effect(() =>
 	{
-		void anyLayer;
+		void depth;
 		setTimeout(() =>
 		{
-			const open = sheet !== null || settingsOpen || namesOpen || helpOpen;
-			if (open && !layerPushed)
+			const wanted = layerDepth();
+			while (pushed < wanted)
 			{
-				history.pushState({ softcalcLayer: true }, "");
-				layerPushed = true;
+				history.pushState({ softcalcLayer: pushed + 1 }, "");
+				pushed++;
 			}
-			else if (!open && layerPushed)
+			if (pushed > wanted)
 			{
-				layerPushed = false;
 				skipPop = true;
-				history.back();
+				history.go(wanted - pushed);
+				pushed = wanted;
 			}
 		}, 0);
 	});
@@ -394,23 +407,13 @@
 			skipPop = false;
 			return;
 		}
-		layerPushed = false;
+		pushed = Math.max(0, pushed - 1);
 		if (sheet) sheet.done(null);
-		else if (helpOpen && helpTopic)
-		{
-			// Back in a Help topic goes to the topics list; Help stays, so it needs its entry again
-			helpTopic = null;
-			history.pushState({ softcalcLayer: true }, "");
-			layerPushed = true;
-		}
+		else if (helpOpen && helpTopic) helpTopic = null;
 		else if (helpOpen)
 		{
-			// Back on the topics list goes back to the ⋮ menu that opened Help (owner 2026-11-18);
-			// a layer stays open, so the effect does not run again and the entry is pushed here
 			helpOpen = false;
 			void openMore();
-			history.pushState({ softcalcLayer: true }, "");
-			layerPushed = true;
 		}
 		else if (namesOpen) namesOpen = false;
 		else if (settingsOpen) settingsOpen = false;
