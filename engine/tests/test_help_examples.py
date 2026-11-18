@@ -1,4 +1,5 @@
-"""tests/test_help_examples.py - Every `line => result` example in help/*.md (owner 2026-11-10).
+"""tests/test_help_examples.py - Every `line => result` example in help/*.md (owner 2026-11-10)
+and in the web app's own topics, web/app/help/*.md (owner 2026-11-18).
 
 Help topics keep their examples in ```calc and ```rpn blocks. A line with
 `=>` is checked: the engine must give exactly the text after it. Lines
@@ -14,7 +15,8 @@ import pytest
 from softcalc_engine.engine import Engine
 
 HELP = Path(__file__).resolve().parents[2] / "help"
-TOPICS = sorted(HELP.glob("[0-9][0-9]-*.md"))
+WEB_HELP = Path(__file__).resolve().parents[2] / "web" / "app" / "help"    # the web app's own topics
+TOPICS = sorted(HELP.glob("[0-9][0-9]-*.md")) + sorted(WEB_HELP.glob("[0-9][0-9]-*.md"))
 
 
 def examples(path):
@@ -35,7 +37,7 @@ def test_help_has_topics():
     assert len(TOPICS) >= 16
 
 
-@pytest.mark.parametrize("path", TOPICS, ids=lambda p: p.stem)
+@pytest.mark.parametrize("path", TOPICS, ids=lambda p: p.parent.parent.name + "/" + p.stem)
 def test_examples(path):
     engine = Engine()
     wrong = []

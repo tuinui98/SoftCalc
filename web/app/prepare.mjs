@@ -1,4 +1,4 @@
-// prepare.mjs - Copy Pyodide and pack the engine into app/public (not in git)
+// prepare.mjs - Copy Pyodide, pack the engine into app/public and make the Help (not in git)
 //
 // Vite serves public/ as it is, so the worker finds ./pyodide-<version>/
 // and ./engine.zip next to it in development and in the build.
@@ -22,4 +22,5 @@ for (const name of ["pyodide.mjs", "pyodide.asm.mjs", "pyodide.asm.wasm", "pytho
 }
 execFileSync("python", [path.join(web, "make_engine.py")], { stdio: "inherit" });
 copyFileSync(path.join(web, "engine.zip"), path.join(here, "public", "engine.zip"));
+execFileSync("node", [path.join(here, "make_help.mjs")], { stdio: "inherit" });
 console.log("prepared", path.join(here, "public"));

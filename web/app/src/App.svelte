@@ -6,6 +6,7 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
+	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
 	import { Calculator, stepDecimals } from "./lib/calc";
@@ -37,6 +38,8 @@
 	let showHints = $state(calc.showHints);
 	let textSize = $state(loadTextSize());
 	let namesOpen = $state(false);
+	let helpOpen = $state(false);
+	let helpTopic: string | null = $state(null);
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
@@ -169,11 +172,12 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
+		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
 		else if (choice === "Clear History") calc.clearHistory();
 	}
 
@@ -359,7 +363,7 @@
 	//  closing in the app takes it off again. The check waits a moment, so
 	//  a menu that opens the next one (Functions, then a group) keeps it.
 	//==================================================================
-	const anyLayer = $derived(sheet !== null || settingsOpen || namesOpen);
+	const anyLayer = $derived(sheet !== null || settingsOpen || namesOpen || helpOpen);
 	let layerPushed = false;
 	let skipPop = false;
 
@@ -368,7 +372,7 @@
 		void anyLayer;
 		setTimeout(() =>
 		{
-			const open = sheet !== null || settingsOpen || namesOpen;
+			const open = sheet !== null || settingsOpen || namesOpen || helpOpen;
 			if (open && !layerPushed)
 			{
 				history.pushState({ softcalcLayer: true }, "");
@@ -392,6 +396,14 @@
 		}
 		layerPushed = false;
 		if (sheet) sheet.done(null);
+		else if (helpOpen && helpTopic)
+		{
+			// Back in a Help topic goes to the topics list; Help stays, so it needs its entry again
+			helpTopic = null;
+			history.pushState({ softcalcLayer: true }, "");
+			layerPushed = true;
+		}
+		else if (helpOpen) helpOpen = false;
 		else if (namesOpen) namesOpen = false;
 		else if (settingsOpen) settingsOpen = false;
 	}
@@ -491,6 +503,11 @@
 	</div>
 
 	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => sheet?.done(item)} />{/if}
+
+	{#if helpOpen}
+		<HelpView bind:topic={helpTopic} onclose={() => { helpOpen = false; focusInput(); }}
+			onexample={line => { helpOpen = false; calc.typed(line, line.length); focusInput(); }} />
+	{/if}
 
 	{#if namesOpen}
 		<NamesSheet definitions={view.definitions} onclose={() => { namesOpen = false; focusInput(); }}

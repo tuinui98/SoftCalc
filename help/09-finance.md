@@ -27,6 +27,7 @@ nper(0.01, -500, 10000)       => 22.42574187803646223120137896696
 - Paying 500 a month on a 10,000 debt at 1% a month clears it in
   22.43 months, so 23 payments.
 
+<!-- desktop -->
 ## Compound Interest window
 
 Tools > Compound Interest... (ribbon: **Interest**) works out savings
@@ -43,3 +44,4 @@ without formulas.
 - Copy all and Export CSV... take the table; Ctrl+C copies the selected
   rows.
 - The window remembers what you typed last time.
+<!-- /desktop -->

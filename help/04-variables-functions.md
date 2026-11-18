@@ -28,18 +28,37 @@ hyp(3, 4)                     => 5
 - The body reads variables when the function is called, so it follows
   later changes.
 - A function cannot call itself.
+<!-- desktop -->
 - Functions with one parameter can be drawn in the Graph
   (section *Graph*).
 - Functions > User Functions inserts a call to one of yours.
 
 ## The Functions and Variables windows
+<!-- /desktop -->
 
+<!-- web -->
+- Functions > Your functions inserts a call to one of yours.
+
+## The Variables list
+
+⋮ > Variables lists your variables and functions:
+
+- tap one to put its name in Input (a function wraps the line, as the
+  Functions menu does);
+- ✕, then **Delete?**, removes it;
+- to change one, type its definition again: `rate=0.06`.
+<!-- /web -->
+
+<!-- desktop -->
 In Advanced View, the **Graph** and **Variables** panels on the left
 have **Add** and **Edit** buttons. They open an editor:
+<!-- /desktop -->
 
+<!-- desktop -->
 ![The Functions editor](img/editor-functions.light.png)
 
 - the list on the left holds your definitions; pick one to edit it;
+<!-- /desktop -->
 - fill in **Name**, **Parameters** (functions only) and **Definition**
   or **Value**; the line it will send is shown below;
 - **Apply** defines without closing; **OK** defines and closes;

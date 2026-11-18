@@ -16,6 +16,7 @@ its result line, for example `ECB 2026-11-05`.
 - SoftCalc fetches them only when you calculate a currency line, and
   only when a newer publication may exist. The ECB publishes once per
   working day, around 16:00 Central European Time.
+<!-- desktop -->
 - The rates are kept in the data folder, so currency lines work offline
   with the last rates; the note then ends in `, offline`.
 - Before its first fetch SoftCalc has the rates of the day it was built;
@@ -24,10 +25,22 @@ its result line, for example `ECB 2026-11-05`.
 - Apart from coin prices and the Cryptocurrency window's Balance and
   Watch tabs (section *Cryptocurrency*), this is the only time SoftCalc
   uses the internet.
+<!-- /desktop -->
+
+<!-- web -->
+- The rates are kept on the device, so currency lines work offline
+  with the last rates; the note then ends in `, offline`.
+- The first currency line needs the internet. When the fetch fails the
+  status line above Input says why, and the next currency line tries
+  again.
+- Apart from coin prices (section *Cryptocurrency*), this is the only
+  time SoftCalc uses the internet.
+<!-- /web -->
 - A code the ECB does not publish gives `No ECB rate for ...`.
 
 ## With the menu
 
+<!-- desktop -->
 Conversions > Currency lists common pairs (THB, USD, EUR, JPY, GBP, CNY,
 SGD, HKD, AUD, KRW). For any other pair use the two halves:
 
@@ -36,3 +49,14 @@ SGD, HKD, AUD, KRW). For any other pair use the two halves:
 3. Conversions > Currency > To > THB: Input reads `250 [CHF->THB]`.
 
 ![Conversions > Currency > From](img/menu-currency.light.png)
+<!-- /desktop -->
+
+<!-- web -->
+Conversions > Currency lists the common codes first (THB, USD, EUR,
+JPY, GBP, CNY, SGD, HKD, AUD, KRW), then the coins (BTC, ETH, TRX,
+USDT), then the other ECB codes:
+
+1. Type the amount: `250`.
+2. Conversions > Currency, then the code you have: CHF.
+3. Then the code you want: THB. Input reads `250 [CHF->THB]`.
+<!-- /web -->

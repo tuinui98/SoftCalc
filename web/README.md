@@ -149,3 +149,16 @@ asked for with an Origin header.
 - Both are kept in IndexedDB; a failed fetch uses them, shown `, offline`.
   The History line shows where the rate came from (`ECB 2026-11-17`).
 - Conversions > Currency lists the common codes, the coins, then the rest.
+
+### Help (owner 2026-11-18)
+- ⋮ > Help shows the desktop's topics (`help/*.md`) that fit the web
+  app: 01 to 09, 16 and 18. `app/make_help.mjs` (run by `prepare.mjs`,
+  `marked` at build time only) writes `app/src/generated/help.json`,
+  loaded when Help opens.
+- In a shared topic, `<!-- desktop -->` ... `<!-- /desktop -->` lines
+  are the desktop's own text and `<!-- web -->` ... `<!-- /web -->` the
+  web's; each side leaves out the other's (desktop:
+  `HelpMarkdown.ForDesktop`). `app/help/` holds the web's own version of
+  a topic (Getting started). Pictures are left out.
+- A `calc` example is a button that puts its line in Input; the engine
+  test `test_help_examples.py` checks the web's own topics too.

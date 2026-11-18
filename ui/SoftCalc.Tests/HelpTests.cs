@@ -14,6 +14,14 @@ public sealed class HelpTests
 	}
 
 	[Fact]
+	public void WebBlocksAreLeftOutAndDesktopMarkersDropped()
+	{
+		string markdown = "# T\n\n<!-- desktop -->\nView > Word Size.\n<!-- /desktop -->\n\n<!-- web -->\nSettings > Word size.\n<!-- /web -->\n\nShared.";
+		Assert.Equal("# T\n\nView > Word Size.\n\n\nShared.", HelpMarkdown.ForDesktop(markdown));
+		Assert.DoesNotContain(HelpTopics.All, topic => topic.Markdown.Contains("<!--") || topic.Markdown.Contains("Settings > Word size"));
+	}
+
+	[Fact]
 	public void EveryTopicIsEmbeddedInOrder()
 	{
 		var topics = HelpTopics.All;

@@ -15,6 +15,37 @@ namespace SoftCalc.Logic;
 
 internal static partial class HelpMarkdown
 {
+	// The topics are shared with the web app (owner 2026-11-18): lines between `<!-- web -->` and
+	// `<!-- /web -->` are the web app's own and go; the `<!-- desktop -->` / `<!-- /desktop -->`
+	// lines around the desktop's own text go, the text stays. Each marker is a line of its own.
+	public static string ForDesktop(string markdown)
+	{
+		var kept = new List<string>();
+		bool web = false;
+		foreach (string line in markdown.Replace("\r\n", "\n").Split('\n'))
+		{
+			switch (line.Trim())
+			{
+				case "<!-- web -->":
+					web = true;
+					break;
+				case "<!-- /web -->":
+					web = false;
+					break;
+				case "<!-- desktop -->":
+				case "<!-- /desktop -->":
+					break;
+				default:
+					if (!web)
+					{
+						kept.Add(line);
+					}
+					break;
+			}
+		}
+		return string.Join("\n", kept);
+	}
+
 	// image: picture path to a URI (null: show the caption); topic: title to topic id (null: plain italic)
 	public static string ToHtml(string markdown, Func<string, string?> image, Func<string, string?> topic)
 	{

@@ -2,17 +2,31 @@
 
 ## From the Functions menu
 
+<!-- desktop -->
 The **Functions** menu lists every built-in function by group. Picking one:
+<!-- /desktop -->
+
+<!-- web -->
+The **func** key (Sci keys), or ⋮ > Functions, lists every built-in
+function by group. Picking one:
+<!-- /web -->
 
 - **wraps what is already in Input**: with `2` in Input, Functions > Basic
   Operations > sqrt gives `sqrt(2)`;
 - on an empty Input it gives `sqrt()` with the caret inside the brackets;
 - an operator (`+`, `^`, `mod`, `!`, ...) is put at the caret instead.
 
+<!-- desktop -->
 ![Functions menu with Trig Functions open](img/menu-functions.light.png)
 
 User Functions, at the bottom, lists the functions you defined
 (section *Variables and user functions*).
+<!-- /desktop -->
+
+<!-- web -->
+Your functions, at the top, lists the functions you defined
+(section *Variables and user functions*).
+<!-- /web -->
 
 ## Maths
 
@@ -38,9 +52,18 @@ log10(1000)           => 3
 ## Angles
 
 `sin`, `cos` and `tan` read their argument in the angle unit, and `asin`,
-`acos`, `atan` answer in it. Pick the unit with the ribbon's **Angle**
+`acos`, `atan` answer in it.
+
+<!-- desktop -->
+Pick the unit with the ribbon's **Angle**
 group (Deg / Rad) or View > Advanced Options > Degrees / Radians /
 Grads. SoftCalc starts in degrees. Hyperbolic functions do not use it.
+<!-- /desktop -->
+
+<!-- web -->
+Pick the unit with the **deg ▸** key or Settings > Angle (deg, rad,
+grad). SoftCalc starts in degrees. Hyperbolic functions do not use it.
+<!-- /web -->
 
 ```calc
 sin(pi/6)             => 0.5
@@ -64,8 +87,14 @@ signed(0xFF, 8)       => -1
 twos(300, 8)          => 44
 ```
 
+<!-- desktop -->
 - Without `bits`, View > Word Size (8, 16, 32 or 64 bits, also on the
   ribbon, see *Ribbon*) is used.
+<!-- /desktop -->
+
+<!-- web -->
+- Without `bits`, Settings > Word size (8, 16, 32 or 64 bits) is used.
+<!-- /web -->
 - A value outside the word wraps, like hardware: `twos(300, 8)` is 44.
 - History adds the result in hex on the right: `twos(-1)` shows
   `twos(-1, 32) = 0xFFFFFFFF`.

@@ -1,0 +1,93 @@
+# Getting started
+
+Type a calculation with the keys and press **=**. The line and its result
+go to **History**; Input clears for the next line.
+
+```calc
+1+2*3                 => 7
+0.1+0.2               => 0.3
+2^100                 => 1267650600228229401496703205376
+```
+
+SoftCalc works in decimal at the precision you choose (Settings >
+Precision), so `0.1+0.2` is exactly `0.3`, and big numbers keep every
+digit the precision allows. Tap an example in this Help to put it in
+Input.
+
+## The keys
+
+- **Basic** keys show first. Swipe the keys left or right, or tap
+  **Sci ▸**, for the scientific keys; on a wide screen both show side by
+  side.
+- Swipe **up** on the keys for the menu (the same as **⋮**).
+- **⌫** beside Input takes one character; hold it to take more.
+- **C** takes the last number, **AC** clears Input.
+- **2nd** gives the yellow meaning of the next key (`asin` on `sin`).
+- **STO** then **x** or **y** stores Input (or the last result) in that
+  variable; **M+**, **M−**, **MR** and **MC** work with `memory`.
+- **⌨** opens the phone's own keyboard as well, for letters and names.
+
+## History
+
+Each entry shows what you typed. When the line uses names or earlier
+results, the numbers it used are shown faint on the right, and the
+result is on the line below.
+
+- **Tap** an entry to put its line back in Input. It stays highlighted,
+  and the **entry** key (Sci keys) goes on to older lines; tap it again
+  to take the highlight off and keep the line.
+- **Press and hold** an entry for Insert result, Insert line, Copy
+  result, Copy line and Delete line.
+- ⋮ > Clear History empties it.
+
+An error keeps your text in Input, so you can fix it. The History line
+shows what went wrong, for example `ERROR:Expected ')'`.
+
+## Earlier results
+
+```calc
+6*7                   => 42
+answer/2              => 21
+$2+1                  => 43
+```
+
+- `answer` (or `ans`) is the last result.
+- `$1` is the last result too, `$2` the one before, and so on. Only
+  results count; definitions and errors are skipped. After a Delete line
+  the numbers close up.
+- An operator key on an empty Input starts with the last result: press
+  `×` and Input reads `answer*`.
+- **=** on an empty Input repeats the last History line.
+
+## The hint line
+
+The faint line under Input explains what is left of the caret:
+
+- the function you are typing, with its arguments: typing `fv(` shows
+  `fv(rate, nper, pmt, [pv], [type]) - future value; ...`
+- names that start with what you typed, after two letters
+- tag examples inside an open `[`
+- a number typed in another base, shown in the output base: `0xFF`
+  shows `255` when the output is decimal
+
+A long hint ends in `...`: tap it to read all of it. Settings > Input
+hints turns it off.
+
+## The menu and Settings
+
+⋮ (or a swipe up on the keys) opens Functions, Conversions, Variables,
+Settings, Help and Clear History. The phone's Back closes the open menu
+first.
+
+Settings: precision, angle, output base, decimals, pad zeros, word size,
+text size, input hints and theme.
+
+## On this device
+
+- History, your variables and functions, and the settings are kept on
+  this device only, and come back next time. A private window may keep
+  nothing; the status line then says so.
+- SoftCalc works without the internet once it has been opened; only
+  currency and coin prices need it.
+- Opened from a secure address (https), the browser can install
+  SoftCalc on the home screen.
