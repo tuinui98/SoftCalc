@@ -359,7 +359,7 @@
 
 	//==================================================================
 	//  System Back closes the top layer first (menu, Variables, Settings),
-	//  then leaves the app. One history entry stands for "a layer is open";
+	//  then leaves the app; in Help it goes topic, topics list, ⋮ menu. One history entry stands for "a layer is open";
 	//  closing in the app takes it off again. The check waits a moment, so
 	//  a menu that opens the next one (Functions, then a group) keeps it.
 	//==================================================================
@@ -403,7 +403,15 @@
 			history.pushState({ softcalcLayer: true }, "");
 			layerPushed = true;
 		}
-		else if (helpOpen) helpOpen = false;
+		else if (helpOpen)
+		{
+			// Back on the topics list goes back to the ⋮ menu that opened Help (owner 2026-11-18);
+			// a layer stays open, so the effect does not run again and the entry is pushed here
+			helpOpen = false;
+			void openMore();
+			history.pushState({ softcalcLayer: true }, "");
+			layerPushed = true;
+		}
 		else if (namesOpen) namesOpen = false;
 		else if (settingsOpen) settingsOpen = false;
 	}
