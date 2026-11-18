@@ -177,6 +177,15 @@ moves with the start steps; Settings > Start shows each step's time.
 Desktop Chrome, files cached: Python 3.8 s to 0.7 s, mpmath + engine
 1.3 s to 0.1-0.2 s; ready in 1.3-2.5 s instead of 6.1 s.
 
+### On the web (owner 2026-11-19)
+https://tuinui98.github.io/SoftCalc/ is built and published by
+`.github/workflows/pages.yml` when main changes the web app, the engine,
+the Help or the version (or by hand: Actions > Run workflow). It runs
+`npm test` before the build; a failing test publishes nothing. On https
+the service worker runs, so the app works offline and can be installed
+from the browser. History is kept per address: another address starts
+empty.
+
 ## The Android app (owner 2026-11-18)
 
 Capacitor 8.6.0 puts the built web app (`app/dist`) into an Android app in
