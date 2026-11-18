@@ -13,7 +13,8 @@
 		"app:prepare": "node app/prepare.mjs",
 		"app:dev": "node app/prepare.mjs && vite app --host 0.0.0.0 --port 8767",
 		"app:build": "node app/prepare.mjs && vite build app",
-		"app": "node app/prepare.mjs && vite build app && vite preview app --host 0.0.0.0 --port 8767"
+		"app": "node app/prepare.mjs && vite build app && vite preview app --host 0.0.0.0 --port 8767",
+		"apk": "node build_apk.mjs"
 	},
 	"devDependencies": {
 		"@capacitor/android": "8.6.0",

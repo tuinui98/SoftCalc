@@ -2,6 +2,17 @@ apply plugin: 'com.android.application'
 
 // The release signing key is never in git: keystore.local.properties (gitignored,
 // form in keystore.example.properties) names the keystore outside the repo and its passwords.
+// The app's version is SoftCalc's own (ui/SoftCalc/SoftCalc.csproj <Version>, as the desktop and the
+// engine). versionCode must grow with every APK: (major*10000 + minor*100 + patch)*10 + androidBuild,
+// where androidBuild (gradle.properties, 0-9) counts APK-only fixes between SoftCalc versions.
+def softcalcVersion = (rootProject.file('../../ui/SoftCalc/SoftCalc.csproj').text =~ /<Version>(\d+)\.(\d+)\.(\d+)<\/Version>/)[0]
+def androidBuild = (project.findProperty('androidBuild') ?: '0') as int
+if (androidBuild < 0 || androidBuild > 9) {
+    throw new GradleException("androidBuild must be 0-9, not ${androidBuild}")
+}
+def softcalcCode = ((softcalcVersion[1] as int) * 10000 + (softcalcVersion[2] as int) * 100 + (softcalcVersion[3] as int)) * 10 + androidBuild
+def softcalcName = "${softcalcVersion[1]}.${softcalcVersion[2]}.${softcalcVersion[3]}" + (androidBuild > 0 ? "-a${androidBuild}" : "")
+
 def keystoreFile = rootProject.file('keystore.local.properties')
 def keystore = new Properties()
 if (keystoreFile.exists()) {
@@ -15,8 +26,8 @@ android {
         applicationId "io.github.tuinui98.softcalc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode softcalcCode
+        versionName softcalcName
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

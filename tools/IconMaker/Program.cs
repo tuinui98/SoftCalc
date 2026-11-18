@@ -4,6 +4,11 @@
 // on its 16-unit grid, with the display line turned into a filled screen
 // (owner's choice 2026-11-06: draft 2, dark body, teal screen, orange key).
 // Usage: dotnet run --project tools/IconMaker -- <output.ico> [preview.png]
+//        dotnet run --project tools/IconMaker -- --android <app/src/main/res>
+// The second form writes the Android app's launcher icons (owner 2026-11-18):
+// the adaptive icon's foreground (the calculator inside the 66 dp circle that
+// every launcher mask keeps) on the web app's dark page colour, and square and
+// round icons for Android 7.
 
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -18,12 +23,19 @@ internal static class Program
 	private static readonly Color Key = Color.FromArgb(205, 212, 222);
 	private static readonly Color Accent = Color.FromArgb(255, 152, 56);
 	private static readonly int[] Sizes = { 16, 20, 24, 32, 40, 48, 64, 256 };
+	private static readonly Color Page = Color.FromArgb(18, 19, 22);    // #121316, the web app's dark page
+	private static readonly (string Name, float Scale)[] Densities =
+		{ ("mdpi", 1f), ("hdpi", 1.5f), ("xhdpi", 2f), ("xxhdpi", 3f), ("xxxhdpi", 4f) };
 
 	private static int Main(string[] args)
 	{
+		if (args.Length == 2 && args[0] == "--android")
+		{
+			return Android(args[1]);
+		}
 		if (args.Length < 1)
 		{
-			Console.Error.WriteLine("usage: IconMaker <output.ico> [preview.png]");
+			Console.Error.WriteLine("usage: IconMaker <output.ico> [preview.png] | --android <res folder>");
 			return 2;
 		}
 		var images = Sizes.Select(size => (size, png: Png(Draw(size)))).ToList();
@@ -61,6 +73,55 @@ internal static class Program
 		}
 		Console.WriteLine($"wrote {args[0]} ({string.Join(", ", Sizes)} px)");
 		return 0;
+	}
+
+	// Launcher icons per density: 108 dp adaptive foreground, 48 dp square and round icons
+	private static int Android(string res)
+	{
+		foreach (var (name, scale) in Densities)
+		{
+			string folder = Path.Combine(res, "mipmap-" + name);
+			Directory.CreateDirectory(folder);
+			// The calculator's 11 x 13.5 unit body has a 17.4 unit diagonal; 16 units = 60 dp keeps it in the 66 dp circle
+			Save(Canvas((int)Math.Round(108 * scale), 60 * scale, null, false), Path.Combine(folder, "ic_launcher_foreground.png"));
+			Save(Canvas((int)Math.Round(48 * scale), 40 * scale, Page, false), Path.Combine(folder, "ic_launcher.png"));
+			Save(Canvas((int)Math.Round(48 * scale), 34 * scale, Page, true), Path.Combine(folder, "ic_launcher_round.png"));
+		}
+		Console.WriteLine($"wrote Android launcher icons in {res}");
+		return 0;
+	}
+
+	// The icon `iconSize` px wide, centred on a square of `size` px: clear, a rounded square or a circle
+	private static Bitmap Canvas(int size, float iconSize, Color? back, bool round)
+	{
+		var bmp = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+		using var g = Graphics.FromImage(bmp);
+		g.SmoothingMode = SmoothingMode.AntiAlias;
+		g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+		if (back is Color color)
+		{
+			if (round)
+			{
+				using var brush = new SolidBrush(color);
+				g.FillEllipse(brush, 0, 0, size, size);
+			}
+			else
+			{
+				Fill(g, color, 0, 0, size, size, size * 0.2f);
+			}
+		}
+		using var icon = Draw((int)Math.Round(iconSize));
+		float at = (size - icon.Width) / 2f;
+		g.DrawImage(icon, at, at, icon.Width, icon.Height);
+		return bmp;
+	}
+
+	private static void Save(Bitmap bitmap, string path)
+	{
+		using (bitmap)
+		{
+			bitmap.Save(path, ImageFormat.Png);
+		}
 	}
 
 	private static byte[] Png(Bitmap bitmap)

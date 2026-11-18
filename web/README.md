@@ -162,3 +162,44 @@ asked for with an Origin header.
   a topic (Getting started). Pictures are left out.
 - A `calc` example is a button that puts its line in Input; the engine
   test `test_help_examples.py` checks the web's own topics too.
+
+## The Android app (owner 2026-11-18)
+
+Capacitor 8.6.0 puts the built web app (`app/dist`) into an Android app in
+`android/`: package `io.github.tuinui98.softcalc`, Android 7 (SDK 24) and
+later, built against SDK 36. Inside the app there is no service worker
+(the files are in the APK), and the system Back goes back through the
+open layers (`@capacitor/app`), leaving only from the main screen.
+
+Tools, installed without admin rights:
+- JDK 21: Microsoft's zip build in `%LOCALAPPDATA%\Programs\jdk\jdk-21.*`
+  (the winget package needs a machine install).
+- Android SDK in `%LOCALAPPDATA%\Android\Sdk`: the command-line tools in
+  `cmdline-tools\latest`, then `android sdk install platform-tools
+  platforms/android-36 build-tools/36.0.0` (`sdkmanager.bat` splits names
+  at `;`).
+
+The release key is never in git. `android/keystore.local.properties`
+(gitignored; the form is in `android/keystore.example.properties`) names
+the keystore, kept outside the repo, and its passwords. Keep a copy of
+both somewhere safe: an installed SoftCalc takes an update only when it
+is signed by the same key. The key's SHA-256 is what Android developer
+verification asks for.
+
+The version is SoftCalc's own (`<Version>` in `ui/SoftCalc/SoftCalc.csproj`).
+versionCode is `(major*10000 + minor*100 + patch)*10 + androidBuild`;
+raise `androidBuild` in `android/gradle.properties` for an APK-only fix,
+and set it back to 0 with the next SoftCalc version.
+
+Icons: `dotnet run --project tools/IconMaker -- --android
+web/android/app/src/main/res` draws the launcher icons from the same
+drawing as the desktop icon, on the web app's dark page colour.
+
+```
+cd web
+npm run apk          # web build, Capacitor sync, Gradle release, signature check
+```
+It writes `dist-apk/SoftCalc-<version>.apk` (not in git) and prints the
+APK's SHA-256 and the signing key's. To install it on a phone, serve it
+with the type `application/vnd.android.package-archive`; without that
+type Chrome on Android saves it as a .zip.
