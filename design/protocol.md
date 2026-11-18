@@ -139,6 +139,18 @@ cannot show it exactly (`0.1` in hex). A rai-ngan-wa group answers in
 rai: `{"text": "4-1-50"}` -> `{"text": "4.375 rai"}`. History lines use the same rule
 in `display_input`.
 
+### `hint`
+`{"text": "fv(0.05, ", "caret": 9}` -> `{"text": "fv(rate, nper, pmt, [pv], [type]) - ..."}`:
+the hint line under Input for the text left of `caret` (a character
+index, clamped), or `null`. In order: a number literal at the caret that
+the output base shows differently (`0x1F = 31`, `4-1-50 = 4.375 rai`,
+as `literal`); an open `[` (tag examples); `$` or `$12` (result
+references); the word being typed (a user function or variable first,
+then a built-in name, else up to 6 built-in names it can become, from 2
+letters on); the innermost unclosed call. Rules and wording are in
+`softcalc_engine/hints.py`, shared by the desktop and the web app
+(owner 2026-11-18).
+
 ### `pcf_export`
 `{}` -> `{"text": "<file content>"}`. The UI writes it as UTF-16 LE
 without BOM (SPEC 8).

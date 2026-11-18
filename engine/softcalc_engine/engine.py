@@ -17,7 +17,7 @@ import mpmath
 
 from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationValue, TextValue,
                     convert_zone, now, parse_duration, parse_literal, today)
-from . import dates
+from . import dates, hints
 from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
 from .functions import RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
@@ -459,6 +459,31 @@ class Engine:
             return None
         with self.working_context():
             return self.literal_text(tokens[0].text, tokens[0].base)
+
+    def hint(self, text, caret):
+        """The hint line for Input at the caret (hints.py), or None.
+
+        A literal at the caret that the output base shows differently wins
+        (`0x1F = 31`); otherwise the plain hint.
+        """
+        literal = hints.literal_at(text, caret)
+        if literal is not None:
+            converted = self.literal_hint(literal)
+            if converted is not None:
+                return f"{literal} = {converted}"
+        return hints.hint_for(text, caret, self.describe_user)
+
+    def describe_user(self, name):
+        """A user function shows its definition, a variable its value."""
+        key = name.lower()
+        if key in self.functions:
+            fn = self.functions[key]
+            return f"{fn.name}({', '.join(fn.params)})={fn.body_text} - your function"
+        if key in self.variables:
+            shown, value = self.variables[key]
+            with self.working_context():
+                return f"{shown} = {self.format_value(value)} - your variable"
+        return None
 
     def wrap(self, value):
         text = self.format_value(value)

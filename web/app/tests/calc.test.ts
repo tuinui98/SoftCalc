@@ -40,6 +40,11 @@ class FakeEngine implements EngineLike
 			}
 			case "eval":
 				return ok(this.evaluate(String(args.input)));
+			case "hint":
+			{
+				const left = String(args.text).slice(0, Number(args.caret));
+				return ok({ text: left.length === 0 ? null : `${this.settings.base}:${left}` });
+			}
 			default:
 				return ok();
 		}
@@ -284,5 +289,62 @@ describe("saving between visits", () =>
 		const { calc } = await started(store);
 		await press(calc, "2", "M+");
 		expect(calc.entries.at(-1)?.input).toBe("memory=memory+(2)");
+	});
+});
+
+describe("hint line (engine `hint`, owner 2026-11-18)", () =>
+{
+	const settle = () => new Promise(resolve => setTimeout(resolve, 0));
+
+	it("follows the text and the caret, and is empty for no text", async () =>
+	{
+		const { calc } = await started();
+		await press(calc, "1", "2");
+		await settle();
+		expect(calc.hint).toBe("dec:12");
+		calc.moveCaret(1);
+		await settle();
+		expect(calc.hint).toBe("dec:1");
+		await calc.press("AC");
+		await settle();
+		expect(calc.hint).toBe("");
+	});
+
+	it("asks once per text and caret", async () =>
+	{
+		const { calc, engine } = await started();
+		calc.typed("sq", 2);
+		calc.moveCaret(2);
+		await settle();
+		expect(engine.sent.filter(message => message.op === "hint")).toHaveLength(1);
+	});
+
+	it("asks again in a new base, for the same line", async () =>
+	{
+		const { calc } = await started();
+		await press(calc, "1", "5", "base");
+		await settle();
+		expect(calc.hint).toBe("hex:15");
+	});
+
+	it("an older reply does not overwrite a newer one", async () =>
+	{
+		const { calc } = await started();
+		calc.typed("1", 1);
+		calc.typed("12", 2);
+		await settle();
+		expect(calc.hint).toBe("dec:12");
+	});
+
+	it("Show Input Hints off empties the line and stops asking", async () =>
+	{
+		const { calc, engine } = await started();
+		calc.typed("12", 2);
+		await settle();
+		calc.setShowHints(false);
+		calc.typed("123", 3);
+		await settle();
+		expect(calc.hint).toBe("");
+		expect(engine.sent.filter(message => message.op === "hint")).toHaveLength(1);
 	});
 });

@@ -174,14 +174,15 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
-	public async Task DeleteResultRenumbersAndLiteralConverts()
+	public async Task DeleteResultRenumbersAndHintConverts()
 	{
 		await Session.EvalAsync("10");
 		await Session.EvalAsync("20");
 		await Session.DeleteResultAsync(1);
 		Assert.Equal("10", (await Session.EvalAsync("answer")).Text);    // answer follows $1
-		Assert.Equal("31", await Session.LiteralAsync("0x1F"));
-		Assert.Null(await Session.LiteralAsync("31"));
+		Assert.Equal("0x1F = 31", await Session.HintAsync("0x1F", 4));
+		Assert.StartsWith("sqrt(x)", await Session.HintAsync("sqrt(31", 7));
+		Assert.Null(await Session.HintAsync("1+2", 3));
 	}
 
 	[Fact]

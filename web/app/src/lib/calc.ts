@@ -56,6 +56,10 @@ export class Calculator
 	status = "Loading engine...";
 	ready = false;
 	catalog: Catalog = { functions: {}, conversions: {} };
+	hint = "";                 // the line under Input (engine `hint`), "" for none
+	showHints = true;
+	private hintAsked = 0;     // newest hint request; older replies are dropped
+	private hintFor = "";      // text and caret of the last request, so a redraw does not ask again
 	private lastWasResult = false;
 	private hasMemory = false;
 	private draft = "";
@@ -127,10 +131,53 @@ export class Calculator
 
 	private changed()
 	{
+		this.notify();
+		void this.updateHint();
+	}
+
+	private notify()
+	{
 		for (const listener of this.listeners)
 		{
 			listener();
 		}
+	}
+
+	//==================================================================
+	//  Hint line: the engine's rules (hints.py), shared with the desktop
+	//==================================================================
+	// force: ask again for the same text (a definition, the base or Show Input Hints changed)
+	async updateHint(force = false)
+	{
+		const key = `${this.caret}:${this.text}`;
+		if (!this.ready || !this.showHints || (!force && key === this.hintFor))
+		{
+			if (!this.showHints && this.hint !== "")
+			{
+				this.hint = "";
+				this.notify();
+			}
+			return;
+		}
+		this.hintFor = key;
+		const asked = ++this.hintAsked;
+		let next = "";
+		if (this.caret > 0)    // nothing left of the caret: no hint, no need to ask
+		{
+			const answer = await this.engine.send("hint", { text: this.text, caret: this.caret });
+			next = answer.ok && typeof answer.text === "string" ? answer.text : "";
+		}
+		if (asked === this.hintAsked && next !== this.hint)
+		{
+			this.hint = next;
+			this.notify();
+		}
+	}
+
+	setShowHints(on: boolean)
+	{
+		this.showHints = on;
+		void this.updateHint(true);
 	}
 
 	//==================================================================
@@ -156,9 +203,11 @@ export class Calculator
 		}
 	}
 
+	// A tap or an arrow key in Input moved the caret: the hint follows it
 	moveCaret(caret: number)
 	{
 		this.caret = Math.max(0, Math.min(caret, this.text.length));
+		void this.updateHint();
 	}
 
 	private setText(text: string, caret = text.length)
@@ -346,7 +395,8 @@ export class Calculator
 			this.settings = settingsOf(answer);
 			this.save(this.store.saveSettings(this.settings));
 		}
-		this.changed();
+		this.notify();
+		void this.updateHint(true);    // a literal shows in the new base
 	}
 
 	//==================================================================
