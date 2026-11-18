@@ -139,8 +139,10 @@ asked for with an Origin header.
   and EcbCalendar). The desktop's eurofxref-daily.xml cannot be read by a
   web page (no CORS header); the ECB Data API
   (`data-api.ecb.europa.eu/service/data/EXR/D..EUR.SP00.A`, CSV, about
-  10 KB) gives the same rates with `Access-Control-Allow-Origin: *`.
-  Only the newest day is used (old currencies such as CYP still answer).
+  5 KB) gives the same rates with `Access-Control-Allow-Origin: *`. It
+  asks for the last 10 days (`startPeriod`) and uses the newest day: the
+  API keeps answers per page origin for 30 s only, and for a new origin
+  `lastNObservations=1` took 60 to 90 s, `startPeriod` 3 to 12 s.
 - `1 [BTC->THB]`, `1000 [sat->USD]`: on `prices_needed` the app fetches
   CoinGecko (`src/lib/prices.ts`, the desktop PriceSource); good for 5
   minutes.
