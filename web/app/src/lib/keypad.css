@@ -56,7 +56,8 @@
 	background: var(--key-mode);
 	color: var(--key-ink);
 	font: inherit;
-	font-size: clamp(16px, 11cqmin, 36px);
+	/* Settings > Text size scales the labels too (owner 2026-11-18), but never past what the key holds */
+	font-size: clamp(16px, min(11cqmin * var(--text-scale, 1), 15cqmin, max(9.5cqw, 19cqw / var(--chars, 2))), calc(36px * var(--text-scale, 1)));
 	line-height: 1.1;
 	padding: 2px;
 	cursor: pointer;
@@ -68,7 +69,7 @@
 .key.digit { background: var(--key-digit); }
 .key.op { background: var(--key-op); }
 .key.equals { background: var(--key-equals); color: var(--key-equals-ink); }
-.key.mode { font-size: clamp(13px, 6.5cqmin, 22px); }
+.key.mode { font-size: clamp(13px, min(6.5cqmin * var(--text-scale, 1), 9cqmin, 7cqw), calc(22px * var(--text-scale, 1))); }
 .key.second-key { color: var(--key-second); font-weight: 600; }
 .key.second-key.on { background: var(--key-second); color: #000; }
 .key.armed { background: var(--key-armed); color: #000; }
@@ -79,6 +80,6 @@
 	white-space: nowrap;
 }
 .key .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-.keypad.sci .key { font-size: clamp(14px, 8cqmin, 28px); }
+.keypad.sci .key { font-size: clamp(14px, min(8cqmin * var(--text-scale, 1), 10cqmin, max(8cqw, 16cqw / var(--chars, 2))), calc(28px * var(--text-scale, 1))); }
 .keypad.sci .key.second-on .second { font-weight: 700; }
-.keypad.sci .key.mode { font-size: clamp(12px, 6cqmin, 20px); }
+.keypad.sci .key.mode { font-size: clamp(12px, min(6cqmin * var(--text-scale, 1), 7cqmin, 6cqw), calc(20px * var(--text-scale, 1))); }

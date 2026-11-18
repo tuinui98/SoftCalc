@@ -75,6 +75,34 @@ export function saveHints(on: boolean)
 	}
 }
 
+// Settings > Text size, in percent of the normal History and Input text (desktop View > Text Size)
+export const TEXT_SIZES = [100, 125, 150, 175, 200];
+
+export function loadTextSize(): number
+{
+	try
+	{
+		const size = Number(localStorage.getItem("softcalc-text-size"));
+		return TEXT_SIZES.includes(size) ? size : 100;
+	}
+	catch
+	{
+		return 100;
+	}
+}
+
+export function saveTextSize(size: number)
+{
+	try
+	{
+		localStorage.setItem("softcalc-text-size", String(size));
+	}
+	catch
+	{
+		// private mode: the size just is not remembered
+	}
+}
+
 // "dark" for our CSS, "ion-palette-dark" for Ionic's own colours
 export function applyTheme(value: string)
 {

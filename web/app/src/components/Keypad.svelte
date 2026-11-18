@@ -10,7 +10,8 @@
 
 <div class="keypad" class:sci>
 	{#each keys as key (key.id)}
-		<button class={keyClass(key, second, armed)} style={keyPlace(key)}
+		<!-- --chars: a one-letter label may grow wider than M+ or sin (Settings > Text size) -->
+		<button class={keyClass(key, second, armed)} style="{keyPlace(key)}; --chars: {[...keyLabel(key, base, angle)].length}"
 			onpointerdown={event => event.preventDefault()} onclick={() => onpress(key)}>
 			{#if key.secondLabel}<span class="second">{key.secondLabel}</span>{/if}
 			<span class="label">{keyLabel(key, base, angle)}</span>

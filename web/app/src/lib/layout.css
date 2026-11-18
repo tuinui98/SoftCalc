@@ -30,6 +30,8 @@
 .calc
 {
 	display: grid;
+	/* minmax(0, ...): a big Input text must not widen the column past the screen (owner 2026-11-18) */
+	grid-template-columns: minmax(0, 1fr);
 	grid-template-rows: 1fr auto auto auto var(--keys-height, 46%);
 	grid-template-areas: "history" "hint" "input" "help" "keys";
 	height: 100%;
@@ -68,8 +70,9 @@
 {
 	flex: 1;
 	min-width: 0;
+	width: 0;    /* no width of its own (20 characters at the text size): the row decides */
 	font: inherit;
-	font-size: 22px;
+	font-size: calc(22px * var(--text-scale, 1));
 	padding: 8px 6px;
 	border: none;
 	outline: none;
@@ -87,9 +90,13 @@
 .keys > .keypad.sci { flex: 1; }
 
 .entry { padding: 8px 14px; border-bottom: 1px solid var(--line); cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.entry .top { display: flex; justify-content: space-between; gap: 16px; font-size: 16px; }
+.entry
+{
+	user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;    /* a long press opens our menu */
+}
+.entry .top { display: flex; justify-content: space-between; gap: 16px; font-size: calc(16px * var(--text-scale, 1)); }
 .entry .top .sub { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.entry .result { padding-left: 28px; font-size: 20px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.entry .result { padding-left: 28px; font-size: calc(20px * var(--text-scale, 1)); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .entry.error .result { color: var(--error); }
 .entry.notice { color: var(--faint); font-style: italic; cursor: default; }
 .entry.selected { background: var(--select); color: var(--select-ink); }
@@ -101,12 +108,12 @@
 	.calc
 	{
 		grid-template-rows: 1fr auto auto auto;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		grid-template-areas: "history keys" "hint keys" "input keys" "help keys";
 	}
 	.keys { border-left: 1px solid var(--line); }
 	.entry { padding: 4px 12px; }
-	.entry .result { font-size: 18px; }
+	.entry .result { font-size: calc(18px * var(--text-scale, 1)); }
 }
 
 @media (orientation: landscape) and (min-width: 900px) and (min-height: 600px)
