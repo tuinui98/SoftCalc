@@ -41,7 +41,31 @@ without formulas.
 - Compounding: yearly, quarterly, monthly, daily or continuous.
 - The result updates as you type: future value, total contributions,
   total interest, a growth graph and a table by period.
-- Copy all and Export CSV... take the table; Ctrl+C copies the selected
-  rows.
+- Copy all and Export CSV... take the table (the name carries the date
+  and time, such as `SoftCalc-compound-2026-11-20-1530.csv`); Ctrl+C
+  copies the selected rows.
 - The window remembers what you typed last time.
 <!-- /desktop -->
+
+<!-- web -->
+## Compound
+
+⋮ > Compound works out savings without formulas.
+
+- Fill in Principal, Annual rate %, Years and, if you add money
+  regularly, Contribution, Contribution every, and whether it comes at
+  the start of each period. Each box takes any expression, such as
+  `120000/12`; one SoftCalc cannot read says why under it.
+- Compounding: yearly, quarterly, monthly, daily or continuous.
+- The result updates as you type: future value, total contributions
+  and total interest. Tap one to put it in Input.
+- **Chart** shows the money paid in below and the interest above, so
+  the top edge is the balance; drag a finger along it to read a period.
+  **Table** lists every period.
+- **CSV** saves the table, as the desktop's Export CSV; **PNG** saves
+  the chart with a line saying what it is; **Copy** copies that line.
+  Files are named with the date and time, such as
+  `SoftCalc-compound-2026-11-20-1530.csv`: in the app in
+  Download/SoftCalc, in a browser in its downloads.
+- Compound remembers what you typed last time.
+<!-- /web -->

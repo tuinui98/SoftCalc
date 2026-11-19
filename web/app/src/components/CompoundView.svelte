@@ -9,9 +9,13 @@
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, routeError, rowAt, short, type CompoundInputs, type Field, type Schedule,
+		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, routeError, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		type Schedule,
 	} from "../lib/compound";
+	import { copyText } from "../lib/clipboard";
+	import { saveFiles } from "../lib/files";
 	import { tapOn } from "../lib/repeat";
+	import { exportNames } from "../lib/transfer";
 
 	let { calc, onclose, oninsert }: {
 		calc: Calculator;
@@ -92,12 +96,21 @@
 
 	function draw()
 	{
-		const context = canvas?.getContext("2d");
-		if (!canvas || !context || size.width === 0)
+		if (canvas && size.width > 0)
+		{
+			drawOn(canvas, size, picked);
+		}
+	}
+
+	// The chart on any canvas of `size` CSS pixels (the page's, or the PNG's)
+	function drawOn(target: HTMLCanvasElement, size: { width: number; height: number }, picked: number | null)
+	{
+		const context = target.getContext("2d");
+		if (!context)
 		{
 			return;
 		}
-		const ratio = window.devicePixelRatio || 1;
+		const ratio = target.width / size.width;
 		context.setTransform(ratio, 0, 0, ratio, 0, 0);
 		const c = colours();
 		context.fillStyle = c.page;
@@ -245,6 +258,102 @@
 	});
 
 	//==================================================================
+	//  Export (C2, owner 2026-11-20): the table as the desktop's CSV, the
+	//  chart as a PNG with the summary under it, the summary as text
+	//==================================================================
+	let note = $state("");    // a moment's word under the totals
+	let noteTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function say(text: string)
+	{
+		note = text;
+		clearTimeout(noteTimer);
+		noteTimer = setTimeout(() => { note = ""; }, 4000);
+	}
+
+	async function save(name: string, type: string, bytes: Uint8Array)
+	{
+		try
+		{
+			say(`Saved ${name} to ${await saveFiles([{ name, type, bytes }])}`);
+		}
+		catch (error)
+		{
+			say("Not saved: " + (error instanceof Error ? error.message : String(error)));
+		}
+	}
+
+	async function exportCsv()
+	{
+		if (schedule)
+		{
+			await save(exportNames().compound, "text/csv", new TextEncoder().encode(toCsv(schedule.rows)));
+		}
+	}
+
+	async function exportPicture()
+	{
+		const s = schedule;
+		if (!s)
+		{
+			return;
+		}
+		const ratio = Math.max(2, window.devicePixelRatio || 1);
+		const chart = { width: 800, height: 450 };
+		const text = summary($state.snapshot(inputs) as CompoundInputs, s);
+		const out = document.createElement("canvas");
+		const measure = out.getContext("2d")!;
+		measure.font = "15px system-ui, sans-serif";
+		// the summary wrapped to the picture's width, word by word
+		const lines: string[] = [];
+		let line = "";
+		for (const word of text.split(" "))
+		{
+			const next = line ? line + " " + word : word;
+			if (measure.measureText(next).width > chart.width - 24 && line)
+			{
+				lines.push(line);
+				line = word;
+			}
+			else
+			{
+				line = next;
+			}
+		}
+		lines.push(line);
+		const below = lines.length * 22 + 16;
+		out.width = chart.width * ratio;
+		out.height = (chart.height + below) * ratio;
+		const chartCanvas = document.createElement("canvas");
+		chartCanvas.width = chart.width * ratio;
+		chartCanvas.height = chart.height * ratio;
+		drawOn(chartCanvas, chart, null);
+		const context = out.getContext("2d")!;
+		const c = colours();
+		context.fillStyle = c.page;
+		context.fillRect(0, 0, out.width, out.height);
+		context.drawImage(chartCanvas, 0, 0);
+		context.setTransform(ratio, 0, 0, ratio, 0, 0);
+		context.font = "15px system-ui, sans-serif";
+		context.fillStyle = c.ink;
+		context.textBaseline = "top";
+		lines.forEach((text, index) => context.fillText(text, 12, chart.height + 8 + index * 22));
+		const blob = await new Promise<Blob | null>(resolve => out.toBlob(resolve, "image/png"));
+		if (blob)
+		{
+			await save(exportNames().compoundPicture, "image/png", new Uint8Array(await blob.arrayBuffer()));
+		}
+	}
+
+	async function copySummary()
+	{
+		if (schedule && await copyText(summary($state.snapshot(inputs) as CompoundInputs, schedule)))
+		{
+			say("Copied the summary");
+		}
+	}
+
+	//==================================================================
 	//  Table: only the rows on screen are made
 	//==================================================================
 	const ROW = 34;
@@ -317,6 +426,11 @@
 <div class="compound" role="dialog" aria-label="Compound interest">
 	<div class="head">
 		<span class="name">Compound</span>
+		<div class="tools">
+			<button use:tap={() => void exportCsv()} disabled={!schedule}>CSV</button>
+			<button use:tap={() => void exportPicture()} disabled={!schedule}>PNG</button>
+			<button use:tap={() => void copySummary()} disabled={!schedule}>Copy</button>
+		</div>
 		<button class="bar" use:tap={onclose}>Done</button>
 	</div>
 	<div class="body">
@@ -357,6 +471,7 @@
 					{/each}
 				</div>
 			{/if}
+			{#if note}<p class="note">{note}</p>{/if}
 		</div>
 		<div class="view">
 			<div class="switch">
@@ -395,7 +510,15 @@
 		display: flex; align-items: center; justify-content: space-between; padding: 4px 6px;
 		padding-top: max(4px, env(safe-area-inset-top)); border-bottom: 1px solid var(--line);
 	}
-	.name { margin: 0 10px; font-size: 20px; font-weight: 500; }
+	.name { margin: 0 10px; font-size: 20px; font-weight: 500; flex: none; }
+	.tools { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; }
+	.tools button
+	{
+		height: 34px; padding: 0 14px; border: 1px solid var(--line); border-radius: 17px; background: none; flex: none;
+		color: var(--ink); font: inherit; font-size: 15px; cursor: pointer; touch-action: manipulation;
+	}
+	.tools button:disabled { opacity: 0.4; }
+	.note { margin: 8px 0 0; color: var(--faint); font-size: 14px; overflow-wrap: anywhere; }
 	.bar
 	{
 		min-width: 44px; height: 40px; border: none; border-radius: 20px; background: none; color: var(--select);

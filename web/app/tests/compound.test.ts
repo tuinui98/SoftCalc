@@ -52,7 +52,7 @@ describe("compound", () =>
 	{
 		const inputs = { ...firstInputs(), contribution: "100", at_start: true };
 		expect(summary(inputs, SCHEDULE)).toBe(
-			"10000 at 5% for 10 years, monthly, +100/month at the start: future value 1102.5 (paid in 1000, interest 102.5)");
-		expect(summary(firstInputs(), SCHEDULE)).toBe("10000 at 5% for 10 years, monthly: future value 1102.5 (paid in 1000, interest 102.5)");
+			"10000 at 5% for 10 years, monthly, +100/month at the start: future value 1102.5 (contributions 1000, interest 102.5)");
+		expect(summary(firstInputs(), SCHEDULE)).toBe("10000 at 5% for 10 years, monthly: future value 1102.5 (contributions 1000, interest 102.5)");
 	});
 });

@@ -151,7 +151,7 @@ export function toTabs(rows: ScheduleRow[]): string
 
 const EVERY: Record<string, string> = { yearly: "year", quarterly: "quarter", monthly: "month", daily: "day" };
 
-// One line to paste in a chat: 10000 at 5% for 10 years, monthly, +100/month: FV 20,535.65
+// One line to paste in a chat: 10000 at 5% for 10 years, monthly, +100/month: future value ...
 export function summary(inputs: CompoundInputs, schedule: Schedule): string
 {
 	const parts = [`${inputs.principal} at ${inputs.annual_rate}% for ${inputs.years} years, ${inputs.compounding}`];
@@ -159,5 +159,5 @@ export function summary(inputs: CompoundInputs, schedule: Schedule): string
 	{
 		parts.push(`+${inputs.contribution}/${EVERY[inputs.contribution_freq] ?? inputs.contribution_freq}${inputs.at_start ? " at the start" : ""}`);
 	}
-	return `${parts.join(", ")}: future value ${schedule.future_value} (paid in ${schedule.total_contributions}, interest ${schedule.total_interest})`;
+	return `${parts.join(", ")}: future value ${schedule.future_value} (contributions ${schedule.total_contributions}, interest ${schedule.total_interest})`;
 }

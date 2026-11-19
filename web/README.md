@@ -232,6 +232,15 @@ as the desktop.
   `SoftCalc-graph-<local time>.png` (files.ts, as Export). Not planned: typed ranges, the
   Advanced View's small graph.
 
+### Compound (owner 2026-11-20)
+⋮ > Compound (`CompoundView.svelte`, `src/lib/compound.ts`) is the
+desktop's Compound Interest window on the engine's `schedule`: inputs
+(kept as `compound` in the store), totals that go to Input, a stacked
+growth chart a finger reads, and a table that makes only the rows on
+screen. Export: CSV as the desktop's (`SoftCalc-compound-<time>.csv`; the
+desktop's Export CSV now suggests the same name), a PNG of the chart with
+a summary line, and Copy of that line. Help: 09 (web block).
+
 ### On the web (owner 2026-11-19)
 https://tuinui98.github.io/SoftCalc/ is built and published by
 `.github/workflows/pages.yml` when main changes the web app, the engine,

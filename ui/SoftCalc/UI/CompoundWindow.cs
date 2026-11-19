@@ -310,7 +310,7 @@ internal sealed class CompoundWindow : Form
 		{
 			return;
 		}
-		using var dialog = new SaveFileDialog { Filter = "CSV file (*.csv)|*.csv", DefaultExt = "csv", FileName = "compound-interest.csv" };
+		using var dialog = new SaveFileDialog { Filter = "CSV file (*.csv)|*.csv", DefaultExt = "csv", FileName = HistoryStore.ExportName("compound", "csv", DateTime.Now) };    // as the web app's
 		if (dialog.ShowDialog(this) != DialogResult.OK)
 		{
 			return;
