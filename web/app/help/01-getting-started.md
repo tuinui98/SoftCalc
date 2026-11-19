@@ -76,11 +76,24 @@ hints turns it off.
 ## The menu and Settings
 
 ⋮ (or a swipe up on the keys) opens Functions, Conversions, Variables,
-Settings, Help and Clear History. The phone's Back closes the open menu
+Settings, Export, Import, Help and Clear History. The phone's Back closes the open menu
 first.
 
 Settings: precision, angle, output base, decimals, pad zeros, word size,
 text size, input hints and theme.
+
+## Export and Import
+
+- ⋮ > Export saves History, your variables and functions, or both.
+  The app saves to the Download/SoftCalc folder; a browser to its
+  Downloads. Names carry the date and time, such as
+  `SoftCalc-history-2026-11-19-1530.jsonl`.
+- ⋮ > Import reads such files back: pick one, or press and hold the
+  first to pick several. History merges with yours without twins, in
+  time order; definitions are added to yours.
+- SoftCalc on a computer reads and writes the same files (File >
+  Export History... and Load Functions & Variables...), so you can
+  move your work between devices.
 
 ## On this device
 
