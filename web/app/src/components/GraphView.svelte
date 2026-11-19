@@ -9,18 +9,22 @@
 	import type { Calculator } from "../lib/calc";
 	import { copyText } from "../lib/clipboard";
 	import {
-		fitRange, formatTick, gridLines, lineColour, niceStep, pinch, pinchKind, RESET_POLAR, RESET_XY, runs, same, sameTarget,
-		square, toScreen, traceTarget, viewOf, zoom, type Area, type GraphState, type PinchKind, type Point, type Rect, type TraceTarget,
+		fitRange, forgetLine, formatTick, freeName, functionHead, gridLines, lineColour, niceStep, PICK_COLOURS, pinch, pinchKind,
+		renameLine, RESET_POLAR, RESET_XY, runs, same, sameTarget, square, toScreen, traceTarget, viewOf, zoom,
+		type Area, type GraphState, type PinchKind, type Point, type Rect, type TraceTarget,
 	} from "../lib/graph";
 	import { Plotter, traceText } from "../lib/plotter";
-	import { tapOn } from "../lib/repeat";
+	import { closeOnTouch, tapOn, tapOrHold } from "../lib/repeat";
+	import Sheet from "./Sheet.svelte";
 
-	let { calc, functions, equations, onclose, oninsert }: {
+	let { calc, functions, equations, names, onclose, oninsert, inner = $bindable(false) }: {
 		calc: Calculator;
 		functions: { name: string; source: string }[];    // the user's functions of one parameter
 		equations: string[];
+		names: string[];    // every user variable and function, for a free new name
 		onclose: () => void;
 		oninsert: (text: string) => void;
+		inner?: boolean;    // a menu or the editor is open: the phone's Back closes it first (closeInner)
 	} = $props();
 
 	// svelte-ignore state_referenced_locally
@@ -40,6 +44,13 @@
 	// Lines no longer there are forgotten, as the desktop's (GraphPanel.UpdateFunctions)
 	const shown = $derived(st.shown.filter(name => graphable.some(item => same(item, name))));
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
+	const outside = (box: HTMLElement, act: () => void) => ({ destroy: closeOnTouch(box, () => act()) });
+	const press = (button: HTMLElement, name: string) =>
+	{
+		let current = name;
+		const off = tapOrHold(button, () => select(current), () => { menuFor = current; });
+		return { update(next: string) { current = next; }, destroy: off };
+	};
 
 	//==================================================================
 	//  Drawing area and colours
@@ -645,6 +656,146 @@
 		};
 	});
 
+	//==================================================================
+	//  Add, Edit, Delete and Colour (G2, owner 2026-11-19): + Function and
+	//  + Equation above the list; a press held on a line opens its menu
+	//==================================================================
+	interface Editor
+	{
+		kind: "function" | "equation";
+		old: string | null;    // the line edited; null when adding
+		text: string;
+		error: string;
+		busy: boolean;
+	}
+	let editor: Editor | null = $state(null);
+	let menuFor: string | null = $state(null);
+	let colourFor: string | null = $state(null);
+	let deleteFor: string | null = $state(null);
+	$effect(() =>
+	{
+		inner = editor !== null || menuFor !== null || colourFor !== null || deleteFor !== null;
+	});
+
+	export function closeInner()
+	{
+		editor = null;
+		menuFor = null;
+		colourFor = null;
+		deleteFor = null;
+	}
+
+	const isEquation = (name: string) => name.includes("=");    // a function's line is its name
+
+	function addFunction()
+	{
+		editor = { kind: "function", old: null, text: freeName(names) + "(x)=", error: "", busy: false };
+	}
+
+	function addEquation()
+	{
+		editor = { kind: "equation", old: null, text: "x^2+y^2=9", error: "", busy: false };
+	}
+
+	async function saveEditor()
+	{
+		const e = editor;
+		if (!e || e.busy)
+		{
+			return;
+		}
+		e.busy = true;
+		const problem = e.kind === "equation" ? await calc.putEquation(e.text, e.old) : await calc.putFunction(e.text, e.old);
+		e.busy = false;
+		if (editor !== e)
+		{
+			return;    // closed meanwhile
+		}
+		if (problem)
+		{
+			e.error = problem;
+			return;
+		}
+		const name = e.kind === "equation" ? e.text.trim() : functionHead(e.text)!.name;
+		if (e.old !== null)
+		{
+			renameLine(st, e.old, name);
+		}
+		if (!st.shown.some(item => same(item, name)))
+		{
+			st.shown = [...st.shown, name];
+		}
+		st.selected = name;
+		editor = null;
+		plotter.clearTrace();
+		changed();
+	}
+
+	function lineMenu(choice: string | null)
+	{
+		const name = menuFor;
+		menuFor = null;
+		if (name === null || choice === null)
+		{
+			return;
+		}
+		if (choice === "Edit")
+		{
+			editor = { kind: isEquation(name) ? "equation" : "function", old: name, text: labelOf(name), error: "", busy: false };
+		}
+		else if (choice === "Colour")
+		{
+			colourFor = name;
+		}
+		else if (choice === "Delete")
+		{
+			deleteFor = name;
+		}
+	}
+
+	function setColour(colour: string | null)
+	{
+		const name = colourFor;
+		colourFor = null;
+		if (name === null)
+		{
+			return;
+		}
+		st.colours = Object.fromEntries(Object.entries(st.colours).filter(([key]) => !same(key, name)));
+		if (colour !== null)
+		{
+			st.colours[name] = colour;
+		}
+		changed();
+	}
+
+	async function remove(choice: string | null)
+	{
+		const name = deleteFor;
+		deleteFor = null;
+		if (name === null || choice === null)
+		{
+			return;
+		}
+		forgetLine(st, name);
+		if (isEquation(name))
+		{
+			calc.removeEquation(name);
+		}
+		else
+		{
+			await calc.deleteName(name);
+		}
+		plotter.clearTrace();
+		changed();
+	}
+
+	// The caret at the end of the line, once the dialog is on screen
+	const focusEnd = (box: HTMLInputElement) =>
+	{
+		setTimeout(() => { box.focus(); box.setSelectionRange(box.value.length, box.value.length); }, 50);
+	};
+
 	// Lines added or deleted while the Graph is open
 	$effect(() =>
 	{
@@ -681,6 +832,10 @@
 				{/if}
 			</div>
 			<div class="lines">
+				<div class="adds">
+					<button use:tap={addFunction}>+ Function</button>
+					<button use:tap={addEquation}>+ Equation</button>
+				</div>
 				{#each graphable as name (name)}
 					{@const on = shown.some(item => same(item, name))}
 					<div class="row" class:chosen={same(name, st.selected)}>
@@ -688,14 +843,53 @@
 							<span class="swatch" style:background={on ? (lineColour(st, graphable, name) ?? "var(--select)") : "transparent"}
 								style:border-color={lineColour(st, graphable, name) ?? "var(--select)"}></span>
 						</button>
-						<button class="label" use:tap={() => select(name)}>{labelOf(name)}</button>
+						<button class="label" use:press={name}>{labelOf(name)}</button>
 					</div>
 				{:else}
-					<p class="none">No lines yet. Define a function of one parameter, such as f(x)=x^2.</p>
+					<p class="none">No lines yet: + Function or + Equation.</p>
 				{/each}
+				{#if graphable.length > 0}
+					<p class="none">Press and hold a line to edit, colour or delete it.</p>
+				{/if}
 			</div>
 		</div>
 	</div>
+	{#if menuFor !== null}
+		<Sheet title={labelOf(menuFor)} items={["Edit", "Colour", "Delete"]} onpick={lineMenu} />
+	{/if}
+	{#if deleteFor !== null}
+		<Sheet title={"Delete " + labelOf(deleteFor) + "?"} items={["Delete"]} onpick={remove} />
+	{/if}
+	{#if colourFor !== null}
+		{@const name = colourFor}
+		<div class="backdrop" role="presentation" use:outside={() => { colourFor = null; }}></div>
+		<div class="picker" role="dialog" aria-label="Colour">
+			<div class="title">{labelOf(name)}</div>
+			<div class="swatches">
+				{#each PICK_COLOURS as colour (colour)}
+					<button class="pick" class:on={lineColour(st, graphable, name) === colour} style:background={colour}
+						aria-label={colour} use:tap={() => setColour(colour)}></button>
+				{/each}
+			</div>
+			<button class="wide" use:tap={() => setColour(null)}>Default colour</button>
+			<button class="wide cancel" use:tap={() => { colourFor = null; }}>Cancel</button>
+		</div>
+	{/if}
+	{#if editor}
+		<div class="backdrop" role="presentation"></div>
+		<div class="editor" role="dialog" aria-label="Line">
+			<div class="title">{editor.old === null ? "Add" : "Edit"} {editor.kind}</div>
+			<input bind:value={editor.text} use:focusEnd autocapitalize="off" autocomplete="off" spellcheck="false"
+				onkeydown={event => { if (event.key === "Enter") void saveEditor(); else if (event.key === "Escape") editor = null; }} />
+			<div class="hint">{editor.kind === "function" ? "One parameter, such as f(x)=x^2-2"
+				: "In x and y, such as x^2+y^2=9 or y^2=x^3-x; other names are variables"}</div>
+			{#if editor.error}<div class="error">{editor.error}</div>{/if}
+			<div class="buttons">
+				<button use:tap={() => { editor = null; }}>Cancel</button>
+				<button class="ok" use:tap={() => void saveEditor()}>{editor.busy ? "..." : "OK"}</button>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
@@ -755,6 +949,36 @@
 		font: inherit; font-size: 16px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 	}
 	.none { padding: 12px 16px; color: var(--faint); }
+	.adds { display: flex; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+	.adds button, .buttons button, .wide
+	{
+		height: 38px; padding: 0 16px; border: 1px solid var(--line); border-radius: 19px; background: none;
+		color: var(--select); font: inherit; font-size: 15px; cursor: pointer; touch-action: manipulation;
+	}
+	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; touch-action: none; }
+	.editor, .picker
+	{
+		position: fixed; left: 0; right: 0; z-index: 31; margin: 0 auto; max-width: 520px; background: var(--page);
+		box-shadow: 0 4px 20px rgb(0 0 0 / 0.3); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
+	}
+	/* the editor at the top, above the phone's keyboard; the colours at the bottom, near the thumb */
+	.editor { top: 0; padding-top: max(14px, env(safe-area-inset-top)); border-radius: 0 0 16px 16px; }
+	.picker { bottom: 0; padding-bottom: max(28px, env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
+	.title { font-weight: 600; color: var(--faint); }
+	.editor input
+	{
+		font: inherit; font-size: 18px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
+		background: var(--page); color: var(--ink); min-width: 0;
+	}
+	.hint { color: var(--faint); font-size: 14px; }
+	.error { color: var(--error); font-size: 15px; overflow-wrap: anywhere; }
+	.buttons { display: flex; justify-content: flex-end; gap: 8px; }
+	.buttons .ok { background: var(--select); border-color: var(--select); color: var(--select-ink); min-width: 80px; }
+	.swatches { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+	.pick { aspect-ratio: 1; border-radius: 10px; border: 3px solid transparent; cursor: pointer; touch-action: manipulation; }
+	.pick.on { border-color: var(--ink); }
+	.wide { width: 100%; }
+	.wide.cancel { color: var(--ink); }
 
 	/* a tablet on its side: the graph on the left, the list on the right */
 	@media (orientation: landscape) and (min-width: 700px)

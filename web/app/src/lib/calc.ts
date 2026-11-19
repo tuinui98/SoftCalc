@@ -16,7 +16,7 @@
 import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
-import { FIRST_EQUATIONS, stateFrom, type GraphState } from "./graph";
+import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from "./graph";
 import { HISTORY_LIMIT, type Store } from "./store";
 import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
 
@@ -566,6 +566,80 @@ export class Calculator
 	{
 		this.graphView = state;
 		this.save(this.store.put("graphView", JSON.parse(JSON.stringify(state))));
+	}
+
+	//==================================================================
+	//  The Graph's lines (G2, owner 2026-11-19): equations are kept here,
+	//  functions are the engine's; neither adds a History line (desktop [DEF])
+	//==================================================================
+	// An equation to add or to put in place of `old`; the problem to show, or null when done
+	async putEquation(text: string, old: string | null): Promise<string | null>
+	{
+		const typed = text.trim();
+		if (!typed.includes("="))
+		{
+			return "An equation needs '=' (for a function use + Function)";
+		}
+		if (functionHead(typed))
+		{
+			return "This is a function: use + Function";
+		}
+		if (this.graph.some(line => same(line, typed) && !same(line, old)))
+		{
+			return "This equation is already in the list";
+		}
+		const answer = await this.engine.send("plot_equation", { equation: typed, x_min: -1, x_max: 1, y_min: -1, y_max: 1, cols: 1, rows: 1 });
+		if (!answer.ok)
+		{
+			return answer.error ?? "Not an equation";
+		}
+		const at = old === null ? -1 : this.graph.findIndex(line => same(line, old));
+		this.setGraph(at < 0 ? [...this.graph, typed] : this.graph.map((line, index) => index === at ? typed : line));
+		return null;
+	}
+
+	removeEquation(text: string)
+	{
+		this.setGraph(this.graph.filter(line => !same(line, text)));
+	}
+
+	private setGraph(lines: string[])
+	{
+		this.graph = lines;
+		this.save(this.store.put("graph", [...lines]));
+		this.changed();
+	}
+
+	// A function of one parameter, new or in place of `old` (a new name drops the old one)
+	async putFunction(text: string, old: string | null): Promise<string | null>
+	{
+		const typed = text.trim();
+		const head = functionHead(typed);
+		if (!head)
+		{
+			return "A function of one parameter, such as f(x)=x^2";
+		}
+		const renamed = old === null || !same(head.name, old);
+		const taken = [...this.definitions.functions, ...this.definitions.variables].some(item => same(item.name, head.name));
+		if (renamed && taken)
+		{
+			return `${head.name} is already defined`;
+		}
+		const answer = await this.engine.send("eval", { input: typed });
+		if (!answer.ok || answer.kind !== "definition")
+		{
+			const text = String(answer.ok ? answer.text ?? "" : answer.error ?? "");
+			return text.startsWith("ERROR:") ? text.slice(6) : text || "Not a function";
+		}
+		if (old !== null && renamed)
+		{
+			await this.engine.send("delete", { name: old });
+		}
+		await this.saveDefinitions();
+		await this.refreshDefinitions();
+		this.changed();
+		void this.updateHint(true);
+		return null;
 	}
 
 	historyLines(): Entry[]

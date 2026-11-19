@@ -538,3 +538,32 @@ describe("names and History lines (owner 2026-11-18)", () =>
 		expect(stepDecimals(30, 1)).toBe(30);
 	});
 });
+
+describe("the Graph's lines (G2, owner 2026-11-19)", () =>
+{
+	it("an equation is checked, added, renamed and removed without a History line", async () =>
+	{
+		const { calc, store } = await started();
+		expect(await calc.putEquation("x^2", null)).toMatch(/needs '='/);
+		expect(await calc.putEquation("f(x)=x", null)).toMatch(/function/);
+		expect(await calc.putEquation("Y=SIN(X)", null)).toMatch(/already/);
+		expect(await calc.putEquation("x^2+y^2=9", null)).toBeNull();
+		expect(await calc.putEquation("x^2+y^2=4", "x^2+y^2=9")).toBeNull();
+		expect(calc.graph).toEqual(["y=sin(x)", "y=x/360", "x^2+y^2=4"]);
+		calc.removeEquation("y=x/360");
+		expect(await store.get("graph")).toEqual(["y=sin(x)", "x^2+y^2=4"]);
+		expect(calc.entries).toEqual([]);
+	});
+
+	it("a function needs one parameter and a free name; a new name drops the old", async () =>
+	{
+		const { calc, engine } = await started();
+		expect(await calc.putFunction("f(x, y)=x", null)).toMatch(/one parameter/);
+		expect(await calc.putFunction("f(x)=x^2", null)).toBeNull();
+		expect(await calc.putFunction("f(t)=t", null)).toMatch(/already defined/);
+		expect(await calc.putFunction("g(x)=x^3", "f")).toBeNull();
+		expect(calc.definitions.functions.map(fn => fn.name)).toEqual(["g"]);
+		expect(engine.definitions).not.toContain("f(x)");
+		expect(calc.entries).toEqual([]);
+	});
+});

@@ -109,6 +109,63 @@ export function lineColour(state: GraphState, graphable: string[], name: string)
 	return index <= 0 ? null : SERIES[(index - 1) % SERIES.length];
 }
 
+// The colours to pick from (owner 2026-11-19: a short list, no colour wheel): the palette, then six more
+export const PICK_COLOURS = [...SERIES, "#d23c3c", "#2f6fd6", "#8c5a32", "#e66eaa", "#3cb48c", "#787878"];
+
+//==================================================================
+//  A line renamed or gone: its tick, colour and selection follow (desktop GraphSettings.Rename)
+//==================================================================
+export function renameLine(state: GraphState, old: string, next: string)
+{
+	state.shown = state.shown.map(name => same(name, old) ? next : name);
+	const colour = Object.entries(state.colours).find(([key]) => same(key, old));
+	if (colour)
+	{
+		state.colours = Object.fromEntries(Object.entries(state.colours).filter(([key]) => !same(key, old)));
+		state.colours[next] = colour[1];
+	}
+	if (same(state.selected, old))
+	{
+		state.selected = next;
+	}
+}
+
+export function forgetLine(state: GraphState, name: string)
+{
+	state.shown = state.shown.filter(item => !same(item, name));
+	state.colours = Object.fromEntries(Object.entries(state.colours).filter(([key]) => !same(key, name)));
+	if (same(state.selected, name))
+	{
+		state.selected = state.shown[0] ?? null;
+	}
+}
+
+// A function for the Graph: one parameter (f(x)=...); its name and parameter, or null
+export function functionHead(text: string): { name: string; param: string } | null
+{
+	const match = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*=/.exec(text);
+	return match ? { name: match[1], param: match[2] } : null;
+}
+
+// The first of f, g, h, p, q, r, then f1, f2, ... not taken
+export function freeName(taken: string[]): string
+{
+	const used = new Set(taken.map(name => name.toLowerCase()));
+	for (const name of ["f", "g", "h", "p", "q", "r"])
+	{
+		if (!used.has(name))
+		{
+			return name;
+		}
+	}
+	let n = 1;
+	while (used.has("f" + n))
+	{
+		n++;
+	}
+	return "f" + n;
+}
+
 //==================================================================
 //  Mapping, grid and tick labels
 //==================================================================

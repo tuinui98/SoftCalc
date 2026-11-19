@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
-	firstState, fitRange, formatTick, gridLines, lineColour, niceStep, pinch, pinchKind, runs, square, stateFrom,
+	firstState, fitRange, forgetLine, formatTick, freeName, functionHead, renameLine, gridLines, lineColour, niceStep, pinch, pinchKind, runs, square, stateFrom,
 	toScreen, toWorld, traceTarget, type Area, type Series,
 } from "../src/lib/graph";
 
@@ -143,5 +143,29 @@ describe("saved state", () =>
 		expect(back.shown).toEqual(["f"]);
 		expect(back.colours).toEqual({});
 		expect(stateFrom("junk")).toEqual(firstState());
+	});
+});
+
+describe("lines added, renamed and deleted (G2)", () =>
+{
+	it("a rename keeps the tick, colour and selection; a delete forgets them", () =>
+	{
+		const state = firstState();
+		state.colours["y=sin(x)"] = "#123456";
+		renameLine(state, "Y=SIN(X)", "y=cos(x)");
+		expect(state.shown).toEqual(["y=cos(x)", "y=x/360"]);
+		expect(state.colours).toEqual({ "y=cos(x)": "#123456" });
+		expect(state.selected).toBe("y=cos(x)");
+		forgetLine(state, "y=cos(x)");
+		expect([state.shown, state.colours, state.selected]).toEqual([["y=x/360"], {}, "y=x/360"]);
+	});
+
+	it("a graph function has one parameter; a new one takes a free name", () =>
+	{
+		expect(functionHead(" g ( t ) = t^2")).toEqual({ name: "g", param: "t" });
+		expect(functionHead("f(x, y)=x")).toBeNull();
+		expect(functionHead("y=x")).toBeNull();
+		expect(freeName(["F", "g"])).toBe("h");
+		expect(freeName(["f", "g", "h", "p", "q", "r", "f1"])).toBe("f2");
 	});
 });
