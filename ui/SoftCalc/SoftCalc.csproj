@@ -30,6 +30,11 @@
 		<EmbeddedResource Include="THIRD-PARTY-NOTICES.txt" LogicalName="THIRD-PARTY-NOTICES.txt" />
 	</ItemGroup>
 
+	<!-- Graph > Add > Examples, shared with the web app (owner 2026-11-19) -->
+	<ItemGroup>
+		<EmbeddedResource Include="..\..\data\graph-examples.json" LogicalName="graph-examples.json" />
+	</ItemGroup>
+
 	<!-- Ready-made card decks for the Random window (owner 2026-11-14): "English|Thai" lines -->
 	<ItemGroup>
 		<EmbeddedResource Include="Decks\*.txt" LogicalName="decks/%(Filename)%(Extension)" />

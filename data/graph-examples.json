@@ -1,0 +1,39 @@
+{
+	"about": "Graph examples for Graph > Add > Examples, read by the desktop (Logic/GraphExamples.cs) and the web app (web/app/src/lib/examples.ts). defaults: the constants and their values, in the form's order; Use writes them into the form as numbers. view: a function's thumbnail range [minX, maxX, minY, maxY]; half: an equation's half height around the origin (4:3, so circles stay round). Every one was drawn through the engine before it went in (owner 2026-11-10; shared 2026-11-19).",
+	"functions": [
+		{"title": "Parabola", "name": "parabola", "form": "a*(x-h)^2+k", "note": "vertex at (h, k); a = width, a<0 opens down", "defaults": "a=1 h=0 k=0", "view": [-3, 3, -1, 8]},
+		{"title": "Cubic", "name": "cubic", "form": "x^3-b*x+k", "note": "b>0: two bumps at x=±√(b/3); b≤0: none; k = y offset", "defaults": "b=3 k=0", "view": [-3, 3, -4, 4]},
+		{"title": "Absolute value", "name": "vshape", "form": "a*abs(x-h)+k", "note": "corner at (h, k); a = slope of the arms", "defaults": "a=1 h=0 k=0", "view": [-4, 4, -1, 5]},
+		{"title": "Square root", "name": "halfroot", "form": "a*sqrt(x-h)+k", "note": "starts at (h, k); a = stretch", "defaults": "a=1 h=0 k=0", "view": [-1, 9, -0.5, 3.5]},
+		{"title": "Hyperbola 1/x", "name": "hyperbola", "form": "a/(x-h)+k", "note": "asymptotes x=h, y=k; a<0 flips quadrants", "defaults": "a=1 h=0 k=0", "view": [-4, 4, -4, 4]},
+		{"title": "Sine", "name": "sine", "form": "a*sin(b*(x-c))+d", "note": "a = amplitude; period 2π/b; c = phase shift; d = mid line", "defaults": "a=1 b=1 c=0 d=0", "view": [-7, 7, -1.6, 1.6]},
+		{"title": "Cosine", "name": "cosine", "form": "a*cos(b*(x-c))+d", "note": "a = amplitude; period 2π/b; c = phase shift; d = mid line", "defaults": "a=1 b=1 c=0 d=0", "view": [-7, 7, -1.6, 1.6]},
+		{"title": "Tangent", "name": "tangent", "form": "a*tan(b*(x-c))", "note": "period π/b; c = shift; a = stretch", "defaults": "a=1 b=1 c=0", "view": [-5, 5, -4, 4]},
+		{"title": "Sinc", "name": "sinc", "form": "sin(b*x)/(b*x)", "note": "zeros at multiples of π/b", "defaults": "b=1", "view": [-15, 15, -0.4, 1.2]},
+		{"title": "Exponential", "name": "growth", "form": "a*exp(b*x)+k", "note": "y = a+k at x=0; b<0 decays; asymptote y=k", "defaults": "a=1 b=1 k=0", "view": [-3, 3, -1, 8]},
+		{"title": "Natural log", "name": "logarithm", "form": "a*ln(x-h)+k", "note": "asymptote x=h; passes (h+1, k); a = stretch", "defaults": "a=1 h=0 k=0", "view": [-1, 8, -4, 3]},
+		{"title": "Bell curve", "name": "bell", "form": "a*exp(-(x-m)^2/(2*s^2))", "note": "a = peak; m = centre; s = width (bends at m±s)", "defaults": "a=1 m=0 s=0.7071", "view": [-3, 3, -0.2, 1.2]},
+		{"title": "Sigmoid", "name": "sigmoid", "form": "L/(1+exp(-k*(x-m)))", "note": "L = top level; k = steepness; m = midpoint, where y = L/2", "defaults": "L=1 k=1 m=0", "view": [-8, 8, -0.2, 1.2]},
+		{"title": "Witch of Agnesi", "name": "agnesi", "form": "8*a^3/(x^2+4*a^2)", "note": "a = radius of the circle that draws it; peak 2a", "defaults": "a=1", "view": [-6, 6, -0.5, 2.5]},
+		{"title": "x sin(1/x)", "name": "wobble", "form": "x^n*sin(1/x)", "note": "n=0: no limit at 0; n=1: squeezed to 0; n=2: smooth at 0", "defaults": "n=1", "view": [-0.5, 0.5, -0.4, 0.4]},
+		{"title": "Two waves", "name": "waves", "form": "sin(x)+a*sin(b*x)", "note": "a = second wave height; b = its frequency", "defaults": "a=1/3 b=3", "view": [-7, 7, -1.5, 1.5]}
+	],
+	"equations": [
+		{"title": "Circle", "form": "(x-a)^2+(y-b)^2=r^2", "note": "centre (a, b); r = radius", "defaults": "a=0 b=0 r=2", "half": 3},
+		{"title": "Ellipse", "form": "(x-h)^2/a^2+(y-k)^2/b^2=1", "note": "centre (h, k); a = half width; b = half height", "defaults": "h=0 k=0 a=3 b=2", "half": 4},
+		{"title": "Hyperbola", "form": "x^2/a^2-y^2/b^2=1", "note": "vertices (±a, 0); asymptotes y = ±(b/a)x", "defaults": "a=1 b=1", "half": 4},
+		{"title": "Sideways parabola", "form": "(y-k)^2=4*p*(x-h)", "note": "vertex (h, k); focus p to the right; p<0 opens left", "defaults": "k=0 p=0.25 h=0", "half": 4},
+		{"title": "Heart", "form": "(x^2+y^2-1)^3=a*x^2*y^3", "note": "a = height of the lobes; a=0 is a circle", "defaults": "a=1", "half": 1.6},
+		{"title": "Lemniscate", "form": "(x^2+y^2)^2=2*a^2*(x^2-y^2)", "note": "foci (±a, 0); tips at ±a√2", "defaults": "a=1", "half": 2},
+		{"title": "Folium of Descartes", "form": "x^3+y^3=3*a*x*y", "note": "loop tip at (1.5a, 1.5a); asymptote x+y = -a", "defaults": "a=1", "half": 3},
+		{"title": "Cardioid", "form": "(x^2+y^2-a*x)^2=a^2*(x^2+y^2)", "note": "cusp at 0; reaches x = 2a", "defaults": "a=1", "half": 2.5},
+		{"title": "Astroid", "form": "abs(x)^(2/3)+abs(y)^(2/3)=a^(2/3)", "note": "cusps at ±a on both axes", "defaults": "a=1", "half": 1.4},
+		{"title": "Superellipse", "form": "abs(x/a)^n+abs(y/b)^n=1", "note": "a = half width; b = half height; n=2 ellipse, n>2 squarer, n=1 diamond, n<1 star", "defaults": "a=1 b=1 n=4", "half": 1.5},
+		{"title": "Cassini oval", "form": "(x^2+y^2)^2-2*a^2*(x^2-y^2)=b^4-a^4", "note": "foci (±a, 0); b<a: two ovals, b=a: lemniscate, b>a: one", "defaults": "a=1 b=1.107", "half": 2},
+		{"title": "Elliptic curve", "form": "y^2=x^3+a*x+b", "note": "4a³+27b² < 0: two pieces, > 0: one, = 0: pinched", "defaults": "a=-1 b=1", "half": 3},
+		{"title": "Cissoid of Diocles", "form": "y^2*(2*a-x)=x^3", "note": "asymptote x = 2a", "defaults": "a=1", "half": 3},
+		{"title": "Devil's curve", "form": "y^2*(y^2-a^2)=x^2*(x^2-b^2)", "note": "crosses the y axis at ±a, the x axis at ±b; a=b: lines y = ±x and a circle", "defaults": "a=2 b=2.236", "half": 3.5},
+		{"title": "Egg crate", "form": "sin(b*x)*sin(b*y)=c", "note": "c=0: grid of lines, 0<c<1: eggs, |c|>1: nothing; cell size π/b", "defaults": "b=1 c=0.3", "half": 7},
+		{"title": "x^y = y^x", "form": "x^y=y^x", "note": "no constant: the line y = x and a curve crossing it at (e, e); passes (2, 4)", "defaults": "", "half": 6}
+	]
+}
