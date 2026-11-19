@@ -60,4 +60,38 @@ internal static class PcfFile
 	{
 		DataFolder.WriteAtomic(path, Encode(text));
 	}
+
+	//==================================================================
+	//  [Graph] section (owner 2026-11-19)
+	//==================================================================
+	// Save adds the Graph's equations below a "[Graph]" line; Load adds them to the Graph.
+	// The data folder's definitions.pcf has none: the Graph keeps its own in settings.json.
+	// The web app (transfer.ts splitGraph) keeps the lines and writes them back.
+	public const string GraphHeader = "[Graph]";
+
+	// Graph: (line number in the file, from 1; text), blank lines left out
+	public static (string Definitions, IReadOnlyList<(int Line, string Text)> Graph) SplitGraph(string text)
+	{
+		string[] lines = text.Replace("\r\n", "\n").Split('\n');
+		int at = Array.FindIndex(lines, l => string.Equals(l.Trim(), GraphHeader, StringComparison.OrdinalIgnoreCase));
+		if (at < 0)
+		{
+			return (text, Array.Empty<(int, string)>());
+		}
+		var graph = lines.Select((line, index) => (Line: index + 1, Text: line.Trim()))
+			.Skip(at + 1)
+			.Where(l => l.Text.Length > 0)
+			.ToList();
+		return (string.Join("\r\n", lines.Take(at)) + "\r\n", graph);
+	}
+
+	public static string WithGraph(string definitions, IReadOnlyList<string> equations)
+	{
+		if (equations.Count == 0)
+		{
+			return definitions;
+		}
+		string kept = definitions.Trim().Length > 0 ? definitions.TrimEnd() + "\r\n" : "";
+		return kept + GraphHeader + "\r\n" + string.Concat(equations.Select(e => e + "\r\n"));
+	}
 }

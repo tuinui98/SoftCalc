@@ -17,7 +17,7 @@ import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
 import { HISTORY_LIMIT, type Store } from "./store";
-import { fileText, mergeHistory, newId, parseHistory, withIds } from "./transfer";
+import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
 
 export interface EngineLike
 {
@@ -79,6 +79,7 @@ export class Calculator
 	ready = false;
 	catalog: Catalog = { functions: {}, conversions: {} };
 	definitions: Definitions = { variables: [], functions: [] };
+	graph: string[] = [];    // a .pcf's [Graph] equations, kept for Export (transfer.ts)
 	hint = "";                 // the line under Input (engine `hint`), "" for none
 	showHints = true;
 	private hintAsked = 0;     // newest hint request; older replies are dropped
@@ -133,6 +134,8 @@ export class Calculator
 		{
 			this.save(this.store.saveEntries(this.entries));    // lines kept before ids came in
 		}
+		const graph = await this.store.get("graph");
+		this.graph = Array.isArray(graph) ? graph.filter(line => typeof line === "string") : [];
 		this.changed();
 		const version = await this.engine.ready;
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
@@ -598,15 +601,22 @@ export class Calculator
 			// pcf_import replaces everything (the desktop's Load); Import adds instead: the current
 			// definitions, then the file's, so a name in both takes the file's (owner 2026-11-19)
 			const counted = () => this.definitions.variables.length + this.definitions.functions.length;
+			const parts = splitGraph(text);
+			const graph = addGraph(this.graph, parts.graph);
+			if (graph.added > 0)
+			{
+				this.graph = graph.graph;
+				this.save(this.store.put("graph", this.graph));
+			}
 			const current = await this.definitionsText();
 			const kept = current.trim().length > 0 ? current.replace(/\s*$/, "\r\n") : "";
-			const imported = await this.engine.send("pcf_import", { text: kept + text });
+			const imported = await this.engine.send("pcf_import", { text: kept + parts.definitions });
 			const keptLines = kept.split(/\r?\n/).length - 1;
 			// skipped lines counted in the file only (the engine numbers lines from 1)
-			const skipped = ((imported.skipped ?? []) as { line: number }[]).filter(item => item.line > keptLines).length;
+			const skipped = ((imported.skipped ?? []) as { line: number }[]).filter(item => item.line > keptLines).length + graph.skipped;
 			await this.saveDefinitions();
 			await this.refreshDefinitions();
-			said = `${name}: ${counted()} variable(s) and function(s) now` + (skipped > 0 ? `, ${skipped} line(s) skipped` : "");
+			said = `${name}: ${counted()} variable(s) and function(s) now` + (graph.added > 0 ? `, ${graph.added} graph equation(s) kept` : "") + (skipped > 0 ? `, ${skipped} line(s) skipped` : "");
 		}
 		this.status = said;
 		this.changed();

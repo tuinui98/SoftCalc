@@ -82,7 +82,7 @@ internal static class EquationDialog
 		return null;
 	}
 
-	private static async Task<string?> EngineProblemAsync(EngineSession session, string text)
+	internal static async Task<string?> EngineProblemAsync(EngineSession session, string text)
 	{
 		try
 		{

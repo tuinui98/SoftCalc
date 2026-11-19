@@ -19,6 +19,59 @@ export function exportNames(time = new Date()): { history: string; definitions: 
 }
 
 //==================================================================
+//  The .pcf's [Graph] section (owner 2026-11-19)
+//==================================================================
+
+// Below a "[Graph]" line a .pcf holds the desktop Graph's equations, one a line (PcfFile.cs).
+// This app has no Graph yet: it keeps the lines and writes them back, so a file goes from the
+// desktop through a phone and back without losing them.
+export const GRAPH_HEADER = "[Graph]";
+
+export function splitGraph(text: string): { definitions: string; graph: string[] }
+{
+	const lines = text.split(/\r?\n/);
+	const at = lines.findIndex(line => line.trim().toLowerCase() === GRAPH_HEADER.toLowerCase());
+	if (at < 0)
+	{
+		return { definitions: text, graph: [] };
+	}
+	const graph = lines.slice(at + 1).map(line => line.trim()).filter(line => line.length > 0);
+	return { definitions: lines.slice(0, at).join("\r\n") + "\r\n", graph };
+}
+
+export function withGraph(definitions: string, graph: string[]): string
+{
+	if (graph.length === 0)
+	{
+		return definitions;
+	}
+	const kept = definitions.trim().length > 0 ? definitions.replace(/\s*$/, "\r\n") : "";
+	return kept + GRAPH_HEADER + "\r\n" + graph.map(line => line + "\r\n").join("");
+}
+
+// The file's equations after mine, without twins (case aside, as the desktop's); a line
+// without '=' is no equation
+export function addGraph(mine: string[], theirs: string[]): { graph: string[]; added: number; skipped: number }
+{
+	const graph = [...mine];
+	let added = 0;
+	let skipped = 0;
+	for (const line of theirs)
+	{
+		if (!line.includes("="))
+		{
+			skipped++;
+		}
+		else if (!graph.some(kept => kept.toLowerCase() === line.toLowerCase()))
+		{
+			graph.push(line);
+			added++;
+		}
+	}
+	return { graph, added, skipped };
+}
+
+//==================================================================
 //  Entry ids and times, as the desktop's
 //==================================================================
 

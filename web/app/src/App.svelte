@@ -19,7 +19,7 @@
 	import { swipeOn } from "./lib/swipe";
 	import { keyTaps } from "./lib/keytap";
 	import { pickFiles, saveFiles, type OutFile } from "./lib/files";
-	import { exportNames, historyText, pcfBytes } from "./lib/transfer";
+	import { exportNames, historyText, pcfBytes, withGraph } from "./lib/transfer";
 
 	let { engine, store, kept }: { engine: Engine; store: Store; kept: boolean } = $props();
 	// The engine and the store are given once at start and never change
@@ -213,7 +213,7 @@
 			}
 			if (what !== HISTORY_ITEM)
 			{
-				files.push({ name: names.definitions, type: "application/octet-stream", bytes: pcfBytes(await calc.definitionsText()) });
+				files.push({ name: names.definitions, type: "application/octet-stream", bytes: pcfBytes(withGraph(await calc.definitionsText(), calc.graph)) });
 			}
 			const where = await saveFiles(files);
 			calc.say(files.length === 1 ? `Saved to ${where}: ${files[0].name}` : `Saved ${files.length} files to ${where}`);

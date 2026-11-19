@@ -243,7 +243,7 @@ internal sealed partial class MainForm
 		};
 		if (dialog.ShowDialog(this) == DialogResult.OK)
 		{
-			PcfFile.Write(dialog.FileName, _session.Definitions);
+			PcfFile.Write(dialog.FileName, PcfFile.WithGraph(_session.Definitions, _graphSettings.Equations));
 		}
 	}
 
@@ -329,8 +329,28 @@ internal sealed partial class MainForm
 		{
 			return;
 		}
-		var skipped = await _session.ImportDefinitionsAsync(PcfFile.Read(dialog.FileName));
+		var (definitions, graph) = PcfFile.SplitGraph(PcfFile.Read(dialog.FileName));
+		var skipped = (await _session.ImportDefinitionsAsync(definitions)).ToList();
+		// [Graph] equations after the definitions, which they may use; ones already there are
+		// left as they are, a bad one is skipped like a bad definition (owner 2026-11-19)
+		foreach (var (line, text) in graph)
+		{
+			if (_graphSettings.Equations.Any(e => string.Equals(e, text, StringComparison.OrdinalIgnoreCase)))
+			{
+				continue;
+			}
+			string? problem = EquationDialog.Check(text, _graphSettings.Equations)
+				?? await EquationDialog.EngineProblemAsync(_session, text);
+			if (problem != null)
+			{
+				skipped.Add($"line {line}: {text} ({problem})");
+				continue;
+			}
+			_graphSettings.Equations.Add(text);
+			_graphSettings.SetShown(text, true);
+		}
 		await RefreshStateAsync();
+		_graphSettings.NotifyChanged();
 		if (skipped.Count > 0)
 		{
 			MessageBox.Show(this, "These lines were skipped:\r\n\r\n" + string.Join("\r\n", skipped.Take(20)),

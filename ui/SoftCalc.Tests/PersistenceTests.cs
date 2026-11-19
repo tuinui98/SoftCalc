@@ -227,6 +227,19 @@ public sealed class PersistenceTests : IDisposable
 		Assert.Equal(text, PcfFile.Decode(bytes));
 	}
 
+	// Save's [Graph] section and Load's split, line numbers as in the file (owner 2026-11-19)
+	[Fact]
+	public void PcfGraphSectionSplitsAndJoins()
+	{
+		string text = PcfFile.WithGraph("rate=5\r\n\r\n", new[] { "y=x", "x^2+y^2=4" });
+		Assert.Equal("rate=5\r\n[Graph]\r\ny=x\r\nx^2+y^2=4\r\n", text);
+		var (definitions, graph) = PcfFile.SplitGraph("rate=5\n[graph]\n\ny=x\r\n");
+		Assert.Equal("rate=5\r\n", definitions);
+		Assert.Equal(new[] { (4, "y=x") }, graph);
+		Assert.Equal("a=1\r\n", PcfFile.WithGraph("a=1\r\n", Array.Empty<string>()));
+		Assert.Empty(PcfFile.SplitGraph("a=1\r\n").Graph);
+	}
+
 	//==================================================================
 	//  Window placement
 	//==================================================================

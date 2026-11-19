@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Entry } from "../src/lib/calc";
-import { exportNames, fileText, historyText, mergeHistory, newId, parseHistory, pcfBytes, withIds } from "../src/lib/transfer";
+import { exportNames, fileText, historyText, mergeHistory, newId, parseHistory, pcfBytes, splitGraph, withGraph, withIds } from "../src/lib/transfer";
 
 // Lines as the desktop writes them (System.Text.Json, snake_case, 7-digit fractions)
 const DESKTOP = [
@@ -74,6 +74,15 @@ describe("export names", () =>
 
 describe(".pcf", () =>
 {
+	it("splits off the [Graph] section and writes it back after the definitions", () =>
+	{
+		expect(splitGraph("a=1\r\n [graph] \r\ny=x\r\n\r\nx^2+y^2=1")).toEqual({ definitions: "a=1\r\n", graph: ["y=x", "x^2+y^2=1"] });
+		expect(splitGraph("a=1\r\n")).toEqual({ definitions: "a=1\r\n", graph: [] });
+		expect(withGraph("a=1\r\n\r\n", ["y=x"])).toBe("a=1\r\n[Graph]\r\ny=x\r\n");
+		expect(withGraph("", ["y=x"])).toBe("[Graph]\r\ny=x\r\n");
+		expect(withGraph("a=1\r\n", [])).toBe("a=1\r\n");
+	});
+
 	it("is written UTF-16 LE without a BOM, CRLF, and read back", () =>
 	{
 		const bytes = pcfBytes("memory=5\nf(x)=x^2 π\n");
