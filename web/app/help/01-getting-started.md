@@ -75,7 +75,7 @@ hints turns it off.
 ## The menu and Settings
 
 ⋮ (or a swipe up on the keys) opens Functions, Conversions, Variables,
-Graph, Settings, Export, Import, Help and Clear History. The phone's Back closes the open menu
+Graph, Compound, Settings, Export, Import, Help and Clear History. The phone's Back closes the open menu
 first. On the main screen the first Back shows "Press Back again to exit"; a
 second Back within two seconds leaves. In a browser this works only after a
 tap on the page: Chrome lets a page hold Back only then.

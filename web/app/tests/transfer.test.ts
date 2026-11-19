@@ -71,6 +71,7 @@ describe("export names", () =>
 			{
 				history: "SoftCalc-history-2026-11-09-0705.jsonl", definitions: "SoftCalc-definitions-2026-11-09-0705.pcf",
 				graph: "SoftCalc-graph-2026-11-09-0705.png",
+				compound: "SoftCalc-compound-2026-11-09-0705.csv", compoundPicture: "SoftCalc-compound-2026-11-09-0705.png",
 			});
 	});
 });
