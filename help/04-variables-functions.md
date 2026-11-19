@@ -70,5 +70,15 @@ have **Add** and **Edit** buttons. They open an editor:
 ## Keeping definitions
 
 Definitions are saved automatically and come back next time.
+
+<!-- desktop -->
 File > Save Functions & Variables... writes them to a `.pcf` file you
-can keep or share; File > Load Functions & Variables... reads one back.
+can keep or share; File > Load Functions & Variables... reads one back
+in place of the ones you have (see Data and files).
+<!-- /desktop -->
+
+<!-- web -->
+⋮ > Export > Variables and functions writes them to a `.pcf` file you
+can keep or take to SoftCalc on a computer; ⋮ > Import reads one and
+adds its definitions to yours (a name in both takes the file's value).
+<!-- /web -->
