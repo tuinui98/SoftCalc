@@ -17,6 +17,7 @@ import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
 import { inputsFrom, type CompoundInputs, type Schedule } from "./compound";
+import { prefsFrom, type RandomPrefs } from "./random";
 import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from "./graph";
 import { HISTORY_LIMIT, type Store } from "./store";
 import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
@@ -83,6 +84,7 @@ export class Calculator
 	graph: string[] = [];    // the Graph's equations; a .pcf's [Graph] section (transfer.ts)
 	graphView: GraphState = stateFrom(null);    // the Graph's range, lines shown and colours
 	compound: CompoundInputs = inputsFrom(null);    // ⋮ > Compound's inputs, kept between visits
+	random: RandomPrefs = prefsFrom(null);    // ⋮ > Random's options (never results or a signature)
 	hint = "";                 // the line under Input (engine `hint`), "" for none
 	showHints = true;
 	private hintAsked = 0;     // newest hint request; older replies are dropped
@@ -142,6 +144,7 @@ export class Calculator
 		this.graph = Array.isArray(graph) ? graph.filter(line => typeof line === "string") : [...FIRST_EQUATIONS];
 		this.graphView = stateFrom(await this.store.get("graphView"));
 		this.compound = inputsFrom(await this.store.get("compound"));
+		this.random = prefsFrom(await this.store.get("random"));
 		this.changed();
 		const version = await this.engine.ready;
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
@@ -564,6 +567,12 @@ export class Calculator
 	//==================================================================
 	//  Export and Import (transfer.ts; owner 2026-11-19)
 	//==================================================================
+	saveRandom(prefs: RandomPrefs)
+	{
+		this.random = { ...prefs };
+		this.save(this.store.put("random", { ...prefs }));
+	}
+
 	// ⋮ > Compound (compound.ts): the engine's schedule, or the error to show; the inputs are kept
 	async schedule(inputs: CompoundInputs): Promise<{ schedule: Schedule | null; error: string | null }>
 	{

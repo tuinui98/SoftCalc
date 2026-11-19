@@ -7,6 +7,7 @@
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
 	import CompoundView from "./components/CompoundView.svelte";
+	import RandomView from "./components/RandomView.svelte";
 	import GraphView from "./components/GraphView.svelte";
 	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
@@ -49,6 +50,9 @@
 	let helpOpen = $state(false);
 	let graphOpen = $state(false);
 	let compoundOpen = $state(false);
+	let randomOpen = $state(false);
+	let randomInner = $state(false);    // a menu open on the Random page
+	let randomView: RandomView | undefined = $state();
 	let graphInner = $state(false);    // a menu or the editor open on the Graph
 	let graphView: GraphView | undefined = $state();
 	let helpTopic: string | null = $state(null);
@@ -184,13 +188,14 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Compound", "Settings", "Export", "Import", "Help", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Compound", "Random", "Settings", "Export", "Import", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
 		else if (choice === "Graph") graphOpen = true;
 		else if (choice === "Compound") compoundOpen = true;
+		else if (choice === "Random") randomOpen = true;
 		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
 		else if (choice === "Export") await exportFiles();
 		else if (choice === "Import") await importFiles();
@@ -462,6 +467,10 @@
 		{
 			return graphInner ? 3 : 2;
 		}
+		if (randomOpen)
+		{
+			return randomInner ? 3 : 2;
+		}
 		if (settingsOpen || namesOpen || compoundOpen)
 		{
 			return 2;
@@ -532,8 +541,10 @@
 		if (sheet) sheet.done(null);
 		else if (helpOpen && helpTopic) helpTopic = null;
 		else if (graphOpen && graphInner) graphView?.closeInner();
-		else if (helpOpen || namesOpen || settingsOpen || graphOpen || compoundOpen)
+		else if (randomOpen && randomInner) randomView?.closeInner();
+		else if (helpOpen || namesOpen || settingsOpen || graphOpen || compoundOpen || randomOpen)
 		{
+			randomOpen = false;
 			helpOpen = false;
 			namesOpen = false;
 			settingsOpen = false;
@@ -650,6 +661,10 @@
 			onexample={line => { helpOpen = false; calc.typed(line, line.length); focusInput(); }} />
 	{/if}
 
+	{#if randomOpen}
+		<RandomView bind:this={randomView} bind:inner={randomInner} {calc} onclose={() => { randomOpen = false; focusInput(); }}
+			oninsert={text => { randomOpen = false; calc.insertText(text, false); focusInput(); }} />
+	{/if}
 	{#if compoundOpen}
 		<CompoundView {calc} onclose={() => { compoundOpen = false; focusInput(); }}
 			oninsert={text => { compoundOpen = false; calc.insertText(text, true); focusInput(); }} />
