@@ -352,9 +352,9 @@ describe("saving between visits", () =>
 		expect(engine.sent.findLast(message => message.op === "pcf_import")?.args.text).toBe("rate=5\r\n");
 		expect(said).toBe("mine.pcf: 1 variable(s) and function(s) now, 2 graph equation(s) kept, 1 line(s) skipped");
 		await calc.importFile("again.pcf", pcfBytes("[graph]\r\nY=X\r\nr=1\r\n"));
-		expect(calc.graph).toEqual(["y=x", "x^2+y^2=4", "r=1"]);
+		expect(calc.graph).toEqual(["y=sin(x)", "y=x/360", "y=x", "x^2+y^2=4", "r=1"]);    // after the first run's two
 		await new Promise(resolve => setTimeout(resolve, 0));
-		expect(await store.get("graph")).toEqual(["y=x", "x^2+y^2=4", "r=1"]);
+		expect(await store.get("graph")).toEqual(["y=sin(x)", "y=x/360", "y=x", "x^2+y^2=4", "r=1"]);
 	});
 
 	it("Import into an empty list sends the file alone", async () =>
