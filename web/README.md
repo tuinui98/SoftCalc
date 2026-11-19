@@ -204,6 +204,29 @@ first in the chooser), each by what is in it:
   ones, then the file's, so a name in both takes the file's. The
   desktop's Load replaces them all (`import_pcf`).
 
+### Graph (owner 2026-11-19, plan)
+⋮ > Graph opens a full page (Back closes it): the plot, a tool row (Fit,
+1:1, Reset, Grid, Polar), a status line and the lines with tick boxes.
+A phone shows the plot above the list, a tablet on its side beside it.
+The engine's `plot`, `plot_equation`, `value_at` and `equation_at` do
+the work, as on the desktop; `src/lib/graph.ts` is PlotMath (ranges,
+ticks, runs, fit, 1:1, trace hits) and `src/lib/plotter.ts` the
+requests, one round at a time with changes folded into the next.
+Gestures (owner): **one finger traces** the nearest line; **two fingers
+move and zoom**, along one axis when they lie along it (within 20
+degrees); a double tap zooms in. A mouse traces by hovering, drags to
+move and wheels to zoom. The equations are the ones a .pcf's [Graph]
+carries (`graph` in the store); the range and the lines shown are
+`graphView`. A first run draws `y=sin(x)` and `y=x/360` over -360..360,
+as the desktop.
+- G1: the page, drawing, gestures, trace with Copy and Insert, Polar.
+- G2: Add, Edit and Delete of equations (checked by the engine) and
+  functions, colours from a set of about 12.
+- G3: Examples, from a JSON file the desktop reads too (moved out of
+  `GraphExamples.cs`).
+- Later: saving the picture as PNG. Not planned: typed ranges, the
+  Advanced View's small graph.
+
 ### On the web (owner 2026-11-19)
 https://tuinui98.github.io/SoftCalc/ is built and published by
 `.github/workflows/pages.yml` when main changes the web app, the engine,

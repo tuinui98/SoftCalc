@@ -6,6 +6,7 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
+	import GraphView from "./components/GraphView.svelte";
 	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
@@ -44,6 +45,7 @@
 	let textSize = $state(loadTextSize());
 	let namesOpen = $state(false);
 	let helpOpen = $state(false);
+	let graphOpen = $state(false);
 	let helpTopic: string | null = $state(null);
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
@@ -177,11 +179,12 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Export", "Import", "Help", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Settings", "Export", "Import", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
+		else if (choice === "Graph") graphOpen = true;
 		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
 		else if (choice === "Export") await exportFiles();
 		else if (choice === "Import") await importFiles();
@@ -444,12 +447,12 @@
 	//==================================================================
 	function layerDepth(): number
 	{
-		// Help, Variables and Settings stand on the ⋮ menu that opened them
+		// Help, Variables, Graph and Settings stand on the ⋮ menu that opened them
 		if (helpOpen)
 		{
 			return helpTopic ? 3 : 2;
 		}
-		if (settingsOpen || namesOpen)
+		if (settingsOpen || namesOpen || graphOpen)
 		{
 			return 2;
 		}
@@ -489,11 +492,12 @@
 		pushed = Math.max(0, pushed - 1);
 		if (sheet) sheet.done(null);
 		else if (helpOpen && helpTopic) helpTopic = null;
-		else if (helpOpen || namesOpen || settingsOpen)
+		else if (helpOpen || namesOpen || settingsOpen || graphOpen)
 		{
 			helpOpen = false;
 			namesOpen = false;
 			settingsOpen = false;
+			graphOpen = false;
 			void openMore();
 		}
 	}
@@ -600,6 +604,12 @@
 	{#if helpOpen}
 		<HelpView bind:topic={helpTopic} onclose={() => { helpOpen = false; focusInput(); }}
 			onexample={line => { helpOpen = false; calc.typed(line, line.length); focusInput(); }} />
+	{/if}
+
+	{#if graphOpen}
+		<GraphView {calc} functions={view.definitions.functions.filter(fn => fn.params.length === 1)} equations={calc.graph}
+			onclose={() => { graphOpen = false; focusInput(); }}
+			oninsert={text => { graphOpen = false; calc.insertText(text, true); focusInput(); }} />
 	{/if}
 
 	{#if namesOpen}

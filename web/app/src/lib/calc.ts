@@ -16,6 +16,7 @@
 import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
+import { FIRST_EQUATIONS, stateFrom, type GraphState } from "./graph";
 import { HISTORY_LIMIT, type Store } from "./store";
 import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
 
@@ -56,7 +57,7 @@ export type Catalog = { functions: Record<string, string[]>; conversions: Record
 export interface Definitions
 {
 	variables: { name: string; value: string }[];
-	functions: { name: string; source: string }[];
+	functions: { name: string; source: string; params: string[] }[];
 }
 
 const OPERATORS = "+-*/^!%";
@@ -79,7 +80,8 @@ export class Calculator
 	ready = false;
 	catalog: Catalog = { functions: {}, conversions: {} };
 	definitions: Definitions = { variables: [], functions: [] };
-	graph: string[] = [];    // a .pcf's [Graph] equations, kept for Export (transfer.ts)
+	graph: string[] = [];    // the Graph's equations; a .pcf's [Graph] section (transfer.ts)
+	graphView: GraphState = stateFrom(null);    // the Graph's range, lines shown and colours
 	hint = "";                 // the line under Input (engine `hint`), "" for none
 	showHints = true;
 	private hintAsked = 0;     // newest hint request; older replies are dropped
@@ -135,7 +137,9 @@ export class Calculator
 			this.save(this.store.saveEntries(this.entries));    // lines kept before ids came in
 		}
 		const graph = await this.store.get("graph");
-		this.graph = Array.isArray(graph) ? graph.filter(line => typeof line === "string") : [];
+		// A first run draws the desktop's first two equations (graph.ts FIRST_EQUATIONS)
+		this.graph = Array.isArray(graph) ? graph.filter(line => typeof line === "string") : [...FIRST_EQUATIONS];
+		this.graphView = stateFrom(await this.store.get("graphView"));
 		this.changed();
 		const version = await this.engine.ready;
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
@@ -169,7 +173,7 @@ export class Calculator
 		const state = await this.engine.send("state");
 		this.definitions = {
 			variables: ((state.variables ?? []) as Definitions["variables"]).map(({ name, value }) => ({ name, value })),
-			functions: ((state.functions ?? []) as Definitions["functions"]).map(({ name, source }) => ({ name, source })),
+			functions: ((state.functions ?? []) as Definitions["functions"]).map(({ name, source, params }) => ({ name, source, params: Array.isArray(params) ? params : [] })),
 		};
 		this.hasMemory = this.definitions.variables.some(variable => variable.name.toLowerCase() === "memory");
 	}
@@ -551,6 +555,13 @@ export class Calculator
 	//==================================================================
 	//  Export and Import (transfer.ts; owner 2026-11-19)
 	//==================================================================
+	// The Graph's state, kept when the Graph changes it (graph.ts GraphState)
+	saveGraphView(state: GraphState)
+	{
+		this.graphView = state;
+		this.save(this.store.put("graphView", JSON.parse(JSON.stringify(state))));
+	}
+
 	historyLines(): Entry[]
 	{
 		return this.entries.filter(entry => entry.kind !== "notice");
