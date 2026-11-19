@@ -145,6 +145,22 @@
 	let shapeNote = $state("");
 	let shapeError = $state(false);
 	let picture: HTMLCanvasElement | undefined = $state();
+	let pictureSize = $state("");    // the picture's size, so a turned phone draws it again
+	let busy = $state(false);    // Seed draws in the engine: a moment on a phone
+	const watchSize = (canvas: HTMLCanvasElement) =>
+	{
+		const observer = new ResizeObserver(() => { pictureSize = `${canvas.clientWidth}x${canvas.clientHeight}`; });
+		observer.observe(canvas);
+		return { destroy: () => observer.disconnect() };
+	};
+
+	// Custom's a and b on a slider (owner 2026-11-20): 0.05 to 100 on a log scale, so below 1 (U shapes) gets room
+	const toSlider = (value: number) => Math.log10(Math.min(100, Math.max(0.05, value)));
+	function fromSlider(position: number): number
+	{
+		const value = Math.pow(10, position);
+		return value < 1 ? Math.round(value * 100) / 100 : value < 10 ? Math.round(value * 10) / 10 : Math.round(value);
+	}
 
 	const shapeCurve = $derived(curve(p.shape, p.shapeStrength, p.shapeA, p.shapeB));
 	const range = $derived<Range>({ from: p.shapeFrom, to: p.shapeTo, peak: p.shapePeak, whole: p.shapeWhole, places: Math.floor(p.shapePlaces) });
@@ -163,7 +179,14 @@
 		let texts: string[];
 		if (seeded)
 		{
-			const answer = await calc.seedDraws(seedText, shapeCommand(shapeCurve, range), n, false);
+			if (busy)
+			{
+				return;
+			}
+			busy = true;
+			shapeError = false;
+			shapeNote = `Drawing ${n} values with the seed...`;
+			const answer = await calc.seedDraws(seedText, shapeCommand(shapeCurve, range), n, false).finally(() => { busy = false; });
 			if (!answer.texts)
 			{
 				shaped = [];
@@ -194,6 +217,7 @@
 	$effect(() =>
 	{
 		const canvas = picture;
+		void pictureSize;
 		if (!canvas)
 		{
 			return;
@@ -378,11 +402,15 @@
 						<label class="field"><span>Peak at</span><input type="number" bind:value={p.shapePeak} /></label>
 					{/if}
 					{#if p.shape === "custom"}
-						<label class="field"><span>a</span><input type="number" min="0.05" max="100" step="0.1" bind:value={p.shapeA} /></label>
-						<label class="field"><span>b</span><input type="number" min="0.05" max="100" step="0.1" bind:value={p.shapeB} /></label>
+						<label class="field"><span>a = {p.shapeA}</span>
+							<input type="range" min="-1.3" max="2" step="0.01" value={toSlider(p.shapeA)}
+								oninput={event => { p.shapeA = fromSlider(Number((event.currentTarget as HTMLInputElement).value)); }} /></label>
+						<label class="field"><span>b = {p.shapeB}</span>
+							<input type="range" min="-1.3" max="2" step="0.01" value={toSlider(p.shapeB)}
+								oninput={event => { p.shapeB = fromSlider(Number((event.currentTarget as HTMLInputElement).value)); }} /></label>
 					{/if}
 				</div>
-				<canvas class="picture" bind:this={picture}></canvas>
+				<canvas class="picture" bind:this={picture} use:watchSize></canvas>
 				<p class="note">{hint(p.shape)}</p>
 				<div class="kinds">
 					<button class:on={p.shapeWhole} use:tap={() => { p.shapeWhole = true; }}>Whole</button>
@@ -397,7 +425,7 @@
 					<label class="field"><span>Count</span><input type="number" min="1" max={SHAPE_MAX} bind:value={p.shapeCount} /></label>
 				</div>
 				<div class="buttons">
-					<button class="primary" use:tap={() => void drawShape()}>Generate</button>
+					<button class="primary" use:tap={() => void drawShape()} disabled={busy}>{busy ? "Drawing..." : "Generate"}</button>
 					<button use:tap={() => void copyAll(shaped, false)} disabled={shaped.length === 0}>Copy all</button>
 					<button use:tap={() => oninsert(shapeCommand(shapeCurve, range))} title="The engine call that draws one value in Input">Insert command</button>
 				</div>
@@ -562,5 +590,6 @@
 		flex: 1; min-width: 140px; font-size: 14px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px;
 		background: var(--page); color: var(--ink);
 	}
-	.picture { width: 100%; height: 120px; border: 1px solid var(--line); border-radius: 8px; }
+	/* in proportion to the width, but never so tall that a phone shows few results (owner 2026-11-20) */
+	.picture { width: 100%; aspect-ratio: 2 / 1; max-height: 34vh; min-height: 140px; border: 1px solid var(--line); border-radius: 8px; box-sizing: border-box; }
 </style>
