@@ -15,6 +15,8 @@
 	} from "../lib/graph";
 	import { Plotter, traceText } from "../lib/plotter";
 	import { closeOnTouch, tapOn, tapOrHold } from "../lib/repeat";
+	import { definition, formLine, isEquation as exampleIsEquation, usesAngles, type Example } from "../lib/examples";
+	import ExamplesView from "./ExamplesView.svelte";
 	import Sheet from "./Sheet.svelte";
 
 	let { calc, functions, equations, names, onclose, oninsert, inner = $bindable(false) }: {
@@ -689,18 +691,26 @@
 		text: string;
 		error: string;
 		busy: boolean;
+		hint?: string[];    // from Examples: the form and what its constants change
 	}
 	let editor: Editor | null = $state(null);
+	let examplesOpen = $state(false);
 	let menuFor: string | null = $state(null);
 	let colourFor: string | null = $state(null);
 	let deleteFor: string | null = $state(null);
 	$effect(() =>
 	{
-		inner = editor !== null || menuFor !== null || colourFor !== null || deleteFor !== null;
+		inner = editor !== null || menuFor !== null || colourFor !== null || deleteFor !== null || examplesOpen;
 	});
 
 	export function closeInner()
 	{
+		if (editor !== null && examplesOpen)
+		{
+			editor = null;    // back to the examples it came from
+			return;
+		}
+		examplesOpen = false;
 		editor = null;
 		menuFor = null;
 		colourFor = null;
@@ -717,6 +727,21 @@
 	function addEquation()
 	{
 		editor = { kind: "equation", old: null, text: "x^2+y^2=9", error: "", busy: false };
+	}
+
+	// An example opens in the editor with its constants as numbers (desktop GraphPanel.AddExampleAsync)
+	function useExample(example: Example)
+	{
+		const hint = ["Form: " + formLine(example), ...example.note.split("; ")];
+		const angle = calc.settings.angle;
+		if (usesAngles(example) && angle !== "rad")
+		{
+			hint.push(`x is an angle: the picture is in Radians, SoftCalc is in ${angle === "deg" ? "Degrees" : "Grads"}`);
+		}
+		editor = {
+			kind: exampleIsEquation(example) ? "equation" : "function", old: null, text: definition(example, names),
+			error: "", busy: false, hint,
+		};
 	}
 
 	async function saveEditor()
@@ -749,6 +774,7 @@
 		}
 		st.selected = name;
 		editor = null;
+		examplesOpen = false;
 		plotter.clearTrace();
 		changed();
 	}
@@ -862,6 +888,7 @@
 				<div class="adds">
 					<button use:tap={addFunction}>+ Function</button>
 					<button use:tap={addEquation}>+ Equation</button>
+					<button use:tap={() => { examplesOpen = true; }}>Examples</button>
 				</div>
 				{#each graphable as name (name)}
 					{@const on = shown.some(item => same(item, name))}
@@ -902,14 +929,21 @@
 			<button class="wide cancel" use:tap={() => { colourFor = null; }}>Cancel</button>
 		</div>
 	{/if}
+	{#if examplesOpen}
+		<ExamplesView {calc} onpick={useExample} onclose={() => { examplesOpen = false; }} />
+	{/if}
 	{#if editor}
 		<div class="backdrop" role="presentation"></div>
 		<div class="editor" role="dialog" aria-label="Line">
 			<div class="title">{editor.old === null ? "Add" : "Edit"} {editor.kind}</div>
 			<input bind:value={editor.text} use:focusEnd autocapitalize="off" autocomplete="off" spellcheck="false"
 				onkeydown={event => { if (event.key === "Enter") void saveEditor(); else if (event.key === "Escape") editor = null; }} />
-			<div class="hint">{editor.kind === "function" ? "One parameter, such as f(x)=x^2-2"
-				: "In x and y, such as x^2+y^2=9 or y^2=x^3-x; other names are variables"}</div>
+			{#if editor.hint}
+				{#each editor.hint as line, index (index)}<div class="hint">{line}</div>{/each}
+			{:else}
+				<div class="hint">{editor.kind === "function" ? "One parameter, such as f(x)=x^2-2"
+					: "In x and y, such as x^2+y^2=9 or y^2=x^3-x; other names are variables"}</div>
+			{/if}
 			{#if editor.error}<div class="error">{editor.error}</div>{/if}
 			<div class="buttons">
 				<button use:tap={() => { editor = null; }}>Cancel</button>
@@ -976,16 +1010,16 @@
 		font: inherit; font-size: 16px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 	}
 	.none { padding: 12px 16px; color: var(--faint); }
-	.adds { display: flex; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+	.adds { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
 	.adds button, .buttons button, .wide
 	{
 		height: 38px; padding: 0 16px; border: 1px solid var(--line); border-radius: 19px; background: none;
 		color: var(--select); font: inherit; font-size: 15px; cursor: pointer; touch-action: manipulation;
 	}
-	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 30; touch-action: none; }
+	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 33; touch-action: none; }
 	.editor, .picker
 	{
-		position: fixed; left: 0; right: 0; z-index: 31; margin: 0 auto; max-width: 520px; background: var(--page);
+		position: fixed; left: 0; right: 0; z-index: 34; margin: 0 auto; max-width: 520px; background: var(--page);
 		box-shadow: 0 4px 20px rgb(0 0 0 / 0.3); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;
 	}
 	/* the editor at the top, above the phone's keyboard; the colours at the bottom, near the thumb */

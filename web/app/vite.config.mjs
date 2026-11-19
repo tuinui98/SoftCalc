@@ -22,6 +22,8 @@ export default defineConfig({
 	base: "./",
 	plugins: [svelte(), withVersion],
 	build: { outDir: path.join(here, "dist"), emptyOutDir: true, target: "es2022" },
+	// Graph > Examples reads ../../data/graph-examples.json, shared with the desktop
+	server: { fs: { allow: [path.join(here, ".."), path.join(here, "..", "..", "data")] } },
 	preview: { port: 8767 },
 	test: { include: ["tests/**/*.test.ts"], environment: "node" },
 });
