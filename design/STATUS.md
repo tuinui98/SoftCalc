@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-19: version 1.5.2 released (Export/Import History, [Graph] in .pcf; web app on GitHub Pages). Everything below is committed on `main` and
+Updated 2026-11-19: version 1.6.0 released (Scientific keypad changes; Graph on the web and in the APK). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -139,6 +139,18 @@ Android APK read and write the same files. Help 04, 14; web 01. UI
 hint rules moved into the engine earlier, so UI tests went down.
 
 Tests: engine `pytest` 631 passed; UI `dotnet test` 447 passed; web 71.
+
+Version 1.6.0 (2026-11-19): Scientific keypad (desktop and web): a
+function key, and Functions menu picks, type `name(` at the caret instead
+of wrapping the line; 2nd ( ) type [ ], 2nd ans types ->, so a conversion
+like 5[m->ft] can be typed on the keys; STO and entry are gone. Graph
+examples are data/graph-examples.json, shared with the web app. Web and
+APK: the Graph (trace, two-finger move and zoom, Pan, Fit, 1:1, Polar,
+add/edit/delete/colour lines, Examples, PNG), Back twice to exit on the
+main screen (fully in the APK; a browser only after a tap), func and units
+open on a quick tap. Help 03, 04, 13; web 01, 11.
+
+Tests: engine `pytest` 632 passed; UI `dotnet test` 445 passed; web 93.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
