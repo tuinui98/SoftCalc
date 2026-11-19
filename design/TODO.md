@@ -506,3 +506,9 @@ ends 1:1, the drag insert line is visible enough on dark.
         hardware-wallet project.
     The hardware-wallet discussion went to
     D:\Projects\esp32-hardware-wallet\NOTES.md (a separate project).
+
+## Next release (owner 2026-11-19, after 1.6.0)
+- [ ] Desktop Graph > File > Save as bitmap...: suggest the name with the
+      local time, as the web/APK PNG and Export do:
+      `SoftCalc-graph-YYYY-MM-DD-HHmm.png` (now `graph.png`,
+      UI/GraphWindow.cs SaveBitmap; HistoryStore.ExportName has the stamp).
