@@ -34,6 +34,7 @@ internal sealed class GraphPanel : Panel
 	private readonly ImageList _swatches = new() { ImageSize = new Size(SwatchSize, SwatchSize), ColorDepth = ColorDepth.Depth32Bit };
 	private readonly ToolStripButton _edit = new("Edit");
 	private readonly ToolStripButton _delete = new("Delete");
+	private readonly ToolStrip _toolbar = new() { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
 	private IReadOnlyList<UserFunction> _list = Array.Empty<UserFunction>();
 	private List<Row> _rows = new();
 	private string _linesKey = "";    // equations and colours the list was filled with
@@ -55,7 +56,7 @@ internal sealed class GraphPanel : Panel
 		//==================================================================
 		// Graph window: three buttons, the split button's arrow was hard to hit (owner
 		// 2026-11-10); the narrow Advanced View sidebar keeps the split button
-		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
+		var toolbar = _toolbar;
 		if (openWindow == null)
 		{
 			toolbar.Items.Add(new ToolStripButton("Function...", null, async (_, _) => await _commands.AddFunctionAsync())
@@ -188,6 +189,14 @@ internal sealed class GraphPanel : Panel
 		UpdateButtons();
 	}
 
+	// For the main window's smallest size (owner 2026-11-20): the buttons, and the toolbar and list above the plot
+	public int ToolbarWidth => _toolbar.GetPreferredSize(Size.Empty).Width;
+
+	public int ListsHeight => _toolbar.Height + _functions.Height;
+
+	// The list grew or shrank (it shows up to MaxRows lines)
+	public event EventHandler? ListResized;
+
 	public void UpdateFunctions(IReadOnlyList<UserFunction> functions)
 	{
 		_list = functions;
@@ -260,7 +269,12 @@ internal sealed class GraphPanel : Panel
 		int rows = Math.Clamp(_rows.Count, 1, MaxRows);
 		// GetItemRect would create the list's handle early; estimate until it exists
 		int rowHeight = _ready && _functions.Items.Count > 0 ? _functions.GetItemRect(0).Height : Math.Max(_functions.Font.Height + 6, SwatchSize + 4);
+		int before = _functions.Height;
 		_functions.Height = rows * rowHeight + 4;
+		if (_functions.Height != before)
+		{
+			ListResized?.Invoke(this, EventArgs.Empty);
+		}
 		FitColumn();
 		ShowSelection();
 	}

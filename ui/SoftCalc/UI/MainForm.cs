@@ -47,6 +47,9 @@ internal sealed partial class MainForm : Form
 	private readonly GroupBox _samplesBox = new() { Text = "Samples", Dock = DockStyle.Fill };
 	private readonly Panel _keypadHost = new() { Dock = DockStyle.Fill };
 	private readonly GroupBox _inputBox = new() { Text = "Input", Dock = DockStyle.Fill, Height = 52 };
+	private readonly GroupBox _historyBox = new() { Text = "History", Dock = DockStyle.Fill };
+	private readonly SplitContainer _sidebar = new() { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
+	private GroupBox _graphBox = null!, _variablesBox = null!;
 	private readonly InputRecall _recall;
 	private readonly MenuStrip _menu = new();
 	private readonly ToolStripMenuItem _functionsMenu = new("F&unctions");
@@ -135,7 +138,11 @@ internal sealed partial class MainForm : Form
 		_input.KeyPress += OnInputKeyPress;
 		_input.ContextMenuStrip = BuildInputMenu();
 		_keypad.KeyPressed += async (id, where) => await OnKeypad(id, where);
-		_keypad.ModeChanged += (_, _) => _prefs.KeypadScientific = _keypad.Scientific;
+		_keypad.ModeChanged += (_, _) =>
+		{
+			_prefs.KeypadScientific = _keypad.Scientific;
+			UpdateMinimumSize();    // Scientific needs a wider window
+		};
 		_keypad.SetScientific(_prefs.KeypadScientific);
 		ApplySavedWindow();
 		ApplyView(Enum.TryParse<CalcView>(_prefs.View, out var view) ? view : CalcView.History);
@@ -165,7 +172,7 @@ internal sealed partial class MainForm : Form
 	//==================================================================
 	private void BuildLayout()
 	{
-		var historyBox = new GroupBox { Text = "History", Dock = DockStyle.Fill };
+		var historyBox = _historyBox;
 		historyBox.Controls.Add(_history);
 		_samplesBox.Controls.Add(_samples);
 		_inputBox.Controls.Add(_hint);
@@ -174,6 +181,7 @@ internal sealed partial class MainForm : Form
 		_keypadHost.Controls.Add(_keypadBar);
 		WireKeypadBar();
 
+		_column.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));    // not AutoSize: never wider than the window
 		_column.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 		_column.RowStyles.Add(new RowStyle(SizeType.Absolute, 110));
 		_column.RowStyles.Add(new RowStyle(SizeType.Absolute, 52));
@@ -188,9 +196,11 @@ internal sealed partial class MainForm : Form
 		_commands.Renamed += (oldName, newName) => _graphSettings.Rename(oldName, newName);
 		_graphPanel = new GraphPanel(_session, _graphSettings, _commands, OpenGraphWindow) { Dock = DockStyle.Fill };
 		_variablesPanel = new VariablesPanel(_commands) { Dock = DockStyle.Fill };
-		var sidebar = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
-		sidebar.Panel1.Controls.Add(Titled("Graph", _graphPanel));
-		sidebar.Panel2.Controls.Add(Titled("Variables", _variablesPanel));
+		var sidebar = _sidebar;
+		_graphBox = Titled("Graph", _graphPanel);
+		_variablesBox = Titled("Variables", _variablesPanel);
+		sidebar.Panel1.Controls.Add(_graphBox);
+		sidebar.Panel2.Controls.Add(_variablesBox);
 		Load += (_, _) => sidebar.SplitterDistance = (int)(sidebar.Height * 0.6);
 		_split.Panel1.Controls.Add(sidebar);
 		_split.Panel2.Controls.Add(_column);
@@ -201,13 +211,15 @@ internal sealed partial class MainForm : Form
 		Controls.Add(_ribbon);    // docks under the menu bar
 		Controls.Add(_menu);
 		MainMenuStrip = _menu;
-		Load += (_, _) => _split.SplitterDistance = SidebarStart;
+		Load += (_, _) => PlaceSidebar();
+		WireSizes();
 	}
 
 	private const int SidebarStart = 300;
 
-	// Graph + Variables column width the window grows by in Advanced View
-	private int SidebarWidth => (IsHandleCreated ? _split.SplitterDistance : SidebarStart) + _split.SplitterWidth;
+	// Graph + Variables column width the window grows by in Advanced View: as wide as it is when
+	// shown, the width it will take when it is not (MainForm.Sizes.cs)
+	private int SidebarWidth => (IsHandleCreated && !_split.Panel1Collapsed ? _split.SplitterDistance : _sidebarWant) + _split.SplitterWidth;
 
 	// History and Numeric views share one window size; Advanced adds the
 	// sidebar on the left, so History and Input stay where they are on
@@ -350,6 +362,7 @@ internal sealed partial class MainForm : Form
 		_hint.Visible = _showHintsItem.Checked;
 		_hint.Height = _showHintsItem.Checked ? _hint.Font.Height + 4 : 0;    // Visible reads false before Show
 		_column.RowStyles[2].Height = _input.PreferredHeight + _hint.Height + frame + 2;
+		UpdateMinimumSize();
 	}
 
 	private void UpdateHint()
@@ -478,6 +491,7 @@ internal sealed partial class MainForm : Form
 			int height = Math.Clamp(_keypadDragHeight + _keypadDragFrom - Cursor.Position.Y, least, most);
 			_column.RowStyles[3].Height = height;    // the layout follows the mouse
 			_prefs.KeypadHeight = height * 96 / DeviceDpi;
+			UpdateMinimumSize();
 		};
 		_keypadBar.MouseUp += (_, _) => _keypadDragFrom = -1;
 		_keypadBar.Paint += (_, e) =>
@@ -496,6 +510,7 @@ internal sealed partial class MainForm : Form
 		_view = view;
 		if (wasAdvanced != (view == CalcView.Advanced))
 		{
+			MinimumSize = Size.Empty;    // the new view's is set below
 			ResizeForSidebar(view == CalcView.Advanced);
 		}
 		bool samples = _showSamplesItem.Checked && view != CalcView.Numeric;    // Numeric never shows Samples [KEEP]
@@ -505,12 +520,15 @@ internal sealed partial class MainForm : Form
 		_samplesBox.Visible = samples;
 		_column.RowStyles[3].Height = view == CalcView.Numeric ? LogicalToDeviceUnits(_prefs.KeypadHeight) : 0;
 		_keypadHost.Visible = view == CalcView.Numeric;
-		_ribbon.Visible = _showRibbonItem.Checked && view != CalcView.Numeric;    // Numeric stays plain
+		_ribbon.Visible = _showRibbonItem.Checked;    // in every view (owner 2026-11-20: Numeric hid it)
 		_split.Panel1Collapsed = view != CalcView.Advanced;
 		foreach (var (name, item) in _viewItems)
 		{
 			item.Checked = name == view.ToString();
 		}
+		PlaceSidebar();
+		FitKeypadRow();
+		UpdateMinimumSize();
 	}
 
 	//==================================================================

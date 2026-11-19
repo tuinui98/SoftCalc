@@ -21,6 +21,7 @@ internal sealed class VariablesPanel : Panel
 	private readonly ListViewGroup _user = new("User Defined");
 	private readonly ToolStripButton _edit = new("Edit");
 	private readonly ToolStripButton _delete = new("Delete");
+	private readonly ToolStrip _toolbar = new() { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
 
 	public VariablesPanel(DefinitionCommands commands)
 	{
@@ -30,7 +31,7 @@ internal sealed class VariablesPanel : Panel
 		_list.Groups.Add(_constants);
 		_list.Groups.Add(_user);
 
-		var toolbar = new ToolStrip { GripStyle = ToolStripGripStyle.Hidden, Dock = DockStyle.Top };
+		var toolbar = _toolbar;
 		toolbar.Items.Add(new ToolStripButton("Add", null, async (_, _) => await _commands.AddVariableAsync()));
 		_edit.Click += async (_, _) => await EditSelectedAsync();
 		_delete.Click += async (_, _) =>
@@ -50,6 +51,28 @@ internal sealed class VariablesPanel : Panel
 		Controls.Add(_list);
 		Controls.Add(toolbar);
 		UpdateButtons();
+	}
+
+	// The smallest size that still shows the buttons and one row (owner 2026-11-20): with groups the
+	// first group's heading comes before it, in dark mode a heading row
+	public int ToolbarWidth => _toolbar.GetPreferredSize(Size.Empty).Width;
+
+	public int LeastHeight
+	{
+		get
+		{
+			int row = _list.ShowGroups ? 0 : 1;
+			int rows;
+			if (_list.IsHandleCreated && _list.Items.Count > row)
+			{
+				rows = _list.GetItemRect(row).Bottom;
+			}
+			else
+			{
+				rows = _list.Font.Height + 8 + 2 * (_list.Font.Height + 6);    // header, heading, one row
+			}
+			return _toolbar.Height + rows + 6;
+		}
 	}
 
 	public void UpdateValues(EngineState state)

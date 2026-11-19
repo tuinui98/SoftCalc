@@ -343,7 +343,7 @@ internal sealed class GraphWindow : Form
 
 	private void SaveBitmap()
 	{
-		using var dialog = new SaveFileDialog { Filter = "PNG image (*.png)|*.png", DefaultExt = "png", FileName = "graph.png" };
+		using var dialog = new SaveFileDialog { Filter = "PNG image (*.png)|*.png", DefaultExt = "png", FileName = HistoryStore.ExportName("graph", "png", DateTime.Now) };    // as the web app's PNG
 		if (dialog.ShowDialog(this) == DialogResult.OK)
 		{
 			_graph.Plot.SaveImage(dialog.FileName);
