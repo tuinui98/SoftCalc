@@ -67,6 +67,9 @@ function base64(bytes: Uint8Array): string
 	return btoa(binary);
 }
 
+// What Export saves and older Android exports were saved as; .jsonl and .pcf are octet-stream to Android
+const PICK_TYPES = ".jsonl,.pcf,.txt,application/octet-stream,application/x-ndjson,application/json,text/plain";
+
 // The files the user picks; none when the chooser is closed
 export function pickFiles(): Promise<File[]>
 {
@@ -75,6 +78,13 @@ export function pickFiles(): Promise<File[]>
 		const input = document.createElement("input");
 		input.type = "file";
 		input.multiple = true;
+		if (!inApp())
+		{
+			// Without types Chrome on Android also offers the camera and asks for camera and
+			// microphone; a list without image or video opens the file chooser alone. The app's
+			// web view opens it alone already, with no filter (owner 2026-11-19)
+			input.accept = PICK_TYPES;
+		}
 		input.addEventListener("change", () => resolve([...input.files ?? []]));
 		input.addEventListener("cancel", () => resolve([]));
 		input.click();

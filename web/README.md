@@ -186,8 +186,10 @@ unchanged (`src/lib/transfer.ts`; the desktop test
 the local time, `SoftCalc-history-2026-11-19-1530.jsonl` and
 `SoftCalc-definitions-2026-11-19-1530.pcf`, as the desktop's Export names
 them; for the desktop's data folder History is renamed `history.jsonl`.
-A browser downloads them to its Downloads (the blob stays a minute: Chrome
-on Android reads it late). The Android app saves them to Download/SoftCalc
+A browser downloads them to its Downloads, with no folder of its own: a
+page cannot make one (both as octet-stream, the blob kept a minute: Chrome
+on Android dropped the ndjson History). Its chooser lists the two types,
+as Chrome on Android otherwise offers the camera too. The Android app saves them to Download/SoftCalc
 with its own plugin (`DownloadsPlugin.java`: MediaStore, no permission on
 Android 10 and later; the storage permission up to SDK 28), not the share
 sheet: a device without a file manager app had nowhere to save, and the

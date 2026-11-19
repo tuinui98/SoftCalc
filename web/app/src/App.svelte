@@ -207,7 +207,8 @@
 			const names = exportNames();
 			if (what !== NAMES_ITEM)
 			{
-				files.push({ name: names.history, type: "application/x-ndjson",
+				// The .pcf's octet-stream downloads in Chrome on Android, its ndjson did not (owner 2026-11-19)
+				files.push({ name: names.history, type: "application/octet-stream",
 					bytes: new TextEncoder().encode(historyText(calc.historyLines())) });
 			}
 			if (what !== HISTORY_ITEM)
