@@ -204,7 +204,7 @@ first in the chooser), each by what is in it:
   ones, then the file's, so a name in both takes the file's. The
   desktop's Load replaces them all (`import_pcf`).
 
-### Graph (owner 2026-11-19, plan)
+### Graph (owner 2026-11-19)
 ⋮ > Graph opens a full page (Back closes it): the plot, a tool row (Fit,
 1:1, Reset, Grid, Polar), a status line and the lines with tick boxes.
 A phone shows the plot above the list, a tablet on its side beside it.
@@ -219,11 +219,15 @@ move and wheels to zoom. The equations are the ones a .pcf's [Graph]
 carries (`graph` in the store); the range and the lines shown are
 `graphView`. A first run draws `y=sin(x)` and `y=x/360` over -360..360,
 as the desktop.
-- G1: the page, drawing, gestures, trace with Copy and Insert, Polar.
-- G2: Add, Edit and Delete of equations (checked by the engine) and
-  functions, colours from a set of about 12.
-- G3: Examples, from a JSON file the desktop reads too (moved out of
-  `GraphExamples.cs`).
+- G1 (done): the page, drawing, gestures, trace with Copy and Insert,
+  Polar; the tools sit beside the title on a phone on its side; Pan lets
+  one finger move instead of trace (kept, for one hand).
+- G2 (done): + Function and + Equation (checked by the engine, no
+  History line); press and hold a line for Insert, Edit, Colour (12)
+  and Delete. The plot keeps its size while the editor's keyboard is up.
+- G3 (done): Examples (`ExamplesView.svelte`) from
+  `data/graph-examples.json`, which the desktop embeds too.
+- Help: `app/help/11-graph.md`, the web's own topic.
 - Later: saving the picture as PNG. Not planned: typed ranges, the
   Advanced View's small graph.
 
