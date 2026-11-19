@@ -2,7 +2,7 @@
 
 [project]
 name = "softcalc-engine"
-version = "1.6.0"
+version = "1.7.0"
 description = "Expression engine for SoftCalc (parsing, arbitrary precision maths, formatting)"
 requires-python = ">=3.14"
 license = "MIT"

@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-19: version 1.6.0 released (Scientific keypad changes; Graph on the web and in the APK). Everything below is committed on `main` and
+Updated 2026-11-20: version 1.7.0 released (smallest window per view; Compound and Random on the web and in the APK). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -151,6 +151,20 @@ main screen (fully in the APK; a browser only after a tap), func and units
 open on a quick tap. Help 03, 04, 13; web 01, 11.
 
 Tests: engine `pytest` 632 passed; UI `dotnet test` 445 passed; web 93.
+
+Version 1.7.0 (2026-11-20): every view has a smallest window (the menu
+bar and the widest ribbon group across; the menu, the whole ribbon,
+Samples, Input and one History entry down; Numeric its keypad, Advanced
+its Graph and Variables boxes; narrowing Advanced narrows History first,
+then both; MainForm.Sizes.cs). Numeric shows the ribbon like the other
+views. Graph's Save as bitmap and Compound's Export CSV suggest names with
+the local time. The ready-made decks moved to data/decks, shared with the
+web app. Engine: `draws` takes apart (a second engine, for the web) and
+parses the line once. Web and APK: Compound (inputs, totals, chart, table,
+CSV/PNG/Copy) and Random (Simple, Advanced, Seed, Password, Cards). Help
+09, 12; web 01, 09, 17.
+
+Tests: engine `pytest` 634 passed; UI `dotnet test` 445 passed; web 119.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
