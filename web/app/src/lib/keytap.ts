@@ -8,6 +8,23 @@
 
 const SLOP = 12;    // px; more is a swipe (swipe.ts)
 
+// The click a phone sends after the tap is dropped: func and units open a menu under the finger,
+// and that click landed on the menu's backdrop and closed it at once (owner 2026-11-19: only a
+// press and hold, which sends no click, kept the menu open). A script's click still goes through.
+function swallowClick()
+{
+	const swallow = (click: MouseEvent) =>
+	{
+		if (click.isTrusted)
+		{
+			click.stopPropagation();
+			click.preventDefault();
+		}
+	};
+	window.addEventListener("click", swallow, true);
+	setTimeout(() => window.removeEventListener("click", swallow, true), 400);
+}
+
 // The key on `page` whose settled box holds the point
 export function keyAt(page: HTMLElement, x: number, y: number): string
 {
@@ -52,6 +69,7 @@ export function keyTaps(box: HTMLElement, shownPage: () => HTMLElement, press: (
 		id = "";
 		if (key && Math.hypot(event.clientX - x0, event.clientY - y0) < SLOP)
 		{
+			swallowClick();
 			press(key);
 		}
 	};

@@ -4,8 +4,8 @@
 <script lang="ts">
 	import { keyClass, keyLabel, keyPlace, type Key } from "../lib/keys";
 
-	let { keys, sci = false, second, armed, base, angle, onpress }: {
-		keys: Key[]; sci?: boolean; second: boolean; armed: boolean; base: string; angle: string;
+	let { keys, sci = false, second, base, angle, onpress }: {
+		keys: Key[]; sci?: boolean; second: boolean; base: string; angle: string;
 		onpress: (key: Key) => void;
 	} = $props();
 </script>
@@ -13,7 +13,7 @@
 <div class="keypad" class:sci>
 	{#each keys as key (key.id)}
 		<!-- --chars: a one-letter label may grow wider than M+ or sin (Settings > Text size) -->
-		<button class={keyClass(key, second, armed)} style="{keyPlace(key)}; --chars: {[...keyLabel(key, base, angle)].length}"
+		<button class={keyClass(key, second)} style="{keyPlace(key)}; --chars: {[...keyLabel(key, base, angle)].length}"
 			data-key={key.id} onpointerdown={event => event.preventDefault()}
 			onclick={event => { if (event.detail === 0) onpress(key); }}>
 			{#if key.secondLabel}<span class="second">{key.secondLabel}</span>{/if}

@@ -73,7 +73,6 @@ export class Calculator
 	highlight = -1;            // History index shown by the walk, -1 when not walking
 	settings: Settings = { precision: 64, angle: "deg", base: "dec" };
 	second = false;
-	storeArmed = false;
 	status = "Loading Python...";
 	loading = "page";          // the last start step done: page, worker, python, unpack, import, then done or failed
 	startTimes = "";           // how long each start step took (Settings), "" until started
@@ -318,11 +317,18 @@ export class Calculator
 		}
 	}
 
+	// A function types its name and a bracket at the caret (owner 2026-11-19: wrapping the
+	// whole line was awkward on a phone); an operator goes through the engine's menu rule
 	async insertFunction(name: string)
 	{
-		await this.menuInsert(name === "mod" ? { kind: "operator", symbol: " mod " }
-			: name.length === 1 && OPERATORS.includes(name) ? { kind: "operator", symbol: name }
-			: { kind: "function", name });
+		if (name === "mod" || (name.length === 1 && OPERATORS.includes(name)))
+		{
+			await this.menuInsert({ kind: "operator", symbol: name === "mod" ? " mod " : name });
+		}
+		else
+		{
+			this.insert(name + "(");
+		}
 		this.changed();
 	}
 
@@ -527,7 +533,7 @@ export class Calculator
 		this.changed();
 	}
 
-	// A variable name goes in at the caret; a function wraps the line, as the Functions menu does
+	// A variable name goes in at the caret; a function as name( (insertFunction)
 	async insertName(name: string, isFunction: boolean)
 	{
 		if (isFunction)
@@ -672,16 +678,6 @@ export class Calculator
 			this.changed();
 			return null;
 		}
-		if (this.storeArmed)
-		{
-			this.storeArmed = false;
-			if (id === "x" || id === "y")
-			{
-				const value = this.text.trim();
-				await this.submit(`${id}=${value.length === 0 ? "ans" : value}`);
-				return null;
-			}
-		}
 		let menu: "func" | "units" | null = null;
 		switch (id)
 		{
@@ -706,12 +702,6 @@ export class Calculator
 			case "MR":
 				this.insert("memory");
 				break;
-			case "sto":
-				this.storeArmed = true;
-				break;
-			case "entry":
-				this.walk(true);
-				return null;
 			case "base":
 			{
 				const order = ["dec", "hex", "oct", "bin"];

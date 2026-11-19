@@ -42,7 +42,6 @@ internal sealed partial class MainForm : Form
 	// Drag bar over the keypad: History above gets what the keypad gives up (owner 2026-11-16)
 	private readonly Panel _keypadBar = new() { Dock = DockStyle.Top, Height = 7, Cursor = Cursors.HSplit };
 	private int _keypadDragFrom = -1, _keypadDragHeight;
-	private bool _storeArmed;    // STO pressed: the next x or y key stores Input there
 	private readonly SplitContainer _split = new() { Dock = DockStyle.Fill, FixedPanel = FixedPanel.Panel1 };
 	private readonly TableLayoutPanel _column = new() { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 4 };
 	private readonly GroupBox _samplesBox = new() { Text = "Samples", Dock = DockStyle.Fill };
@@ -938,7 +937,8 @@ internal sealed partial class MainForm : Form
 		}
 		else
 		{
-			await InsertFromMenuAsync(new JsonObject { ["kind"] = "function", ["name"] = name });
+			_input.SelectedText = name + "(";    // at the caret (owner 2026-11-19: not around the line)
+			_input.Focus();
 		}
 	}
 
@@ -1136,17 +1136,6 @@ internal sealed partial class MainForm : Form
 			await OnRpnKeypad(id == "=" ? "Ent" : id);
 			return;
 		}
-		if (_storeArmed)
-		{
-			_storeArmed = false;
-			_keypad.SetArmed(false);
-			if (id is "x" or "y")
-			{
-				SetInput(KeypadRules.Store(_input.Text, id));
-				await SubmitAsync();
-				return;
-			}
-		}
 		switch (id)
 		{
 			case "=":
@@ -1167,16 +1156,6 @@ internal sealed partial class MainForm : Form
 				break;
 			case "MR":
 				_input.SelectedText = InputRules.MemoryRecall;
-				break;
-			case "sto":
-				_storeArmed = true;    // then x or y
-				_keypad.SetArmed(true);
-				break;
-			case "entry":
-				if (_recall.Up(_input.Text) is string previous)
-				{
-					ShowRecalled(previous);
-				}
 				break;
 			case "base":
 				await NextBaseAsync();

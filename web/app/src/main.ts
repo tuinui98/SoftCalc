@@ -3,6 +3,7 @@
 import { mount } from "svelte";
 import App from "./App.svelte";
 import { Engine } from "./lib/engine";
+import { exitGuard } from "./lib/exitguard";
 import { inApp as isApp } from "./lib/files";
 import { openStore } from "./lib/store";
 import "./lib/layout.css";
@@ -31,7 +32,7 @@ const inApp = isApp();
 
 // In the Android app the system Back closes the app unless it is handed
 // to the page: there it goes back through the open layers (App.svelte),
-// and leaves the app only from the main screen.
+// and leaves the app only from the main screen, on a second Back (exitguard.ts).
 if (inApp)
 {
 	import("@capacitor/app").then(({ App: Native }) =>
@@ -40,7 +41,7 @@ if (inApp)
 		{
 			if (canGoBack)
 				history.back();
-			else
+			else if (exitGuard.press())
 				void Native.exitApp();
 		});
 	});

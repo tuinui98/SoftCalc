@@ -44,8 +44,8 @@ internal sealed class Keypad : Control
 		new("ins:pi", "π", "fn:sinh", "sinh", 2, 0), new("ins:e", "e", "fn:floor", "floor", 2, 1),
 		new("ins:E", "EE", "fn:ceil", "ceil", 2, 2), new("ins:-", "(−)", "ins: mod ", "mod", 2, 3),
 		new("ins:,", ",", "fn:round", "round", 2, 4),
-		new("x", "x", "ins:=", "=", 3, 0), new("y", "y", "ins:f(", "f(", 3, 1), new("ins:(", "(", "sto", "→x", 3, 2),
-		new("ins:)", ")", "entry", "entry", 3, 3), new("ins:ans", "ans", null, null, 3, 4),
+		new("x", "x", "ins:=", "=", 3, 0), new("y", "y", "ins:f(", "f(", 3, 1), new("ins:(", "(", "ins:[", "[", 3, 2),
+		new("ins:)", ")", "ins:]", "]", 3, 3), new("ins:ans", "ans", "ins:->", "->", 3, 4),
 		new("base", "dec ▸", null, null, 4, 0), new("angle", "deg ▸", null, null, 4, 1), new("func", "func", null, null, 4, 2),
 		new("units", "units", null, null, 4, 3), new("2nd", "2nd", null, null, 4, 4),
 	};
@@ -65,13 +65,6 @@ internal sealed class Keypad : Control
 	public event EventHandler? ModeChanged;
 
 	public bool Scientific { get; private set; }
-	private bool _armed;    // STO waits for x or y: shown on the (→x) key
-
-	public void SetArmed(bool armed)
-	{
-		_armed = armed;
-		Invalidate();
-	}
 
 	public Keypad()
 	{
@@ -163,7 +156,7 @@ internal sealed class Keypad : Control
 		float radius = LogicalToDeviceUnits(5);
 		foreach (var (key, box) in _boxes)
 		{
-			bool lit = key.Id == "2nd" && _second || key.SecondId == "sto" && _armed;
+			bool lit = key.Id == "2nd" && _second;
 			Color face = lit ? SystemColors.Highlight
 				: key.Id == "=" ? Accent
 				: key.IsDigit ? SystemColors.Window

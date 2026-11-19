@@ -37,7 +37,7 @@ export function keyPlace(key: Key): string
 	return `grid-row: ${key.row + 1} / span ${key.rows ?? 1}; grid-column: ${key.col + 1} / span ${key.cols ?? 1}`;
 }
 
-export function keyClass(key: Key, second: boolean, armed: boolean): string
+export function keyClass(key: Key, second: boolean): string
 {
 	const names = ["key"];
 	if (key.kind)
@@ -47,10 +47,6 @@ export function keyClass(key: Key, second: boolean, armed: boolean): string
 	if (key.id === "2nd")
 	{
 		names.push(second ? "second-key on" : "second-key");
-	}
-	if (key.second === "sto" && armed)
-	{
-		names.push("armed");
 	}
 	if (second && key.second)
 	{
@@ -78,8 +74,8 @@ export const SCIENTIFIC: Key[] = [
 	s("ins:pi", "π", "fn:sinh", "sinh", 2, 0), s("ins:e", "e", "fn:floor", "floor", 2, 1),
 	s("ins:E", "EE", "fn:ceil", "ceil", 2, 2), s("ins:-", "(−)", "ins: mod ", "mod", 2, 3),
 	s("ins:,", ",", "fn:round", "round", 2, 4),
-	s("x", "x", "ins:=", "=", 3, 0), s("y", "y", "ins:f(", "f(", 3, 1), s("ins:(", "(", "sto", "→x", 3, 2),
-	s("ins:)", ")", "entry", "entry", 3, 3), s("ins:ans", "ans", undefined, undefined, 3, 4),
+	s("x", "x", "ins:=", "=", 3, 0), s("y", "y", "ins:f(", "f(", 3, 1), s("ins:(", "(", "ins:[", "[", 3, 2),
+	s("ins:)", ")", "ins:]", "]", 3, 3), s("ins:ans", "ans", "ins:->", "->", 3, 4),
 	s("base", "dec ▸", undefined, undefined, 4, 0, "mode"), s("angle", "deg ▸", undefined, undefined, 4, 1, "mode"),
 	s("func", "func", undefined, undefined, 4, 2, "mode"), s("units", "units", undefined, undefined, 4, 3, "mode"),
 	s("2nd", "2nd", undefined, undefined, 4, 4, "mode"),

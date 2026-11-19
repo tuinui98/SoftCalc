@@ -11,10 +11,10 @@ The **func** key (Sci keys), or ⋮ > Functions, lists every built-in
 function by group. Picking one:
 <!-- /web -->
 
-- **wraps what is already in Input**: with `2` in Input, Functions > Basic
-  Operations > sqrt gives `sqrt(2)`;
-- on an empty Input it gives `sqrt()` with the caret inside the brackets;
-- an operator (`+`, `^`, `mod`, `!`, ...) is put at the caret instead.
+- puts its name and an opening bracket at the caret: with `2*` in Input,
+  Functions > Basic Operations > sqrt gives `2*sqrt(`; type the argument
+  and close it with `)`;
+- an operator (`+`, `^`, `mod`, `!`, ...) is put at the caret too.
 
 <!-- desktop -->
 ![Functions menu with Trig Functions open](img/menu-functions.light.png)

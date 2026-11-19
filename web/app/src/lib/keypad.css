@@ -75,7 +75,6 @@
 /* 2nd: faint yellow; once pressed, full yellow, as strong as = */
 .key.second-key { background: var(--key-second-bg); color: var(--key-second); font-weight: 600; }
 .key.second-key.on { background: var(--key-armed); color: #000; }
-.key.armed { background: var(--key-armed); color: #000; }
 .key .second
 {
 	font-size: 0.62em;

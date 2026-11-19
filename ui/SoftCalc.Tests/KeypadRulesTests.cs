@@ -1,4 +1,4 @@
-// KeypadRulesTests.cs - The Numeric keypad's C and STO keys (owner 2026-11-16)
+// KeypadRulesTests.cs - The Numeric keypad's C key (owner 2026-11-16)
 
 using SoftCalc.Logic;
 
@@ -16,13 +16,5 @@ public sealed class KeypadRulesTests
 	public void ClearEntryTakesTheLastNumber(string text, string expected)
 	{
 		Assert.Equal(expected, KeypadRules.ClearEntry(text));
-	}
-
-	[Theory]
-	[InlineData("5*3", "x", "x=5*3")]
-	[InlineData("", "y", "y=ans")]
-	public void StoreNamesTheLine(string text, string name, string expected)
-	{
-		Assert.Equal(expected, KeypadRules.Store(text, name));
 	}
 }
