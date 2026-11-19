@@ -5,7 +5,8 @@
 // continent (the UN members plus Palestine, Taiwan and the Vatican),
 // twelve colours, the zodiac and the twelve animal years; owner
 // 2026-11-15: the 928 districts, all and by province. The lists are
-// embedded text files (Decks/*.txt, "English|Thai" lines). Ready-made
+// embedded text files (data/decks/*.txt, "English|Thai" lines, shared with
+// the web app). Ready-made
 // decks cannot be edited; Copy to my decks makes one that can.
 
 using System.Reflection;
@@ -109,7 +110,7 @@ internal static class ReadyDecks
 		return new Deck { Id = Prefix + "playing-cards", Name = "Playing cards", Thai = "ไพ่ 1 สำรับ", Cards = cards };
 	}
 
-	// The lines of Decks/<name>.txt split at '|'; '#' starts a comment line
+	// The lines of data/decks/<name>.txt split at '|'; '#' starts a comment line
 	private static IEnumerable<string[]> Rows(string name)
 	{
 		using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream($"decks/{name}.txt")

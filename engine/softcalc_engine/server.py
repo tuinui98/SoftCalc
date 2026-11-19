@@ -5,6 +5,7 @@ stdout, in order. Calculation failures are normal responses
 (`kind: "error"`); only malformed requests get `ok: false`.
 """
 
+import dataclasses
 import json
 import re
 import sys
@@ -71,6 +72,7 @@ class Dispatcher:
 
     def __init__(self, engine=None):
         self.engine = engine or Engine()
+        self.apart = None    # the web app's Seed draws (`draws` with apart), made on first use
         self.handlers = {
             "eval": self.op_eval,
             "clear_history": self.op_clear_history,
@@ -223,7 +225,16 @@ class Dispatcher:
         """The Random window's Seed (owner 2026-11-12): rands(seed), then
         `line` count times, exactly as if typed in Input in that order.
         unique: a text already drawn is drawn again (No repeats).
+        apart (owner 2026-11-20): in an engine of its own at this one's
+        settings, so the calculator's seed and $n stay as they were (the
+        web app has one engine; the desktop window starts a second one).
         """
+        engine = self.engine
+        if argument(request, "apart", bool, False, required=False):
+            if self.apart is None:
+                self.apart = Engine()
+            self.apart.settings = dataclasses.replace(self.engine.settings)
+            engine = self.apart
         seed = argument(request, "seed", str)
         line = argument(request, "line", str)
         count = argument(request, "count", int)
@@ -232,21 +243,21 @@ class Dispatcher:
             raise RequestError("'seed' must be a number such as 42 or -7.5")
         if not 1 <= count <= MAX_DRAWS:
             raise RequestError(f"'count' must be 1 to {MAX_DRAWS}")
-        self.engine.evaluate(f"rands({seed})")
+        engine.evaluate(f"rands({seed})")
         texts, seen = [], set()
         tries = 0
         while len(texts) < count:
             tries += 1
             if unique and tries > count * 50 + 1000:
                 raise RequestError("not enough different values")
-            result = self.engine.evaluate(line)
+            result = engine.evaluate(line)
             if result.kind != "result" or result.text.startswith("ERROR:"):
                 raise RequestError(result.text.removeprefix("ERROR:") or "the line gives no value")
             if unique and result.text in seen:
                 continue
             seen.add(result.text)
             texts.append(result.text)
-        self.engine.clear_history()    # the draws are not $n results
+        engine.clear_history()    # the draws are not $n results
         return {"texts": texts}
 
     def op_set_rates(self, request):

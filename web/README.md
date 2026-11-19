@@ -241,6 +241,20 @@ screen. Export: CSV as the desktop's (`SoftCalc-compound-<time>.csv`; the
 desktop's Export CSV now suggests the same name), a PNG of the chart with
 a summary line, and Copy of that line. Help: 09 (web block).
 
+### Random (owner 2026-11-20)
+⋮ > Random (`RandomView.svelte`, `CardsTab.svelte`) has the desktop's
+Simple, Advanced and Password tabs and a plain Cards tab. Draws use
+crypto.getRandomValues without bias (`random.ts`, `shapes.ts`, ports of
+RandomTools.cs and RandomShapes.cs). Seed draws through the engine's
+`draws` with `apart: true` (a second Engine in the same worker), so the
+calculator's seed and `$n` are untouched. Cards: the ready-made decks
+from `data/decks/*.txt` (the desktop embeds the same files), own decks as
+`name | weight` lines, the desktop's CSV both ways, unticked cards and
+No repeat piles kept (`cards` in the store). Not here (owner): Entropy,
+Mix, draw tabs with steps and conditions, pictures, slot/dart/wheel.
+A copied password is cleared after 30 s while the page is open; a
+phone's clipboard history cannot be kept out on the web. Help 17 (web).
+
 ### On the web (owner 2026-11-19)
 https://tuinui98.github.io/SoftCalc/ is built and published by
 `.github/workflows/pages.yml` when main changes the web app, the engine,

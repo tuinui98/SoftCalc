@@ -21,9 +21,9 @@ const shared = path.resolve(here, "..", "..", "help");
 const own = path.join(here, "help");
 
 // Topics in the web app, in reading order (10 RPN, 12 Ribbon, 13 Views,
-// 14 Data files, 15 Keyboard and 17 Random are desktop parts)
+// 14 Data files and 15 Keyboard are desktop parts; 17 Random is the web's own)
 const TOPICS = ["01-getting-started", "02-numbers-operators", "03-functions", "04-variables-functions",
-	"05-display-precision", "06-conversions", "07-currency", "08-dates-time", "09-finance", "11-graph", "16-errors",
+	"05-display-precision", "06-conversions", "07-currency", "08-dates-time", "09-finance", "11-graph", "16-errors", "17-random",
 	"18-cryptocurrency"];
 
 // The web's text: desktop blocks and pictures out, web blocks in
