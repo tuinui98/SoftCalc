@@ -162,6 +162,36 @@ class Engine:
         self.results.append(value)
         return EvalResult("result", text, shown, display, value)
 
+    def repeat(self, text, count, unique, give_up):
+        """The Random window's Seed draws (server `draws`): the line parsed
+        once and evaluated count times, each result kept as answer and `$n`
+        as evaluate() keeps it, so the values and the order of the draws are
+        the same; only the History display, which draws nothing, is left out
+        (owner 2026-11-20: 1000 draws were slow on a phone). unique: a text
+        already drawn is drawn again; give_up: the most evaluations tried.
+        Returns the texts, or raises CalcError with the line's error.
+        """
+        texts, seen, tries = [], set(), 0
+        with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
+            builtins = Functions(self.settings.angle, self.settings.word_size)
+            tree = self.parse(text, builtins)
+            if tree[0] in ("assign", "define"):
+                raise CalcError("the line gives no value")
+            while len(texts) < count:
+                tries += 1
+                if tries > give_up:
+                    raise CalcError("not enough different values")
+                self.draws = {}
+                value = self.eval_node(tree, builtins, {}, 0)
+                self.answer = value
+                self.results.append(value)
+                shown = self.format_value(value)
+                if unique and shown in seen:
+                    continue
+                seen.add(shown)
+                texts.append(shown)
+        return texts
+
     def parse(self, text, builtins):
         # Definitions keep infix form even in RPN mode [DEF]
         if self.settings.rpn and "=" not in text:

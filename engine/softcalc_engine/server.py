@@ -244,20 +244,12 @@ class Dispatcher:
         if not 1 <= count <= MAX_DRAWS:
             raise RequestError(f"'count' must be 1 to {MAX_DRAWS}")
         engine.evaluate(f"rands({seed})")
-        texts, seen = [], set()
-        tries = 0
-        while len(texts) < count:
-            tries += 1
-            if unique and tries > count * 50 + 1000:
-                raise RequestError("not enough different values")
-            result = engine.evaluate(line)
-            if result.kind != "result" or result.text.startswith("ERROR:"):
-                raise RequestError(result.text.removeprefix("ERROR:") or "the line gives no value")
-            if unique and result.text in seen:
-                continue
-            seen.add(result.text)
-            texts.append(result.text)
-        engine.clear_history()    # the draws are not $n results
+        try:
+            texts = engine.repeat(line, count, unique, count * 50 + 1000 if unique else count)
+        except CalcError as exc:
+            raise RequestError(str(exc)) from exc
+        finally:
+            engine.clear_history()    # the draws are not $n results
         return {"texts": texts}
 
     def op_set_rates(self, request):
