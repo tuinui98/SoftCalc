@@ -177,6 +177,23 @@ moves with the start steps; Settings > Start shows each step's time.
 Desktop Chrome, files cached: Python 3.8 s to 0.7 s, mpmath + engine
 1.3 s to 0.1-0.2 s; ready in 1.3-2.5 s instead of 6.1 s.
 
+### Export and Import (owner 2026-11-19, moved into the first release)
+⋮ > Export writes History as the desktop's `history.jsonl` and the
+variables and functions as the desktop's `.pcf` (UTF-16 LE, no BOM, CRLF),
+so files go between the web app, the Android app and the desktop
+unchanged (`src/lib/transfer.ts`; the desktop test
+`PersistenceTests.ParsesWebAppExport` reads the web's lines). A browser
+downloads them; the Android app hands them to the share sheet
+(`@capacitor/filesystem` 8.1.5 into its cache, `@capacitor/share` 8.0.3),
+with no storage permission. ⋮ > Import takes either file:
+- `history.jsonl` merges by id, as the desktop merges windows (after the
+  file's newest clear, without its deleted lines, by time, the newest
+  1000), and `$n` then counts the merged results. History lines now carry
+  the desktop's `id` and `time`; older lines get them on the next start.
+- Any other file is a `.pcf` whose definitions are added: the current
+  ones, then the file's, so a name in both takes the file's. The
+  desktop's Load replaces them all (`import_pcf`).
+
 ### On the web (owner 2026-11-19)
 https://tuinui98.github.io/SoftCalc/ is built and published by
 `.github/workflows/pages.yml` when main changes the web app, the engine,

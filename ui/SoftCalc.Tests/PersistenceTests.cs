@@ -65,6 +65,19 @@ public sealed class PersistenceTests : IDisposable
 		Assert.Equal(file.Entries, back.Entries);
 	}
 
+	// A line as the web app's Export writes it (web/app/src/lib/transfer.ts): JavaScript's
+	// three-digit times, a random middle part in the id (owner 2026-11-19)
+	[Fact]
+	public void ParsesWebAppExport()
+	{
+		string line = """{"id":"20261119010203004-123456-7","time":"2026-11-19T01:02:03.004Z","kind":"result","input":"6*7","display_input":"6*7","text":"42","note":""}""";
+		var back = HistoryStore.Parse(new[] { line });
+		var entry = Assert.Single(back.Entries);
+		Assert.Equal("20261119010203004-123456-7", entry.Id);
+		Assert.Equal(new DateTime(2026, 11, 19, 1, 2, 3, 4, DateTimeKind.Utc), entry.Time.ToUniversalTime());
+		Assert.Equal(("result", "6*7", "6*7", "42", ""), (entry.Kind, entry.Input, entry.DisplayInput, entry.Text, entry.Note));
+	}
+
 	[Fact]
 	public void DeletedEntryStaysGoneFromFileAndOtherWindows()
 	{

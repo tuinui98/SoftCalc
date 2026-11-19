@@ -3,6 +3,7 @@
 import { mount } from "svelte";
 import App from "./App.svelte";
 import { Engine } from "./lib/engine";
+import { inApp as isApp } from "./lib/files";
 import { openStore } from "./lib/store";
 import "./lib/layout.css";
 import "./lib/keypad.css";
@@ -26,7 +27,7 @@ setTimeout(() =>
 // https, or localhost; a plain http address on the network has none.
 // The Android app has its files inside the APK, and a service worker
 // there could keep serving an old version after an update.
-const inApp = (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
+const inApp = isApp();
 
 // In the Android app the system Back closes the app unless it is handed
 // to the page: there it goes back through the open layers (App.svelte),

@@ -16,7 +16,8 @@
 import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
-import type { Store } from "./store";
+import { HISTORY_LIMIT, type Store } from "./store";
+import { fileText, mergeHistory, newId, parseHistory, withIds } from "./transfer";
 
 export interface EngineLike
 {
@@ -37,6 +38,8 @@ export interface Entry
 	display: string;       // the History expression line (numbers substituted)
 	text: string;
 	note?: string;         // where a rate came from: "ECB 2026-11-17", "CoinGecko 2026-11-18 08:00", ", offline"
+	id?: string;           // as the desktop's history.jsonl (transfer.ts), so files merge without twins
+	time?: string;         // ISO, UTC
 }
 
 export interface Settings
@@ -125,7 +128,11 @@ export class Calculator
 	{
 		// History is on the screen while the engine is still loading
 		const saved = await this.store.load();
-		this.entries = [...saved.entries];
+		this.entries = withIds(saved.entries);
+		if (this.entries.some((entry, index) => entry !== saved.entries[index]))
+		{
+			this.save(this.store.saveEntries(this.entries));    // lines kept before ids came in
+		}
 		this.changed();
 		const version = await this.engine.ready;
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
@@ -139,7 +146,7 @@ export class Calculator
 			const skipped = (imported.skipped ?? []) as unknown[];
 			if (skipped.length > 0)
 			{
-				this.entries.push({ kind: "notice", input: "", display: "(some saved definitions were skipped)",
+				this.add({ kind: "notice", input: "", display: "(some saved definitions were skipped)",
 					text: `${skipped.length} line(s)` });
 			}
 		}
@@ -344,12 +351,12 @@ export class Calculator
 		this.draft = "";
 		if (!answer.ok)
 		{
-			this.entries.push({ kind: "error", input: toRun, display: toRun, text: answer.error ?? "" });
+			this.add({ kind: "error", input: toRun, display: toRun, text: answer.error ?? "" });
 		}
 		else if (answer.kind !== "empty")
 		{
 			const note = typeof answer.note === "string" && answer.note.length > 0 ? answer.note : undefined;
-			this.entries.push({ kind: answer.kind, input: answer.input, display: answer.display_input, text: answer.text, note });
+			this.add({ kind: answer.kind, input: answer.input, display: answer.display_input, text: answer.text, note });
 			if (answer.kind === "definition")
 			{
 				await this.saveDefinitions();
@@ -530,6 +537,81 @@ export class Calculator
 	{
 		this.status = text;
 		this.notify();
+	}
+
+	// A new History line, with its id and time
+	private add(entry: Entry)
+	{
+		this.entries.push({ ...entry, id: newId(), time: new Date().toISOString() });
+	}
+
+	//==================================================================
+	//  Export and Import (transfer.ts; owner 2026-11-19)
+	//==================================================================
+	historyLines(): Entry[]
+	{
+		return this.entries.filter(entry => entry.kind !== "notice");
+	}
+
+	// The engine's .pcf text of the user's variables and functions
+	async definitionsText(): Promise<string>
+	{
+		await this.started;
+		const exported = await this.engine.send("pcf_export");
+		if (!exported.ok)
+		{
+			throw new Error(exported.error ?? "pcf_export failed");
+		}
+		return String(exported.text ?? "");
+	}
+
+	// A history.jsonl merges into History; anything else is a .pcf whose definitions are added.
+	// Returns what the status line says.
+	async importFile(name: string, bytes: Uint8Array): Promise<string>
+	{
+		await this.started;
+		if (!this.ready)
+		{
+			return `${name}: the engine is not running`;
+		}
+		const text = fileText(bytes);
+		const lines = parseHistory(text);
+		let said: string;
+		if (lines !== null)
+		{
+			const before = new Set(this.entries.map(entry => entry.id));
+			const added = lines.filter(entry => !before.has(entry.id)).length;
+			this.entries = mergeHistory(this.historyLines(), lines, HISTORY_LIMIT);
+			this.highlight = -1;
+			// $n counts the merged History's results, as after a restart
+			await this.engine.send("clear_history");
+			const results = this.entries.filter(entry => entry.kind === "result").map(entry => entry.text);
+			if (results.length > 0)
+			{
+				await this.engine.send("restore_results", { texts: results });
+			}
+			this.save(this.store.saveEntries(this.entries));
+			said = `${name}: ${added} new History line(s) of ${lines.length}`;
+		}
+		else
+		{
+			// pcf_import replaces everything (the desktop's Load); Import adds instead: the current
+			// definitions, then the file's, so a name in both takes the file's (owner 2026-11-19)
+			const counted = () => this.definitions.variables.length + this.definitions.functions.length;
+			const current = await this.definitionsText();
+			const kept = current.trim().length > 0 ? current.replace(/\s*$/, "\r\n") : "";
+			const imported = await this.engine.send("pcf_import", { text: kept + text });
+			const keptLines = kept.split(/\r?\n/).length - 1;
+			// skipped lines counted in the file only (the engine numbers lines from 1)
+			const skipped = ((imported.skipped ?? []) as { line: number }[]).filter(item => item.line > keptLines).length;
+			await this.saveDefinitions();
+			await this.refreshDefinitions();
+			said = `${name}: ${counted()} variable(s) and function(s) now` + (skipped > 0 ? `, ${skipped} line(s) skipped` : "");
+		}
+		this.status = said;
+		this.changed();
+		void this.updateHint(true);
+		return said;
 	}
 
 	clearHistory()

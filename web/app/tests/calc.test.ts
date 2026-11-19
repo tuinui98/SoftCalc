@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { Calculator, clearEntry, memoryAdd, stepDecimals, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { MemoryStore } from "../src/lib/store";
+import { pcfBytes } from "../src/lib/transfer";
 
 class FakeEngine implements EngineLike
 {
@@ -306,6 +307,47 @@ describe("saving between visits", () =>
 		expect(calc.entries.at(-1)?.text).toBe("3");
 		expect(slow.sent.findIndex(message => message.op === "restore_results"))
 			.toBeLessThan(slow.sent.findIndex(message => message.op === "eval"));
+	});
+
+	it("Import of a history.jsonl merges by id, saves, and $n counts the merged results", async () =>
+	{
+		const store = new MemoryStore();
+		const { calc, engine } = await started(store);
+		await press(calc, "6", "*", "7", "=");
+		const mine = calc.historyLines()[0];
+		const file = [
+			JSON.stringify({ id: mine.id, time: mine.time, kind: "result", input: "6*7", display_input: "6*7", text: "42", note: "" }),
+			JSON.stringify({ id: "20200101000000000-1-1", time: "2020-01-01T00:00:00.0000000Z", kind: "result",
+				input: "2+3", display_input: "2+3", text: "5", note: "" }),
+		].join("\r\n");
+		const said = await calc.importFile("history.jsonl", new TextEncoder().encode(file));
+		expect(said).toBe("history.jsonl: 1 new History line(s) of 2");
+		expect(calc.entries.map(entry => entry.input)).toEqual(["2+3", "6*7"]);
+		expect((await store.load()).entries.map(entry => entry.input)).toEqual(["2+3", "6*7"]);
+		const restored = engine.sent.filter(message => message.op === "restore_results").at(-1);
+		expect(restored?.args.texts).toEqual(["5", "42"]);
+		expect(engine.sent.some(message => message.op === "clear_history")).toBe(true);
+	});
+
+	it("Import of anything else adds its definitions as a .pcf, keeps the others, and saves", async () =>
+	{
+		const store = new MemoryStore();
+		const { calc, engine } = await started(store);
+		calc.typed("tax=7", 5);
+		await calc.press("=");
+		const said = await calc.importFile("mine.pcf", pcfBytes("rate=5\r\n"));
+		expect(engine.sent.findLast(message => message.op === "pcf_import")?.args.text).toBe("tax=7\r\nrate=5\r\n");
+		expect(said).toBe("mine.pcf: 2 variable(s) and function(s) now");
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect((await store.load()).definitions).toContain("rate=5");
+		expect((await store.load()).definitions).toContain("tax=7");
+	});
+
+	it("Import into an empty list sends the file alone", async () =>
+	{
+		const { calc, engine } = await started();
+		await calc.importFile("mine.pcf", pcfBytes("rate=5\r\n"));
+		expect(engine.sent.findLast(message => message.op === "pcf_import")?.args.text).toBe("rate=5\r\n");
 	});
 
 	it("the angle starts in degrees when nothing was saved", async () =>
