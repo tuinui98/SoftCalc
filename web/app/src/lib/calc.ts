@@ -567,6 +567,15 @@ export class Calculator
 	//==================================================================
 	//  Export and Import (transfer.ts; owner 2026-11-19)
 	//==================================================================
+	// Random's Seed (protocol `draws` with apart): the line drawn count times after rands(seed), in an
+	// engine of its own, so Input's seed and $n stay as they were
+	async seedDraws(seed: string, line: string, count: number, unique: boolean): Promise<{ texts: string[] | null; error: string | null }>
+	{
+		await this.started;
+		const answer = await this.engine.send("draws", { seed, line, count, unique, apart: true });
+		return answer.ok ? { texts: answer.texts as string[], error: null } : { texts: null, error: answer.error ?? "Not drawn" };
+	}
+
 	saveRandom(prefs: RandomPrefs)
 	{
 		this.random = { ...prefs };

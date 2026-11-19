@@ -211,6 +211,9 @@ give at the same settings. `seed` is a plain number (`42`, `-7.5`).
 `unique: true` draws again when a text came up before (No repeats)
 and fails after count x 50 + 1000 tries. A line that gives an error
 fails the request with that error. The draws are not kept as `$n`.
+`apart: true` (the web app, owner 2026-11-20) draws in a second engine
+at this one's settings, so the calculator's own seed, `$n` and answer
+are left as they were.
 
 ### `shutdown`
 `{}` -> `{}`, then the process exits.

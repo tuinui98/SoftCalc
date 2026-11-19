@@ -14,6 +14,12 @@ export interface RandomSource
 
 const TOP = 1n << 64n;
 
+// New seed: 128 bits from the secure generator, as digits (39 at most)
+export function newSeed(source: RandomSource = secure): string
+{
+	return ((source.below(1n << 64n) << 64n) | source.below(1n << 64n)).toString();
+}
+
 // A uniform value below bound from 64-bit draws, dropping the uneven top
 export function unbiased(bound: bigint, next: () => bigint): bigint
 {
@@ -351,6 +357,16 @@ export interface RandomPrefs
 	noLookAlikes: boolean;
 	passwordCount: number;
 	signaturePlace: string;
+	shape: string;    // Advanced (R2)
+	shapeStrength: number;
+	shapePeak: number;
+	shapeA: number;
+	shapeB: number;
+	shapeWhole: boolean;
+	shapeFrom: number;
+	shapeTo: number;
+	shapePlaces: number;
+	shapeCount: number;
 }
 
 // The desktop's first values (SettingsStore.cs RandomPrefs)
@@ -360,6 +376,8 @@ export function firstPrefs(): RandomPrefs
 		tab: "simple", kind: "whole", from: "1", to: "100", count: 1, noRepeats: false, places: 2, headsPercent: 50, sides: 6,
 		headWord: "", tailWord: "", passwordLength: 16, upper: true, lower: true, digits: true, symbols: true,
 		symbolSet: DEFAULT_SYMBOLS, noLookAlikes: false, passwordCount: 5, signaturePlace: "end",
+		shape: "bell", shapeStrength: 5, shapePeak: 3, shapeA: 2, shapeB: 5, shapeWhole: true, shapeFrom: 1, shapeTo: 10,
+		shapePlaces: 2, shapeCount: 1000,
 	};
 }
 

@@ -120,3 +120,21 @@ def test_catalog_lists_the_new_groups():
     groups = catalog["functions"]
     assert groups["Rounding"] == ["round", "ceil", "floor"]
     assert groups["Random"] == ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks"]
+
+
+def test_draws_apart_leave_the_calculator_as_it_was():
+    from softcalc_engine.server import Dispatcher
+
+    def calculator():
+        dispatcher = Dispatcher()
+        dispatcher.handle({"op": "eval", "input": "6*7"})
+        dispatcher.handle({"op": "eval", "input": "rands(5)"})
+        return dispatcher
+
+    request = {"op": "draws", "seed": "42", "line": "rand(1, 1000000)", "count": 3, "apart": True}
+    with_draws = calculator()
+    first = with_draws.handle(request)["texts"]
+    assert with_draws.handle(request)["texts"] == first
+    assert calculator().handle({**request, "apart": False})["texts"] == first    # as the desktop window draws
+    line = {"op": "eval", "input": "$1+rand(1, 1000000)"}
+    assert with_draws.handle(line)["text"] == calculator().handle(line)["text"]    # its seed and $1 untouched
