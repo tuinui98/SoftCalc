@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-16: version 1.5.1 released (History walk, Random mix row). Everything below is committed on `main` and
+Updated 2026-11-19: version 1.5.2 released (Export/Import History, [Graph] in .pcf; web app on GitHub Pages). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -129,6 +129,16 @@ as Seed. Help 01, 15 and 17. Release files renamed (owner 2026-11-16):
 .NET 10 Desktop Runtime (was `SoftCalc.exe` / `SoftCalc-net10.exe`).
 
 Tests: engine `pytest` 607 passed; UI `dotnet test` 462 passed.
+
+Version 1.5.2 (2026-11-19): File > Export History... and Import
+History... (history.jsonl lines, merged by id; Import drops the clear
+mark); Save/Export names carry the local time; a .pcf carries the
+Graph's equations below a [Graph] line (Load adds them). The web app
+(web/, GitHub Pages https://tuinui98.github.io/SoftCalc/) and the
+Android APK read and write the same files. Help 04, 14; web 01. UI
+hint rules moved into the engine earlier, so UI tests went down.
+
+Tests: engine `pytest` 631 passed; UI `dotnet test` 447 passed; web 71.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
