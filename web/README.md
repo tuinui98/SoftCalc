@@ -228,7 +228,8 @@ as the desktop.
 - G3 (done): Examples (`ExamplesView.svelte`) from
   `data/graph-examples.json`, which the desktop embeds too.
 - Help: `app/help/11-graph.md`, the web's own topic.
-- Later: saving the picture as PNG. Not planned: typed ranges, the
+- PNG (done): the plot with a legend of the drawn lines, saved as
+  `SoftCalc-graph-<local time>.png` (files.ts, as Export). Not planned: typed ranges, the
   Advanced View's small graph.
 
 ### On the web (owner 2026-11-19)

@@ -13,7 +13,9 @@
 		renameLine, RESET_POLAR, RESET_XY, runs, same, sameTarget, square, toScreen, traceTarget, viewOf, zoom,
 		type Area, type GraphState, type PinchKind, type Point, type Rect, type TraceTarget,
 	} from "../lib/graph";
+	import { saveFiles } from "../lib/files";
 	import { Plotter, traceText } from "../lib/plotter";
+	import { exportNames } from "../lib/transfer";
 	import { closeOnTouch, tapOn, tapOrHold } from "../lib/repeat";
 	import { definition, formLine, isEquation as exampleIsEquation, usesAngles, type Example } from "../lib/examples";
 	import ExamplesView from "./ExamplesView.svelte";
@@ -600,6 +602,10 @@
 	const status = $derived.by(() =>
 	{
 		void tick;
+		if (note)
+		{
+			return note;
+		}
 		if (plotter.traced)
 		{
 			return traceText(plotter.traced, formatTick);
@@ -610,6 +616,86 @@
 		}
 		return st.mode === "polar" ? "One finger: trace; two fingers: zoom" : "One finger: trace; two fingers: move and zoom";
 	});
+
+	//==================================================================
+	//  Save as PNG (owner 2026-11-19): the plot as shown, with the drawn
+	//  lines' names and colours below it, to Download/SoftCalc in the app
+	//  or the browser's downloads (files.ts)
+	//==================================================================
+	let note = $state("");    // a moment's word in the status line
+	let noteTimer: ReturnType<typeof setTimeout> | undefined;
+
+	function say(text: string)
+	{
+		note = text;
+		clearTimeout(noteTimer);
+		noteTimer = setTimeout(() => { note = ""; }, 4000);
+	}
+
+	async function savePicture()
+	{
+		if (size.width === 0)
+		{
+			return;
+		}
+		const ratio = window.devicePixelRatio || 1;
+		const c = colours();
+		const lines = plotter.series.map(line => ({ label: labelOf(line.name), colour: lineColour(st, graphable, line.name) ?? c.select }));
+		const out = document.createElement("canvas");
+		const LEGEND_FONT = "14px system-ui, sans-serif";
+		const PAD = 10, ROW = 22, SWATCH = 12;
+		// The legend's places, wrapped to the picture's width
+		const measure = out.getContext("2d")!;
+		measure.font = LEGEND_FONT;
+		const places: { x: number; row: number }[] = [];
+		let x = PAD, row = 0;
+		for (const line of lines)
+		{
+			const width = SWATCH + 6 + measure.measureText(line.label).width + 16;
+			if (x + width > size.width - PAD && x > PAD)
+			{
+				row++;
+				x = PAD;
+			}
+			places.push({ x, row });
+			x += width;
+		}
+		const legend = lines.length > 0 ? (row + 1) * ROW + PAD : 0;
+		out.width = Math.round(size.width * ratio);
+		out.height = Math.round((size.height + legend) * ratio);
+		const context = out.getContext("2d")!;
+		context.fillStyle = c.page;
+		context.fillRect(0, 0, out.width, out.height);
+		context.drawImage(canvas, 0, 0);
+		context.setTransform(ratio, 0, 0, ratio, 0, 0);
+		context.font = LEGEND_FONT;
+		context.textBaseline = "middle";
+		lines.forEach((line, index) =>
+		{
+			const place = places[index];
+			const y = size.height + PAD / 2 + place.row * ROW + ROW / 2;
+			context.fillStyle = line.colour;
+			context.fillRect(place.x, y - SWATCH / 2, SWATCH, SWATCH);
+			context.fillStyle = c.ink;
+			context.fillText(line.label, place.x + SWATCH + 6, y);
+		});
+		const blob = await new Promise<Blob | null>(resolve => out.toBlob(resolve, "image/png"));
+		if (!blob)
+		{
+			say("Not saved: no picture");
+			return;
+		}
+		const name = exportNames().graph;
+		try
+		{
+			const where = await saveFiles([{ name, type: "image/png", bytes: new Uint8Array(await blob.arrayBuffer()) }]);
+			say(`Saved ${name} to ${where}`);
+		}
+		catch (error)
+		{
+			say("Not saved: " + (error instanceof Error ? error.message : String(error)));
+		}
+	}
 
 	// The traced value to copy or insert: a function's value, an equation's solved coordinate
 	const tracedValue = $derived.by(() =>
@@ -867,6 +953,7 @@
 			<button class:on={st.grid} use:tap={() => { st.grid = !st.grid; changed(); }}>Grid</button>
 			<button class:on={st.mode === "polar"} use:tap={() => setMode(st.mode === "xy" ? "polar" : "xy")}>Polar</button>
 			<button class:on={panOne} use:tap={() => { panOne = !panOne; plotter.clearTrace(); tick++; }}>Pan</button>
+			<button use:tap={() => void savePicture()}>PNG</button>
 		</div>
 		<button class="bar" use:tap={onclose}>Done</button>
 	</div>
