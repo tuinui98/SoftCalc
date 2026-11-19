@@ -43,8 +43,8 @@ hyp(3, 4)                     => 5
 
 ⋮ > Variables lists your variables and functions:
 
-- tap one to put its name in Input (a function wraps the line, as the
-  Functions menu does);
+- tap one to put its name in Input at the caret (a function with its
+  opening bracket, as the Functions menu does);
 - ✕, then **Delete?**, removes it;
 - to change one, type its definition again: `rate=0.06`.
 <!-- /web -->

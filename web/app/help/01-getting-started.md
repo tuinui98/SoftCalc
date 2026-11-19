@@ -23,8 +23,8 @@ Input.
 - **⌫** beside Input takes one character; hold it to take more.
 - **C** takes the last number, **AC** clears Input.
 - **2nd** gives the yellow meaning of the next key (`asin` on `sin`).
-- **STO** then **x** or **y** stores Input (or the last result) in that
-  variable; **M+**, **M−**, **MR** and **MC** work with `memory`.
+- A function key types its name and a bracket at the caret: `sin(`.
+- **M+**, **M−**, **MR** and **MC** work with `memory`.
 - **⌨** opens the phone's own keyboard as well, for letters and names.
 
 ## History
@@ -33,9 +33,8 @@ Each entry shows what you typed. When the line uses names or earlier
 results, the numbers it used are shown faint on the right, and the
 result is on the line below.
 
-- **Tap** an entry to put its line back in Input. It stays highlighted,
-  and the **entry** key (Sci keys) goes on to older lines; tap it again
-  to take the highlight off and keep the line.
+- **Tap** an entry to put its line back in Input. It stays highlighted;
+  tap it again to take the highlight off and keep the line.
 - **Press and hold** an entry for Insert result, Insert line, Copy
   result, Copy line and Delete line.
 - ⋮ > Clear History empties it.
@@ -77,7 +76,9 @@ hints turns it off.
 
 ⋮ (or a swipe up on the keys) opens Functions, Conversions, Variables,
 Settings, Export, Import, Help and Clear History. The phone's Back closes the open menu
-first.
+first. On the main screen the first Back shows "Press Back again to exit"; a
+second Back within two seconds leaves. In a browser this works only after a
+tap on the page: Chrome lets a page hold Back only then.
 
 Settings: precision, angle, output base, decimals, pad zeros, word size,
 text size, input hints and theme.

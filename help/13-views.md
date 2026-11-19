@@ -53,9 +53,8 @@ goes back. SoftCalc remembers the choice.
   **(−)** types a minus sign for a negative number.
 - **x** and **y** type the names; with 2nd, **=** and **f(** help define
   a function: `f(x)=x^2`.
-- **→x** (2nd `(`) then **x** or **y** stores Input in that variable:
-  `5*3`, →x, `x` gives `x=5*3`. With Input empty it stores `ans`.
-- **entry** (2nd `)`) brings back the line before, like the Up key.
+- **[** and **]** (2nd `(` and `)`) and **->** (2nd **ans**) write a
+  conversion: `5`, `[`, `m`, `->`, `ft`, `]` gives `5[m->ft]`.
 - **ans** types `ans`, the last result.
 - **dec ▸** shows the output base and steps it: dec, hex, oct, bin.
   With a line in Input, the line is calculated in the new base and stays
