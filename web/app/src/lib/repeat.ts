@@ -52,7 +52,16 @@ export function tapOn(element: HTMLElement, act: () => void, selfOnly = false): 
 		}
 		downOnIt = false;
 		event.preventDefault();
-		const swallow = (click: MouseEvent) => { click.stopPropagation(); click.preventDefault(); };
+		// Only the touch's own click: a script's click (Export's download link, Import's file
+		// chooser) right after the tap must go through (owner 2026-11-19: History never downloaded)
+		const swallow = (click: MouseEvent) =>
+		{
+			if (click.isTrusted)
+			{
+				click.stopPropagation();
+				click.preventDefault();
+			}
+		};
 		window.addEventListener("click", swallow, true);
 		setTimeout(() => window.removeEventListener("click", swallow, true), 400);
 		done = true;
