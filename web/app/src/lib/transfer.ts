@@ -9,8 +9,14 @@
 
 import type { Entry } from "./calc";
 
-export const HISTORY_FILE = "history.jsonl";
-export const DEFINITIONS_FILE = "definitions.pcf";
+// Export names carry the local date and time, so files from several exports stay apart
+// (owner 2026-11-19); Import tells the two kinds apart by what is in them, not by name
+export function exportNames(time = new Date()): { history: string; definitions: string }
+{
+	const two = (n: number) => String(n).padStart(2, "0");
+	const at = `${time.getFullYear()}-${two(time.getMonth() + 1)}-${two(time.getDate())}-${two(time.getHours())}${two(time.getMinutes())}`;
+	return { history: `SoftCalc-history-${at}.jsonl`, definitions: `SoftCalc-definitions-${at}.pcf` };
+}
 
 //==================================================================
 //  Entry ids and times, as the desktop's

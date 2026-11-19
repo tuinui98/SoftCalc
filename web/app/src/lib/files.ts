@@ -1,10 +1,13 @@
-// files.ts - Files out of and into the app: download in a browser, the share sheet in the Android app
+// files.ts - Files out of and into the app: a download in a browser, Download/SoftCalc in the Android app
 //
-// A page in a browser saves a file by downloading it. The Android app's
-// web view does not download: there the files are written to the app's
-// cache (@capacitor/filesystem) and handed to Android's share sheet
-// (@capacitor/share), which saves them to Files or Drive or sends them on.
-// Picking a file is the page's own file chooser in both.
+// A page in a browser saves a file by downloading it to the browser's
+// Downloads. The Android app's web view does not download: there the app's
+// own plugin (DownloadsPlugin.java) writes the files to Download/SoftCalc,
+// where the system's file chooser finds them for Import; sharing them is
+// left to the Files app (owner 2026-11-19: save, not share). Picking a file
+// is the page's own file chooser in both.
+
+import { registerPlugin } from "@capacitor/core";
 
 export interface OutFile
 {
@@ -13,17 +16,29 @@ export interface OutFile
 	bytes: Uint8Array;
 }
 
+interface DownloadsPlugin
+{
+	save(options: { name: string; type: string; data: string }): Promise<{ folder: string }>;
+}
+
+const Downloads = registerPlugin<DownloadsPlugin>("Downloads");
+
 export function inApp(): boolean
 {
 	return (window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
 }
 
-export async function saveFiles(files: OutFile[], title: string)
+// Saves the files and gives the folder they went to, for the status line
+export async function saveFiles(files: OutFile[]): Promise<string>
 {
 	if (inApp())
 	{
-		await shareFiles(files, title);
-		return;
+		let folder = "Download/SoftCalc";
+		for (const file of files)
+		{
+			folder = (await Downloads.save({ name: file.name, type: file.type, data: base64(file.bytes) })).folder;
+		}
+		return folder;
 	}
 	for (const file of files)
 	{
@@ -34,35 +49,12 @@ export async function saveFiles(files: OutFile[], title: string)
 		document.body.append(link);
 		link.click();
 		link.remove();
-		// The download has taken the blob by the next turn; a second file waits a moment, as
-		// Chrome drops a download that follows another at once
-		await new Promise(resolve => setTimeout(resolve, 300));
-		URL.revokeObjectURL(url);
+		// Chrome on Android reads the blob some time after the click, so it stays a minute;
+		// a second file waits a moment, as Chrome drops a download that follows another at once
+		setTimeout(() => URL.revokeObjectURL(url), 60_000);
+		await new Promise(resolve => setTimeout(resolve, 500));
 	}
-}
-
-async function shareFiles(files: OutFile[], title: string)
-{
-	const { Filesystem, Directory } = await import("@capacitor/filesystem");
-	const { Share } = await import("@capacitor/share");
-	const uris: string[] = [];
-	for (const file of files)
-	{
-		const written = await Filesystem.writeFile({ path: file.name, data: base64(file.bytes), directory: Directory.Cache });
-		uris.push(written.uri);
-	}
-	try
-	{
-		await Share.share({ title, files: uris, dialogTitle: title });
-	}
-	catch (error)
-	{
-		// Closing the share sheet without a choice is not a failure
-		if (!/cancel/i.test(String(error)))
-		{
-			throw error;
-		}
-	}
+	return "Downloads";
 }
 
 function base64(bytes: Uint8Array): string

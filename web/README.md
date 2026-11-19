@@ -182,11 +182,19 @@ Desktop Chrome, files cached: Python 3.8 s to 0.7 s, mpmath + engine
 variables and functions as the desktop's `.pcf` (UTF-16 LE, no BOM, CRLF),
 so files go between the web app, the Android app and the desktop
 unchanged (`src/lib/transfer.ts`; the desktop test
-`PersistenceTests.ParsesWebAppExport` reads the web's lines). A browser
-downloads them; the Android app hands them to the share sheet
-(`@capacitor/filesystem` 8.1.5 into its cache, `@capacitor/share` 8.0.3),
-with no storage permission. ⋮ > Import takes either file:
-- `history.jsonl` merges by id, as the desktop merges windows (after the
+`PersistenceTests.ParsesWebAppExport` reads the web's lines). Names carry
+the local time, `SoftCalc-history-2026-11-19-1530.jsonl` and
+`SoftCalc-definitions-2026-11-19-1530.pcf`, as the desktop's Export names
+them; for the desktop's data folder History is renamed `history.jsonl`.
+A browser downloads them to its Downloads (the blob stays a minute: Chrome
+on Android reads it late). The Android app saves them to Download/SoftCalc
+with its own plugin (`DownloadsPlugin.java`: MediaStore, no permission on
+Android 10 and later; the storage permission up to SDK 28), not the share
+sheet: a device without a file manager app had nowhere to save, and the
+system's file chooser lists Download for Import (owner 2026-11-19, after
+trying the share sheet). ⋮ > Import takes several files at once (hold the
+first in the chooser), each by what is in it:
+- A History file merges by id, as the desktop merges windows (after the
   file's newest clear, without its deleted lines, by time, the newest
   1000), and `$n` then counts the merged results. History lines now carry
   the desktop's `id` and `time`; older lines get them on the next start.

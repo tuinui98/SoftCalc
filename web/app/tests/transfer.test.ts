@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from "vitest";
 import type { Entry } from "../src/lib/calc";
-import { fileText, historyText, mergeHistory, newId, parseHistory, pcfBytes, withIds } from "../src/lib/transfer";
+import { exportNames, fileText, historyText, mergeHistory, newId, parseHistory, pcfBytes, withIds } from "../src/lib/transfer";
 
 // Lines as the desktop writes them (System.Text.Json, snake_case, 7-digit fractions)
 const DESKTOP = [
@@ -60,6 +60,15 @@ describe("history.jsonl", () =>
 		expect(old[0].time! < old[1].time!).toBe(true);
 		expect(new Set([old[0].id, old[1].id, newId()]).size).toBe(3);
 		expect(old[0].id).toMatch(/^\d{17}-\d{6}-\d+$/);
+	});
+});
+
+describe("export names", () =>
+{
+	it("carry the local date and time, the same for both files", () =>
+	{
+		expect(exportNames(new Date(2026, 10, 9, 7, 5, 59))).toEqual(
+			{ history: "SoftCalc-history-2026-11-09-0705.jsonl", definitions: "SoftCalc-definitions-2026-11-09-0705.pcf" });
 	});
 });
 
