@@ -78,6 +78,31 @@ public sealed class PersistenceTests : IDisposable
 		Assert.Equal(("result", "6*7", "6*7", "42", ""), (entry.Kind, entry.Input, entry.DisplayInput, entry.Text, entry.Note));
 	}
 
+	// File > Import History: lines older than this window's clear still come in, as do lines
+	// deleted here that the file brings back; the window's own lines stay (owner 2026-11-19)
+	[Fact]
+	public void ImportKeepsOlderLinesAndDropsTheClear()
+	{
+		var folder = new DataFolder(_dir);
+		HistoryStore.MergeAndSave(folder, new[] { Entry("a-1", 1), Entry("a-2", 2) }, null, 1000);
+		var clearedAt = Entry("x", 3).Time;
+		var deleted = new Dictionary<string, DateTime> { ["a-5"] = Entry("a-5", 5).Time };
+		var merged = HistoryStore.ImportAndSave(folder, new[] { Entry("a-4", 4) }, clearedAt, 1000, deleted,
+			new[] { Entry("w-1", 1, "6*7"), Entry("a-5", 5), Entry("a-4", 4) });
+		Assert.Equal(new[] { "w-1", "a-4", "a-5" }, merged.Entries.Select(e => e.Id));
+		var file = HistoryStore.Load(folder.HistoryPath);
+		Assert.Null(file.ClearedAt);
+		Assert.Empty(file.DeletedIds);
+		Assert.Equal(merged.Entries, file.Entries);
+	}
+
+	[Fact]
+	public void ExportNamesCarryTheLocalTime()
+	{
+		var time = new DateTime(2026, 11, 9, 7, 5, 59, DateTimeKind.Local);
+		Assert.Equal("SoftCalc-history-2026-11-09-0705.jsonl", HistoryStore.ExportName("history", "jsonl", time));
+	}
+
 	[Fact]
 	public void DeletedEntryStaysGoneFromFileAndOtherWindows()
 	{

@@ -531,6 +531,8 @@ internal sealed partial class MainForm : Form
 		}));
 		file.DropDownItems.Add(new ToolStripSeparator());
 		file.DropDownItems.Add(new ToolStripMenuItem("S&ave History...", null, (_, _) => SaveHistoryAs()));
+		file.DropDownItems.Add(new ToolStripMenuItem("&Export History...", null, (_, _) => ExportHistory()));
+		file.DropDownItems.Add(new ToolStripMenuItem("&Import History...", null, async (_, _) => await ImportHistoryAsync()));
 		file.DropDownItems.Add(new ToolStripSeparator());
 		file.DropDownItems.Add(new ToolStripMenuItem("&Save Functions && Variables...", null, (_, _) => SaveDefinitionsAs()));
 		file.DropDownItems.Add(new ToolStripMenuItem("&Load Functions && Variables...", null,
