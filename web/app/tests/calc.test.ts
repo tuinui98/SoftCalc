@@ -171,21 +171,27 @@ describe("keys", () =>
 		expect(calc.resolve({ id: "fn:sin", second: "fn:asin" })).toBe("fn:sin");
 	});
 
-	it("a function key goes through menu_insert, the caret inside the brackets", async () =>
+	it("a function key types its name and a bracket at the caret (owner 2026-11-19)", async () =>
 	{
 		const { calc } = await started();
+		calc.typed("2*", 2);
 		await calc.press("fn:sin");
-		expect(calc.text).toBe("sin()");
-		expect(calc.caret).toBe(4);
+		expect(calc.text).toBe("2*sin(");
+		calc.typed("2*sin(+1", 6);
+		await calc.press("fn:cos");
+		expect([calc.text, calc.caret]).toEqual(["2*sin(cos(+1", 10]);
 	});
 
-	it("STO then x stores the line (an empty line stores ans)", async () =>
+	it("2nd ( ) and ans type [ ] and -> for a conversion", async () =>
 	{
 		const { calc } = await started();
-		await press(calc, "5", "*", "3", "sto", "x");
-		expect(calc.entries.at(-1)?.input).toBe("x=5*3");
-		await press(calc, "sto", "y");
-		expect(calc.entries.at(-1)?.input).toBe("y=ans");
+		await press(calc, "5");
+		for (const key of [{ id: "ins:(", second: "ins:[" }, { id: "ins:ans", second: "ins:->" }, { id: "ins:)", second: "ins:]" }])
+		{
+			await calc.press("2nd");
+			await calc.press(calc.resolve(key));
+		}
+		expect(calc.text).toBe("5[->]");
 	});
 
 	it("M+ defines memory, then adds to it", async () =>
@@ -223,10 +229,10 @@ describe("History walk (desktop InputRecallTests, owner 2026-11-16)", () =>
 		return calc;
 	}
 
-	it("entry (Up) walks back from the newest; Down past the newest brings the draft back", async () =>
+	it("Up walks back from the newest; Down past the newest brings the draft back", async () =>
 	{
 		const calc = await withLines();
-		await calc.press("entry");
+		calc.walk(true);
 		expect([calc.text, calc.highlight]).toEqual(["10*3", 2]);
 		calc.walk(true);
 		expect([calc.text, calc.highlight]).toEqual(["10*2", 1]);
@@ -474,14 +480,14 @@ describe("names and History lines (owner 2026-11-18)", () =>
 		expect(calc.entries.at(-1)?.input).toBe("memory=(2)");
 	});
 
-	it("a name from the list goes in at the caret; a function wraps the line", async () =>
+	it("a name from the list goes in at the caret; a function as name(", async () =>
 	{
 		const { calc } = await started();
 		calc.typed("2*", 2);
 		await calc.insertName("rate", false);
 		expect(calc.text).toBe("2*rate");
 		await calc.insertName("f", true);
-		expect(calc.text).toBe("2*ratef()");
+		expect(calc.text).toBe("2*ratef(");
 	});
 
 	it("a History result or line goes in at the caret, a negative result in brackets", async () =>

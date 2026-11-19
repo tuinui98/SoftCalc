@@ -19,7 +19,8 @@
 	import type { Store } from "./lib/store";
 	import { swipeOn } from "./lib/swipe";
 	import { keyTaps } from "./lib/keytap";
-	import { pickFiles, saveFiles, type OutFile } from "./lib/files";
+	import { inApp, pickFiles, saveFiles, type OutFile } from "./lib/files";
+	import { EXIT_MS, exitGuard } from "./lib/exitguard";
 	import { exportNames, historyText, pcfBytes, withGraph } from "./lib/transfer";
 
 	let { engine, store, kept }: { engine: Engine; store: Store; kept: boolean } = $props();
@@ -29,7 +30,7 @@
 	calc.showHints = loadHints();
 	const snap = () => ({
 		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
-		second: calc.second, armed: calc.storeArmed, status: calc.status, loading: calc.loading, startTimes: calc.startTimes, definitions: calc.definitions,
+		second: calc.second, status: calc.status, loading: calc.loading, startTimes: calc.startTimes, definitions: calc.definitions,
 	});
 	let view = $state(snap());
 	let input: HTMLInputElement;
@@ -298,7 +299,7 @@
 	onMount(() => { requestAnimationFrame(() => requestAnimationFrame(() => { barMoving = true; })); });
 	const bar = $derived(barMoving ? LOAD_BAR[view.loading] ?? [1, 150] : [0, 0]);
 
-	const status = $derived(view.armed ? "STO: press x or y" : view.second ? "2nd"
+	const status = $derived(view.second ? "2nd"
 		: kept ? view.status : view.status + " (this browser does not keep History)");
 
 	// Every key, ⌫, a History tap and a menu pick bring the focus back to Input, so the caret
@@ -482,11 +483,40 @@
 		}, 0);
 	});
 
+	// The browser: on the main screen one more history entry, below the levels', takes the
+	// first Back, which shows the note (exitguard.ts); the next Back leaves the page. It is
+	// pushed when a finger lifts or a key goes down, so Chrome counts it as the user's.
+	let guarded = false;
+	let exitNote = $state(false);
+	let exitTimer: ReturnType<typeof setTimeout> | undefined;
+	exitGuard.onshow = () =>
+	{
+		exitNote = true;
+		clearTimeout(exitTimer);
+		exitTimer = setTimeout(() => { exitNote = false; }, EXIT_MS);
+	};
+
+	function guardExit()
+	{
+		exitGuard.reset();
+		if (!inApp() && !guarded && pushed === 0 && layerDepth() === 0)
+		{
+			history.pushState({ softcalcGuard: true }, "");
+			guarded = true;
+		}
+	}
+
 	function onBack()
 	{
 		if (skipPop)
 		{
 			skipPop = false;
+			return;
+		}
+		if (guarded && pushed === 0 && layerDepth() === 0)
+		{
+			guarded = false;
+			exitGuard.press();
 			return;
 		}
 		pushed = Math.max(0, pushed - 1);
@@ -529,19 +559,22 @@
 {#snippet basicPage()}
 	<button class="sci-tab" onpointerdown={event => event.preventDefault()}
 		onclick={() => { focusInput(); flipTo(true); }}>Sci ▸</button>
-	<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
+	<Keypad keys={BASIC} second={view.second} base={view.settings.base}
 		angle={view.settings.angle} onpress={press} />
 {/snippet}
 
 {#snippet sciPage()}
 	<button class="sci-tab" onpointerdown={event => event.preventDefault()}
 		onclick={() => { focusInput(); flipTo(false); }}>◂ Basic</button>
-	<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
+	<Keypad keys={SCIENTIFIC} sci second={view.second} base={view.settings.base}
 		angle={view.settings.angle} onpress={press} />
 {/snippet}
 
-<svelte:window onpopstate={onBack} />
+<svelte:window onpopstate={onBack} onpointerup={guardExit} onkeydown={guardExit} />
 
+{#if exitNote}
+	<div class="exit-note" role="status">Press Back again to exit</div>
+{/if}
 <div class="app" style="--text-scale: {textSize / 100}">
 	<header>
 		<h1>SoftCalc</h1>
@@ -581,9 +614,9 @@
 		{/if}
 		<div bind:this={pagesBox} class="keys pages" class:wide>
 			{#if wide}
-				<Keypad keys={SCIENTIFIC} sci second={view.second} armed={view.armed} base={view.settings.base}
+				<Keypad keys={SCIENTIFIC} sci second={view.second} base={view.settings.base}
 					angle={view.settings.angle} onpress={press} />
-				<Keypad keys={BASIC} second={view.second} armed={view.armed} base={view.settings.base}
+				<Keypad keys={BASIC} second={view.second} base={view.settings.base}
 					angle={view.settings.angle} onpress={press} />
 			{:else}
 				<!-- Each page keeps its keys; only the places change, so no keys are rebuilt mid-swipe -->
@@ -722,4 +755,9 @@
 	.seg button { border: none; background: none; color: var(--ink); font: inherit; padding: 8px 12px; cursor: pointer; }
 	.seg button.on { background: var(--select); color: var(--select-ink); }
 	.seg .count { min-width: 2.4em; padding: 8px 4px; text-align: center; font-variant-numeric: tabular-nums; }
+	.exit-note
+	{
+		position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%); z-index: 60; pointer-events: none;
+		padding: 10px 18px; border-radius: 20px; background: var(--ink); color: var(--page); font-size: 15px; white-space: nowrap;
+	}
 </style>
