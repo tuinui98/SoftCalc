@@ -524,3 +524,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       keeps Graph's toolbar, list and a plot as tall as the Variables box
       at its smallest, and Variables one row; narrowing it narrows History
       first, then both together once they are as wide (MainForm.Sizes.cs).
+
+## Next release (owner 2026-11-20, after 1.7.0)
+- [ ] Export / Import also carry the user's own card decks: a third file
+      `SoftCalc-decks-<local time>.json` beside the History and .pcf, on
+      the desktop (File > Export / Import) and the web (⋮ > Export /
+      Import); Import adds, never replaces (as the .pcf). Proposed: decks
+      only, without draw tabs and pictures; unticked cards, No repeat
+      piles and tab options stay per device. To confirm with the owner
+      before building.
