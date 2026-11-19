@@ -650,7 +650,7 @@
 		<GraphView bind:this={graphView} bind:inner={graphInner} {calc} functions={view.definitions.functions.filter(fn => fn.params.length === 1)}
 			equations={view.graph} names={[...view.definitions.functions, ...view.definitions.variables].map(item => item.name)}
 			onclose={() => { graphOpen = false; focusInput(); }}
-			oninsert={text => { graphOpen = false; calc.insertText(text, true); focusInput(); }} />
+			oninsert={(text, isResult) => { graphOpen = false; calc.insertText(text, isResult); focusInput(); }} />
 	{/if}
 
 	{#if namesOpen}

@@ -23,7 +23,7 @@
 		equations: string[];
 		names: string[];    // every user variable and function, for a free new name
 		onclose: () => void;
-		oninsert: (text: string) => void;
+		oninsert: (text: string, isResult: boolean) => void;    // a result goes in brackets when negative
 		inner?: boolean;    // a menu or the editor is open: the phone's Back closes it first (closeInner)
 	} = $props();
 
@@ -629,23 +629,7 @@
 	//==================================================================
 	onMount(() =>
 	{
-		const observer = new ResizeObserver(() =>
-		{
-			const box = wrap.getBoundingClientRect();
-			const ratio = window.devicePixelRatio || 1;
-			const before = size.width;
-			size = { width: Math.floor(box.width), height: Math.floor(box.height) };
-			canvas.width = Math.round(size.width * ratio);
-			canvas.height = Math.round(size.height * ratio);
-			canvas.style.width = size.width + "px";
-			canvas.style.height = size.height + "px";
-			if (st.square && st.mode === "xy" && before > 0)
-			{
-				const a = area();
-				st.xy = square(st.xy, a.width, a.height);
-			}
-			refresh();
-		});
+		const observer = new ResizeObserver(resized);
 		observer.observe(wrap);
 		void calc.started.then(() => { ready = true; refresh(); });
 		return () =>
@@ -654,6 +638,44 @@
 			clearTimeout(saveTimer);
 			calc.saveGraphView($state.snapshot(st) as GraphState);
 		};
+	});
+
+	// The phone's keyboard, up while the editor is open, shrinks the page for a moment: the plot
+	// keeps its size, so the range does not change under it (owner 2026-11-19); once the editor
+	// is closed the size is read again.
+	function resized()
+	{
+		if (editor !== null)
+		{
+			return;
+		}
+		const box = wrap.getBoundingClientRect();
+		const next = { width: Math.floor(box.width), height: Math.floor(box.height) };
+		if (next.width === size.width && next.height === size.height)
+		{
+			return;
+		}
+		const ratio = window.devicePixelRatio || 1;
+		const before = size.width;
+		size = next;
+		canvas.width = Math.round(size.width * ratio);
+		canvas.height = Math.round(size.height * ratio);
+		canvas.style.width = size.width + "px";
+		canvas.style.height = size.height + "px";
+		if (st.square && st.mode === "xy" && before > 0)
+		{
+			const a = area();
+			st.xy = square(st.xy, a.width, a.height);
+		}
+		refresh();
+	}
+
+	$effect(() =>
+	{
+		if (editor === null)
+		{
+			setTimeout(() => { if (wrap) resized(); }, 300);    // the keyboard is going down meanwhile
+		}
 	});
 
 	//==================================================================
@@ -739,7 +761,12 @@
 		{
 			return;
 		}
-		if (choice === "Edit")
+		if (choice === "Insert")
+		{
+			// a function as name(, as the function keys; an equation as it is
+			oninsert(isEquation(name) ? name : name + "(", false);
+		}
+		else if (choice === "Edit")
 		{
 			editor = { kind: isEquation(name) ? "equation" : "function", old: name, text: labelOf(name), error: "", busy: false };
 		}
@@ -828,7 +855,7 @@
 				<span class="text">{status}</span>
 				{#if tracedValue}
 					<button use:tap={copyValue}>Copy</button>
-					<button use:tap={() => oninsert(tracedValue ?? "")}>Insert</button>
+					<button use:tap={() => oninsert(tracedValue ?? "", true)}>Insert</button>
 				{/if}
 			</div>
 			<div class="lines">
@@ -849,13 +876,13 @@
 					<p class="none">No lines yet: + Function or + Equation.</p>
 				{/each}
 				{#if graphable.length > 0}
-					<p class="none">Press and hold a line to edit, colour or delete it.</p>
+					<p class="none">Press and hold a line to insert, edit, colour or delete it.</p>
 				{/if}
 			</div>
 		</div>
 	</div>
 	{#if menuFor !== null}
-		<Sheet title={labelOf(menuFor)} items={["Edit", "Colour", "Delete"]} onpick={lineMenu} />
+		<Sheet title={labelOf(menuFor)} items={["Insert", "Edit", "Colour", "Delete"]} onpick={lineMenu} />
 	{/if}
 	{#if deleteFor !== null}
 		<Sheet title={"Delete " + labelOf(deleteFor) + "?"} items={["Delete"]} onpick={remove} />
