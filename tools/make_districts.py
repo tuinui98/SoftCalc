@@ -1,4 +1,4 @@
-"""make_districts.py - Write ui/SoftCalc/Decks/districts.txt from the Royal Society's district list.
+"""make_districts.py - Write data/decks/districts.txt from the Royal Society's district list.
 
 Source: "ชื่ออำเภอ" (district names in Thai and romanized), Office of the
 Royal Society, https://data.go.th/dataset/orst_0102 , file orst_0102.csv
@@ -26,7 +26,7 @@ import pathlib
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-DECKS = ROOT / "ui" / "SoftCalc" / "Decks"
+DECKS = ROOT / "data" / "decks"
 
 ADDED = [
     ("30", "3032", "เฉลิมพระเกียรติ", "Chaloem Phra Kiat"),

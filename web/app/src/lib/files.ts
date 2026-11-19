@@ -70,8 +70,11 @@ function base64(bytes: Uint8Array): string
 // What Export saves and older Android exports were saved as; .jsonl and .pcf are octet-stream to Android
 const PICK_TYPES = ".jsonl,.pcf,.txt,application/octet-stream,application/x-ndjson,application/json,text/plain";
 
+// A deck's CSV (Random > Cards), as phones and Excel name it
+export const CSV_TYPES = ".csv,text/csv,text/comma-separated-values,application/vnd.ms-excel,text/plain,application/octet-stream";
+
 // The files the user picks; none when the chooser is closed
-export function pickFiles(): Promise<File[]>
+export function pickFiles(types = PICK_TYPES): Promise<File[]>
 {
 	return new Promise(resolve =>
 	{
@@ -83,7 +86,7 @@ export function pickFiles(): Promise<File[]>
 			// Without types Chrome on Android also offers the camera and asks for camera and
 			// microphone; a list without image or video opens the file chooser alone. The app's
 			// web view opens it alone already, with no filter (owner 2026-11-19)
-			input.accept = PICK_TYPES;
+			input.accept = types;
 		}
 		input.addEventListener("change", () => resolve([...input.files ?? []]));
 		input.addEventListener("cancel", () => resolve([]));

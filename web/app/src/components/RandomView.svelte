@@ -1,7 +1,7 @@
 <!-- RandomView.svelte - ⋮ > Random (owner 2026-11-20): the desktop's Random window for the web.
      Simple: whole numbers, decimals, coins and dice; Advanced: values that follow a shape, drawn over
-     its picture; Password: passwords with a strength line and an optional signature. Draws come from
-     the browser's secure generator (random.ts, shapes.ts), or with Seed from the engine, repeatably
+     its picture; Password: passwords with a strength line and an optional signature. Cards: draws from
+     decks (CardsTab.svelte). Draws come from the browser's secure generator, or with Seed from the engine, repeatably
      and as typing rands(seed) and the Insert command line would give (Password always System). A tap on a result
      offers Insert (into Input) and Copy; a password is copied at once and cleared from the clipboard
      30 s later. Options are kept; results and the signature never are, and nothing goes to History. -->
@@ -17,6 +17,7 @@
 		bars, check, curve, hint, line, MAX_COUNT as SHAPE_MAX, SHAPES, shapeCommand, summary, usesStrength, values,
 		type Range,
 	} from "../lib/shapes";
+	import CardsTab from "./CardsTab.svelte";
 	import Sheet from "./Sheet.svelte";
 
 	let { calc, onclose, oninsert, inner = $bindable(false) }: {
@@ -29,7 +30,7 @@
 	// svelte-ignore state_referenced_locally
 	let p: RandomPrefs = $state({ ...calc.random });
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
-	const TABS: [string, string][] = [["simple", "Simple"], ["advanced", "Advanced"], ["password", "Password"]];
+	const TABS: [string, string][] = [["simple", "Simple"], ["advanced", "Advanced"], ["password", "Password"], ["cards", "Cards"]];
 	const SHOWN = 300;    // results listed; Copy all takes every one
 
 	// Seed (R2): repeatable draws from the engine; never saved, as the desktop's
@@ -47,14 +48,17 @@
 	});
 
 	let menuFor: string | null = $state(null);    // the result whose menu is open
+	let cardsInner = $state(false);    // a menu or the deck editor open on the Cards tab
+	let cardsTab: CardsTab | undefined = $state();
 	$effect(() =>
 	{
-		inner = menuFor !== null;
+		inner = menuFor !== null || cardsInner;
 	});
 
 	export function closeInner()
 	{
 		menuFor = null;
+		cardsTab?.closeInner();
 	}
 
 	//==================================================================
@@ -349,7 +353,7 @@
 		<button class="bar" use:tap={onclose}>Done</button>
 	</div>
 	<div class="body">
-		{#if p.tab !== "password"}
+		{#if p.tab === "simple" || p.tab === "advanced"}
 			<div class="source">
 				<button class:on={!seedOn} use:tap={() => { seedOn = false; }}>System</button>
 				<button class:on={seedOn} use:tap={() => { seedOn = true; if (!seed.trim()) seed = newSeed(); }}>Seed</button>
@@ -359,7 +363,9 @@
 				{/if}
 			</div>
 		{/if}
-		{#if p.tab === "advanced"}
+		{#if p.tab === "cards"}
+			<CardsTab bind:this={cardsTab} bind:inner={cardsInner} {calc} {oninsert} />
+		{:else if p.tab === "advanced"}
 			<div class="form">
 				<div class="grid">
 					<label class="field"><span>Shape</span>
