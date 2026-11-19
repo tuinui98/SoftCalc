@@ -2,7 +2,8 @@
      One finger traces the line nearest it; two fingers move and zoom (both axes, or one when they
      lie along it). A mouse traces by hovering, drags to move and wheels to zoom. Fit, 1:1, Reset,
      Grid and XY/Polar as the desktop's Graph window. The lines come from the engine (plotter.ts);
-     the geometry is graph.ts. The phone's Back closes the Graph. -->
+     the geometry is graph.ts. The phone's Back closes the Graph. Pan is a trial button: one finger
+     moves the graph instead of tracing (owner 2026-11-19). -->
 <script lang="ts">
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
@@ -363,6 +364,7 @@
 	let dragWorld: Rect | null = null;
 	let lastTap = { at: 0, x: 0, y: 0 };
 	let currentTrace: TraceTarget | null = null;
+	let panOne = $state(false);    // temporary trial (owner 2026-11-19): one finger moves instead of tracing
 
 	function local(event: PointerEvent | WheelEvent): Point
 	{
@@ -400,6 +402,8 @@
 		if (pointers.size === 2)
 		{
 			tracing = false;
+			dragFrom = null;
+			dragWorld = null;
 			pinchFrom = pair();
 			pinchWorld = { ...world() };
 			pinchMode = st.mode === "polar" ? "both" : pinchKind(pinchFrom[0], pinchFrom[1], st.square);
@@ -417,7 +421,7 @@
 			return;
 		}
 		lastTap = { at: now, x: at.x, y: at.y };
-		if (event.pointerType === "mouse")
+		if (event.pointerType === "mouse" || panOne)
 		{
 			dragFrom = at;
 			dragWorld = { ...world() };
@@ -467,6 +471,11 @@
 			pinchFrom = null;
 			pinchWorld = null;
 			keep();
+			if (panOne && pointers.size === 1)
+			{
+				dragFrom = { ...[...pointers.values()][0] };    // the finger left keeps moving the graph
+				dragWorld = { ...world() };
+			}
 		}
 		if (dragFrom && pointers.size === 0)
 		{
@@ -582,6 +591,10 @@
 		{
 			return traceText(plotter.traced, formatTick);
 		}
+		if (panOne)
+		{
+			return st.mode === "polar" ? "Two fingers: zoom" : "One finger: move; two fingers: move and zoom";
+		}
 		return st.mode === "polar" ? "One finger: trace; two fingers: zoom" : "One finger: trace; two fingers: move and zoom";
 	});
 
@@ -643,14 +656,15 @@
 <div class="graph" role="dialog" aria-label="Graph">
 	<div class="head">
 		<span class="name">Graph</span>
+		<div class="tools">
+			<button use:tap={fit} disabled={st.mode === "polar"}>Fit</button>
+			<button class:on={st.square} use:tap={toggleSquare} disabled={st.mode === "polar"}>1:1</button>
+			<button use:tap={reset}>Reset</button>
+			<button class:on={st.grid} use:tap={() => { st.grid = !st.grid; changed(); }}>Grid</button>
+			<button class:on={st.mode === "polar"} use:tap={() => setMode(st.mode === "xy" ? "polar" : "xy")}>Polar</button>
+			<button class:on={panOne} use:tap={() => { panOne = !panOne; plotter.clearTrace(); tick++; }}>Pan</button>
+		</div>
 		<button class="bar" use:tap={onclose}>Done</button>
-	</div>
-	<div class="tools">
-		<button use:tap={fit} disabled={st.mode === "polar"}>Fit</button>
-		<button class:on={st.square} use:tap={toggleSquare} disabled={st.mode === "polar"}>1:1</button>
-		<button use:tap={reset}>Reset</button>
-		<button class:on={st.grid} use:tap={() => { st.grid = !st.grid; changed(); }}>Grid</button>
-		<button class:on={st.mode === "polar"} use:tap={() => setMode(st.mode === "xy" ? "polar" : "xy")}>Polar</button>
 	</div>
 	<div class="body">
 		<div class="plot" bind:this={wrap}>
@@ -690,19 +704,29 @@
 		position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
 		background: var(--page); color: var(--ink); height: 100dvh;
 	}
+	/* upright: the title and Done, the tools on a row below; on its side all on one row */
 	.head
 	{
-		display: flex; align-items: center; justify-content: space-between; gap: 8px;
-		padding: 4px 6px; padding-top: max(4px, env(safe-area-inset-top)); border-bottom: 1px solid var(--line);
+		display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 8px;
+		padding: 4px 6px 0; padding-top: max(4px, env(safe-area-inset-top)); border-bottom: 1px solid var(--line);
 	}
-	.name { margin: 0 10px; font-size: 20px; font-weight: 500; }
+	.name { margin: 0 10px; font-size: 20px; font-weight: 500; flex: none; }
 	.bar
 	{
 		min-width: 44px; height: 40px; border: none; border-radius: 20px; background: none; color: var(--select);
 		font: inherit; font-size: 16px; padding: 0 12px; cursor: pointer; touch-action: manipulation;
 	}
 	.bar:active { background: var(--line); }
-	.tools { display: flex; gap: 6px; padding: 6px 8px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+	.tools
+	{
+		order: 3; flex: 1 0 100%; display: flex; gap: 6px; padding: 6px 2px; overflow-x: auto;
+		border-top: 1px solid var(--line); margin-top: 4px;
+	}
+	@media (orientation: landscape)
+	{
+		.head { flex-wrap: nowrap; padding-bottom: 4px; }
+		.tools { order: 0; flex: 1 1 auto; min-width: 0; border-top: none; margin-top: 0; padding: 0; }
+	}
 	.tools button, .status button
 	{
 		height: 34px; padding: 0 14px; border: 1px solid var(--line); border-radius: 17px; background: none;
