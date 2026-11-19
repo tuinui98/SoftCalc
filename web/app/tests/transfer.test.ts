@@ -68,7 +68,10 @@ describe("export names", () =>
 	it("carry the local date and time, the same for both files", () =>
 	{
 		expect(exportNames(new Date(2026, 10, 9, 7, 5, 59))).toEqual(
-			{ history: "SoftCalc-history-2026-11-09-0705.jsonl", definitions: "SoftCalc-definitions-2026-11-09-0705.pcf" });
+			{
+				history: "SoftCalc-history-2026-11-09-0705.jsonl", definitions: "SoftCalc-definitions-2026-11-09-0705.pcf",
+				graph: "SoftCalc-graph-2026-11-09-0705.png",
+			});
 	});
 });
 

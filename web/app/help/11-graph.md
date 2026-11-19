@@ -61,6 +61,9 @@ list, so adding a line can move the colours of those below it.
 - **Polar** draws `r = f(theta)`; tap it again for x and y. **Grid**
   shows or hides the grid.
 - With a mouse: hover reads values, drag moves, the wheel zooms.
+- **PNG** saves the picture, with the drawn lines' names and colours
+  under it, as `SoftCalc-graph-<date>-<time>.png`: in the app to
+  Download/SoftCalc, in a browser to its downloads.
 
 The graph keeps its range, lines and colours for next time, and Export
 writes the equations to the `.pcf` (see *Getting started*).
