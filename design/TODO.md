@@ -512,3 +512,8 @@ ends 1:1, the drag insert line is visible enough on dark.
       local time, as the web/APK PNG and Export do:
       `SoftCalc-graph-YYYY-MM-DD-HHmm.png` (now `graph.png`,
       UI/GraphWindow.cs SaveBitmap; HistoryStore.ExportName has the stamp).
+- [ ] Desktop Numeric view: a smallest window size, so the keypad is
+      never too small to draw all its keys, and the height always shows
+      at least one History entry.
+- [ ] Desktop Numeric view hides the ribbon now; owner: like the other
+      views, hide it only when View > Show Ribbon is off.
