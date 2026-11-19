@@ -30,7 +30,7 @@
 	calc.showHints = loadHints();
 	const snap = () => ({
 		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
-		second: calc.second, status: calc.status, loading: calc.loading, startTimes: calc.startTimes, definitions: calc.definitions,
+		second: calc.second, status: calc.status, loading: calc.loading, startTimes: calc.startTimes, definitions: calc.definitions, graph: [...calc.graph],
 	});
 	let view = $state(snap());
 	let input: HTMLInputElement;
@@ -47,6 +47,8 @@
 	let namesOpen = $state(false);
 	let helpOpen = $state(false);
 	let graphOpen = $state(false);
+	let graphInner = $state(false);    // a menu or the editor open on the Graph
+	let graphView: GraphView | undefined = $state();
 	let helpTopic: string | null = $state(null);
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
@@ -453,7 +455,11 @@
 		{
 			return helpTopic ? 3 : 2;
 		}
-		if (settingsOpen || namesOpen || graphOpen)
+		if (graphOpen)
+		{
+			return graphInner ? 3 : 2;
+		}
+		if (settingsOpen || namesOpen)
 		{
 			return 2;
 		}
@@ -522,6 +528,7 @@
 		pushed = Math.max(0, pushed - 1);
 		if (sheet) sheet.done(null);
 		else if (helpOpen && helpTopic) helpTopic = null;
+		else if (graphOpen && graphInner) graphView?.closeInner();
 		else if (helpOpen || namesOpen || settingsOpen || graphOpen)
 		{
 			helpOpen = false;
@@ -640,9 +647,10 @@
 	{/if}
 
 	{#if graphOpen}
-		<GraphView {calc} functions={view.definitions.functions.filter(fn => fn.params.length === 1)} equations={calc.graph}
+		<GraphView bind:this={graphView} bind:inner={graphInner} {calc} functions={view.definitions.functions.filter(fn => fn.params.length === 1)}
+			equations={view.graph} names={[...view.definitions.functions, ...view.definitions.variables].map(item => item.name)}
 			onclose={() => { graphOpen = false; focusInput(); }}
-			oninsert={text => { graphOpen = false; calc.insertText(text, true); focusInput(); }} />
+			oninsert={(text, isResult) => { graphOpen = false; calc.insertText(text, isResult); focusInput(); }} />
 	{/if}
 
 	{#if namesOpen}
