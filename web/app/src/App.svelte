@@ -6,6 +6,7 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
+	import CompoundView from "./components/CompoundView.svelte";
 	import GraphView from "./components/GraphView.svelte";
 	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
@@ -47,6 +48,7 @@
 	let namesOpen = $state(false);
 	let helpOpen = $state(false);
 	let graphOpen = $state(false);
+	let compoundOpen = $state(false);
 	let graphInner = $state(false);    // a menu or the editor open on the Graph
 	let graphView: GraphView | undefined = $state();
 	let helpTopic: string | null = $state(null);
@@ -182,12 +184,13 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Settings", "Export", "Import", "Help", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Compound", "Settings", "Export", "Import", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
 		else if (choice === "Graph") graphOpen = true;
+		else if (choice === "Compound") compoundOpen = true;
 		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
 		else if (choice === "Export") await exportFiles();
 		else if (choice === "Import") await importFiles();
@@ -459,7 +462,7 @@
 		{
 			return graphInner ? 3 : 2;
 		}
-		if (settingsOpen || namesOpen)
+		if (settingsOpen || namesOpen || compoundOpen)
 		{
 			return 2;
 		}
@@ -529,12 +532,13 @@
 		if (sheet) sheet.done(null);
 		else if (helpOpen && helpTopic) helpTopic = null;
 		else if (graphOpen && graphInner) graphView?.closeInner();
-		else if (helpOpen || namesOpen || settingsOpen || graphOpen)
+		else if (helpOpen || namesOpen || settingsOpen || graphOpen || compoundOpen)
 		{
 			helpOpen = false;
 			namesOpen = false;
 			settingsOpen = false;
 			graphOpen = false;
+			compoundOpen = false;
 			void openMore();
 		}
 	}
@@ -646,6 +650,10 @@
 			onexample={line => { helpOpen = false; calc.typed(line, line.length); focusInput(); }} />
 	{/if}
 
+	{#if compoundOpen}
+		<CompoundView {calc} onclose={() => { compoundOpen = false; focusInput(); }}
+			oninsert={text => { compoundOpen = false; calc.insertText(text, true); focusInput(); }} />
+	{/if}
 	{#if graphOpen}
 		<GraphView bind:this={graphView} bind:inner={graphInner} {calc} functions={view.definitions.functions.filter(fn => fn.params.length === 1)}
 			equations={view.graph} names={[...view.definitions.functions, ...view.definitions.variables].map(item => item.name)}
