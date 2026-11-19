@@ -62,7 +62,7 @@ describe("help for the web app", () =>
 				return readFileSync(path.join(root, "help", `${id}.md`), "utf8");
 			}
 		});
-		expect(topics.length).toBe(11);
+		expect(topics.length).toBe(12);
 		for (const topic of topics)
 		{
 			expect(topic.html, topic.id).not.toMatch(/View &gt;|ribbon|Ribbon|img\/|&lt;!--|press Enter/);
