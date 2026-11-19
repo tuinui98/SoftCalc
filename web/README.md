@@ -177,6 +177,33 @@ moves with the start steps; Settings > Start shows each step's time.
 Desktop Chrome, files cached: Python 3.8 s to 0.7 s, mpmath + engine
 1.3 s to 0.1-0.2 s; ready in 1.3-2.5 s instead of 6.1 s.
 
+### Export and Import (owner 2026-11-19, moved into the first release)
+⋮ > Export writes History as the desktop's `history.jsonl` and the
+variables and functions as the desktop's `.pcf` (UTF-16 LE, no BOM, CRLF),
+so files go between the web app, the Android app and the desktop
+unchanged (`src/lib/transfer.ts`; the desktop test
+`PersistenceTests.ParsesWebAppExport` reads the web's lines). Names carry
+the local time, `SoftCalc-history-2026-11-19-1530.jsonl` and
+`SoftCalc-definitions-2026-11-19-1530.pcf`, as the desktop's Export names
+them; for the desktop's data folder History is renamed `history.jsonl`.
+A browser downloads them to its Downloads, with no folder of its own: a
+page cannot make one (both as octet-stream, the blob kept a minute: Chrome
+on Android dropped the ndjson History). Its chooser lists the two types,
+as Chrome on Android otherwise offers the camera too. The Android app saves them to Download/SoftCalc
+with its own plugin (`DownloadsPlugin.java`: MediaStore, no permission on
+Android 10 and later; the storage permission up to SDK 28), not the share
+sheet: a device without a file manager app had nowhere to save, and the
+system's file chooser lists Download for Import (owner 2026-11-19, after
+trying the share sheet). ⋮ > Import takes several files at once (hold the
+first in the chooser), each by what is in it:
+- A History file merges by id, as the desktop merges windows (after the
+  file's newest clear, without its deleted lines, by time, the newest
+  1000), and `$n` then counts the merged results. History lines now carry
+  the desktop's `id` and `time`; older lines get them on the next start.
+- Any other file is a `.pcf` whose definitions are added: the current
+  ones, then the file's, so a name in both takes the file's. The
+  desktop's Load replaces them all (`import_pcf`).
+
 ### On the web (owner 2026-11-19)
 https://tuinui98.github.io/SoftCalc/ is built and published by
 `.github/workflows/pages.yml` when main changes the web app, the engine,

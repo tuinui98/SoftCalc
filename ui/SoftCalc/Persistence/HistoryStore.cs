@@ -131,6 +131,36 @@ internal static class HistoryStore
 		return text.ToString();
 	}
 
+	// File > Import History (owner 2026-11-19): what History shows now plus the file's lines, by
+	// id. The clear mark goes, as it would drop imported lines older than it; what it covered is
+	// already gone from `current`. A window open since before that clear can bring its older
+	// lines back at close. Deleted marks stay, except for ids the file brings back on purpose.
+	public static HistoryFile Import(HistoryFile current, IEnumerable<StoredEntry> imported, int cap)
+	{
+		var lines = imported.ToList();
+		var deleted = current.DeletedIds.Where(d => lines.All(e => e.Id != d.Key)).ToDictionary(d => d.Key, d => d.Value);
+		return Merge(new HistoryFile(current.Entries, null, deleted), lines, null, cap);
+	}
+
+	public static HistoryFile ImportAndSave(DataFolder folder, IEnumerable<StoredEntry> mine, DateTime? myClearedAt, int cap,
+		IReadOnlyDictionary<string, DateTime> myDeleted, IEnumerable<StoredEntry> imported)
+	{
+		HistoryFile result = new(Array.Empty<StoredEntry>(), null);
+		folder.WithLock(() =>
+		{
+			var current = Merge(Load(folder.HistoryPath), mine, myClearedAt, cap, myDeleted);
+			result = Import(current, imported, cap);
+			DataFolder.WriteAtomic(folder.HistoryPath, Serialize(result));
+		});
+		return result;
+	}
+
+	// Export and Import names carry the local date and time, as the web app's (transfer.ts exportNames)
+	public static string ExportName(string kind, string extension, DateTime localTime)
+	{
+		return $"SoftCalc-{kind}-{localTime:yyyy-MM-dd-HHmm}.{extension}";
+	}
+
 	// Close-time write: re-read under the lock so other windows' entries survive
 	public static void MergeAndSave(DataFolder folder, IEnumerable<StoredEntry> mine, DateTime? myClearedAt, int cap,
 		IReadOnlyDictionary<string, DateTime>? myDeleted = null)

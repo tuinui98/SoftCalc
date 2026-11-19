@@ -3,7 +3,8 @@
 // Android's start screen (the icon on the dark page colour) hands over to
 // the page's own (index.html: icon, name, version, dots), which stays while
 // the engine loads (owner 2026-11-19). installSplashScreen makes the hand-over
-// the same on Android 7 to 11 as on 12 and later.
+// the same on Android 7 to 11 as on 12 and later. The app's own plugin
+// (DownloadsPlugin) is registered before super.onCreate starts the bridge.
 
 package io.github.tuinui98.softcalc;
 
@@ -20,6 +21,7 @@ public class MainActivity extends BridgeActivity
 	{
 		// Before super.onCreate, which sets the page's theme
 		SplashScreen.installSplashScreen(this);
+		registerPlugin(DownloadsPlugin.class);
 		super.onCreate(savedInstanceState);
 	}
 }

@@ -18,6 +18,8 @@
 	import type { Store } from "./lib/store";
 	import { swipeOn } from "./lib/swipe";
 	import { keyTaps } from "./lib/keytap";
+	import { pickFiles, saveFiles, type OutFile } from "./lib/files";
+	import { exportNames, historyText, pcfBytes, withGraph } from "./lib/transfer";
 
 	let { engine, store, kept }: { engine: Engine; store: Store; kept: boolean } = $props();
 	// The engine and the store are given once at start and never change
@@ -175,13 +177,69 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Help", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Settings", "Export", "Import", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
 		else if (choice === "Settings") settingsOpen = true;
 		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
+		else if (choice === "Export") await exportFiles();
+		else if (choice === "Import") await importFiles();
 		else if (choice === "Clear History") calc.clearHistory();
+	}
+
+	//==================================================================
+	//  Export and Import: the desktop's history.jsonl and .pcf (owner 2026-11-19)
+	//==================================================================
+	const HISTORY_ITEM = "History";
+	const NAMES_ITEM = "Variables and functions";
+
+	async function exportFiles()
+	{
+		const what = await pick("Export", [HISTORY_ITEM, NAMES_ITEM, "Both"]);
+		if (!what)
+		{
+			return;
+		}
+		try
+		{
+			const files: OutFile[] = [];
+			const names = exportNames();
+			if (what !== NAMES_ITEM)
+			{
+				// The .pcf's octet-stream downloads in Chrome on Android, its ndjson did not (owner 2026-11-19)
+				files.push({ name: names.history, type: "application/octet-stream",
+					bytes: new TextEncoder().encode(historyText(calc.historyLines())) });
+			}
+			if (what !== HISTORY_ITEM)
+			{
+				files.push({ name: names.definitions, type: "application/octet-stream", bytes: pcfBytes(withGraph(await calc.definitionsText(), calc.graph)) });
+			}
+			const where = await saveFiles(files);
+			calc.say(files.length === 1 ? `Saved to ${where}: ${files[0].name}` : `Saved ${files.length} files to ${where}`);
+		}
+		catch (error)
+		{
+			calc.say("Not exported: " + (error instanceof Error ? error.message : String(error)));
+		}
+		focusInput();
+	}
+
+	async function importFiles()
+	{
+		const files = await pickFiles();
+		for (const file of files)
+		{
+			try
+			{
+				await calc.importFile(file.name, new Uint8Array(await file.arrayBuffer()));
+			}
+			catch (error)
+			{
+				calc.say(`${file.name}: not imported: ` + (error instanceof Error ? error.message : String(error)));
+			}
+		}
+		focusInput();
 	}
 
 	//==================================================================

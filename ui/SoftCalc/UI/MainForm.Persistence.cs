@@ -236,11 +236,90 @@ internal sealed partial class MainForm
 
 	private void SaveDefinitionsAs()
 	{
-		using var dialog = new SaveFileDialog { Filter = "Functions & Variables (*.pcf)|*.pcf", DefaultExt = "pcf" };
+		using var dialog = new SaveFileDialog
+		{
+			Filter = "Functions & Variables (*.pcf)|*.pcf", DefaultExt = "pcf",
+			FileName = HistoryStore.ExportName("definitions", "pcf", DateTime.Now),
+		};
 		if (dialog.ShowDialog(this) == DialogResult.OK)
 		{
-			PcfFile.Write(dialog.FileName, _session.Definitions);
+			PcfFile.Write(dialog.FileName, PcfFile.WithGraph(_session.Definitions, _graphSettings.Equations));
 		}
+	}
+
+	//==================================================================
+	//  Export and Import History: history.jsonl lines, as the web and Android apps' (owner 2026-11-19)
+	//==================================================================
+	private const string HistoryFilter = "SoftCalc History (*.jsonl)|*.jsonl|All files (*.*)|*.*";
+
+	// What this window's History shows, notices left out
+	private void ExportHistory()
+	{
+		using var dialog = new SaveFileDialog
+		{
+			Filter = HistoryFilter, DefaultExt = "jsonl", FileName = HistoryStore.ExportName("history", "jsonl", DateTime.Now),
+		};
+		if (dialog.ShowDialog(this) != DialogResult.OK)
+		{
+			return;
+		}
+		var lines = _history.Entries.Where(e => e.Kind != "notice" && e.Id.Length > 0).Select(ToStored).ToList();
+		DataFolder.WriteAtomic(dialog.FileName, HistoryStore.Serialize(new HistoryFile(lines, null)));
+	}
+
+	// Merges the files' lines by id into History and history.jsonl at once; $n then counts the merged results
+	private async Task ImportHistoryAsync()
+	{
+		if (!_engineReady)
+		{
+			return;
+		}
+		using var dialog = new OpenFileDialog { Filter = HistoryFilter, Multiselect = true };
+		if (dialog.ShowDialog(this) != DialogResult.OK)
+		{
+			return;
+		}
+		var imported = new List<StoredEntry>();
+		var report = new List<string>();
+		foreach (string path in dialog.FileNames)
+		{
+			var lines = HistoryStore.Visible(HistoryStore.Load(path), _prefs.HistoryCap);
+			imported.AddRange(lines);
+			report.Add($"{Path.GetFileName(path)}: {lines.Count} line(s)");
+		}
+		if (imported.Count == 0)
+		{
+			MessageBox.Show(this, "No History lines in:\r\n\r\n" + string.Join("\r\n", dialog.FileNames.Select(Path.GetFileName)),
+				"Import History", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			return;
+		}
+		var known = _history.Entries.Select(e => e.Id).ToHashSet();
+		HistoryFile merged;
+		try
+		{
+			merged = HistoryStore.ImportAndSave(_folder, _sessionEntries.Select(ToStored), _clearedAt, _prefs.HistoryCap, _deletedIds, imported);
+		}
+		catch (IOException ex)
+		{
+			MessageBox.Show(this, "History was not imported.\r\n\r\n" + ex.Message, "Import History",
+				MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			return;
+		}
+		_clearedAt = null;    // the file now holds what History shows, without the clear mark
+		_deletedIds.Clear();    // written into the file already
+		_history.ClearEntries();
+		foreach (var stored in merged.Entries)
+		{
+			_history.Append(new HistoryEntry(stored.Kind, stored.Input, stored.DisplayInput, stored.Text)
+			{
+				Id = stored.Id, Time = stored.Time, Note = stored.Note ?? "",
+			});
+		}
+		_lastWasResult = merged.Entries.Count > 0 && merged.Entries[^1].Kind == "result";
+		await _session.ClearHistoryAsync();
+		await _session.RestoreResultsAsync(merged.Entries.Where(s => s.Kind == "result").Select(s => s.Text));
+		int added = merged.Entries.Count(e => !known.Contains(e.Id));
+		AddNotice($"(History imported: {added} new line(s))", string.Join("; ", report));
 	}
 
 	private async Task LoadDefinitionsAsync()
@@ -250,8 +329,28 @@ internal sealed partial class MainForm
 		{
 			return;
 		}
-		var skipped = await _session.ImportDefinitionsAsync(PcfFile.Read(dialog.FileName));
+		var (definitions, graph) = PcfFile.SplitGraph(PcfFile.Read(dialog.FileName));
+		var skipped = (await _session.ImportDefinitionsAsync(definitions)).ToList();
+		// [Graph] equations after the definitions, which they may use; ones already there are
+		// left as they are, a bad one is skipped like a bad definition (owner 2026-11-19)
+		foreach (var (line, text) in graph)
+		{
+			if (_graphSettings.Equations.Any(e => string.Equals(e, text, StringComparison.OrdinalIgnoreCase)))
+			{
+				continue;
+			}
+			string? problem = EquationDialog.Check(text, _graphSettings.Equations)
+				?? await EquationDialog.EngineProblemAsync(_session, text);
+			if (problem != null)
+			{
+				skipped.Add($"line {line}: {text} ({problem})");
+				continue;
+			}
+			_graphSettings.Equations.Add(text);
+			_graphSettings.SetShown(text, true);
+		}
 		await RefreshStateAsync();
+		_graphSettings.NotifyChanged();
 		if (skipped.Count > 0)
 		{
 			MessageBox.Show(this, "These lines were skipped:\r\n\r\n" + string.Join("\r\n", skipped.Take(20)),

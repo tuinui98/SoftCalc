@@ -65,6 +65,44 @@ public sealed class PersistenceTests : IDisposable
 		Assert.Equal(file.Entries, back.Entries);
 	}
 
+	// A line as the web app's Export writes it (web/app/src/lib/transfer.ts): JavaScript's
+	// three-digit times, a random middle part in the id (owner 2026-11-19)
+	[Fact]
+	public void ParsesWebAppExport()
+	{
+		string line = """{"id":"20261119010203004-123456-7","time":"2026-11-19T01:02:03.004Z","kind":"result","input":"6*7","display_input":"6*7","text":"42","note":""}""";
+		var back = HistoryStore.Parse(new[] { line });
+		var entry = Assert.Single(back.Entries);
+		Assert.Equal("20261119010203004-123456-7", entry.Id);
+		Assert.Equal(new DateTime(2026, 11, 19, 1, 2, 3, 4, DateTimeKind.Utc), entry.Time.ToUniversalTime());
+		Assert.Equal(("result", "6*7", "6*7", "42", ""), (entry.Kind, entry.Input, entry.DisplayInput, entry.Text, entry.Note));
+	}
+
+	// File > Import History: lines older than this window's clear still come in, as do lines
+	// deleted here that the file brings back; the window's own lines stay (owner 2026-11-19)
+	[Fact]
+	public void ImportKeepsOlderLinesAndDropsTheClear()
+	{
+		var folder = new DataFolder(_dir);
+		HistoryStore.MergeAndSave(folder, new[] { Entry("a-1", 1), Entry("a-2", 2) }, null, 1000);
+		var clearedAt = Entry("x", 3).Time;
+		var deleted = new Dictionary<string, DateTime> { ["a-5"] = Entry("a-5", 5).Time };
+		var merged = HistoryStore.ImportAndSave(folder, new[] { Entry("a-4", 4) }, clearedAt, 1000, deleted,
+			new[] { Entry("w-1", 1, "6*7"), Entry("a-5", 5), Entry("a-4", 4) });
+		Assert.Equal(new[] { "w-1", "a-4", "a-5" }, merged.Entries.Select(e => e.Id));
+		var file = HistoryStore.Load(folder.HistoryPath);
+		Assert.Null(file.ClearedAt);
+		Assert.Empty(file.DeletedIds);
+		Assert.Equal(merged.Entries, file.Entries);
+	}
+
+	[Fact]
+	public void ExportNamesCarryTheLocalTime()
+	{
+		var time = new DateTime(2026, 11, 9, 7, 5, 59, DateTimeKind.Local);
+		Assert.Equal("SoftCalc-history-2026-11-09-0705.jsonl", HistoryStore.ExportName("history", "jsonl", time));
+	}
+
 	[Fact]
 	public void DeletedEntryStaysGoneFromFileAndOtherWindows()
 	{
@@ -187,6 +225,19 @@ public sealed class PersistenceTests : IDisposable
 			_ => Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(text)).ToArray(),
 		};
 		Assert.Equal(text, PcfFile.Decode(bytes));
+	}
+
+	// Save's [Graph] section and Load's split, line numbers as in the file (owner 2026-11-19)
+	[Fact]
+	public void PcfGraphSectionSplitsAndJoins()
+	{
+		string text = PcfFile.WithGraph("rate=5\r\n\r\n", new[] { "y=x", "x^2+y^2=4" });
+		Assert.Equal("rate=5\r\n[Graph]\r\ny=x\r\nx^2+y^2=4\r\n", text);
+		var (definitions, graph) = PcfFile.SplitGraph("rate=5\n[graph]\n\ny=x\r\n");
+		Assert.Equal("rate=5\r\n", definitions);
+		Assert.Equal(new[] { (4, "y=x") }, graph);
+		Assert.Equal("a=1\r\n", PcfFile.WithGraph("a=1\r\n", Array.Empty<string>()));
+		Assert.Empty(PcfFile.SplitGraph("a=1\r\n").Graph);
 	}
 
 	//==================================================================
