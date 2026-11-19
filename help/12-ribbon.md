@@ -18,7 +18,7 @@ Grad, the output bases (Dec, Hex, Bin, Oct, Word size), RPN and Prec
 are in the menus; Customize Ribbon puts any of them back on the
 ribbon. A ribbon you customized before stays as you made it.
 
-View > Show Ribbon hides or shows it. Numeric Calc never shows it.
+View > Show Ribbon hides or shows it, in every view.
 
 ## Customize Ribbon
 

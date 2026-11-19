@@ -143,6 +143,26 @@ internal sealed class Keypad : Control
 		}
 	}
 
+	// The narrowest the keys may get with every label at full size (owner 2026-11-20); the base
+	// and angle keys, whose text changes, may still shrink theirs
+	public int LeastWidth()
+	{
+		int widest = 0;
+		var keys = Scientific ? ScientificKeys.Concat(BasicKeys) : BasicKeys.AsEnumerable();
+		foreach (var key in keys.Where(k => k.Id is not ("base" or "angle")))
+		{
+			int wide = TextRenderer.MeasureText(key.Label, Font, Size.Empty, TextFormatFlags.NoPadding).Width / key.Cols;
+			if (key.SecondLabel != null)
+			{
+				wide = Math.Max(wide, TextRenderer.MeasureText(key.SecondLabel, _small, Size.Empty, TextFormatFlags.NoPadding).Width / key.Cols);
+			}
+			widest = Math.Max(widest, wide);
+		}
+		float columns = Scientific ? 10 + Gap : 5;
+		int cell = widest + LogicalToDeviceUnits(6) + LogicalToDeviceUnits(3);    // the label's room and the gap between keys
+		return (int)Math.Ceiling(columns * cell) + 2 * LogicalToDeviceUnits(4);
+	}
+
 	//==================================================================
 	//  Drawing
 	//==================================================================

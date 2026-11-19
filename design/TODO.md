@@ -508,12 +508,19 @@ ends 1:1, the drag insert line is visible enough on dark.
     D:\Projects\esp32-hardware-wallet\NOTES.md (a separate project).
 
 ## Next release (owner 2026-11-19, after 1.6.0)
-- [ ] Desktop Graph > File > Save as bitmap...: suggest the name with the
+- [x] Desktop Graph > File > Save as bitmap...: suggest the name with the
       local time, as the web/APK PNG and Export do:
       `SoftCalc-graph-YYYY-MM-DD-HHmm.png` (now `graph.png`,
       UI/GraphWindow.cs SaveBitmap; HistoryStore.ExportName has the stamp).
-- [ ] Desktop Numeric view: a smallest window size, so the keypad is
+- [x] Desktop Numeric view: a smallest window size, so the keypad is
       never too small to draw all its keys, and the height always shows
       at least one History entry.
-- [ ] Desktop Numeric view hides the ribbon now; owner: like the other
+- [x] Desktop Numeric view hides the ribbon now; owner: like the other
       views, hide it only when View > Show Ribbon is off.
+- [x] Owner 2026-11-20, built: every view's smallest window: the menu bar
+      and the widest ribbon group across; the menu, the whole ribbon when
+      shown, Samples and Input and one History entry down (Numeric: the
+      keypad at its lowest and its labels' width). Advanced: the sidebar
+      keeps Graph's toolbar, list and a plot as tall as the Variables box
+      at its smallest, and Variables one row; narrowing it narrows History
+      first, then both together once they are as wide (MainForm.Sizes.cs).
