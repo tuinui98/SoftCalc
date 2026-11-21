@@ -540,5 +540,6 @@ ends 1:1, the drag insert line is visible enough on dark.
       straight after it on that row, without starting a new one. The first
       group cannot be locked. Maybe also rows 3 and 4 (rare): rows are
       put in order by themselves (a lock to row 3 with none to row 2
-      acts as row 2; locks never go backwards). To discuss the details
+      acts as row 2; locks never go backwards). A row that is too narrow
+      runs on to the next as now (owner 2026-11-22). To discuss the details
       (where the lock is set, how it shows) before building.
