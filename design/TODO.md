@@ -533,3 +533,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       only, without draw tabs and pictures; unticked cards, No repeat
       piles and tab options stay per device. To confirm with the owner
       before building.
+- [ ] Desktop ribbon rows (owner 2026-11-22): a group can be locked to
+      start row 2 (Customize Ribbon). Every group after it follows it on
+      row 2. The groups before it fill row 1; when the window is narrow,
+      what does not fit runs on to row 2, and the locked group carries on
+      straight after it on that row, without starting a new one. The first
+      group cannot be locked. Maybe also rows 3 and 4 (rare): rows are
+      put in order by themselves (a lock to row 3 with none to row 2
+      acts as row 2; locks never go backwards). To discuss the details
+      (where the lock is set, how it shows) before building.
