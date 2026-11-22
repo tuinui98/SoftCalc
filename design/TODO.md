@@ -543,3 +543,16 @@ ends 1:1, the drag insert line is visible enough on dark.
       acts as row 2; locks never go backwards). A row that is too narrow
       runs on to the next as now (owner 2026-11-22). To discuss the details
       (where the lock is set, how it shows) before building.
+
+## Before the APK goes on Google Play (owner 2026-11-22)
+- [ ] Foldables: Play blocks new apps and updates that miss its baseline
+      large-screen / foldable quality from April 2027 and wants foldable
+      screenshots; target API 37 from August 2027 (no opt-out of the
+      orientation and resizability changes). SoftCalc already targets 36,
+      locks no orientation or aspect ratio, and handles screen changes
+      without a restart. To check on an emulator (Pixel Fold and the
+      resizable device) and a real foldable if there is one: the near-square
+      inner screen (the side-by-side layouts go by landscape, maybe by width
+      instead), a flip phone's small outer screen (keypad and page heads),
+      folding while dragging the Graph or with an editor open; then the
+      foldable screenshots.
