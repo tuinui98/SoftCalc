@@ -36,7 +36,7 @@ RNW_GROUP = re.compile(r"(\d+(?:\.\d+)?-\d+(?:\.\d+)?-\d+(?:\.\d+)?)"
 class Token:
     """One lexical token.
 
-    kind is one of: number, imag, date, duration, name, op, ref, tag, end. For numbers,
+    kind is one of: number, imag, date, duration, name, op, ref, tag, string, end. For numbers,
     text holds the literal and base its radix; value conversion happens
     later so the evaluator can pick the working precision. A ref holds
     the digits after `$`; a tag holds `from->to` in lower case. end is
@@ -56,11 +56,18 @@ DURATION_AFTER = re.compile(r"\d+:")
 DURATION_BEFORE = re.compile(r"\d+:\d{1,2}(?::\d{1,2}(?:\.\d+)?)?$")
 
 
+QUOTES = '"“”'    # straight and curly double quotes
+
+
 def join_digit_spaces(text):
     """Remove whitespace that sits between two digits (`1 000` -> `1000`),
     except the space between a date and its time (`27.10.2026 14:05`).
     """
+    quoted = [m.span() for m in re.finditer(f"[{QUOTES}][^{QUOTES}]*[{QUOTES}]?", text)]    # card("Deck 1 2") keeps its name
+
     def keep_or_join(match):
+        if any(start < match.start() < end for start, end in quoted):
+            return match.group()
         if DATE_BEFORE.search(text, 0, match.start()):
             return match.group()
         # `2 1:30` and `1:30 2` must not merge into one duration
@@ -180,6 +187,14 @@ def tokenize(text):
                 raise CalcError("Expected a number after '$'")
             tokens.append(Token("ref", match.group(), i))
             i = match.end()
+            continue
+        if ch in QUOTES:
+            # A deck's name in card("Food") (owner 2026-11-24); phones may type curly quotes
+            close = next((j for j in range(i + 1, len(text)) if text[j] in QUOTES), -1)
+            if close < 0:
+                raise CalcError("Missing closing '\"'")
+            tokens.append(Token("string", text[i + 1:close], i))
+            i = close + 1
             continue
         if ch == "[":
             token, i = read_tag(text, i)

@@ -392,5 +392,23 @@ export function cardsFrom(saved: unknown): CardsState
 	return state;
 }
 
+// The engine's `decks` for card() in Input (owner 2026-11-24; desktop CardStore.EngineDecks): own decks
+// first, then the ready-made ones named in the language chosen, with the other language's name as alias
+export function engineDecks(state: CardsState): { decks: unknown[] }
+{
+	const cardsOf = (cards: Card[], language: string) => cards.map(card => ({ name: shownCard(card, language), weight: card.weight, ...(card.off ? { off: true } : {}) }));
+	const other = state.language === "th" ? "en" : "th";
+	return {
+		decks: [
+			...state.decks.map(deck => ({ name: deck.name, cards: cardsOf(deck.cards, "en") })),
+			...readyDecks().map(deck =>
+			{
+				const name = shownDeck(deck, state.language), alias = shownDeck(deck, other);
+				return { name, ...(alias !== name ? { alias } : {}), cards: cardsOf(listed(deck, state.language), state.language) };
+			}),
+		],
+	};
+}
+
 // A new own deck's id
 export const newDeckId = () => "mine:" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);

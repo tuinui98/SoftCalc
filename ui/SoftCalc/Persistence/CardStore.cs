@@ -86,6 +86,63 @@ internal sealed class CardStore
 		return (new CardFile(), "The card decks could not be read (the old file is kept as cards.json.bak).");
 	}
 
+	// cards.json read without side effects (no .bak), for card() in Input; null when missing or unreadable
+	public static CardFile? TryRead(string path)
+	{
+		try
+		{
+			var file = JsonSerializer.Deserialize<CardFile>(System.IO.File.ReadAllText(path), Options);
+			if (file != null)
+			{
+				Sanitize(file);
+			}
+			return file;
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or NotSupportedException)
+		{
+			return null;
+		}
+	}
+
+	// The engine's `decks` payload for card() (owner 2026-11-24): my decks first, then the
+	// ready-made ones named in the language chosen, with the other language's name as alias
+	public static System.Text.Json.Nodes.JsonObject EngineDecks(IEnumerable<Deck> mine, string language)
+	{
+		var list = new System.Text.Json.Nodes.JsonArray();
+		foreach (var deck in mine)
+		{
+			list.Add(EngineDeck(deck.Name, null, deck.Cards.Select(c => (c.Name, c.Weight, c.Off))));
+		}
+		string other = language == "th" ? "en" : "th";
+		foreach (var deck in ReadyDecks.All)
+		{
+			string alias = deck.Shown(other);
+			list.Add(EngineDeck(deck.Shown(language), alias == deck.Shown(language) ? null : alias,
+				deck.Listed(language).Select(c => (c.Shown(language), c.Weight, c.Off))));
+		}
+		return new System.Text.Json.Nodes.JsonObject { ["decks"] = list };
+	}
+
+	private static System.Text.Json.Nodes.JsonObject EngineDeck(string name, string? alias, IEnumerable<(string Name, int Weight, bool Off)> cards)
+	{
+		var array = new System.Text.Json.Nodes.JsonArray();
+		foreach (var (card, weight, off) in cards)
+		{
+			var item = new System.Text.Json.Nodes.JsonObject { ["name"] = card, ["weight"] = weight };
+			if (off)
+			{
+				item["off"] = true;
+			}
+			array.Add(item);
+		}
+		var deck = new System.Text.Json.Nodes.JsonObject { ["name"] = name, ["cards"] = array };
+		if (alias != null)
+		{
+			deck["alias"] = alias;
+		}
+		return deck;
+	}
+
 	public void Save()
 	{
 		if (_folder == null)

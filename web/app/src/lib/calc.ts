@@ -17,7 +17,7 @@ import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
 import { inputsFrom, type CompoundInputs, type Schedule } from "./compound";
-import { cardsFrom, type CardsState } from "./cards";
+import { cardsFrom, engineDecks, type CardsState } from "./cards";
 import { decksZip, importDecks, readDecks, report, usedPictures, type Pictures } from "./decks";
 import { prefsFrom, type RandomPrefs } from "./random";
 import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from "./graph";
@@ -178,6 +178,7 @@ export class Calculator
 		{
 			await this.engine.send("restore_results", { texts: results });
 		}
+		await this.sendDecks();
 		await this.refreshDefinitions();
 		this.catalog = (await this.engine.send("catalog")) as unknown as Catalog;
 		return version;
@@ -587,9 +588,27 @@ export class Calculator
 		return answer.ok ? { texts: answer.texts as string[], error: null } : { texts: null, error: answer.error ?? "Not drawn" };
 	}
 
+	// card() in Input draws from these (owner 2026-11-24); sent again only when the decks or the language changed
+	private decksSent = "";
+
+	private async sendDecks()
+	{
+		const key = JSON.stringify([this.cards.language, this.cards.decks]);
+		if (key === this.decksSent)
+		{
+			return;
+		}
+		this.decksSent = key;
+		await this.engine.send("decks", engineDecks(this.cards));
+	}
+
 	saveCards(state: CardsState)
 	{
 		this.cards = state;
+		if (this.decksSent !== "")    // after start's first send
+		{
+			void this.sendDecks();
+		}
 		this.save(this.store.put("cards", JSON.parse(JSON.stringify(state))));
 		// a deleted deck's or edited card's pictures go
 		const names = Object.keys(this.pictures);

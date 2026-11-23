@@ -46,6 +46,7 @@ BUILTINS = {
     "ceil": "ceil(x) - the next whole number up: ceil(1.2) = 2",
     "floor": "floor(x) - the next whole number down: floor(-1.2) = -2",
     "rand": "rand([a], [b]) - random: rand() 0 to 1, rand(6) 0 to 6, rand(1, 6) 1 to 6; rand(1.0, 6) a decimal",
+    "card": 'card("deck", [count], [no repeat]) - cards drawn by weight: card("Dice"), card("Food", 3), card("Food", 3, 1) none twice',
     "rands": "rands([seed]) - rands(42): the next rand() draws repeat; rands(): unpredictable again",
     "randbeta": "randbeta(a, b, [from, to]) - random in a Beta shape: randbeta(4, 4, 1, 10) a bell, whole 1 to 10",
     "randtri": "randtri(peak, [from, to]) - random in a triangle: randtri(3, 1, 10) peaks at 3",

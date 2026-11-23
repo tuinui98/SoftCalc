@@ -49,6 +49,7 @@ internal sealed class EngineSession : IDisposable
 	private string _definitions = "";
 	private JsonObject? _rates;
 	private JsonObject? _prices;
+	private JsonObject? _decks;
 
 	public event EventHandler<string>? Restarted;
 
@@ -62,6 +63,9 @@ internal sealed class EngineSession : IDisposable
 
 	// Fetches coin prices (a set_prices payload) when an eval needs them (crypto_plan C1)
 	public Func<Task<JsonObject>>? PricesProvider { get; set; }
+
+	// card()'s decks (a `decks` payload) when they changed since the last call, else null (owner 2026-11-24)
+	public Func<JsonObject?>? DecksProvider { get; set; }
 
 	public EngineSession(ProcessStartInfo startInfo)
 	{
@@ -89,6 +93,11 @@ internal sealed class EngineSession : IDisposable
 		JsonObject reply;
 		try
 		{
+			if (DecksProvider?.Invoke() is { } decks)
+			{
+				_decks = decks;
+				await RequestAsync("decks", decks.DeepClone().AsObject(), QuickTimeout);
+			}
 			reply = await RequestAsync("eval", new JsonObject { ["input"] = input }, EvalTimeout);
 		}
 		catch (EngineLostException ex)
@@ -418,6 +427,10 @@ internal sealed class EngineSession : IDisposable
 		if (_prices != null)
 		{
 			await RequestAsync("set_prices", _prices.DeepClone().AsObject(), QuickTimeout);
+		}
+		if (_decks != null)
+		{
+			await RequestAsync("decks", _decks.DeepClone().AsObject(), QuickTimeout);
 		}
 		Restarted?.Invoke(this, reason);
 	}

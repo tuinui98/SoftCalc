@@ -215,5 +215,14 @@ fails the request with that error. The draws are not kept as `$n`.
 at this one's settings, so the calculator's own seed, `$n` and answer
 are left as they were.
 
+### `decks`
+`{"decks": [{"name": "Food", "alias": "...", "cards": [{"name": "Rice", "weight": 2, "off": true}, ...]}, ...]}`
+-> `{"decks": <int>}`. The decks `card("Deck", [count], [no repeat])`
+draws from (owner 2026-11-24): the user's own first, then the ready-made
+ones with names in the language chosen; `alias` is a ready-made deck's
+name in the other language. A name matches in any case; the first deck
+of a name wins. Cards with `off` (saved to start unticked) are left out
+of draws. Replaces the decks sent before; the reply counts the decks.
+
 ### `shutdown`
 `{}` -> `{}`, then the process exits.

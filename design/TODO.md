@@ -574,6 +574,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       cards: a list. A quoted name is new to the parser (only here).
       No card values for the playing cards (not needed). Desktop, web
       and APK alike.
+  - Built 2026-11-24 (engine cards.py, protocol `decks`): several number
+    cards come out as `{3, 5, 1}`, the form a matrix row will take
+    (owner: numbers drawn should go on into matrices; the engine has no
+    matrices yet, so it is text for now); curly quotes from a phone work.
+    Desktop sends cards.json's decks before a line when the file changed;
+    the web when the decks or the language change. To check by the owner.
 
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the

@@ -231,6 +231,9 @@ class Parser:
         if token.kind in ("date", "duration"):
             self.advance()
             return (token.kind, token.text)
+        if token.kind == "string":
+            self.advance()
+            return ("str", token.text)
         if token.kind == "name":
             if token.text.lower() == KEYWORD_MOD:
                 raise CalcError("'mod' needs a left operand")

@@ -101,6 +101,7 @@ internal sealed partial class MainForm : Form
 		_session.DefinitionsChanged += (_, text) => OnDefinitionsChanged(text);
 		_rates = new RatesSource(folder.RatesPath);
 		_session.RatesProvider = FetchRatesAsync;
+		_session.DecksProvider = ChangedDecks;
 		_prices = new PriceSource(folder.PricesPath);
 		_session.PricesProvider = FetchPricesAsync;
 		_watcher = new CryptoWatcher(folder, _prefs.Crypto, PricesForWindowAsync)
@@ -294,6 +295,23 @@ internal sealed partial class MainForm : Form
 		{
 			_randomWindow.Activate();
 		}
+	}
+
+	// card() in Input (owner 2026-11-24): cards.json again when it changed since the last line
+	private (DateTime Time, long Length) _decksStamp = (DateTime.MinValue, -2);
+
+	private System.Text.Json.Nodes.JsonObject? ChangedDecks()
+	{
+		string path = Path.Combine(_folder.Root, "cards.json");
+		var info = new FileInfo(path);
+		var stamp = info.Exists ? (info.LastWriteTimeUtc, info.Length) : (DateTime.MinValue, -1L);
+		if (stamp == _decksStamp)
+		{
+			return null;
+		}
+		_decksStamp = stamp;
+		var file = (info.Exists ? CardStore.TryRead(path) : null) ?? new CardFile();
+		return CardStore.EngineDecks(file.Decks, file.Language);
 	}
 
 	// File > Export Decks / Import Decks: all my card decks in one zip (owner 2026-11-23); through
