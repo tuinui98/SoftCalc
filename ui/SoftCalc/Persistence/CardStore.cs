@@ -138,40 +138,76 @@ internal sealed class CardStore
 	// A picture file shrunk and stored; returns its file name, or why not
 	public (string? Name, string? Error) ImportImage(string source)
 	{
+		byte[] bytes;
+		try
+		{
+			bytes = System.IO.File.ReadAllBytes(source);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+		{
+			return (null, $"'{System.IO.Path.GetFileName(source)}' could not be read as a picture.");
+		}
+		var (name, error) = StoreImage(bytes, keepSmallPng: false);
+		return (name, error == null ? null : $"'{System.IO.Path.GetFileName(source)}' could not be read as a picture.");
+	}
+
+	// A picture's bytes stored as a PNG of at most ImageSize; keepSmallPng keeps a PNG that is
+	// already small as it is (Import Decks), so a deck going out and back keeps its file names
+	public (string? Name, string? Error) StoreImage(byte[] bytes, bool keepSmallPng)
+	{
 		if (ImagesDir == null)
 		{
 			return (null, "Pictures need the data folder.");
 		}
 		try
 		{
-			using var original = new Bitmap(new MemoryStream(System.IO.File.ReadAllBytes(source)));
-			double scale = Math.Min(1.0, (double)ImageSize / Math.Max(original.Width, original.Height));
-			int width = Math.Max(1, (int)Math.Round(original.Width * scale));
-			int height = Math.Max(1, (int)Math.Round(original.Height * scale));
-			using var small = new Bitmap(width, height, PixelFormat.Format32bppArgb);
-			using (var g = Graphics.FromImage(small))
+			using var original = new Bitmap(new MemoryStream(bytes));
+			byte[] png;
+			if (keepSmallPng && original.RawFormat.Equals(ImageFormat.Png) && Math.Max(original.Width, original.Height) <= ImageSize)
 			{
-				g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-				g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-				g.DrawImage(original, 0, 0, width, height);
+				png = bytes;
 			}
-			using var png = new MemoryStream();
-			small.Save(png, ImageFormat.Png);
-			byte[] bytes = png.ToArray();
-			string name = Convert.ToHexString(SHA256.HashData(bytes))[..16].ToLowerInvariant() + ".png";
+			else
+			{
+				double scale = Math.Min(1.0, (double)ImageSize / Math.Max(original.Width, original.Height));
+				int width = Math.Max(1, (int)Math.Round(original.Width * scale));
+				int height = Math.Max(1, (int)Math.Round(original.Height * scale));
+				using var small = new Bitmap(width, height, PixelFormat.Format32bppArgb);
+				using (var g = Graphics.FromImage(small))
+				{
+					g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+					g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+					g.DrawImage(original, 0, 0, width, height);
+				}
+				using var stream = new MemoryStream();
+				small.Save(stream, ImageFormat.Png);
+				png = stream.ToArray();
+			}
+			string name = ImageNameOf(png);
 			Directory.CreateDirectory(ImagesDir);
 			string target = System.IO.Path.Combine(ImagesDir, name);
 			if (!System.IO.File.Exists(target))
 			{
-				DataFolder.WriteAtomic(target, bytes);
+				DataFolder.WriteAtomic(target, png);
 			}
 			return (name, null);
 		}
 		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or ExternalException
 			or OutOfMemoryException)
 		{
-			return (null, $"'{System.IO.Path.GetFileName(source)}' could not be read as a picture.");
+			return (null, "The picture could not be read.");
 		}
+	}
+
+	// A picture's file name: made from its content
+	public static string ImageNameOf(byte[] png)
+	{
+		return Convert.ToHexString(SHA256.HashData(png))[..16].ToLowerInvariant() + ".png";
+	}
+
+	public static bool IsImageName(string name)
+	{
+		return ImageName.IsMatch(name);
 	}
 
 	// Pictures no deck uses; a picture added in the last hour stays, as another
@@ -212,24 +248,7 @@ internal sealed class CardStore
 			.DistinctBy(d => d.Id).Take(MaxDecks).ToList();
 		foreach (var deck in file.Decks)
 		{
-			deck.Name = Trim(deck.Name, "Deck");
-			deck.Thai = null;
-			deck.Cards = (deck.Cards ?? new()).Where(c => c != null && !string.IsNullOrWhiteSpace(c.Name))
-				.Take(CardText.MaxCards).ToList();
-			foreach (var card in deck.Cards)
-			{
-				card.Name = Trim(card.Name, "Card");
-				card.Thai = null;
-				card.Weight = Math.Clamp(card.Weight, 1, CardText.MaxWeight);
-				if (card.Image != null && !ImageName.IsMatch(card.Image))
-				{
-					card.Image = null;
-				}
-				if (card.Color != null && !Regex.IsMatch(card.Color, "^#[0-9A-Fa-f]{6}$"))
-				{
-					card.Color = null;
-				}
-			}
+			SanitizeDeck(deck);
 		}
 		file.Draws = (file.Draws ?? new()).Where(d => d != null && !string.IsNullOrEmpty(d.Id)).DistinctBy(d => d.Id)
 			.Take(MaxDraws).ToList();
@@ -259,6 +278,29 @@ internal sealed class CardStore
 			}
 			draw.History = (draw.History ?? new()).Where(h => h?.Text != null).Take(CardDraws.MaxHistory).ToList();
 			draw.Draws = Math.Max(0, draw.Draws);
+		}
+	}
+
+	// A deck of the user's own from a file (cards.json, Import Decks)
+	public static void SanitizeDeck(Deck deck)
+	{
+		deck.Name = Trim(deck.Name, "Deck");
+		deck.Thai = null;
+		deck.Cards = (deck.Cards ?? new()).Where(c => c != null && !string.IsNullOrWhiteSpace(c.Name))
+			.Take(CardText.MaxCards).ToList();
+		foreach (var card in deck.Cards)
+		{
+			card.Name = Trim(card.Name, "Card");
+			card.Thai = null;
+			card.Weight = Math.Clamp(card.Weight, 1, CardText.MaxWeight);
+			if (card.Image != null && !ImageName.IsMatch(card.Image))
+			{
+				card.Image = null;
+			}
+			if (card.Color != null && !Regex.IsMatch(card.Color, "^#[0-9A-Fa-f]{6}$"))
+			{
+				card.Color = null;
+			}
 		}
 	}
 

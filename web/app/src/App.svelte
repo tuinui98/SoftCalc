@@ -203,14 +203,16 @@
 	}
 
 	//==================================================================
-	//  Export and Import: the desktop's history.jsonl and .pcf (owner 2026-11-19)
+	//  Export and Import: the desktop's history.jsonl, .pcf and decks zip (owner 2026-11-19, 2026-11-23)
 	//==================================================================
 	const HISTORY_ITEM = "History";
 	const NAMES_ITEM = "Variables and functions";
+	const DECKS_ITEM = "My card decks";
+	const ALL_ITEM = "All";
 
 	async function exportFiles()
 	{
-		const what = await pick("Export", [HISTORY_ITEM, NAMES_ITEM, "Both"]);
+		const what = await pick("Export", [HISTORY_ITEM, NAMES_ITEM, DECKS_ITEM, ALL_ITEM]);
 		if (!what)
 		{
 			return;
@@ -219,15 +221,26 @@
 		{
 			const files: OutFile[] = [];
 			const names = exportNames();
-			if (what !== NAMES_ITEM)
+			if (what === HISTORY_ITEM || what === ALL_ITEM)
 			{
 				// The .pcf's octet-stream downloads in Chrome on Android, its ndjson did not (owner 2026-11-19)
 				files.push({ name: names.history, type: "application/octet-stream",
 					bytes: new TextEncoder().encode(historyText(calc.historyLines())) });
 			}
-			if (what !== HISTORY_ITEM)
+			if (what === NAMES_ITEM || what === ALL_ITEM)
 			{
 				files.push({ name: names.definitions, type: "application/octet-stream", bytes: pcfBytes(withGraph(await calc.definitionsText(), calc.graph)) });
+			}
+			const decks = what === DECKS_ITEM || what === ALL_ITEM ? calc.decksFile() : null;
+			if (decks)
+			{
+				files.push({ name: names.decks, type: "application/zip", bytes: decks });
+			}
+			else if (what === DECKS_ITEM)
+			{
+				calc.say("No card decks of your own to export: Random > Cards > New deck makes one");
+				focusInput();
+				return;
 			}
 			const where = await saveFiles(files);
 			calc.say(files.length === 1 ? `Saved to ${where}: ${files[0].name}` : `Saved ${files.length} files to ${where}`);

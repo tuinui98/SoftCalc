@@ -296,6 +296,28 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
+	// File > Export Decks / Import Decks: all my card decks in one zip (owner 2026-11-23); through
+	// the Random window's store when it is open, so it shows them and does not write over them
+	private void ExportDecks()
+	{
+		var store = _randomWindow is { IsDisposed: false } open ? open.Cards : new CardStore(_folder);
+		if (RandomWindow.SaveDecksZip(this, store) is { } said)
+		{
+			MessageBox.Show(this, said, "Export Decks", MessageBoxButtons.OK, MessageBoxIcon.Information);
+		}
+	}
+
+	private void ImportDecks()
+	{
+		var open = _randomWindow is { IsDisposed: false } window ? window : null;
+		var store = open?.Cards ?? new CardStore(_folder);
+		if (RandomWindow.OpenDecksZip(this, store) is { } said)
+		{
+			open?.DecksImported();
+			MessageBox.Show(this, said.Text, "Import Decks", MessageBoxButtons.OK, said.Error ? MessageBoxIcon.Warning : MessageBoxIcon.Information);
+		}
+	}
+
 	// Tools > Cryptocurrency: address checks and fees, offline (design/crypto_plan.md C0)
 	private void OpenCryptoWindow(string? tab = null)
 	{
@@ -554,6 +576,9 @@ internal sealed partial class MainForm : Form
 		file.DropDownItems.Add(new ToolStripMenuItem("&Save Functions && Variables...", null, (_, _) => SaveDefinitionsAs()));
 		file.DropDownItems.Add(new ToolStripMenuItem("&Load Functions && Variables...", null,
 			async (_, _) => await LoadDefinitionsAsync()));
+		file.DropDownItems.Add(new ToolStripSeparator());
+		file.DropDownItems.Add(new ToolStripMenuItem("Export &Decks...", null, (_, _) => ExportDecks()));
+		file.DropDownItems.Add(new ToolStripMenuItem("Import Dec&ks...", null, (_, _) => ImportDecks()));
 		file.DropDownItems.Add(new ToolStripSeparator());
 		file.DropDownItems.Add(new ToolStripMenuItem("E&xit", null, (_, _) => ExitForReal()));
 

@@ -2,9 +2,10 @@
 //
 // Owner 2026-11-14: the tab strip ends in a "..." tab; it makes a new
 // draw tab, and holds the decks: the user's own (New, Edit, Copy,
-// Delete, Import CSV, Export CSV) and the ready-made ones (View, Copy to
-// my decks, Export CSV), named in English or Thai. Decks are saved in
-// cards.json at once (CardStore).
+// Delete, Import CSV, Export CSV, and all of them in one zip with their
+// pictures: Import decks, Export all decks, also in the File menu) and
+// the ready-made ones (View, Copy to my decks, Export CSV), named in
+// English or Thai. Decks are saved in cards.json at once (CardStore).
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -46,7 +47,8 @@ internal sealed partial class RandomWindow
 		// My decks
 		var myButtons = Buttons(
 			("&Edit...", EditDeck), ("&Copy", CopyDeck), ("De&lete", DeleteDeck),
-			("&Import CSV...", ImportDeck), ("E&xport CSV...", () => ExportSelected(_myDecks)));
+			("&Import CSV...", ImportDeck), ("E&xport CSV...", () => ExportSelected(_myDecks)),
+			("Import deck&s...", ImportDecks), ("Export &all decks...", ExportDecks));
 		_myDecks.DoubleClick += (_, _) => EditDeck();
 		var mine = Group("My decks", _myDecks, myButtons);
 
@@ -227,6 +229,97 @@ internal sealed partial class RandomWindow
 		{
 			DeckEditor.ExportDeck(this, deck, _cards, Language, _cardsNote);
 		}
+	}
+
+	//==================================================================
+	//  All my decks in one zip (owner 2026-11-23; DeckTransfer)
+	//==================================================================
+	internal CardStore Cards => _cards;
+
+	private void ExportDecks()
+	{
+		if (SaveDecksZip(this, _cards) is { } said)
+		{
+			Tell(_cardsNote, said);
+		}
+	}
+
+	private void ImportDecks()
+	{
+		if (OpenDecksZip(this, _cards) is { } said)
+		{
+			DecksImported();
+			Tell(_cardsNote, said.Text, error: said.Error);
+		}
+	}
+
+	// After decks came in (here or through the File menu)
+	internal void DecksImported()
+	{
+		FillDecks();
+		DecksChanged();
+	}
+
+	// Save dialog and zip; returns what to tell, or null when cancelled
+	internal static string? SaveDecksZip(IWin32Window owner, CardStore store)
+	{
+		if (store.File.Decks.Count == 0)
+		{
+			return "No decks of my own to export: New deck or Copy to my decks makes one.";
+		}
+		using var dialog = new SaveFileDialog
+		{
+			Title = "Export all my decks", Filter = "SoftCalc decks (*.zip)|*.zip", DefaultExt = "zip",
+			FileName = DeckTransfer.ExportName(DateTime.Now),
+		};
+		if (dialog.ShowDialog(owner) != DialogResult.OK)
+		{
+			return null;
+		}
+		try
+		{
+			DataFolder.WriteAtomic(dialog.FileName, DeckTransfer.Write(store.File.Decks, store));
+			return $"{store.File.Decks.Count} deck(s) saved to {Path.GetFileName(dialog.FileName)}.";
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			return "Not exported: " + ex.Message;
+		}
+	}
+
+	// Open dialog, read and add; saves cards.json. Returns what to tell, or null when cancelled
+	internal static (string Text, bool Error)? OpenDecksZip(IWin32Window owner, CardStore store)
+	{
+		using var dialog = new OpenFileDialog
+		{
+			Title = "Import decks", Filter = "SoftCalc decks (*.zip)|*.zip|All files (*.*)|*.*", Multiselect = true,
+		};
+		if (dialog.ShowDialog(owner) != DialogResult.OK)
+		{
+			return null;
+		}
+		var said = new List<string>();
+		bool error = false;
+		foreach (string path in dialog.FileNames)
+		{
+			var (read, problem) = DeckTransfer.Read(path);
+			if (read == null)
+			{
+				said.Add($"{Path.GetFileName(path)}: {problem}");
+				error = true;
+				continue;
+			}
+			said.Add($"{Path.GetFileName(path)}: {DeckTransfer.Import(store, read).Report()}");
+		}
+		try
+		{
+			store.Save();
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			return ("The decks could not be saved: " + ex.Message, true);
+		}
+		return (string.Join(" ", said), error);
 	}
 
 	private void ViewDeck()
