@@ -598,8 +598,22 @@ ends 1:1, the drag insert line is visible enough on dark.
       certain that it cannot clash with conversions and formats (plan
       step X0); one-line display, a table later; a list fits as a row or
       a column; at most 10000 cells, inv/det/solve at most 50x50;
-      variables, $n and the .pcf hold matrices; no RPN. Plan proposed
-      2026-11-24, waiting for the owner's OK.
+      variables, $n and the .pcf hold matrices; no RPN.
+  - [x] Round 1 built and merged 2026-11-24 (X0-X3): lists and matrices,
+        25 functions, Functions > Matrix, hints; checked against SymPy
+        (1388 cases), which found and fixed det 0 with decimal cells.
+        Help 16-errors has the list/matrix errors and the accuracy notes.
+  - [ ] Help topic "Matrices" (how to write them, the functions), when
+        the owner says the matrix topic is done.
+  - [ ] Round 2, each to discuss: table display in History; eig, rank,
+        norm, median, stdev, var; unit tags on a list (`[1, 2] [m->ft]`);
+        maybe hide digits an ill-conditioned matrix cannot vouch for.
+  - [ ] Time 50x50 inv/solve on the web (Pyodide); 2.3 s on the desktop.
+
+## Conversions (owner 2026-11-24)
+- [x] One Conversions > Cryptocurrency submenu (Bitcoin, Ethereum, Tron,
+      Tether); a coin unit also goes to the other coins and the common
+      currencies; old ribbon ids still work. Merged 2026-11-24.
 
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the
