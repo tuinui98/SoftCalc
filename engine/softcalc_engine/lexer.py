@@ -134,6 +134,15 @@ def read_tag(text, i):
     return Token("tag", body, i), close + 1
 
 
+def ends_value(token):
+    """A token a value can end with: a `[` after it is a tag, not a list."""
+    if token.kind in ("number", "imag", "ref", "rnw", "date", "duration", "string", "tag"):
+        return True
+    if token.kind == "name":
+        return token.text.lower() != "mod"
+    return token.kind == "op" and token.text in (")", "]", "!", "%")
+
+
 def tokenize(text):
     """Convert input text into a list of Tokens ending with an `end` token."""
     text = join_digit_spaces(text)
@@ -197,8 +206,18 @@ def tokenize(text):
             i = close + 1
             continue
         if ch == "[":
-            token, i = read_tag(text, i)
-            tokens.append(token)
+            # Right after a value: a conversion or format tag, as always; where an
+            # operand starts: a list (design/matrix_plan.md X0, owner 2026-11-24)
+            if tokens and ends_value(tokens[-1]):
+                token, i = read_tag(text, i)
+                tokens.append(token)
+            else:
+                tokens.append(Token("op", "[", i))
+                i += 1
+            continue
+        if ch == "]":
+            tokens.append(Token("op", "]", i))
+            i += 1
             continue
         raise CalcError(f"Unknown character '{ch}'")
     tokens.append(Token("end", "", len(text)))

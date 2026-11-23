@@ -16,6 +16,8 @@ Nodes are tuples:
 ("mul" marks implicit multiplication, kept apart for display.)
 """
 
+import re
+
 from .errors import CalcError
 from .lexer import tokenize
 from .units import RNW_NAMES
@@ -139,6 +141,9 @@ class Parser:
                 node = ("conv", source, target, node)
             elif body in RNW_NAMES:
                 node = ("conv", "rnw", "rnw", node)    # `[rnw]` is `[rnw->rnw]`
+            elif re.fullmatch(r"[-+0-9.,\[\]]+", body):
+                # `2[1, 2]` or `A[1]`: a [ right after a value is a tag (matrix_plan.md X0)
+                raise CalcError("Write * before a list (2*[1, 2]); at(A, 1) takes a cell")
             else:
                 node = ("fmt", body, node)    # `now [longdatetime]` [EXT]
             if self.peek().kind == "op" and self.peek().text in CONTINUE_OPS or self.at_mod():
@@ -246,9 +251,25 @@ class Parser:
             node = self.chain()
             self.expect_op(")")
             return node
+        if self.at_op("["):
+            return self.list_literal()
         if token.kind == "end":
             raise CalcError("Incomplete expression")
         raise CalcError(f"Unexpected '{token.text}'")
+
+    def list_literal(self):
+        """`[a, b, ...]`: a list, or a matrix when the items are lists (matrix.py)."""
+        self.expect_op("[")
+        if self.at_op("]"):
+            raise CalcError("Empty list: write numbers between [ and ]")
+        items = [self.chain()]
+        while self.at_op(","):
+            self.advance()
+            items.append(self.chain())
+        if not self.at_op("]"):
+            raise CalcError("Missing ']' after a list")
+        self.advance()
+        return ("list", items)
 
     def call(self, name):
         self.expect_op("(")

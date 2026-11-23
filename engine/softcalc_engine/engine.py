@@ -21,6 +21,8 @@ from . import dates, hints
 from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
 from . import cards
+from . import matrix
+from .matrix import Matrix
 from .functions import CARD_FUNCTION, RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
 from .random_shapes import SHAPE_FUNCTIONS, below, shaped
 from .lexer import join_digit_spaces, tokenize
@@ -197,6 +199,8 @@ class Engine:
     def parse(self, text, builtins):
         # Definitions keep infix form even in RPN mode [DEF]
         if self.settings.rpn and "=" not in text:
+            if any(token.kind == "op" and token.text == "[" for token in tokenize(text)):
+                raise CalcError("Lists and matrices are not available in RPN")
             return parse_rpn(text, lambda name: self.rpn_arity(name, builtins))
         return parse_line(text, is_function=lambda name: self.is_function(name, builtins))
 
@@ -218,6 +222,8 @@ class Engine:
         if isinstance(value, TextValue):
             return value.text
         s = self.settings
+        if isinstance(value, Matrix):
+            return value.text(lambda cell: format_number(cell, s.precision, s.base, s.decimals, s.pad_zeros))
         return format_number(value, s.precision, s.base, s.decimals, s.pad_zeros)
 
     #------------------------------------------------------------------
@@ -624,6 +630,8 @@ class Engine:
             return self.lookup(node[1], builtins, scope)
         if kind == "ref":
             return self.result_ref(node[1])
+        if kind == "list":
+            return matrix.from_items([self.eval_node(item, builtins, scope, depth) for item in node[1]])
         if kind == "str":
             raise CalcError('A name in quotes goes only in card("deck")')
         if kind == "call" and node[1].lower() == CARD_FUNCTION:
@@ -1053,6 +1061,8 @@ class Engine:
             for name, value in self.variables.values():
                 if isinstance(value, (DateValue, DurationValue)):
                     lines.append(f"{name}={value.text()}")
+                elif isinstance(value, Matrix):
+                    lines.append(f"{name}={value.text(lambda cell: format_number(cell, self.settings.precision))}")
                 elif not isinstance(value, TextValue):
                     lines.append(f"{name}={format_number(value, self.settings.precision)}")
         for fn in self.functions.values():

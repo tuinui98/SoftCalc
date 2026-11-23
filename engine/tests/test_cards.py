@@ -51,7 +51,7 @@ def test_a_number_card_computes_and_shows_in_history():
 def test_several_cards_make_a_list_and_no_repeat_holds_in_the_call():
     e = engine()
     numbers = e.evaluate('card("Dice", 6, 1)').text
-    assert numbers.startswith("{") and numbers.endswith("}")
+    assert numbers.startswith("[") and numbers.endswith("]")    # a list value (matrix.py)
     assert sorted(numbers[1:-1].split(", ")) == ["1", "2", "3", "4", "5", "6"]
     names = e.evaluate('card("Food", 2, 1)').text
     assert sorted(names.split(", ")) == ["Rice", "Soup"]
