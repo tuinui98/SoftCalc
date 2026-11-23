@@ -848,6 +848,7 @@ internal sealed partial class MainForm : Form
 		_ribbon.ShowSettings(settings);
 		_padZerosItem.Checked = (bool?)settings["pad_zeros"] == true;
 		_allDigitsItem.Checked = settings["decimals"] == null;
+		_history.ShortCells = settings["decimals"] == null;    // a set number of places shows as given
 		bool rpn = (bool?)settings["rpn"] == true;
 		_samples.Text = rpn ? Samples.Rpn : Samples.Infix;
 		_inputBox.Text = rpn ? "Input  -  RPN mode" : "Input";    // visible in every view

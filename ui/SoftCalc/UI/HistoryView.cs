@@ -32,6 +32,9 @@ internal sealed record HistoryEntry(string Kind, string Input, string DisplayInp
 	public string RightText => DisplayInput.StartsWith(Input + " = ", StringComparison.Ordinal)
 		? DisplayInput[(Input.Length + 1)..]
 		: DisplayInput;
+
+	// A matrix result as a table (matrix round 2 D); null for every other result
+	public Logic.MatrixTable? Table { get; } = Kind == "result" ? Logic.MatrixTable.Parse(Text) : null;
 }
 
 internal sealed class HistoryView : ListBox
@@ -51,7 +54,7 @@ internal sealed class HistoryView : ListBox
 
 	public HistoryView()
 	{
-		DrawMode = DrawMode.OwnerDrawFixed;
+		DrawMode = DrawMode.OwnerDrawVariable;    // a matrix result takes a line per row
 		BorderStyle = BorderStyle.None;
 		IntegralHeight = false;
 		HorizontalScrollbar = false;
@@ -66,6 +69,7 @@ internal sealed class HistoryView : ListBox
 		var insertResult = new ToolStripMenuItem("&Insert Result", null, (_, _) => Raise(ResultClicked)) { ShortcutKeyDisplayString = "Shift+Click" };
 		var copyResult = new ToolStripMenuItem("Copy &Result", null, (_, _) => CopySelected(e => e.Text));
 		var copyEntry = new ToolStripMenuItem("Copy &Expression and Result", null, (_, _) => CopySelected(CopyText));
+		var copyTable = new ToolStripMenuItem("Copy as &Table", null, (_, _) => CopySelected(e => e.Table?.Tsv() ?? ""));
 		var copyAll = new ToolStripMenuItem("Copy &All", null, (_, _) => SetClipboard(AllText()));
 		var delete = new ToolStripMenuItem("&Delete", null, (_, _) =>
 		{
@@ -78,7 +82,7 @@ internal sealed class HistoryView : ListBox
 		menu.Items.AddRange(new ToolStripItem[]
 		{
 			useExpression, insertResult, new ToolStripSeparator(),
-			copyResult, copyEntry, new ToolStripSeparator(), copyAll,
+			copyResult, copyEntry, copyTable, new ToolStripSeparator(), copyAll,
 			new ToolStripSeparator(), delete, clear,
 		});
 		menu.Opening += (_, _) =>
@@ -88,6 +92,7 @@ internal sealed class HistoryView : ListBox
 			insertResult.Enabled = Selected is { Kind: "result" };
 			copyResult.Enabled = entry;
 			copyEntry.Enabled = entry;
+			copyTable.Visible = Selected?.Table != null;
 			copyAll.Enabled = _entries.Any(e => e.Kind != "notice");
 			delete.Enabled = Selected != null;
 			clear.Enabled = _entries.Count > 0;
@@ -160,6 +165,49 @@ internal sealed class HistoryView : ListBox
 	{
 		base.OnFontChanged(e);
 		ItemHeight = (Font.Height + 2) * 2 + 4;
+		// Variable heights are measured once per item: add them again
+		BeginUpdate();
+		Items.Clear();
+		Items.AddRange(_entries.Cast<object>().ToArray());
+		EndUpdate();
+	}
+
+	// Decimal Places "All": table cells are shortened; a set number of places is shown as given
+	private bool _shortCells = true;
+
+	[System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+	public bool ShortCells
+	{
+		get => _shortCells;
+		set
+		{
+			if (_shortCells != value)
+			{
+				_shortCells = value;
+				Invalidate();
+			}
+		}
+	}
+
+	private int LineHeight => Font.Height + 2;
+
+	// Table rows shown: at most 10, and as many as fit the 255-pixel item limit
+	private int ShownRows(Logic.MatrixTable table)
+	{
+		int fit = Math.Max(1, (255 - 4) / LineHeight - 2);
+		return Math.Min(table.Rows, Math.Min(Logic.MatrixTable.MaxShown, fit));
+	}
+
+	protected override void OnMeasureItem(MeasureItemEventArgs e)
+	{
+		base.OnMeasureItem(e);
+		if (e.Index < 0 || e.Index >= _entries.Count || _entries[e.Index].Table is not { } table)
+		{
+			e.ItemHeight = ItemHeight;
+			return;
+		}
+		int lines = 1 + ShownRows(table) + (table.Rows > ShownRows(table) ? 1 : 0);
+		e.ItemHeight = Math.Min(255, LineHeight * lines + 4);
 	}
 
 	protected override void OnResize(EventArgs e)
@@ -208,6 +256,11 @@ internal sealed class HistoryView : ListBox
 			}
 		}
 		Color resultColor = entry.Kind == "error" && !selected ? Theme.Error : main;
+		if (entry.Table is { } table)
+		{
+			DrawTable(e.Graphics, table, entry.Note, line2, main, faint);
+			return;
+		}
 		int resultWidth = TextRenderer.MeasureText(e.Graphics, entry.Text, Font, Size.Empty, flags).Width;
 		var resultArea = line2;
 		if (entry.Note.Length > 0)
@@ -229,6 +282,93 @@ internal sealed class HistoryView : ListBox
 			{
 				TextRenderer.DrawText(e.Graphics, entry.Note, Font, note, faint,
 					flags | TextFormatFlags.Right | TextFormatFlags.EndEllipsis);
+			}
+		}
+	}
+
+	//==================================================================
+	//  A matrix result: right-aligned columns between brackets, the size beside
+	//==================================================================
+	private void DrawTable(Graphics g, Logic.MatrixTable table, string note, Rectangle first, Color main, Color faint)
+	{
+		const TextFormatFlags flags = TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine | TextFormatFlags.VerticalCenter;
+		int rows = ShownRows(table);
+		int cols = Math.Min(table.Cols, Logic.MatrixTable.MaxShown);
+		bool moreRows = table.Rows > rows;
+		var text = new string[rows, cols];
+		var full = new int[cols];
+		for (int c = 0; c < cols; c++)
+		{
+			for (int r = 0; r < rows; r++)
+			{
+				text[r, c] = _shortCells ? Logic.MatrixTable.Short(table.Cells[r][c]) : table.Cells[r][c];
+				full[c] = Math.Max(full[c], TextRenderer.MeasureText(g, text[r, c], Font, Size.Empty, flags).Width);
+			}
+		}
+		int bracketWidth = Math.Max(4, Font.Height / 4);
+		int gapWidth = Math.Max(8, Font.Height / 2);
+		int dotsWidth = TextRenderer.MeasureText(g, "…", Font, Size.Empty, flags).Width;
+		int sizeWidth = TextRenderer.MeasureText(g, table.Size, Font, Size.Empty, flags).Width;
+
+		// As many columns as the width holds, keeping room for "…", the bracket and the size
+		int fit = 1;
+		int used = bracketWidth * 2 + full[0] + gapWidth;
+		while (fit < cols)
+		{
+			bool last = fit + 1 == cols && table.Cols == cols;
+			int after = used + full[fit] + gapWidth + (last ? 0 : dotsWidth + gapWidth);
+			if (first.Left + after + Gap + sizeWidth > first.Right)
+			{
+				break;
+			}
+			used += full[fit] + gapWidth;
+			fit++;
+		}
+		bool moreCols = table.Cols > fit;
+		int columns = fit + (moreCols ? 1 : 0);
+		var cells = new string[rows, columns];
+		var widths = new int[columns];
+		for (int c = 0; c < columns; c++)
+		{
+			widths[c] = c < fit ? full[c] : dotsWidth;
+			for (int r = 0; r < rows; r++)
+			{
+				cells[r, c] = c < fit ? text[r, c] : "…";
+			}
+		}
+		int left = first.Left;
+		int top = first.Top;
+		int height = LineHeight * (rows + (moreRows ? 1 : 0));
+		int x = left + bracketWidth + gapWidth / 2;
+		using var pen = new Pen(main);
+		for (int c = 0; c < columns; c++)
+		{
+			for (int r = 0; r < rows; r++)
+			{
+				var cell = new Rectangle(x, top + r * LineHeight, widths[c], LineHeight);
+				TextRenderer.DrawText(g, cells[r, c], Font, cell, main, flags | TextFormatFlags.Right);
+			}
+			if (moreRows)
+			{
+				var dots = new Rectangle(x, top + rows * LineHeight, widths[c], LineHeight);
+				TextRenderer.DrawText(g, "⋮", Font, dots, faint, flags | TextFormatFlags.HorizontalCenter);
+			}
+			x += widths[c] + gapWidth;
+		}
+		int right = x - gapWidth / 2 + bracketWidth;
+		int y0 = top + 2;
+		int y1 = top + height - 2;
+		g.DrawLines(pen, new[] { new Point(left + bracketWidth, y0), new Point(left, y0), new Point(left, y1), new Point(left + bracketWidth, y1) });
+		g.DrawLines(pen, new[] { new Point(right - bracketWidth, y0), new Point(right, y0), new Point(right, y1), new Point(right - bracketWidth, y1) });
+
+		// The size beside the first row; a note (digits that may be off) beside the second
+		var lines = rows > 1 && note.Length > 0 ? new[] { table.Size, note } : new[] { note.Length > 0 ? $"{table.Size}   {note}" : table.Size };
+		for (int i = 0; i < lines.Length; i++)
+		{
+			var beside = Rectangle.FromLTRB(right + Gap, top + i * LineHeight, first.Right, top + (i + 1) * LineHeight);
+			if (beside.Width > 20)
+			{
+				TextRenderer.DrawText(g, lines[i], Font, beside, faint, flags | TextFormatFlags.EndEllipsis);
 			}
 		}
 	}
