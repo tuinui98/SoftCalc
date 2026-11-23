@@ -18,9 +18,11 @@ import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
 import { inputsFrom, type CompoundInputs, type Schedule } from "./compound";
 import { cardsFrom, type CardsState } from "./cards";
+import { decksZip, importDecks, readDecks, report, usedPictures, type Pictures } from "./decks";
 import { prefsFrom, type RandomPrefs } from "./random";
 import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from "./graph";
 import { HISTORY_LIMIT, type Store } from "./store";
+import { isZip } from "./zip";
 import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
 
 export interface EngineLike
@@ -87,6 +89,7 @@ export class Calculator
 	compound: CompoundInputs = inputsFrom(null);    // ⋮ > Compound's inputs, kept between visits
 	random: RandomPrefs = prefsFrom(null);    // ⋮ > Random's options (never results or a signature)
 	cards: CardsState = cardsFrom(null);    // Random > Cards: own decks, unticked cards, piles
+	pictures: Pictures = {};    // the own decks' pictures by name (decks.ts), kept for Export Decks
 	hint = "";                 // the line under Input (engine `hint`), "" for none
 	showHints = true;
 	private hintAsked = 0;     // newest hint request; older replies are dropped
@@ -148,6 +151,11 @@ export class Calculator
 		this.compound = inputsFrom(await this.store.get("compound"));
 		this.random = prefsFrom(await this.store.get("random"));
 		this.cards = cardsFrom(await this.store.get("cards"));
+		const pictures = await this.store.get("pictures");
+		if (typeof pictures === "object" && pictures !== null)
+		{
+			this.pictures = Object.fromEntries(Object.entries(pictures).filter(([, bytes]) => bytes instanceof Uint8Array));
+		}
 		this.changed();
 		const version = await this.engine.ready;
 		const wanted = { angle: "deg", ...pick(saved.settings, ["precision", "angle", "base", "rpn", "decimals", "pad_zeros", "word_size"]) };
@@ -583,6 +591,38 @@ export class Calculator
 	{
 		this.cards = state;
 		this.save(this.store.put("cards", JSON.parse(JSON.stringify(state))));
+		// a deleted deck's or edited card's pictures go
+		const names = Object.keys(this.pictures);
+		if (names.length > 0)
+		{
+			const used = usedPictures(state.decks);
+			if (names.some(name => !used.has(name)))
+			{
+				this.pictures = Object.fromEntries(Object.entries(this.pictures).filter(([name]) => used.has(name)));
+				this.save(this.store.put("pictures", this.pictures));
+			}
+		}
+	}
+
+	// Export Decks (owner 2026-11-23): all own decks and their pictures in one zip, null when there are none
+	decksFile(time = new Date()): Uint8Array | null
+	{
+		return this.cards.decks.length === 0 ? null : decksZip(this.cards.decks, this.pictures, time);
+	}
+
+	// Import Decks: adds a zip's decks to the own decks; what to say, and whether it went wrong
+	async importDecks(name: string, bytes: Uint8Array): Promise<{ said: string; error: boolean }>
+	{
+		const { read, error } = await readDecks(bytes);
+		if (!read)
+		{
+			return { said: `${name}: ${error}`, error: true };
+		}
+		const result = importDecks(this.cards, this.pictures, read);
+		this.pictures = result.pictures;
+		this.save(this.store.put("pictures", this.pictures));
+		this.saveCards(result.state);
+		return { said: `${name}: ${report(result.done)}`, error: false };
 	}
 
 	saveRandom(prefs: RandomPrefs)
@@ -699,10 +739,16 @@ export class Calculator
 		return String(exported.text ?? "");
 	}
 
-	// A history.jsonl merges into History; anything else is a .pcf whose definitions are added.
+	// A history.jsonl merges into History, a zip is Import Decks; anything else is a .pcf whose definitions are added.
 	// Returns what the status line says.
 	async importFile(name: string, bytes: Uint8Array): Promise<string>
 	{
+		if (isZip(bytes))
+		{
+			this.status = (await this.importDecks(name, bytes)).said;
+			this.changed();
+			return this.status;
+		}
 		await this.started;
 		if (!this.ready)
 		{

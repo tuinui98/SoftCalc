@@ -68,7 +68,10 @@ function base64(bytes: Uint8Array): string
 }
 
 // What Export saves and older Android exports were saved as; .jsonl and .pcf are octet-stream to Android
-const PICK_TYPES = ".jsonl,.pcf,.txt,application/octet-stream,application/x-ndjson,application/json,text/plain";
+const PICK_TYPES = ".jsonl,.pcf,.txt,.zip,application/octet-stream,application/x-ndjson,application/json,text/plain,application/zip,application/x-zip-compressed";
+
+// Import Decks' zip
+export const ZIP_TYPES = ".zip,application/zip,application/x-zip-compressed,application/octet-stream";
 
 // A deck's CSV (Random > Cards), as phones and Excel name it
 export const CSV_TYPES = ".csv,text/csv,text/comma-separated-values,application/vnd.ms-excel,text/plain,application/octet-stream";

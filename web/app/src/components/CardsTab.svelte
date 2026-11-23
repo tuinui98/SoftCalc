@@ -1,7 +1,8 @@
 <!-- CardsTab.svelte - Random > Cards (owner 2026-11-20, R3): draw cards from a deck.
      The desktop's ready-made decks in English or Thai, and decks of your own: New, Edit (one card a
      line, "name | weight"), Copy a ready-made one to your decks, Delete, Import and Export CSV (the
-     desktop's file). Untick cards to leave them out; No repeat keeps drawn cards out until Shuffle,
+     desktop's file), and all your decks with their pictures in one zip (Import decks, Export all decks;
+     also ⋮ > Export / Import). Untick cards to leave them out; No repeat keeps drawn cards out until Shuffle,
      also next time. Cards are drawn by weight from the secure generator (cards.ts). -->
 <script lang="ts">
 	import type { Calculator } from "../lib/calc";
@@ -10,7 +11,8 @@
 		type CardsState, type Deck,
 	} from "../lib/cards";
 	import { copyText } from "../lib/clipboard";
-	import { CSV_TYPES, pickFiles, saveFiles } from "../lib/files";
+	import { CSV_TYPES, pickFiles, saveFiles, ZIP_TYPES } from "../lib/files";
+	import { exportNames } from "../lib/transfer";
 	import { secure } from "../lib/random";
 	import { tapOn } from "../lib/repeat";
 	import Sheet from "./Sheet.svelte";
@@ -182,8 +184,12 @@
 			return;
 		}
 		const old = s.decks.find(d => d.id === e.id);
-		// colours stay with the cards that keep their name
-		const cardsNow = parsed.cards.map(card => ({ ...card, ...(old?.cards.find(c => c.name === card.name)?.color ? { color: old.cards.find(c => c.name === card.name)!.color } : {}) }));
+		// colours, pictures and unticked starts stay with the cards that keep their name
+		const cardsNow = parsed.cards.map(card =>
+		{
+			const was = old?.cards.find(c => c.name === card.name);
+			return { ...card, ...(was?.color ? { color: was.color } : {}), ...(was?.image ? { image: was.image } : {}), ...(was?.off ? { off: true } : {}) };
+		});
 		if (e.id === null)
 		{
 			const made: Deck = { id: newDeckId(), name, cards: cardsNow };
@@ -249,6 +255,49 @@
 			say("Not saved: " + (problem instanceof Error ? problem.message : String(problem)), true);
 		}
 	}
+
+	//==================================================================
+	//  All my decks in one zip (owner 2026-11-23; decks.ts)
+	//==================================================================
+	async function exportAll()
+	{
+		calc.saveCards($state.snapshot(s) as CardsState);
+		const bytes = calc.decksFile();
+		if (!bytes)
+		{
+			say("No decks of your own to export: New deck or Copy to my decks makes one.");
+			return;
+		}
+		const name = exportNames().decks;
+		try
+		{
+			const where = await saveFiles([{ name, type: "application/zip", bytes }]);
+			say(`Saved ${s.decks.length} deck(s) to ${where}: ${name}`);
+		}
+		catch (problem)
+		{
+			say("Not saved: " + (problem instanceof Error ? problem.message : String(problem)), true);
+		}
+	}
+
+	async function importAll()
+	{
+		const files = await pickFiles(ZIP_TYPES);
+		const said: string[] = [];
+		let failed = false;
+		for (const file of files)
+		{
+			calc.saveCards($state.snapshot(s) as CardsState);
+			const done = await calc.importDecks(file.name, new Uint8Array(await file.arrayBuffer()));
+			s = structuredClone(calc.cards);
+			said.push(done.said);
+			failed ||= done.error;
+		}
+		if (said.length > 0)
+		{
+			say(said.join(" "), failed);
+		}
+	}
 </script>
 
 <div class="form">
@@ -301,6 +350,8 @@
 		{/if}
 		<button use:tap={() => void importCsv()}>Import CSV</button>
 		<button use:tap={() => void exportCsv()}>Export CSV</button>
+		<button use:tap={() => void importAll()}>Import decks</button>
+		<button use:tap={() => void exportAll()}>Export all decks</button>
 	</div>
 	{#if note}<p class="note" class:error>{note}</p>{/if}
 </div>

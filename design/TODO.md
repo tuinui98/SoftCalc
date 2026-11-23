@@ -544,6 +544,12 @@ ends 1:1, the drag insert line is visible enough on dark.
     the pictures it cannot show yet, so an export from the web still
     carries them. Zip read with limits (size, file count, no paths out of
     the folder). Draw tabs not exported.
+  - Built 2026-11-23 (DeckTransfer.cs; web decks.ts and its own small zip
+    reader/writer zip.ts, no library): File > Export Decks / Import Decks,
+    the "..." tab's Import decks / Export all decks; web ⋮ Export > My card
+    decks / All, ⋮ Import takes the zip, Cards tab Import decks / Export
+    all decks. A small PNG comes in as it was, so its name stays the same
+    both ways. To check by the owner on the desktop and the phone.
 - [x] Desktop ribbon rows (owner 2026-11-22): a group can be locked to
       start row 2 (Customize Ribbon). Every group after it follows it on
       row 2. The groups before it fill row 1; when the window is narrow,

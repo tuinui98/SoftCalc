@@ -2,8 +2,9 @@
 //
 // The desktop's ready-made decks (data/decks/*.txt, shared; ReadyDecks.cs)
 // and decks of the user's own, typed as "name | weight" lines or read from
-// CSV (name,weight,image,color; Cards.cs, so files go both ways; images are
-// not kept here). A draw picks by weight among the ticked cards; No repeat
+// CSV (name,weight,image,color; Cards.cs, so files go both ways; a CSV's
+// images are not read here). Export / Import Decks (decks.ts) carries the
+// pictures, kept but not shown yet. A draw picks by weight among the ticked cards; No repeat
 // works like a pile: a drawn card stays out until Shuffle, also across
 // visits. The desktop's draw tabs, conditions and boards are not here.
 
@@ -18,6 +19,7 @@ export interface Card
 	weight: number;
 	color?: string;    // "#RRGGBB" (the ready-made colours and pack)
 	off?: boolean;     // starts unticked (the jokers)
+	image?: string;    // a picture's name (decks.ts); kept, not shown yet
 }
 
 export interface Deck
