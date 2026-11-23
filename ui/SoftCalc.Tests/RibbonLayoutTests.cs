@@ -116,6 +116,92 @@ public sealed class RibbonLayoutTests
 		Assert.Equal(3, ribbon.BuildCount);
 	}
 
+	//==================================================================
+	//  Rows: a group can start a new row (owner 2026-11-22)
+	//==================================================================
+	[Theory]
+	[InlineData("FFFF", 1000, "1111", "")]           // no new rows: one row when wide
+	[InlineData("FFFF", 250, "1122", "")]            // narrow: runs on as before
+	[InlineData("FFNF", 1000, "1122", "2")]          // new row at the third group
+	[InlineData("FFNF", 150, "1234", "")]            // the second already ran on to row 2: the third goes on from there (no empty row)
+	[InlineData("FFNF", 250, "1122", "2")]
+	[InlineData("FNFN", 1000, "1223", "13")]         // two new rows: rows 2 and 3
+	[InlineData("FFFN", 1000, "1112", "3")]          // the only one is row 2, whatever comes before
+	[InlineData("NFFF", 1000, "1111", "")]           // the first group ignores it
+	public void RowsFollowNewRowAndRunOn(string marks, int available, string wantRows, string wantForced)
+	{
+		var widths = marks.Select(_ => 100).ToList();
+		var newRow = marks.Select(m => m == 'N').ToList();
+		var rows = RibbonLayout.Rows(widths, newRow, available, out var forced);
+		Assert.Equal(wantRows, string.Concat(rows));
+		Assert.Equal(wantForced, string.Concat(Enumerable.Range(0, forced.Length).Where(i => forced[i])));
+	}
+
+	[Fact]
+	public void LockedRowCountsTheTickedGroups()
+	{
+		var layout = Two();
+		layout.Add(new RibbonGroup { Caption = "C", NewRow = true });
+		layout.Add(new RibbonGroup { Caption = "D" });
+		layout.Add(new RibbonGroup { Caption = "E", NewRow = true });
+		layout[0].NewRow = true;    // the first group: ignored
+		Assert.Equal(new int?[] { null, null, 2, null, 3 }, Enumerable.Range(0, layout.Count).Select(g => RibbonLayout.LockedRow(layout, g)));
+	}
+
+	[Fact]
+	public void NewRowIsSavedOnlyWhenOn()
+	{
+		var layout = Two();
+		Assert.DoesNotContain("new_row", System.Text.Json.JsonSerializer.Serialize(layout, new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower }));
+		layout[1].NewRow = true;
+		Assert.False(RibbonLayout.SameAs(layout, Two()));
+		Assert.True(RibbonLayout.Clone(layout)[1].NewRow);
+	}
+
+	[Fact]
+	public void RibbonPutsATickedGroupOnTheNextRow()
+	{
+		using var menu = new MenuStrip();
+		var view = new ToolStripMenuItem("&View");
+		view.DropDownItems.Add(new ToolStripMenuItem("&Clear History"));
+		menu.Items.Add(view);
+		var layout = new List<RibbonGroup>
+		{
+			new() { Caption = "A", Columns = 4, Items = Enumerable.Range(0, 4).Select(_ => new RibbonItem { Id = "View/Clear History" }).ToList() },
+			new() { Caption = "B", Items = { new RibbonItem { Id = "View/Clear History" } } },
+			new() { Caption = "C", NewRow = true, Items = { new RibbonItem { Id = "View/Clear History" } } },
+		};
+		using var form = new Form { ClientSize = new Size(1000, 400) };
+		var ribbon = new Ribbon();
+		form.Controls.Add(ribbon);
+		ribbon.Build(layout, RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), new HashSet<ToolStripMenuItem>()));
+		form.PerformLayout();
+		var groups = ribbon.Controls.Cast<Control>().ToList();
+		Assert.Equal(groups[0].Top, groups[1].Top);
+		Assert.True(groups[2].Top > groups[1].Top);
+		Assert.Equal(groups[0].Left, groups[2].Left);
+		int one = groups[0].Height + groups[0].Margin.Vertical;
+		Assert.Equal(2 * one + ribbon.Padding.Vertical, ribbon.GetPreferredSize(new Size(1000, 0)).Height);
+
+		// Narrow: B runs on to row 2, and C carries on beside it there
+		int Outer(Control c) => c.Width + c.Margin.Horizontal;
+		Assert.True(Outer(groups[2]) < Outer(groups[0]));
+		form.ClientSize = new Size(Outer(groups[0]) + Outer(groups[1]) + ribbon.Padding.Horizontal - 1, 400);
+		form.PerformLayout();
+		Assert.True(groups[1].Top > groups[0].Top);
+		Assert.Equal(groups[1].Top, groups[2].Top);
+		Assert.True(groups[2].Left > groups[1].Left);
+		Assert.Equal(2 * one + ribbon.Padding.Vertical, ribbon.GetPreferredSize(new Size(form.ClientSize.Width, 0)).Height);
+
+		// Off again: one row when wide
+		layout[2].NewRow = false;
+		ribbon.Build(layout, RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), new HashSet<ToolStripMenuItem>()));
+		form.ClientSize = new Size(1000, 400);
+		form.PerformLayout();
+		groups = ribbon.Controls.Cast<Control>().ToList();
+		Assert.Equal(groups[0].Top, groups[2].Top);
+	}
+
 	[Fact]
 	public void SpaceAndSeparatorAreRibbonCommandsDrawnAsGaps()
 	{

@@ -32,6 +32,11 @@ internal sealed class RibbonGroup
 	// `{decimals}` in the caption shows the decimal places sample
 	public string Caption { get; set; } = "";
 	public int Columns { get; set; } = 2;
+
+	// Starts the next row (owner 2026-11-22); ignored on the first group
+	[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+	public bool NewRow { get; set; }
+
 	public List<RibbonItem> Items { get; set; } = new();
 }
 
@@ -94,7 +99,7 @@ internal static class RibbonLayout
 	{
 		return layout.Select(g => new RibbonGroup
 		{
-			Caption = g.Caption, Columns = g.Columns,
+			Caption = g.Caption, Columns = g.Columns, NewRow = g.NewRow,
 			Items = g.Items.Select(i => new RibbonItem { Id = i.Id, Label = i.Label, Display = i.Display, IconSvg = i.IconSvg }).ToList(),
 		}).ToList();
 	}
@@ -141,6 +146,54 @@ internal static class RibbonLayout
 				}
 			}
 		}
+	}
+
+	//==================================================================
+	//  Rows (owner 2026-11-22)
+	//==================================================================
+	// The row a group's "new row" puts it on: the first such group row 2,
+	// the next row 3, and so on; null when it has none (or is the first)
+	public static int? LockedRow(IReadOnlyList<RibbonGroup> layout, int group)
+	{
+		if (group <= 0 || !layout[group].NewRow)
+		{
+			return null;
+		}
+		return 1 + layout.Take(group + 1).Skip(1).Count(g => g.NewRow);
+	}
+
+	// The row (1, 2, ...) of each group in a ribbon `available` pixels wide.
+	// Groups flow left to right and run on to the next row when they do not
+	// fit. A group with "new row" (the n-th one) starts row n + 1, unless
+	// the groups before it already ran on to that row: then it carries on
+	// there. Widths include the margins. `forced` marks the groups that
+	// start their row because of "new row", not because they ran on.
+	public static int[] Rows(IReadOnlyList<int> widths, IReadOnlyList<bool> newRow, int available, out bool[] forced)
+	{
+		var rows = new int[widths.Count];
+		forced = new bool[widths.Count];
+		int row = 1, x = 0, locks = 0;
+		for (int i = 0; i < widths.Count; i++)
+		{
+			if (i > 0 && newRow[i])
+			{
+				locks++;
+				if (row < locks + 1)
+				{
+					row++;
+					x = 0;
+					forced[i] = true;
+				}
+			}
+			if (x > 0 && x + widths[i] > available)
+			{
+				row++;
+				x = 0;
+			}
+			rows[i] = row;
+			x += widths[i];
+		}
+		return rows;
 	}
 
 	//==================================================================

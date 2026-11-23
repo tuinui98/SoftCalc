@@ -4,7 +4,8 @@
 // (caption shows a sample of the format), Mode, History, Tools. Each
 // button runs a menu command (RibbonCommands); check marks follow the
 // menu items. Built from stock ToolStrips that wrap onto more rows when
-// the window is narrow. Plan: design/ribbon_plan.md.
+// the window is narrow; a group can start a new row (RibbonLayout.Rows).
+// Plan: design/ribbon_plan.md.
 
 using System.Text.Json.Nodes;
 using SoftCalc.Logic;
@@ -22,6 +23,8 @@ internal sealed class Ribbon : FlowLayoutPanel
 	private int? _decimals;
 	private List<RibbonGroup>? _builtLayout;
 	private List<object?> _builtSources = new();
+	private readonly List<bool> _newRows = new();    // per group control: starts a new row
+	private bool _placing;
 
 	// Times the controls were made again (tests: no rebuild when nothing changed)
 	public int BuildCount { get; private set; }
@@ -72,12 +75,14 @@ internal sealed class Ribbon : FlowLayoutPanel
 		_unhook.Clear();
 		_captions.Clear();
 		_dynamic.Clear();
+		_newRows.Clear();
 		var old = Controls.Cast<Control>().ToList();
 		Controls.Clear();
 		foreach (var control in old)
 		{
 			control.Dispose();
 		}
+		bool first = true;
 		foreach (var group in layout)
 		{
 			var items = group.Items
@@ -88,6 +93,8 @@ internal sealed class Ribbon : FlowLayoutPanel
 			if (items.Length > 0)
 			{
 				Controls.Add(Group(group.Caption, group.Columns, items));
+				_newRows.Add(!first && group.NewRow);
+				first = false;
 			}
 		}
 		ShowDecimals(_decimals, force: true);
@@ -161,6 +168,64 @@ internal sealed class Ribbon : FlowLayoutPanel
 		button.DisplayStyle = !hasIcon ? ToolStripItemDisplayStyle.Text
 			: display == "icon" ? ToolStripItemDisplayStyle.Image : ToolStripItemDisplayStyle.ImageAndText;
 		return button;
+	}
+
+	//==================================================================
+	//  Rows: groups that start a new row (owner 2026-11-22)
+	//==================================================================
+	private bool HasNewRows => _newRows.Any(n => n) && _newRows.Count == Controls.Count;
+
+	private int[] RowsAt(int available, out bool[] forced)
+	{
+		var widths = Controls.Cast<Control>().Select(c => c.GetPreferredSize(Size.Empty).Width + c.Margin.Horizontal).ToList();
+		return RibbonLayout.Rows(widths, _newRows, available, out forced);
+	}
+
+	// The flow breaks for the current width: after the group before each one
+	// that starts a row by itself (running on is left to the panel)
+	protected override void OnLayout(LayoutEventArgs levent)
+	{
+		if (!_placing && _newRows.Count == Controls.Count)
+		{
+			_placing = true;
+			try
+			{
+				RowsAt(ClientSize.Width - Padding.Horizontal, out var forced);
+				for (int i = 0; i < Controls.Count; i++)
+				{
+					bool breakAfter = i + 1 < Controls.Count && forced[i + 1];
+					if (GetFlowBreak(Controls[i]) != breakAfter)
+					{
+						SetFlowBreak(Controls[i], breakAfter);
+					}
+				}
+			}
+			finally
+			{
+				_placing = false;
+			}
+		}
+		base.OnLayout(levent);
+	}
+
+	// Height for a width with the rows above; the panel's own wrapping otherwise
+	public override Size GetPreferredSize(Size proposedSize)
+	{
+		if (!HasNewRows)
+		{
+			return base.GetPreferredSize(proposedSize);
+		}
+		int available = proposedSize.Width > 0 ? proposedSize.Width - Padding.Horizontal : int.MaxValue;
+		var rows = RowsAt(available, out _);
+		var sizes = Controls.Cast<Control>().Select(c => c.GetPreferredSize(Size.Empty) + c.Margin.Size).ToList();
+		int height = 0, width = 0;
+		foreach (var row in rows.Distinct())
+		{
+			var inRow = Enumerable.Range(0, rows.Length).Where(i => rows[i] == row).ToList();
+			height += inRow.Max(i => sizes[i].Height);
+			width = Math.Max(width, inRow.Sum(i => sizes[i].Width));
+		}
+		return new Size(width + Padding.Horizontal, height + Padding.Vertical);
 	}
 
 	// Every group frame as tall as the tallest one (owner 2026-11-06)

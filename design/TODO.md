@@ -544,7 +544,7 @@ ends 1:1, the drag insert line is visible enough on dark.
     the pictures it cannot show yet, so an export from the web still
     carries them. Zip read with limits (size, file count, no paths out of
     the folder). Draw tabs not exported.
-- [ ] Desktop ribbon rows (owner 2026-11-22): a group can be locked to
+- [x] Desktop ribbon rows (owner 2026-11-22): a group can be locked to
       start row 2 (Customize Ribbon). Every group after it follows it on
       row 2. The groups before it fill row 1; when the window is narrow,
       what does not fit runs on to row 2, and the locked group carries on
@@ -552,8 +552,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       group cannot be locked. Maybe also rows 3 and 4 (rare): rows are
       put in order by themselves (a lock to row 3 with none to row 2
       acts as row 2; locks never go backwards). A row that is too narrow
-      runs on to the next as now (owner 2026-11-22). To discuss the details
-      (where the lock is set, how it shows) before building.
+      runs on to the next as now (owner 2026-11-22). Built 2026-11-23,
+      owner OK: Edit Group > "Start a new row" tick box; the Customize
+      tree shows "row n" (RibbonLayout.Rows).
 
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the
