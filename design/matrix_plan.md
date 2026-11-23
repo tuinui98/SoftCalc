@@ -28,8 +28,8 @@ Owner decisions 2026-11-24:
 - The Random window's Extra cards `[1,100]` are the UI's own text, never
   sent to the engine: no clash.
 
-## X0 - Clash check (first, before any code)
-Rule proposed: a `[` starts a conversion or format when its body (up to
+## X0 - Clash check (first, before any code; done, see X0 result)
+Rule first proposed (replaced by the position rule in X0 result): a `[` starts a conversion or format when its body (up to
 the matching `]`) holds `->`, or is exactly one of the five format names;
 anything else is a list or matrix. Check, with tests written first:
 1. Every golden row, help example and saved History line in the test
@@ -56,8 +56,43 @@ anything else is a list or matrix. Check, with tests written first:
    ribbon's conversion buttons.
 Outcome: a short report to the owner; build only after it is clean.
 
+## X0 result (2026-11-24)
+Scanned every `[ ... ]` in the golden data, help (examples and inline
+code), engine tests, data/graph-examples.json, the UI and web sources,
+and the owner's own history.jsonl and definitions.pcf (read only):
+- Golden data, help examples, the owner's files: only conversions
+  (`->`), formats, and `[rnw]` / `[rai-ngan-wa]`. The owner's History
+  and .pcf hold no `[` at all.
+- **The body rule above is not safe on its own**: `[rnw]`,
+  `[rai-ngan-wa]` and `[RNW]` are tags without `->`; and `5 [m]` with a
+  variable m would quietly become 5 times a list instead of the error
+  it is now (same for typos such as `1 [in-cm]` when names exist).
+- **Every line that works today has its `[` right after a value** (a
+  number, a name, `)`, `$n`, `!`, `%`, a date, a tag). A `[` where an
+  operand starts (start of line, after an operator, `(`, `,` or `=`) is
+  always an error today (`[1,2]` gives "Unexpected '1,2'").
+- So the rule becomes **by position**: a `[` right after a value is a
+  tag, exactly as now (body unchanged: spaces dropped, any case); a `[`
+  where an operand starts opens a list. No line that works today can
+  change, and typos in tags stay errors. Inside a list, `[1 [m->ft], 2]`
+  works: the inner `[` follows a value.
+- Costs of the position rule: no implicit product with a list
+  (`2[1, 2]` is a tag error; write `2*[1, 2]`), and `A[1]` is never
+  indexing (use `at(A, 1)`). Error messages for these say what to write.
+- Other places that use `[`: the .pcf's `[Graph]` header line (only a
+  line that is exactly `[Graph]`; a definition line never is), the
+  Random window's Extra cards `[1,100]` (the UI's own text, never sent
+  to the engine), the keypads' 2nd `(` `)` keys (type `[` `]`: fine for
+  both), the currency menu's half tag `100 [THB` (stays a tag: it follows
+  a value), the hint for an open `[` (X3: a list hint when the `[` opens
+  an operand), help text writing optional arguments as `[pv]` (wording
+  only; the Matrices help says how lists are written).
+- Pinned by `engine/tests/test_brackets.py` (41 cases): conversions in
+  any spacing and case, chains, rnw, formats, tags after names, `$n`,
+  `!`, the Conversions menu inserts, and the lines that are errors today.
+
 ## X1 - Engine core (round 1)
-- Lexer/parser: `[` `]` as list brackets under the X0 rule; items are
+- Lexer/parser: `[` `]` as list brackets by the X0 position rule; items are
   full expressions (`[a, 2x, sin(30)]`); nested lists of equal length
   make a matrix; ragged ones an error. Parsed into a `("list", items)`
   node; read_tag stays for tags.
