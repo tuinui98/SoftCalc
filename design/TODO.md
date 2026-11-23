@@ -613,7 +613,8 @@ ends 1:1, the drag insert line is visible enough on dark.
         off" note.
   - [ ] Round 2 D: table display in History (cells shortened, 10x10 at
         most, lists stay one line).
-  - [ ] After round 2: reverse, cumsum, count and the like (owner B4).
+  - [x] fill, reshape, seq stepping like a deck, reverse, cumsum, count
+        (owner B4, 2026-11-24).
   - [ ] Time 50x50 inv/solve on the web (Pyodide); 2.3 s on the desktop.
 
 ## Conversions (owner 2026-11-24)
