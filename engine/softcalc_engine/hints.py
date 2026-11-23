@@ -57,7 +57,7 @@ BUILTINS = {
     "ones": "ones(n) or ones(rows, cols) - a list or a matrix of 1: ones(3)",
     "diag": "diag(list) - a matrix with the list down its diagonal; diag(matrix) - its diagonal",
     "seq": "seq(from, to, [step]) - a list: seq(1, 5) = [1, 2, 3, 4, 5], seq(0, 1, 0.25), seq(10, 1, 3) = [10, 7, 4, 1]",
-    "fill": "fill(n, value) or fill(rows, cols, value) - every cell the same: fill(2, 3, 7); a list as each row: fill(2, 3, [1, 2, 3])",
+    "fill": "fill(n, value) or fill(rows, cols, value) - fill(2, 3, 7); a list as each row: fill(2, 3, [1, 2, 3]); rand or card draws every cell",
     "reshape": "reshape(list, rows, cols) - the numbers row by row: reshape(seq(1, 6), 2, 3) = [[1, 2, 3], [4, 5, 6]]",
     "reverse": "reverse(list) - last first: reverse([1, 2, 3]) = [3, 2, 1]",
     "cumsum": "cumsum(list) - running totals: cumsum([1, 2, 3]) = [1, 3, 6]",
@@ -100,6 +100,8 @@ BUILTINS = {
     "ans": "ans (or answer) - the last result",
 }
 
+FILL_DRAW_HINT = "fill draws again for every cell: fill(2, 3, rand(1, 6)) gives 6 rolls"
+DRAW_WORD = re.compile(r"\b(rand(?!s\b)[a-z]*|card)\b", re.IGNORECASE)
 LIST_HINT = "[1, 2, 3] is a list, [[1, 2], [3, 4]] a matrix (rows in brackets); 2*[1, 2], A*B, det(A)"
 TAG_HINT = "[from->to] converts: [ft->in] [c->f] [h->min] [usd->thb] [utc->local]; [longdate] formats a date"
 REF_HINT = "$1 = last result, $2 = the one before, ..."
@@ -138,7 +140,32 @@ def hint_for(text, caret, lookup_user):
     """The plain hint for the caret position, or None.
 
     lookup_user(name) describes a user function or variable, or returns None.
+    Inside an open fill( holding rand/card, the hint first says each cell
+    is drawn again (owner 2026-11-24).
     """
+    plain = plain_hint(text, caret, lookup_user)
+    if drawing_fill(left_of(text, caret)):
+        return FILL_DRAW_HINT if plain is None else FILL_DRAW_HINT + "  |  " + plain
+    return plain
+
+
+def drawing_fill(left):
+    """An unclosed fill( before the caret with rand/card typed after it."""
+    depth = 0
+    for index in range(len(left) - 1, -1, -1):
+        if left[index] == ")":
+            depth += 1
+        elif left[index] == "(":
+            if depth > 0:
+                depth -= 1
+                continue
+            name = WORD_AT_END.search(left[:index])
+            if name and name.group(0).lower() == "fill" and DRAW_WORD.search(left[index + 1:]):
+                return True
+    return False
+
+
+def plain_hint(text, caret, lookup_user):
     left = left_of(text, caret)
 
     #==================================================================

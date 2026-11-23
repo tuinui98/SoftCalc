@@ -477,24 +477,35 @@ def eig(args):
 def fill(args):
     """fill(n, value): a list of n; fill(rows, cols, value): a matrix;
     fill(rows, cols, list): the list as every row (its length = cols)."""
-    *size, value = args
+    return fill_with(args[:-1], lambda: args[-1])
+
+
+def fill_with(size, make):
+    """fill with make() giving each value: once per cell, or once per row for
+    a list. The engine passes a make() that draws again when the value holds
+    rand() or card() (owner 2026-11-24); otherwise it gives the same value."""
     rows = whole_number(size[0], "fill")
     cols = whole_number(size[1], "fill") if len(size) > 1 else None
     if rows * (cols or 1) > MAX_CELLS:
         raise CalcError(f"A matrix may have at most {MAX_CELLS} cells")
-    if isinstance(value, Matrix):
+    first = make()
+    if isinstance(first, Matrix):
         if cols is None:
             raise CalcError("fill(rows, cols, list) repeats a list as each row")
-        if not value.flat:
-            raise CalcError("fill takes a number or a list, not a matrix")
-        if len(value.rows[0]) != cols:
-            raise CalcError(f"fill: the list has {len(value.rows[0])} numbers, the rows {cols}")
-        return shaped([list(value.rows[0]) for _ in range(rows)], False)
-    if not is_cell(value):
+        out = []
+        for value in [first] + [make() for _ in range(rows - 1)]:
+            if not isinstance(value, Matrix) or not value.flat:
+                raise CalcError("fill takes a number or a list, not a matrix")
+            if len(value.rows[0]) != cols:
+                raise CalcError(f"fill: the list has {len(value.rows[0])} numbers, the rows {cols}")
+            out.append(list(value.rows[0]))
+        return shaped(out, False)
+    values = [first] + [make() for _ in range(rows * (cols or 1) - 1)]
+    if not all(is_cell(value) for value in values):
         raise CalcError("fill needs a number or a list to fill with")
     if cols is None:
-        return shaped([[value] * rows], True)
-    return shaped([[value] * cols for _ in range(rows)], False)
+        return shaped([values], True)
+    return shaped([values[r * cols:(r + 1) * cols] for r in range(rows)], False)
 
 
 def reshape(args):

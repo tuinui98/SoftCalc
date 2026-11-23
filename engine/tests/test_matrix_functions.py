@@ -230,3 +230,20 @@ def test_fill_and_b4_values(line, text):
 ])
 def test_fill_and_b4_errors(line, error):
     assert engine().evaluate(line).text == "ERROR:" + error
+
+
+def test_fill_draws_every_cell_and_follows_the_seed():
+    e = engine()
+    e.decks = decks_from([{"name": "Dice", "cards": [{"name": str(n)} for n in range(1, 7)]}])
+    e.evaluate("rands(7)")
+    first = e.evaluate("fill(4, 5, rand(1, 6))")
+    cells = first.text.replace("[", "").replace("]", "").split(", ")
+    assert len(cells) == 20 and len(set(cells)) > 1    # not one value 20 times
+    assert first.display_input == first.text    # History shows what was drawn
+    e.evaluate("rands(7)")
+    assert e.evaluate("fill(4, 5, rand(1, 6))").text == first.text
+    assert len(set(e.evaluate("fill(30, round(randbeta(4, 4, 1, 10)))").text.split(", "))) > 1
+    rows = e.evaluate('fill(3, 6, card("Dice", 6, 1))').text[2:-2].split("], [")    # a list per row, each drawn
+    assert len(rows) == 3 and all(sorted(row.split(", ")) == list("123456") for row in rows)
+    assert e.evaluate("fill(2, 3, 7)").display_input == "fill(2, 3, 7)"    # nothing drawn: shown as typed
+    assert e.evaluate("1+fill(2, rand(1, 6))*0").text == "[1, 1]"

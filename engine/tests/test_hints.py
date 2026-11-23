@@ -125,3 +125,12 @@ def test_every_menu_function_has_a_hint():
     from softcalc_engine.server import CATALOG
     names = [name for group in CATALOG["functions"].values() for name in group if name.isidentifier()]
     assert [name for name in names if name not in hints.BUILTINS] == []
+
+
+def test_rand_or_card_inside_fill_says_every_cell_draws():
+    assert not (hint("fill(2, 3, ") or "").startswith(hints.FILL_DRAW_HINT)
+    assert hint("fill(2, 3, rand(1, ").startswith(hints.FILL_DRAW_HINT + "  |  rand(")
+    assert hint("fill(2, 3, randbe").startswith(hints.FILL_DRAW_HINT)
+    assert hint('fill(2, 3, card("Dice", 3)').startswith(hints.FILL_DRAW_HINT)
+    assert not (hint("fill(2, 3, rands(1)") or "").startswith(hints.FILL_DRAW_HINT)    # rands sets the seed
+    assert not (hint("fill(2, 3, rand(1, 6)) + ") or "").startswith(hints.FILL_DRAW_HINT)    # fill is closed
