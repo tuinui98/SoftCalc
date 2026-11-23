@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-20: version 1.7.0 released (smallest window per view; Compound and Random on the web and in the APK). Everything below is committed on `main` and
+Updated 2026-11-24: version 1.8.0 released (ribbon rows; card decks exported and imported as one zip; card() draws from a deck in Input). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -165,6 +165,18 @@ CSV/PNG/Copy) and Random (Simple, Advanced, Seed, Password, Cards). Help
 09, 12; web 01, 09, 17.
 
 Tests: engine `pytest` 634 passed; UI `dotnet test` 445 passed; web 119.
+
+Version 1.8.0 (2026-11-24): a ribbon group can start a new row (Edit
+Group > Start a new row; RibbonLayout.Rows). All own card decks go out
+and come in as one zip, decks.json plus pictures/ (File > Export Decks /
+Import Decks, the ... tab; web and APK: ⋮ Export / Import and the Cards
+tab; DeckTransfer.cs, web decks.ts with its own zip.ts). card("Deck",
+[count], [no repeat]) draws from a deck in Input (engine cards.py,
+protocol `decks`; a Thai deck name gives Thai cards; several numbers come
+out as {a, b, c}); Insert Command on the draw tab, the ... tab and the web
+Cards tab. Help 03, 12, 14, 17; web 17.
+
+Tests: engine `pytest` 649 passed; UI `dotnet test` 464 passed; web 129.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
