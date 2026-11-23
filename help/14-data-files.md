@@ -18,6 +18,7 @@ File > About SoftCalc... shows the folder in use, with **Open Folder**.
 | `rates.xml` | the last currency rates |
 | `prices.json` | the last coin prices |
 | `crypto.json` | addresses watched in the Cryptocurrency window, and what happened |
+| `cards.json`, `cards\` | card decks and draw tabs, and the cards' pictures |
 | `engine\` | the calculation engine, unpacked on first start |
 
 ## What is kept
@@ -35,6 +36,8 @@ File > About SoftCalc... shows the folder in use, with **Open Folder**.
   back.
 - **File > Save Functions & Variables...** writes a `.pcf` file;
   **Load Functions & Variables...** reads one.
+- **File > Export Decks...** writes all your card decks, with their
+  pictures, as one `.zip` file; **Import Decks...** reads one or more.
 - Graph window: **File > Save as bitmap...** writes a PNG.
 - Compound Interest window: **Export CSV...**.
 
@@ -62,11 +65,24 @@ days stay apart.
   yet and draws them. The definitions load first, so an equation may
   use a variable from the same file.
 
+### Import Decks
+
+- The decks are added to yours; none are replaced.
+- A deck with the same name and the same cards is skipped, so a file
+  imported twice adds nothing. A deck with the same name and other cards
+  comes in as `name (2)`.
+- Past 500 decks the rest are left out. A message says how many decks
+  were added, renamed and skipped.
+- The zip holds `decks.json` and a `pictures` folder, each picture once.
+  Ready-made decks and draw tabs are not in it.
+
 ### Between computers and phones
 
-The web app and the Android app write and read the same two files
-(⋮ > Export and ⋮ > Import), so History, definitions and Graph
-equations move between SoftCalc on a computer, a phone and a tablet.
+The web app and the Android app write and read the same files
+(⋮ > Export and ⋮ > Import), so History, definitions, Graph equations
+and card decks move between SoftCalc on a computer, a phone and a
+tablet. A phone keeps the cards' pictures, though it does not show them
+yet, so they come back with the decks.
 On the phone, Import adds definitions to the ones there instead of
 replacing them.
 

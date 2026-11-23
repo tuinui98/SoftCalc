@@ -43,6 +43,12 @@ To change it:
   one that shows only text now, such as Deg.
 - **Edit** on a group: its caption and how many columns it has. In a
   caption, `{decimals}` shows the current decimal places.
+- **Start a new row** (Edit on a group) puts the group at the start of
+  the next row, and the groups after it follow it there. The first
+  such group starts row 2, the next row 3. Groups before it that do not
+  fit a narrow window run on to its row first, and it carries on after
+  them. The list on the right shows `row 2` beside the group. The first
+  group is always on row 1.
 - **Space** and **Separator**, under Ribbon in the left list, go
   between buttons like a command: a gap half an icon wide, or a thin
   line that splits a group into parts. Add as many as you like; they

@@ -526,7 +526,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       first, then both together once they are as wide (MainForm.Sizes.cs).
 
 ## Next release (owner 2026-11-20, after 1.7.0)
-- [ ] Export / Import also carry the user's own card decks: a third file
+- [x] Export / Import also carry the user's own card decks: a third file
       `SoftCalc-decks-<local time>.json` beside the History and .pcf, on
       the desktop (File > Export / Import) and the web (⋮ > Export /
       Import); Import adds, never replaces (as the .pcf). Proposed: decks
@@ -562,7 +562,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       owner OK: Edit Group > "Start a new row" tick box; the Customize
       tree shows "row n" (RibbonLayout.Rows).
 
-- [ ] Input draws from a deck (owner 2026-11-24): one engine function
+- [x] Input draws from a deck (owner 2026-11-24): one engine function
       `card("Deck name", [count], [no repeat])`. The app sends the engine
       the decks (my own and the ready-made ones in the language chosen;
       card names and weights) at start and after each change; the engine
@@ -579,7 +579,10 @@ ends 1:1, the drag insert line is visible enough on dark.
     (owner: numbers drawn should go on into matrices; the engine has no
     matrices yet, so it is text for now); curly quotes from a phone work.
     Desktop sends cards.json's decks before a line when the file changed;
-    the web when the decks or the language change. To check by the owner.
+    the web when the decks change. Owner 2026-11-24: the deck name typed
+    picks the language (ready-made decks go in English with Thai aliases);
+    Insert Command on the draw tab, the ... tab and the web Cards tab.
+    Owner OK; help updated (03, 14, 17, 12-ribbon).
 
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the
