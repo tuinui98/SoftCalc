@@ -104,3 +104,24 @@ def test_hint_op_shows_a_literal_in_the_output_base():
 def test_hint_op_needs_text_and_caret():
     answer = Dispatcher().handle({"id": 1, "op": "hint", "text": "sq"})
     assert not answer["ok"]
+
+
+@pytest.mark.parametrize("text", ["[", "[1, ", "2*[1", "A=[", "[[1, 2], [3", "[[1, 2], ", "7 mod ["])
+def test_an_open_list_says_how_lists_are_written(text):
+    assert hint(text) == hints.LIST_HINT
+
+
+@pytest.mark.parametrize("text", ["5 [", "5 [ft->", "x [", "(1+2) [", "[1, 2] [", "[1 [ft->"])
+def test_a_bracket_after_a_value_is_still_a_tag(text):
+    assert hint(text) == hints.TAG_HINT
+
+
+def test_a_call_inside_a_list_describes_the_call():
+    assert hint("det([1, sqrt(").startswith("sqrt(x)")
+    assert hint("det([[1, 2], [3, ").startswith("det(m)")
+
+
+def test_every_menu_function_has_a_hint():
+    from softcalc_engine.server import CATALOG
+    names = [name for group in CATALOG["functions"].values() for name in group if name.isidentifier()]
+    assert [name for name in names if name not in hints.BUILTINS] == []

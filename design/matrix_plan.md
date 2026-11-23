@@ -148,6 +148,17 @@ rands(seed). The names are reserved, so a .pcf variable called `sum` or
 - Help: a Matrices topic (new number), examples checked by the test.
 - Protocol: no new op; values travel as text as now.
 
+Built 2026-11-24: catalog group **Matrix** (25 names; the desktop
+Functions menu, the ribbon's fn: ids and the web Functions picker all
+come from it), a hint for every new name (test: every menu function has
+one), the open-`[` hint by the X0 position rule (a list hint where an
+operand starts, the tag hint after a value; a call inside a list still
+describes the call). Variables (desktop and web) needed no change: the
+engine sends the one-line text and Edit sends it back. Keypads: Sci has
+`,` and 2nd `[` `]` on desktop and web; Basic has neither (Sci sits
+beside it). Help waits until the owner finishes the matrix topic
+(owner rule: help after a topic is done).
+
 ## Round 2 (later, each to discuss)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).
