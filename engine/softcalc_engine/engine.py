@@ -370,6 +370,8 @@ class Engine:
         for arg in args:
             if not isinstance(arg, mpmath.mpf):
                 raise CalcError(f"{key} needs real numbers")
+        if key == "randm":
+            return self.random_matrix(node, args)
         if key in SHAPE_FUNCTIONS:
             fixed, full = SHAPE_FUNCTIONS[key]
             span = node[2][fixed:] if len(args) == full else []
@@ -409,6 +411,18 @@ class Engine:
             raise CalcError(f"card: the count must be a whole number from 1 to {cards.MAX_COUNT}")
         unique = len(rest) > 1 and rest[1] != 0
         return cards.draw(self.random, self.decks, args[0][1], int(count), unique, self.format_value)
+
+    def random_matrix(self, node, args):
+        """randm(rows, cols, [a, b]) (matrix_plan.md X2): each cell as rand() or rand(a, b) draws it."""
+        Functions.check_count("randm", args, 2, 4)
+        if len(args) == 3:
+            raise CalcError("randm takes rows, cols and both ends: randm(3, 3, 1, 6)")
+        rows = matrix.whole_number(args[0], "randm")
+        cols = matrix.whole_number(args[1], "randm")
+        if rows * cols > matrix.MAX_CELLS:
+            raise CalcError(f"A matrix may have at most {matrix.MAX_CELLS} cells")
+        cell = ("call", "rand", node[2][2:])
+        return matrix.shaped([[self.random_call(cell, args[2:]) for _ in range(cols)] for _ in range(rows)], False)
 
     def random_fraction(self):
         """A uniform value in [0, 1) with as many decimal digits as the precision.
