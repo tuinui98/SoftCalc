@@ -611,8 +611,8 @@ ends 1:1, the drag insert line is visible enough on dark.
   - [x] Round 2 A-C (2026-11-24): unit tags on a list; median, stdev,
         stdevp, variance, variancep, norm, rank, eig; the "digits may be
         off" note.
-  - [ ] Round 2 D: table display in History (cells shortened, 10x10 at
-        most, lists stay one line).
+  - [x] Round 2 D (2026-11-24): a matrix result as a table in History,
+        desktop and web; Copy as Table.
   - [ ] After round 2: reverse, cumsum, count and the like (owner B4).
   - [ ] Time 50x50 inv/solve on the web (Pyodide); 2.3 s on the desktop.
 
