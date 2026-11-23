@@ -106,6 +106,13 @@ and the owner's own history.jsonl and definitions.pcf (read only):
 - card(): several number cards come out as a list value `[3, 5, 1]`
   instead of the `{3, 5, 1}` text.
 
+Built 2026-11-24 (matrix.py; lexer `ends_value`, parser `list_literal`):
+lists and matrices parse, show and parse back (History, `$n`, variables,
+the .pcf, every output base), at most 10000 cells, RPN refuses them,
+card() gives a list value. `2[1, 2]` and `A[1]` say to write `2*[1, 2]`
+or use `at(A, 1)`. No arithmetic on them yet (X2): `[1, 2]+1` is
+"'+' needs a number".
+
 ## X2 - Functions (round 1)
 | group | functions |
 |---|---|

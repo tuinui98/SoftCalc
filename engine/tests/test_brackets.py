@@ -51,12 +51,18 @@ def test_format_tags_in_any_case(line):
 
 
 @pytest.mark.parametrize("line", [
-    "5 [nope]", "1 [in-cm]", "1 []", "5 [m]", "1 [in->cm", "1 [in->s]", "[m->ft]", "[1,2]", "x=[1]",
-    "5[ft->in]2", "1 [usd]",
+    "5 [nope]", "1 [in-cm]", "1 []", "5 [m]", "1 [in->cm", "1 [in->s]", "[m->ft]",
+    "5[ft->in]2", "1 [usd]", "2[1,2]",
 ])
 def test_lines_that_are_errors_today(line):
-    # [1,2] and x=[1] become lists with X1; the others must stay errors
+    # [1,2] and x=[1] were errors too; since X1 they are lists (test_matrix.py)
     assert Engine().evaluate(line).text.startswith("ERROR:")
+
+
+def test_a_variable_called_m_does_not_turn_a_tag_into_a_list():
+    engine = Engine()
+    engine.evaluate("m=3")
+    assert engine.evaluate("5 [m]").text == "ERROR:Unknown format [m]"
 
 
 def test_conversions_menu_inserts_tags_after_the_value():

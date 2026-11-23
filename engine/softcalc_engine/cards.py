@@ -5,10 +5,9 @@ the ready-made ones, card names in the language chosen, each card's
 weight and whether it was saved to start unticked (the jokers, left
 out here). The engine keeps no file of its own. Cards are drawn by
 weight from the engine's generator, so `rands(seed)` repeats them.
-A card named like a number gives that number; several cards give a list
-written `{3, 5, 1}`, the form a matrix row will take (owner 2026-11-24:
-numbers drawn should go on into matrices later), or names joined by
-", " when any card is not a number.
+A card named like a number gives that number; several number cards give
+a list `[3, 5, 1]` (matrix.py), and names are joined by ", " when any
+card is not a number.
 """
 
 from dataclasses import dataclass, field
@@ -18,6 +17,7 @@ import mpmath
 from .dates import TextValue
 from .errors import CalcError
 from .lexer import tokenize
+from .matrix import from_numbers
 from .random_shapes import below
 
 MAX_COUNT = 1000
@@ -105,5 +105,5 @@ def draw(source, decks, name, count, unique, format_value):
     if count == 1:
         return values[0]
     if all(isinstance(value, mpmath.mpf) for value in values):
-        return TextValue("{" + ", ".join(format_value(value) for value in values) + "}")
+        return from_numbers(values)    # a list: it computes on (matrix_plan.md X1)
     return TextValue(", ".join(picked))

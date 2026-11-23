@@ -138,9 +138,8 @@ card("Dice")*10
 - A card named like a number gives that number, so it can go on into a
   sum: a deck `Dice` of the cards 1 to 6 makes `card("Dice")*10` 10 to
   60. Other cards give their name.
-- Several numbers come as a list such as `{3, 5, 1}`, the form a row of
-  a matrix will take; several names as `Rice, Soup, Rice`. A list is
-  shown, not computed with.
+- Several numbers come as a list such as `[3, 5, 1]`, which a variable
+  or `$n` can keep; several names as `Rice, Soup, Rice`.
 - `rands(seed)` makes card draws repeat too.
 - History shows the cards drawn on the right, as with `rand()`.
 <!-- desktop -->
