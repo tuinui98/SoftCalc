@@ -219,7 +219,8 @@ internal sealed class CustomizeRibbonDialog : Form
 		{
 			var group = _layout[g];
 			string caption = group.Caption.Length == 0 ? "(no caption)" : group.Caption;
-			var groupNode = new TreeNode($"{caption}    [{group.Columns} col]") { Tag = new RibbonPos(g, -1) };
+			string row = RibbonLayout.LockedRow(_layout, g) is { } n ? $", row {n}" : "";
+			var groupNode = new TreeNode($"{caption}    [{group.Columns} col{row}]") { Tag = new RibbonPos(g, -1) };
 			for (int i = 0; i < group.Items.Count; i++)
 			{
 				groupNode.Nodes.Add(ItemNode(group.Items[i], new RibbonPos(g, i)));
@@ -576,7 +577,7 @@ internal sealed class CustomizeRibbonDialog : Form
 		bool changed;
 		if (pos.IsGroup)
 		{
-			changed = EditGroup(_layout[pos.Group]);
+			changed = EditGroup(pos.Group);
 		}
 		else
 		{
@@ -590,8 +591,9 @@ internal sealed class CustomizeRibbonDialog : Form
 		}
 	}
 
-	private bool EditGroup(RibbonGroup group)
+	private bool EditGroup(int index)
 	{
+		var group = _layout[index];
 		using var form = SmallForm("Edit Group");
 		var caption = new TextBox { Text = group.Caption, Width = 220 };
 		var columns = new NumericUpDown { Minimum = 1, Maximum = RibbonLayout.MaxColumns, Value = Math.Clamp(group.Columns, 1, RibbonLayout.MaxColumns), Width = 60 };
@@ -603,13 +605,30 @@ internal sealed class CustomizeRibbonDialog : Form
 			Text = $"{RibbonLayout.DecimalsToken} in the caption shows the decimal places sample.", AutoSize = true,
 			ForeColor = SystemColors.GrayText,
 		}, 1, fields.RowCount++);
+
+		// Start a new row (owner 2026-11-22): the n-th ticked group starts row n + 1
+		var newRow = new CheckBox { Text = "Start a new &row", AutoSize = true, Checked = index > 0 && group.NewRow, Enabled = index > 0, Margin = new Padding(3, 8, 3, 0) };
+		var rowNote = new Label { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(20, 0, 3, 3) };
+		int before = _layout.Take(index).Skip(1).Count(g => g.NewRow);
+		void ShowRow(bool longest = false)
+		{
+			rowNote.Text = index == 0 ? "The first group is always on row 1."
+				: newRow.Checked || longest ? $"Row {before + 2} here; the groups after it follow on that row.\nGroups before it that do not fit run on to it first."
+				: "Off: it follows the group before it.";
+		}
+		newRow.CheckedChanged += (_, _) => ShowRow();
+		ShowRow(longest: true);    // the dialog sized for the two-line note
+		fields.Controls.Add(newRow, 1, fields.RowCount++);
+		fields.Controls.Add(rowNote, 1, fields.RowCount++);
 		FitSmall(form, fields);
+		ShowRow();
 		if (form.ShowDialog(this) != DialogResult.OK)
 		{
 			return false;
 		}
 		group.Caption = caption.Text.Trim();
 		group.Columns = (int)columns.Value;
+		group.NewRow = newRow.Checked;
 		return true;
 	}
 
