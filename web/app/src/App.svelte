@@ -12,7 +12,7 @@
 	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
-	import { Calculator, stepDecimals } from "./lib/calc";
+	import { Calculator, CRYPTO_GROUP, cryptoTargets, stepDecimals } from "./lib/calc";
 	import { copyText } from "./lib/clipboard";
 	import type { Engine } from "./lib/engine";
 	import { BASIC, SCIENTIFIC, type Key } from "./lib/keys";
@@ -178,7 +178,19 @@
 	async function openConversions()
 	{
 		const groups = Object.keys(calc.catalog.conversions);
+		const zones = groups.indexOf("Time zone");
+		if (calc.catalog.crypto)
+			groups.splice(zones < 0 ? groups.length : zones, 0, CRYPTO_GROUP);
 		const group = await pick("Conversions", groups);
+		if (group === CRYPTO_GROUP)
+		{
+			const coin = await pick(CRYPTO_GROUP, Object.keys(calc.catalog.crypto ?? {}));
+			const from = coin && await pick(`${coin}: from`, calc.catalog.crypto?.[coin] ?? []);
+			const to = coin && from && await pick(`${from} to`, cryptoTargets(calc.catalog, coin, from));
+			if (from && to) await calc.insertConversion(from, to);
+			focusInput();
+			return;
+		}
 		const units = group === "Currency" ? currencyCodes() : group ? calc.catalog.conversions[group] : [];
 		const source = group && await pick(`${group}: from`, units);
 		const target = source && await pick(`${source} to`, units.filter(unit => unit !== source));

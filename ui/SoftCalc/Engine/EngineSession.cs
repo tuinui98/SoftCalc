@@ -34,7 +34,9 @@ internal sealed record Catalog(
 	IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>> FunctionGroups,
 	IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>> ConversionGroups,
 	IReadOnlyList<string> Formats,
-	IReadOnlyList<string> Currencies);
+	IReadOnlyList<string> Currencies,
+	IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>>? CryptoGroups = null,    // coin -> its units
+	IReadOnlyList<string>? CryptoTargets = null);    // currencies a coin unit converts to
 
 internal sealed class EngineSession : IDisposable
 {
@@ -204,7 +206,9 @@ internal sealed class EngineSession : IDisposable
 		var reply = await GuardedAsync("catalog", null);
 		return new Catalog(Groups(reply["functions"]), Groups(reply["conversions"]),
 			reply["formats"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>(),
-			reply["currencies"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>());
+			reply["currencies"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>(),
+			Groups(reply["crypto"]),
+			reply["crypto_targets"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>());
 	}
 
 	public async Task<(string Text, int Caret)> MenuInsertAsync(JsonObject arguments)

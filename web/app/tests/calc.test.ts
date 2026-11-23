@@ -4,7 +4,7 @@
 // Pyodide; the real engine has its own tests (test_engine.mjs).
 
 import { describe, expect, it } from "vitest";
-import { Calculator, clearEntry, memoryAdd, stepDecimals, type EngineLike } from "../src/lib/calc";
+import { Calculator, clearEntry, cryptoTargets, memoryAdd, stepDecimals, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { MemoryStore } from "../src/lib/store";
 import { pcfBytes } from "../src/lib/transfer";
@@ -591,5 +591,20 @@ describe("card() in Input (owner 2026-11-24)", () =>
 		calc.saveCards({ ...calc.cards, language: "th" });    // the language shown does not change what card() gets
 		await Promise.resolve();
 		expect(sent()).toHaveLength(2);
+	});
+});
+
+describe("Conversions > Cryptocurrency (owner 2026-11-24)", () =>
+{
+	const catalog = {
+		functions: {}, conversions: {},
+		crypto: { Bitcoin: ["btc", "sat"], Ethereum: ["eth", "gwei", "wei"], Tron: ["trx", "sun"], Tether: ["usdt"] },
+		crypto_targets: ["THB", "USD"],
+	};
+
+	it("offers the coin's other units, the other coins, then the currencies", () =>
+	{
+		expect(cryptoTargets(catalog, "Bitcoin", "sat")).toEqual(["btc", "eth", "trx", "usdt", "THB", "USD"]);
+		expect(cryptoTargets(catalog, "Tether", "usdt")).toEqual(["btc", "eth", "trx", "THB", "USD"]);
 	});
 });

@@ -31,7 +31,9 @@ Coins convert like other units:
 | Ethereum | `eth`, `gwei` (0.000000001 eth), `wei` (10^-18 eth) |
 | Tron | `trx`, `sun` (0.000001 trx) |
 
-Conversions > Bitcoin, Ethereum and Tron put these tags in Input.
+Conversions > Cryptocurrency > Bitcoin, Ethereum, Tron and Tether put these
+tags in Input: each unit goes to its coin's other units, the other coins
+or the common currencies.
 
 ## Prices
 

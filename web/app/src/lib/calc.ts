@@ -56,7 +56,22 @@ export interface Settings
 	[key: string]: unknown;
 }
 
-export type Catalog = { functions: Record<string, string[]>; conversions: Record<string, string[]> };
+export type Catalog = {
+	functions: Record<string, string[]>;
+	conversions: Record<string, string[]>;
+	crypto?: Record<string, string[]>;    // Conversions > Cryptocurrency: coin -> its units (owner 2026-11-24)
+	crypto_targets?: string[];    // the currencies a coin unit converts to
+};
+
+export const CRYPTO_GROUP = "Cryptocurrency";
+
+// What a coin unit converts to: its coin's other units, the other coins, the common currencies
+export function cryptoTargets(catalog: Catalog, coin: string, source: string): string[]
+{
+	const coins = catalog.crypto ?? {};
+	const others = Object.entries(coins).filter(([name, units]) => name !== coin && units.length > 0).map(([, units]) => units[0]);
+	return [...(coins[coin] ?? []).filter(unit => unit !== source), ...others, ...(catalog.crypto_targets ?? [])];
+}
 
 // The user's own names (engine `state`), for the Variables sheet and Functions > Your functions
 export interface Definitions
