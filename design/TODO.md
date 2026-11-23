@@ -584,6 +584,17 @@ ends 1:1, the drag insert line is visible enough on dark.
     Insert Command on the draw tab, the ... tab and the web Cards tab.
     Owner OK; help updated (03, 14, 17, 12-ribbon).
 
+## Matrices (owner 2026-11-24, noted only; plan and discuss first)
+- [ ] Matrix functions in the engine. Owner: numbers drawn by card()
+      should go on into matrices. Written form proposed 2026-11-24 (to
+      confirm): a row `{1, 2, 3}`, rows `{{1, 2}, {3, 4}}` (`[ ]` is
+      taken by conversions); card()'s number lists already come out as
+      `{3, 5, 1}`, so they would become matrix values then. To discuss:
+      which functions (+ - * on matrices and with a number, transpose,
+      det, inverse, identity, solve, sum/mean of a list, element access),
+      how a matrix shows in History, variables holding a matrix, $n,
+      the .pcf, RPN, precision, and the web/Android keypad.
+
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
