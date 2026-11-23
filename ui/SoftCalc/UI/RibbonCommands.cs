@@ -60,9 +60,21 @@ internal sealed class RibbonCommands
 
 	public List<CommandNode> Tree { get; } = new();
 
+	// Ribbon buttons saved before the coins moved under Conversions > Cryptocurrency (owner 2026-11-24)
+	private static readonly string[] MovedCoins = { "Bitcoin", "Ethereum", "Tron" };
+
 	public RibbonCommand? Find(string id)
 	{
-		return _byId.GetValueOrDefault(id);
+		var found = _byId.GetValueOrDefault(id);
+		if (found == null)
+		{
+			string? coin = MovedCoins.FirstOrDefault(c => id.StartsWith($"Conversions/{c}/", StringComparison.Ordinal));
+			if (coin != null)
+			{
+				found = _byId.GetValueOrDefault("Conversions/Cryptocurrency/" + id["Conversions/".Length..]);
+			}
+		}
+		return found;
 	}
 
 	public IEnumerable<RibbonCommand> All => _byId.Values;

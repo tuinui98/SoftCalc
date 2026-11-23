@@ -62,9 +62,16 @@ MENU = {
     "Velocity": ["mi/h", "m/s", "ft/h", "km/h", "knot"],
     "Area": ["mm2", "cm2", "m2", "ha", "km2", "in2", "ft2", "yd2", "acre", "mi2", "wa2", "ngan", "rai", "rnw"],
     "Temperature": ["c", "f", "k"],
+}
+
+# Conversions > Cryptocurrency: one submenu per coin (owner 2026-11-24, was three
+# top-level groups); each unit converts to its coin's other units, the other
+# coins and the common currencies (catalog "crypto_targets")
+CRYPTO_MENU = {
     "Bitcoin": ["btc", "sat"],
     "Ethereum": ["eth", "gwei", "wei"],
     "Tron": ["trx", "sun"],
+    "Tether": ["usdt"],
 }
 
 

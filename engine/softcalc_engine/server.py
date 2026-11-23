@@ -45,6 +45,8 @@ CATALOG = {
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
     "currencies": currency.CODES,
+    "crypto": units.CRYPTO_MENU,
+    "crypto_targets": currency.COMMON,
     "formats": ["longdatetime", "longdate", "longtime", "epoch", "fromepoch"],
 }
 

@@ -728,6 +728,10 @@ internal sealed partial class MainForm : Form
 		items.Clear();
 		foreach (var (category, units) in catalog.ConversionGroups)
 		{
+			if (category == "Time zone" && catalog.CryptoGroups is { Count: > 0 })
+			{
+				items.Add(CryptoMenu(catalog.CryptoGroups, catalog.CryptoTargets ?? Array.Empty<string>()));
+			}
 			var categoryItem = new ToolStripMenuItem(category);
 			foreach (string source in units)
 			{
@@ -756,6 +760,41 @@ internal sealed partial class MainForm : Form
 		}
 		items.Add(new ToolStripSeparator());
 		items.Add(formats);
+	}
+
+	// Conversions > Cryptocurrency > coin > unit > target (owner 2026-11-24): the coin's other
+	// units, then the other coins, then the common currencies
+	private ToolStripMenuItem CryptoMenu(IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>> coins,
+		IReadOnlyList<string> currencies)
+	{
+		var menu = new ToolStripMenuItem("Cryptocurrency");
+		foreach (var (coin, units) in coins)
+		{
+			var coinItem = new ToolStripMenuItem(coin);
+			foreach (string source in units)
+			{
+				var sourceItem = new ToolStripMenuItem(source);
+				var others = coins.Where(c => c.Key != coin && c.Value.Count > 0).Select(c => c.Value[0]);
+				foreach (var targets in new[] { units.Where(u => u != source), others, currencies })
+				{
+					if (sourceItem.DropDownItems.Count > 0 && targets.Any())
+					{
+						sourceItem.DropDownItems.Add(new ToolStripSeparator());
+					}
+					foreach (string target in targets)
+					{
+						sourceItem.DropDownItems.Add(new ToolStripMenuItem(target, null, async (_, _) =>
+							await InsertFromMenuAsync(new JsonObject
+							{
+								["kind"] = "conversion", ["source"] = source, ["target"] = target,
+							})));
+					}
+				}
+				coinItem.DropDownItems.Add(sourceItem);
+			}
+			menu.DropDownItems.Add(coinItem);
+		}
+		return menu;
 	}
 
 	// Below the common pairs: From inserts " [THB", To inserts "->USD]" (owner 2026-11-06)

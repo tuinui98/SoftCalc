@@ -79,6 +79,25 @@ public sealed class RibbonLayoutTests
 	}
 
 	[Fact]
+	public void ButtonSavedBeforeTheCoinsMovedStillFindsItsCommand()
+	{
+		using var menu = new MenuStrip();
+		var conversions = new ToolStripMenuItem("&Conversions");
+		var crypto = new ToolStripMenuItem("Cryptocurrency");
+		var bitcoin = new ToolStripMenuItem("Bitcoin");
+		var btc = new ToolStripMenuItem("btc");
+		btc.DropDownItems.Add(new ToolStripMenuItem("sat"));
+		bitcoin.DropDownItems.Add(btc);
+		crypto.DropDownItems.Add(bitcoin);
+		conversions.DropDownItems.Add(crypto);
+		menu.Items.Add(conversions);
+		var commands = RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), new HashSet<ToolStripMenuItem>());
+		Assert.Same(commands.Find("Conversions/Cryptocurrency/Bitcoin/btc/sat"), commands.Find("Conversions/Bitcoin/btc/sat"));
+		Assert.NotNull(commands.Find("Conversions/Bitcoin/btc/sat"));
+		Assert.Null(commands.Find("Conversions/Length/btc/sat"));
+	}
+
+	[Fact]
 	public void LeafCommandClicksItsMenuItem()
 	{
 		using var menu = new MenuStrip();

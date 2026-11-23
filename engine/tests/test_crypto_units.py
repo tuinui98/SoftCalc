@@ -3,7 +3,7 @@
 import pytest
 
 from softcalc_engine.engine import Engine
-from softcalc_engine.units import MENU
+from softcalc_engine.units import CRYPTO_MENU, MENU
 
 
 def run(line):
@@ -32,10 +32,11 @@ def test_coins_need_prices_to_mix():
     assert (result.kind, result.text) == ("error", "ERROR:Cannot convert btc to kg")
 
 
-def test_menu_has_a_group_per_coin():
-    assert MENU["Bitcoin"] == ["btc", "sat"]
-    assert MENU["Ethereum"] == ["eth", "gwei", "wei"]
-    assert MENU["Tron"] == ["trx", "sun"]
+def test_one_cryptocurrency_menu_with_a_group_per_coin():
+    # owner 2026-11-24: one Cryptocurrency submenu, Tether (usdt) in it too
+    assert CRYPTO_MENU == {"Bitcoin": ["btc", "sat"], "Ethereum": ["eth", "gwei", "wei"],
+                           "Tron": ["trx", "sun"], "Tether": ["usdt"]}
+    assert not set(CRYPTO_MENU) & set(MENU)
 
 
 #------------------------------------------------------------------
