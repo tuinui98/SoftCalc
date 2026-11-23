@@ -533,6 +533,17 @@ ends 1:1, the drag insert line is visible enough on dark.
       only, without draw tabs and pictures; unticked cards, No repeat
       piles and tab options stay per device. To confirm with the owner
       before building.
+  - Owner 2026-11-23: one zip file `SoftCalc-decks-<local time>.zip`
+    (`decks.json` + `pictures/<hash>.png`, a shared picture stored once)
+    instead of the .json; pictures go along. Desktop: File > Export Decks /
+    Import Decks and also the Random window's "..." tab; web: ⋮ Export /
+    Import and the Cards tab. Only own decks (ready-made ones are in both
+    apps); a card's `off` goes along. Import: a deck with the same name
+    and the same cards is skipped; same name, other cards: added as
+    `name (2)`; past the deck limit skipped and counted. The web keeps
+    the pictures it cannot show yet, so an export from the web still
+    carries them. Zip read with limits (size, file count, no paths out of
+    the folder). Draw tabs not exported.
 - [ ] Desktop ribbon rows (owner 2026-11-22): a group can be locked to
       start row 2 (Customize Ribbon). Every group after it follows it on
       row 2. The groups before it fill row 1; when the window is narrow,
@@ -543,6 +554,16 @@ ends 1:1, the drag insert line is visible enough on dark.
       acts as row 2; locks never go backwards). A row that is too narrow
       runs on to the next as now (owner 2026-11-22). To discuss the details
       (where the lock is set, how it shows) before building.
+
+## Later (owner 2026-11-23, a separate piece of work)
+- [ ] Deck covers: a new deck chooser that shows each deck's cover; the
+      default cover is one of the deck's card pictures. Maybe pictures for
+      the ready-made decks too, at least the playing cards. Free-licence
+      candidates found 2026-11-23 (licences to check again before use):
+      GreyWyvern set (CC0, SVG, opengameart.org/content/greywyvern-playing-card-set),
+      Kenney Playing Cards Pack (CC0, PNG pixel art, kenney.nl/assets/playing-cards-pack),
+      Classic 4-color poker deck (CC0, SVG), Jumbo index cards (CC0).
+      Avoid Byron Knoll's set (public-domain claim not backed up).
 
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
