@@ -159,6 +159,18 @@ engine sends the one-line text and Edit sends it back. Keypads: Sci has
 beside it). Help waits until the owner finishes the matrix topic
 (owner rule: help after a topic is done).
 
+SymPy check (owner 2026-11-24): tools/make_matrix_reference.py (own
+venv `engine/.venv-ref`, SymPy 1.14.0 pins mpmath < 1.4) writes 1388
+random cases with exact answers to engine/tests/data/matrix_reference.json;
+test_matrix_reference.py compares to 28 digits. It found: a matrix with
+det 0 on paper but decimal cells (0.316 is not exact in binary) gave an
+"inverse" of 1e43 instead of the error. Fixed: det, inv, solve and `^`
+work at twice the working digits, and a det below the shown precision
+against Hadamard's bound counts as 0 (det shows 0, inv/solve say there is
+no inverse). Left as is: an ill-conditioned matrix (cond 1e20) loses that
+many of its shown digits to the rounding of its own input; the test
+allows cond x 1e-40. 50x50 inv takes 2.3 s (was 1.5 s) on the desktop.
+
 ## Round 2 (later, each to discuss)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).
