@@ -592,16 +592,14 @@ ends 1:1, the drag insert line is visible enough on dark.
       release's version, and make the release steps (publish.ps1, a test)
       fail when the engine's version and SoftCalc's differ.
 
-## Matrices (owner 2026-11-24, noted only; plan and discuss first)
-- [ ] Matrix functions in the engine. Owner: numbers drawn by card()
-      should go on into matrices. Written form proposed 2026-11-24 (to
-      confirm): a row `{1, 2, 3}`, rows `{{1, 2}, {3, 4}}` (`[ ]` is
-      taken by conversions); card()'s number lists already come out as
-      `{3, 5, 1}`, so they would become matrix values then. To discuss:
-      which functions (+ - * on matrices and with a number, transpose,
-      det, inverse, identity, solve, sum/mean of a list, element access),
-      how a matrix shows in History, variables holding a matrix, $n,
-      the .pcf, RPN, precision, and the web/Android keypad.
+## Matrices (owner 2026-11-24; plan in design/matrix_plan.md)
+- [ ] Matrix functions in the engine. Owner 2026-11-24: written with
+      `[ ]` (`[1, 2, 3]`, `[[1, 2], [3, 4]]`), but first check for
+      certain that it cannot clash with conversions and formats (plan
+      step X0); one-line display, a table later; a list fits as a row or
+      a column; at most 10000 cells, inv/det/solve at most 50x50;
+      variables, $n and the .pcf hold matrices; no RPN. Plan proposed
+      2026-11-24, waiting for the owner's OK.
 
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the
