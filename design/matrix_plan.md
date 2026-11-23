@@ -125,6 +125,19 @@ or use `at(A, 1)`. No arithmetic on them yet (X2): `[1, 2]+1` is
 Names to check against existing functions and user names (min/max may
 exist already; a user function called `len` or `at`).
 
+Built 2026-11-24 (matrix.py FUNCTIONS, functions.binary/negate/postfix,
+engine.random_matrix): every function above. Choices made while
+building: a list and a number go cell by cell for + - * / ^ mod (either
+side); a matrix with a number for + - * and /number, `^` is the matrix
+power; number / matrix is an error; list * list asks for dot(); a list
+times a matrix fits as a row (left) or a column (right) and gives a list;
+zeros(n)/ones(n) make a list, zeros(r, c) a matrix; diag(list) makes a
+matrix, diag(matrix) gives its diagonal; len counts every cell; sum,
+mean, prod, min, max take any mix of numbers and lists; min(3, 9) works
+too; randm(r, c, [a, b]) draws each cell as rand() would and follows
+rands(seed). The names are reserved, so a .pcf variable called `sum` or
+`det` is now skipped on Load.
+
 ## X3 - Around the engine (round 1)
 - Variables window (desktop) and Variables (web): a matrix variable shows
   its one-line text; Edit takes the same text.

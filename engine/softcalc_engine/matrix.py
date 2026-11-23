@@ -60,3 +60,308 @@ def checked(matrix):
     if rows * cols > MAX_CELLS:
         raise CalcError(f"A matrix may have at most {MAX_CELLS} cells")
     return matrix
+
+
+#======================================================================
+#  X2 - Arithmetic and functions (design/matrix_plan.md X2)
+#======================================================================
+def cells(m):
+    return [cell for row in m.rows for cell in row]
+
+
+def shaped(rows, flat):
+    return checked(Matrix(tuple(tuple(row) for row in rows), flat))
+
+
+def map_cells(m, fn):
+    return shaped([[fn(cell) for cell in row] for row in m.rows], m.flat)
+
+
+def to_mp(m):
+    return mpmath.matrix([list(row) for row in m.rows])
+
+
+def from_mp(mp, flat=False):
+    return shaped([[mp[i, j] for j in range(mp.cols)] for i in range(mp.rows)], flat)
+
+
+def as_matrix(value, key):
+    if not isinstance(value, Matrix):
+        raise CalcError(f"{key} needs a list or a matrix")
+    return value
+
+
+def whole_number(value, key, low=1):
+    if not isinstance(value, mpmath.mpf) or value != mpmath.floor(value) or value < low:
+        raise CalcError(f"{key} needs a whole number from {low}")
+    return int(value)
+
+
+def square(m, key, largest=None):
+    rows, cols = m.shape
+    if m.flat or rows != cols:
+        raise CalcError(f"{key} needs a square matrix")
+    if largest and rows > largest:
+        raise CalcError(f"{key} takes at most {largest}x{largest}")
+    return rows
+
+
+#----------------------------------------------------------------------
+#  Operators
+#----------------------------------------------------------------------
+def binary(op, a, b, scalar):
+    """a op b with a list or matrix on either side; scalar(op, x, y) for one cell."""
+    if isinstance(a, Matrix) and isinstance(b, Matrix):
+        if op in ("+", "-"):
+            if a.shape != b.shape:
+                raise CalcError(f"'{op}' needs the same size: {size(a)} and {size(b)}")
+            rows = [[scalar(op, x, y) for x, y in zip(ra, rb)] for ra, rb in zip(a.rows, b.rows)]
+            return shaped(rows, a.flat and b.flat)
+        if op == "*":
+            return product(a, b)
+        if op == "/":
+            raise CalcError("Divide by a matrix: multiply by inv() instead")
+        raise CalcError(f"'{op}' takes a matrix and a number")
+    if not is_cell(b if isinstance(a, Matrix) else a):
+        raise CalcError(f"'{op}' needs a number")
+    if isinstance(a, Matrix):
+        if op == "^" and not a.flat:
+            return power(a, b)
+        return map_cells(a, lambda x: scalar(op, x, b))
+    if not b.flat and op in ("/", "^", "mod"):
+        raise CalcError(f"'{op}' with a matrix on the right is not defined")
+    return map_cells(b, lambda y: scalar(op, a, y))
+
+
+def size(m):
+    rows, cols = m.shape
+    return f"a list of {cols}" if m.flat else f"{rows}x{cols}"
+
+
+def product(a, b):
+    """Matrix times matrix; a list fits as a row (on the left) or a column (on the right)."""
+    if a.flat and b.flat:
+        raise CalcError("Two lists: use dot(a, b), or write one as a matrix")
+    left = a.rows
+    right = [[cell] for cell in b.rows[0]] if b.flat else b.rows
+    if len(left[0]) != len(right):
+        raise CalcError(f"Sizes do not fit: {size(a)} times {size(b)}")
+    rows = [[mpmath.fsum(x * right[k][j] for k, x in enumerate(r)) for j in range(len(right[0]))] for r in left]
+    if b.flat:
+        return shaped([[r[0] for r in rows]], True)
+    return shaped(rows, a.flat)
+
+
+def power(m, n):
+    count = square(m, "'^'", MAX_SOLVE)
+    if not isinstance(n, mpmath.mpf) or n != mpmath.floor(n) or abs(n) > 1000:
+        raise CalcError("A matrix to a power needs a whole number from -1000 to 1000")
+    if n == 0:
+        return identity([mpmath.mpf(count)])
+    base = inverse_mp(m, "'^'") if n < 0 else to_mp(m)
+    return from_mp(base ** int(abs(n)))
+
+
+def inverse_mp(m, key):
+    square(m, key, MAX_SOLVE)
+    try:
+        return mpmath.inverse(to_mp(m))
+    except ZeroDivisionError as exc:
+        raise CalcError("The matrix has no inverse (its det is 0)") from exc
+
+
+#----------------------------------------------------------------------
+#  Making lists and matrices
+#----------------------------------------------------------------------
+def identity(args):
+    n = whole_number(args[0], "identity")
+    if n * n > MAX_CELLS:
+        raise CalcError(f"A matrix may have at most {MAX_CELLS} cells")
+    return shaped([[mpmath.mpf(1 if i == j else 0) for j in range(n)] for i in range(n)], False)
+
+
+def filled(key, value):
+    """zeros(n) / ones(n): a list of n; zeros(r, c) / ones(r, c): an r x c matrix."""
+    def make(args):
+        rows = whole_number(args[0], key)
+        cols = whole_number(args[1], key) if len(args) > 1 else None
+        if rows * (cols or 1) > MAX_CELLS:
+            raise CalcError(f"A matrix may have at most {MAX_CELLS} cells")
+        if cols is None:
+            return shaped([[mpmath.mpf(value)] * rows], True)
+        return shaped([[mpmath.mpf(value)] * cols for _ in range(rows)], False)
+    return make
+
+
+def diag(args):
+    """diag(list): the square matrix with the list down its diagonal; diag(matrix): its diagonal."""
+    m = as_matrix(args[0], "diag")
+    if m.flat:
+        n = len(m.rows[0])
+        if n * n > MAX_CELLS:
+            raise CalcError(f"A matrix may have at most {MAX_CELLS} cells")
+        return shaped([[m.rows[0][i] if i == j else mpmath.mpf(0) for j in range(n)] for i in range(n)], False)
+    n = square(m, "diag")
+    return shaped([[m.rows[i][i] for i in range(n)]], True)
+
+
+def seq(args):
+    """seq(a, b, [step]): a, a+step, ... up to b (step 1, or -1 when b < a)."""
+    for value in args:
+        if not isinstance(value, mpmath.mpf):
+            raise CalcError("seq needs real numbers")
+    start, end = args[0], args[1]
+    step = args[2] if len(args) > 2 else mpmath.mpf(1 if end >= start else -1)
+    if step == 0 or (end - start) * step < 0:
+        raise CalcError("seq: the step must go from the start toward the end")
+    count = int(mpmath.floor((end - start) / step + mpmath.mpf(10) ** (2 - mpmath.mp.dps))) + 1
+    if count > MAX_CELLS:
+        raise CalcError(f"A list may have at most {MAX_CELLS} numbers")
+    return shaped([[start + k * step for k in range(count)]], True)
+
+
+#----------------------------------------------------------------------
+#  Size and cells (counting from 1)
+#----------------------------------------------------------------------
+def index(value, count, key, what):
+    i = whole_number(value, key)
+    if i > count:
+        raise CalcError(f"{key}: {what} {i} is past the end ({count})")
+    return i - 1
+
+
+def at(args):
+    m = as_matrix(args[0], "at")
+    if m.flat:
+        if len(args) != 2:
+            raise CalcError("at(list, n) takes one place")
+        return m.rows[0][index(args[1], len(m.rows[0]), "at", "place")]
+    if len(args) != 3:
+        raise CalcError("at(matrix, row, column) takes a row and a column")
+    rows, cols = m.shape
+    return m.rows[index(args[1], rows, "at", "row")][index(args[2], cols, "at", "column")]
+
+
+def row(args):
+    m = as_matrix(args[0], "row")
+    return shaped([m.rows[index(args[1], m.shape[0], "row", "row")]], True)
+
+
+def col(args):
+    m = as_matrix(args[0], "col")
+    j = index(args[1], m.shape[1], "col", "column")
+    return shaped([[r[j] for r in m.rows]], True)
+
+
+#----------------------------------------------------------------------
+#  Linear algebra
+#----------------------------------------------------------------------
+def vector(value, key):
+    m = as_matrix(value, key)
+    rows, cols = m.shape
+    if rows != 1 and cols != 1:
+        raise CalcError(f"{key} needs lists, or matrices of one row or one column")
+    return cells(m)
+
+
+def dot(args):
+    a, b = vector(args[0], "dot"), vector(args[1], "dot")
+    if len(a) != len(b):
+        raise CalcError(f"dot needs two lists of the same length ({len(a)} and {len(b)})")
+    return mpmath.fsum(x * y for x, y in zip(a, b))
+
+
+def cross(args):
+    a, b = vector(args[0], "cross"), vector(args[1], "cross")
+    if len(a) != 3 or len(b) != 3:
+        raise CalcError("cross needs two lists of 3 numbers")
+    return shaped([[a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]], True)
+
+
+def transpose(args):
+    """Rows become columns; a list becomes a one-column matrix."""
+    m = as_matrix(args[0], "transpose")
+    return shaped([list(column) for column in zip(*m.rows)], False)
+
+
+def det(args):
+    m = as_matrix(args[0], "det")
+    square(m, "det", MAX_SOLVE)
+    return mpmath.det(to_mp(m))
+
+
+def inv(args):
+    return from_mp(inverse_mp(as_matrix(args[0], "inv"), "inv"))
+
+
+def trace(args):
+    m = as_matrix(args[0], "trace")
+    n = square(m, "trace")
+    return mpmath.fsum(m.rows[i][i] for i in range(n))
+
+
+def solve(args):
+    """solve(A, b): x with A*x = b; b a list (the answer a list) or a matrix."""
+    a = as_matrix(args[0], "solve")
+    n = square(a, "solve", MAX_SOLVE)
+    b = as_matrix(args[1], "solve")
+    rhs = [[cell] for cell in b.rows[0]] if b.flat else [list(r) for r in b.rows]
+    if len(rhs) != n:
+        raise CalcError(f"solve: A has {n} rows, b has {len(rhs)}")
+    try:
+        answer = mpmath.inverse(to_mp(a)) * mpmath.matrix(rhs)
+    except ZeroDivisionError as exc:
+        raise CalcError("solve: the matrix has no inverse (its det is 0), so no single answer") from exc
+    if b.flat:
+        return shaped([[answer[i, 0] for i in range(n)]], True)
+    return from_mp(answer)
+
+
+#----------------------------------------------------------------------
+#  Lists: every cell of the arguments
+#----------------------------------------------------------------------
+def numbers_of(args, key, real=False):
+    out = []
+    for value in args:
+        out.extend(cells(value) if isinstance(value, Matrix) else [value])
+    for value in out:
+        if not is_cell(value) or (real and isinstance(value, mpmath.mpc)):
+            raise CalcError(f"{key} needs {'real ' if real else ''}numbers")
+    return out
+
+
+def total(args):
+    return mpmath.fsum(numbers_of(args, "sum"))
+
+
+def mean(args):
+    values = numbers_of(args, "mean")
+    return mpmath.fsum(values) / len(values)
+
+
+def prod(args):
+    return mpmath.fprod(numbers_of(args, "prod"))
+
+
+def sort(args):
+    m = as_matrix(args[0], "sort")
+    if not m.flat:
+        raise CalcError("sort takes a list")
+    return shaped([sorted(numbers_of(args, "sort", real=True))], True)
+
+
+# name -> (function, fewest arguments, most arguments; None: any number)
+FUNCTIONS = {
+    "identity": (identity, 1, 1), "zeros": (filled("zeros", 0), 1, 2), "ones": (filled("ones", 1), 1, 2),
+    "diag": (diag, 1, 1), "seq": (seq, 2, 3),
+    "rows": (lambda a: mpmath.mpf(as_matrix(a[0], "rows").shape[0]), 1, 1),
+    "cols": (lambda a: mpmath.mpf(as_matrix(a[0], "cols").shape[1]), 1, 1),
+    "len": (lambda a: mpmath.mpf(len(cells(as_matrix(a[0], "len")))), 1, 1),
+    "at": (at, 2, 3), "row": (row, 2, 2), "col": (col, 2, 2),
+    "dot": (dot, 2, 2), "cross": (cross, 2, 2), "transpose": (transpose, 1, 1),
+    "det": (det, 1, 1), "inv": (inv, 1, 1), "trace": (trace, 1, 1), "solve": (solve, 2, 2),
+    "sum": (total, 1, None), "mean": (mean, 1, None), "prod": (prod, 1, None),
+    "min": (lambda a: min(numbers_of(a, "min", real=True)), 1, None),
+    "max": (lambda a: max(numbers_of(a, "max", real=True)), 1, None),
+    "sort": (sort, 1, 1),
+}
