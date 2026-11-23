@@ -562,6 +562,19 @@ ends 1:1, the drag insert line is visible enough on dark.
       owner OK: Edit Group > "Start a new row" tick box; the Customize
       tree shows "row n" (RibbonLayout.Rows).
 
+- [ ] Input draws from a deck (owner 2026-11-24): one engine function
+      `card("Deck name", [count], [no repeat])`. The app sends the engine
+      the decks (my own and the ready-made ones in the language chosen;
+      card names and weights) at start and after each change; the engine
+      stays without file I/O. Draws by weight with the engine's generator,
+      so `rands(seed)` repeats them. Leaves out only the cards saved to
+      start unticked (the jokers), not the Cards tab's ticks or piles;
+      no repeat holds within the one call. A card named like a number
+      gives a number (usable in sums), else text in History; several
+      cards: a list. A quoted name is new to the parser (only here).
+      No card values for the playing cards (not needed). Desktop, web
+      and APK alike.
+
 ## Later (owner 2026-11-23, a separate piece of work)
 - [ ] Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
