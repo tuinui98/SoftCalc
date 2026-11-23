@@ -579,6 +579,7 @@ describe("card() in Input (owner 2026-11-24)", () =>
 		const pack = decks.find(deck => deck.name === "Playing cards")!;
 		expect(pack.alias).toBe("ไพ่ 1 สำรับ");
 		expect(pack.cards.filter(card => card.off)).toHaveLength(2);
+		expect(decks.find(deck => deck.name === "Months")!.cards[0]).toEqual({ name: "January", alias: "มกราคม", weight: 1 });
 		calc.saveCards({ ...calc.cards, count: 3 });
 		await Promise.resolve();
 		expect(sent()).toHaveLength(1);
@@ -587,8 +588,8 @@ describe("card() in Input (owner 2026-11-24)", () =>
 		expect(sent()).toHaveLength(2);
 		const now = sent()[1].args.decks as { name: string; cards: unknown[] }[];
 		expect(now[0]).toEqual({ name: "Dice", cards: [{ name: "1", weight: 2 }] });
-		calc.saveCards({ ...calc.cards, language: "th" });
+		calc.saveCards({ ...calc.cards, language: "th" });    // the language shown does not change what card() gets
 		await Promise.resolve();
-		expect((sent()[2].args.decks as { name: string; alias?: string }[]).find(deck => deck.alias === "Playing cards")?.name).toBe("ไพ่ 1 สำรับ");
+		expect(sent()).toHaveLength(2);
 	});
 });

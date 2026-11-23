@@ -81,6 +81,13 @@ def test_errors(line, error):
     assert engine().evaluate(line).text == error
 
 
+def test_the_name_typed_picks_the_language():
+    e = Engine()
+    e.decks = decks_from([{"name": "Days", "alias": "วัน", "cards": [{"name": "Monday", "alias": "จันทร์"}, {"name": "X"}]}])
+    assert set(texts(e, 'card("Days")', 40)) == {"Monday", "X"}
+    assert set(texts(e, 'card("วัน")', 40)) == {"จันทร์", "X"}    # no alias: the name
+
+
 def test_curly_quotes_from_a_phone():
     assert engine().evaluate("card(“Food”)").text in {"Rice", "Soup"}
 
@@ -94,7 +101,7 @@ def test_a_quoted_name_keeps_its_spaces():
 def test_protocol_sets_the_decks():
     d = Dispatcher()
     assert d.handle({"op": "eval", "input": 'card("Dice")'})["text"] == "ERROR:card: no deck named 'Dice'"
-    assert d.handle({"op": "decks", "decks": DECKS}) == {"id": None, "ok": True, "decks": 3}
+    assert d.handle({"op": "decks", "decks": DECKS}) == {"id": None, "ok": True, "decks": 4}
     assert d.handle({"op": "eval", "input": 'card("Dice")'})["text"] in {str(n) for n in range(1, 7)}
     assert not d.handle({"op": "decks", "decks": [{"name": "A", "cards": [{"name": "b", "weight": 0}]}]})["ok"]
     assert not d.handle({"op": "decks", "decks": "nope"})["ok"]

@@ -588,18 +588,18 @@ export class Calculator
 		return answer.ok ? { texts: answer.texts as string[], error: null } : { texts: null, error: answer.error ?? "Not drawn" };
 	}
 
-	// card() in Input draws from these (owner 2026-11-24); sent again only when the decks or the language changed
+	// card() in Input draws from these (owner 2026-11-24); sent again only when the decks changed
 	private decksSent = "";
 
 	private async sendDecks()
 	{
-		const key = JSON.stringify([this.cards.language, this.cards.decks]);
+		const key = JSON.stringify(this.cards.decks);
 		if (key === this.decksSent)
 		{
 			return;
 		}
 		this.decksSent = key;
-		await this.engine.send("decks", engineDecks(this.cards));
+		await this.engine.send("decks", engineDecks(this.cards.decks));
 	}
 
 	saveCards(state: CardsState)

@@ -393,21 +393,22 @@ export function cardsFrom(saved: unknown): CardsState
 }
 
 // The engine's `decks` for card() in Input (owner 2026-11-24; desktop CardStore.EngineDecks): own decks
-// first, then the ready-made ones named in the language chosen, with the other language's name as alias
-export function engineDecks(state: CardsState): { decks: unknown[] }
+// first, then the ready-made ones in English with the Thai names as aliases; the name typed picks the language
+export function engineDecks(decks: Deck[]): { decks: unknown[] }
 {
-	const cardsOf = (cards: Card[], language: string) => cards.map(card => ({ name: shownCard(card, language), weight: card.weight, ...(card.off ? { off: true } : {}) }));
-	const other = state.language === "th" ? "en" : "th";
 	return {
-		decks: [
-			...state.decks.map(deck => ({ name: deck.name, cards: cardsOf(deck.cards, "en") })),
-			...readyDecks().map(deck =>
-			{
-				const name = shownDeck(deck, state.language), alias = shownDeck(deck, other);
-				return { name, ...(alias !== name ? { alias } : {}), cards: cardsOf(listed(deck, state.language), state.language) };
-			}),
-		],
+		decks: [...decks, ...readyDecks()].map(deck => ({
+			name: deck.name, ...(deck.thai ? { alias: deck.thai } : {}),
+			cards: deck.cards.map(card => ({ name: card.name, ...(card.thai ? { alias: card.thai } : {}), weight: card.weight, ...(card.off ? { off: true } : {}) })),
+		})),
 	};
+}
+
+// The card() line for Input (owner 2026-11-24; desktop CardText.Command)
+export function cardCommand(deck: string, count = 1, noRepeat = false): string
+{
+	const tail = count <= 1 ? "" : noRepeat ? `, ${count}, 1` : `, ${count}`;
+	return `card("${deck.replace(/"/g, "'")}"${tail})`;
 }
 
 // A new own deck's id

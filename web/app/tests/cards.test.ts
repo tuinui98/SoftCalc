@@ -1,7 +1,7 @@
 // cards.test.ts - ⋮ > Random's Cards tab: ready-made decks, text forms, draws (desktop CardsTests)
 
 import { describe, expect, it } from "vitest";
-import { cardsFrom, drawCards, formatLines, listed, parseCsv, parseLines, readText, readyDecks, toCsv, type Card } from "../src/lib/cards";
+import { cardCommand, cardsFrom, drawCards, formatLines, listed, parseCsv, parseLines, readText, readyDecks, toCsv, type Card } from "../src/lib/cards";
 import type { RandomSource } from "../src/lib/random";
 
 function fixed(...numbers: number[]): RandomSource
@@ -57,5 +57,12 @@ describe("cards", () =>
 		const back = cardsFrom({ decks: [{ id: "mine:1", name: "Lunch", cards: [] }, { bad: 1 }], language: "th", count: 3 });
 		expect(back.decks).toHaveLength(1);
 		expect([back.language, back.count, back.noRepeat]).toEqual(["th", 3, false]);
+	});
+	it("writes the card() line for Input", () =>
+	{
+		expect(cardCommand("Food")).toBe('card("Food")');
+		expect(cardCommand("เดือน", 3)).toBe('card("เดือน", 3)');
+		expect(cardCommand("Food", 3, true)).toBe('card("Food", 3, 1)');
+		expect(cardCommand("Say \"hi\"", 1, true)).toBe("card(\"Say 'hi'\")");
 	});
 });

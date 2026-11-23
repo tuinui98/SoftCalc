@@ -105,38 +105,35 @@ internal sealed class CardStore
 	}
 
 	// The engine's `decks` payload for card() (owner 2026-11-24): my decks first, then the
-	// ready-made ones named in the language chosen, with the other language's name as alias
-	public static System.Text.Json.Nodes.JsonObject EngineDecks(IEnumerable<Deck> mine, string language)
+	// ready-made ones in English with the Thai names as aliases; the name typed picks the language
+	public static System.Text.Json.Nodes.JsonObject EngineDecks(IEnumerable<Deck> mine)
 	{
 		var list = new System.Text.Json.Nodes.JsonArray();
-		foreach (var deck in mine)
+		foreach (var deck in mine.Concat(ReadyDecks.All))
 		{
-			list.Add(EngineDeck(deck.Name, null, deck.Cards.Select(c => (c.Name, c.Weight, c.Off))));
-		}
-		string other = language == "th" ? "en" : "th";
-		foreach (var deck in ReadyDecks.All)
-		{
-			string alias = deck.Shown(other);
-			list.Add(EngineDeck(deck.Shown(language), alias == deck.Shown(language) ? null : alias,
-				deck.Listed(language).Select(c => (c.Shown(language), c.Weight, c.Off))));
+			list.Add(EngineDeck(deck.Name, deck.Thai, deck.Cards));
 		}
 		return new System.Text.Json.Nodes.JsonObject { ["decks"] = list };
 	}
 
-	private static System.Text.Json.Nodes.JsonObject EngineDeck(string name, string? alias, IEnumerable<(string Name, int Weight, bool Off)> cards)
+	private static System.Text.Json.Nodes.JsonObject EngineDeck(string name, string? alias, IEnumerable<Card> cards)
 	{
 		var array = new System.Text.Json.Nodes.JsonArray();
-		foreach (var (card, weight, off) in cards)
+		foreach (var card in cards)
 		{
-			var item = new System.Text.Json.Nodes.JsonObject { ["name"] = card, ["weight"] = weight };
-			if (off)
+			var item = new System.Text.Json.Nodes.JsonObject { ["name"] = card.Name, ["weight"] = card.Weight };
+			if (!string.IsNullOrEmpty(card.Thai))
+			{
+				item["alias"] = card.Thai;
+			}
+			if (card.Off)
 			{
 				item["off"] = true;
 			}
 			array.Add(item);
 		}
 		var deck = new System.Text.Json.Nodes.JsonObject { ["name"] = name, ["cards"] = array };
-		if (alias != null)
+		if (!string.IsNullOrEmpty(alias))
 		{
 			deck["alias"] = alias;
 		}

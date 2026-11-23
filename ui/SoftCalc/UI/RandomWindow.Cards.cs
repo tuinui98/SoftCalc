@@ -48,13 +48,14 @@ internal sealed partial class RandomWindow
 		var myButtons = Buttons(
 			("&Edit...", EditDeck), ("&Copy", CopyDeck), ("De&lete", DeleteDeck),
 			("&Import CSV...", ImportDeck), ("E&xport CSV...", () => ExportSelected(_myDecks)),
-			("Import deck&s...", ImportDecks), ("Export &all decks...", ExportDecks));
+			("Import deck&s...", ImportDecks), ("Export &all decks...", ExportDecks),
+			("Insert Co&mmand", () => InsertDeckCommand(_myDecks)));
 		_myDecks.DoubleClick += (_, _) => EditDeck();
 		var mine = Group("My decks", _myDecks, myButtons);
 
 		// Ready-made decks
 		var readyButtons = Buttons(("&View...", ViewDeck), ("Copy to my dec&ks", CopyReady),
-			("Ex&port CSV...", () => ExportSelected(_readyDecks)));
+			("Ex&port CSV...", () => ExportSelected(_readyDecks)), ("Insert Comma&nd", () => InsertDeckCommand(_readyDecks)));
 		_readyDecks.DoubleClick += (_, _) => ViewDeck();
 		var ready = Group("Ready-made decks", _readyDecks, readyButtons);
 
@@ -320,6 +321,15 @@ internal sealed partial class RandomWindow
 			return ("The decks could not be saved: " + ex.Message, true);
 		}
 		return (string.Join(" ", said), error);
+	}
+
+	// card("Deck") in Input (owner 2026-11-24)
+	private void InsertDeckCommand(ListView list)
+	{
+		if (Chosen(list) is { } deck)
+		{
+			_insert(CardText.Command(deck.Shown(Language)));
+		}
 	}
 
 	private void ViewDeck()

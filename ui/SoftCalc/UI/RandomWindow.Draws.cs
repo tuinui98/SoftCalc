@@ -28,7 +28,7 @@ internal sealed partial class RandomWindow
 
 	private DrawPage MakePage(DrawSetup setup)
 	{
-		return new DrawPage(setup, _cards, _pictures, () => Language, PickerAsync, SaveCards, EditDraw, DeleteDraw);
+		return new DrawPage(setup, _cards, _pictures, () => Language, PickerAsync, SaveCards, EditDraw, DeleteDraw, _insert);
 	}
 
 	private IEnumerable<DrawPage> DrawPages => _tabs.TabPages.OfType<DrawPage>();

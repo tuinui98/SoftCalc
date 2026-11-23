@@ -311,7 +311,7 @@ internal sealed partial class MainForm : Form
 		}
 		_decksStamp = stamp;
 		var file = (info.Exists ? CardStore.TryRead(path) : null) ?? new CardFile();
-		return CardStore.EngineDecks(file.Decks, file.Language);
+		return CardStore.EngineDecks(file.Decks);
 	}
 
 	// File > Export Decks / Import Decks: all my card decks in one zip (owner 2026-11-23); through

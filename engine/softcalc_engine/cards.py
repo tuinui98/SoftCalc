@@ -33,7 +33,8 @@ class Deck:
 
 def decks_from(items):
     """A deck table from the UI's list: lower-case name (and alias, a ready-made
-    deck's name in the other language) -> Deck.
+    deck's name in the other language) -> Deck. A deck found by its alias
+    gives the cards' aliases (owner 2026-11-24: a Thai deck name, Thai cards).
     The first deck of a name wins, so the user's own (sent first) come before
     the ready-made ones. Raises ValueError on a malformed list.
     """
@@ -43,17 +44,19 @@ def decks_from(items):
     for item in items:
         if not isinstance(item, dict) or not isinstance(item.get("name"), str) or not isinstance(item.get("cards"), list):
             raise ValueError("a deck needs a name and cards")
-        cards = []
+        cards, aliases = [], []
         for card in item["cards"][:MAX_CARDS]:
             if not isinstance(card, dict) or not isinstance(card.get("name"), str):
                 raise ValueError("a card needs a name")
             weight = card.get("weight", 1)
             if not isinstance(weight, int) or isinstance(weight, bool) or weight < 1:
                 raise ValueError("a card's weight must be a whole number from 1")
+            alias = card.get("alias")
             if card.get("off") is not True:
                 cards.append((card["name"], weight))
-        deck = Deck(item["name"], cards)
-        for name in (item["name"], item.get("alias")):
+                aliases.append((alias if isinstance(alias, str) and alias else card["name"], weight))
+        names = [item["name"], item.get("alias")]
+        for name, deck in zip(names, (Deck(item["name"], cards), Deck(str(names[1]), aliases))):
             if isinstance(name, str) and name.strip():
                 table.setdefault(name.strip().lower(), deck)
     return table

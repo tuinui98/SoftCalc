@@ -225,13 +225,14 @@ class Dispatcher:
 
     def op_decks(self, request):
         """card()'s decks (owner 2026-11-24): the UI's own and ready-made decks."""
+        items = argument(request, "decks", list)
         try:
-            self.engine.decks = decks_from(argument(request, "decks", list))
+            self.engine.decks = decks_from(items)
         except ValueError as exc:
             raise RequestError(str(exc)) from exc
         if self.apart is not None:
             self.apart.decks = self.engine.decks
-        return {"decks": len({id(deck) for deck in self.engine.decks.values()})}
+        return {"decks": len(items)}
 
     def op_draws(self, request):
         """The Random window's Seed (owner 2026-11-12): rands(seed), then

@@ -22,6 +22,7 @@ internal sealed class DrawPage : TabPage
 
 	private readonly CardStore _store;
 	private readonly Func<string> _language;
+	private readonly Action<string> _insert;
 	private readonly Picker _picker;
 	private readonly Action _save;
 	private readonly Label _title = new() { AutoSize = true, Margin = new Padding(3, 6, 12, 3) };
@@ -57,9 +58,10 @@ internal sealed class DrawPage : TabPage
 	public DrawSetup Setup { get; }
 
 	public DrawPage(DrawSetup setup, CardStore store, CardPictures pictures, Func<string> language, Picker picker, Action save,
-		Action<DrawPage> edit, Action<DrawPage> delete)
+		Action<DrawPage> edit, Action<DrawPage> delete, Action<string> insert)
 	{
 		Setup = setup;
+		_insert = insert;
 		_store = store;
 		_language = language;
 		_picker = picker;
@@ -95,8 +97,11 @@ internal sealed class DrawPage : TabPage
 		clearDraw.Click += (_, _) => ClearDraw();
 		var copy = new Button { Text = "Cop&y", AutoSize = true };
 		copy.Click += (_, _) => CopyLines();
+		var command = new Button { Text = "Insert Co&mmand", AutoSize = true };
+		new ToolTip().SetToolTip(command, "Put the card() line for this deck, Count and No repeat in Input, to run there");
+		command.Click += (_, _) => InsertCommand();
 		buttons.Controls.AddRange(new Control[] { _draw, new Label { Text = "&Count", AutoSize = true, Margin = new Padding(8, 6, 3, 3) },
-			_count, shuffle, clearDraw, copy });
+			_count, shuffle, clearDraw, copy, command });
 
 		//==================================================================
 		//  Results, History, Stats
@@ -403,6 +408,19 @@ internal sealed class DrawPage : TabPage
 		Setup.Draws = 0;
 		_save();
 		FillStats();
+	}
+
+	// card() takes one deck (owner 2026-11-24); its draws leave out only the cards saved unticked
+	private void InsertCommand()
+	{
+		var step = Setup.Steps.Count == 1 ? Setup.Steps[0] : null;
+		var deck = step is { Decks.Count: 1 } && string.IsNullOrWhiteSpace(step.Extra) ? _store.Find(step.Decks[0]) : null;
+		if (deck == null)
+		{
+			_note.Text = "Insert Command needs a tab of one step with one deck and no extra cards.";
+			return;
+		}
+		_insert(CardText.Command(deck.Shown(_language()), Setup.Count, step!.NoRepeat));
 	}
 
 	private void CopyLines()
