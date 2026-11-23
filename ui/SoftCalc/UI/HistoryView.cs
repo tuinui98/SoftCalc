@@ -209,7 +209,19 @@ internal sealed class HistoryView : ListBox
 		}
 		Color resultColor = entry.Kind == "error" && !selected ? Theme.Error : main;
 		int resultWidth = TextRenderer.MeasureText(e.Graphics, entry.Text, Font, Size.Empty, flags).Width;
-		TextRenderer.DrawText(e.Graphics, entry.Text, Font, line2, resultColor, flags | TextFormatFlags.EndEllipsis);
+		var resultArea = line2;
+		if (entry.Note.Length > 0)
+		{
+			// A long result (a matrix) gives up room so its note still shows (matrix round 2, owner 2026-11-24)
+			int noteWidth = TextRenderer.MeasureText(e.Graphics, entry.Note, Font, Size.Empty, flags).Width;
+			int room = line2.Width - Math.Min(noteWidth, line2.Width / 2) - Gap;
+			if (resultWidth > room)
+			{
+				resultArea = new Rectangle(line2.Left, line2.Top, Math.Max(room, 0), line2.Height);
+				resultWidth = resultArea.Width;
+			}
+		}
+		TextRenderer.DrawText(e.Graphics, entry.Text, Font, resultArea, resultColor, flags | TextFormatFlags.EndEllipsis);
 		if (entry.Note.Length > 0)
 		{
 			var note = Rectangle.FromLTRB(line2.Left + resultWidth + Gap, line2.Top, line1.Right, line2.Bottom);

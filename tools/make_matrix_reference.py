@@ -61,6 +61,15 @@ class Maker:
         return m
 
 
+def complex_n(value):
+    """An eigenvalue (roots may come as radicals) to DIGITS digits, an exact 0 imaginary part kept 0."""
+    value = sympy.N(value, DIGITS + 10)
+    re_part, im_part = sympy.re(value), sympy.im(value)
+    if abs(im_part) < sympy.Float(10) ** -(DIGITS - 5):
+        im_part = 0
+    return re_part + im_part * I
+
+
 def number_text(value):
     """`3`, `-2.5`, `3-2i`, `2i`: exact decimals, as typed into the Input box."""
     re_part, im_part = sympy.re(value), sympy.im(value)
@@ -210,6 +219,36 @@ def cases():
         u, v = [make.cell(share) for _ in range(3)], [make.cell(share) for _ in range(3)]
         cross = Matrix(u).cross(Matrix(v))
         add(f"cross({matrix_text(u, flat=True)}, {matrix_text(v, flat=True)})", as_list(cross), flat=True, group="cross")
+
+    for _ in range(30):    # round 2: statistics, norm, rank
+        n = rng.randint(2, 9)
+        real = [make.real() for _ in range(n)]
+        text = matrix_text(real, flat=True)
+        mean = sum(real) / n
+        squares = sum((x - mean) ** 2 for x in real)
+        ordered = sorted(real)
+        add(f"median({text})", ordered[n // 2] if n % 2 else (ordered[n // 2 - 1] + ordered[n // 2]) / 2, group="median")
+        add(f"variance({text})", squares / (n - 1), group="variance")
+        add(f"variancep({text})", squares / n, group="variance")
+        add(f"stdev({text})", sympy.sqrt(squares / (n - 1)), group="stdev")
+        add(f"stdevp({text})", sympy.sqrt(squares / n), group="stdev")
+        share = rng.choice((0.0, 0.3))
+        a = make.matrix(rng.randint(1, 5), rng.randint(1, 5), share)
+        add(f"norm({matrix_text(a)})", sympy.sqrt(sum(abs(x) ** 2 for x in a)), group="norm")
+        add(f"rank({matrix_text(a)})", a.rank(), group="rank")
+        b = make.singular(rng.randint(2, 5))
+        add(f"rank({matrix_text(b)})", b.rank(), group="rank singular")
+
+    for _ in range(25):    # round 2: eigenvalues, largest real part first
+        n = rng.randint(1, 4)
+        a = make.matrix(n, n)
+        if rng.random() < 0.4:
+            a = a + a.T    # symmetric: real eigenvalues
+        values = []
+        for value, count in a.eigenvals().items():
+            values += [complex_n(value)] * count
+        values.sort(key=lambda v: (-sympy.re(v), -sympy.im(v)))
+        add(f"eig({matrix_text(a)})", as_list(values), flat=True, group="eig")
 
     for _ in range(15):    # one-number functions cell by cell (angles in radians)
         n = rng.randint(1, 5)

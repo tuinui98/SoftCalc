@@ -63,7 +63,9 @@ det([[0.316, 1.2], [0.632, 2.4]])    => 0
 | `dot needs two lists of the same length` / `cross needs two lists of 3 numbers` | the lists do not match |
 | `sort takes a list` / `min needs real numbers` | `sort` works on one list; `min`, `max` and `sort` need real numbers |
 | `A list may have at most 10000 numbers` / `... 10000 cells` | the size limit; `det`, `inv`, `solve` and `^` take at most 50x50 |
-| `Only real numbers can be converted` | a unit tag on a list (`[1, 2] [m->ft]`) does not work yet |
+| `[longdate] takes one date, not a list` | a unit, currency or coin tag converts every cell (`[1, 2] [m->cm]`); date formats and time zones take one date |
+| `stdev needs at least 2 numbers` | `stdev` and `variance` are for a sample (n - 1); `stdevp` and `variancep` take one number too |
+| `eig takes at most 20x20` | eigenvalues take much longer than `inv`; `rank` takes at most 2500 cells |
 | `Lists and matrices are not available in RPN` | switch RPN off to use `[ ]` |
 
 ### Note: when a det counts as 0
@@ -84,6 +86,11 @@ numbers. In `inv([[1, 1], [1, 1.00000000000000000001]])` the two rows
 differ by 1e-20; the answer is about 1e20, and only its first 24 or so
 of the 32 shown digits are right. The closer to det 0, the fewer digits
 can be trusted: a matrix that magnifies rounding 10^k times loses about
-k digits. Every calculator that works with decimals does the same. If
+k digits. Every calculator that works with decimals does the same.
+
+SoftCalc still shows every digit, and says how many may be off beside
+the result, in grey: `about 10 of 32 digits may be off`.
+`det`, `inv`, `solve` and `A^-n` give this note; `rank` counts such a row
+as not independent once the difference is below the shown precision. If
 it matters, use Display Precision 64 or more, or check the answer:
 `A*inv(A)` should show the identity matrix.

@@ -171,7 +171,24 @@ no inverse). Left as is: an ill-conditioned matrix (cond 1e20) loses that
 many of its shown digits to the rounding of its own input; the test
 allows cond x 1e-40. 50x50 inv takes 2.3 s (was 1.5 s) on the desktop.
 
-## Round 2 (later, each to discuss)
+## Round 2 (owner 2026-11-24: A, B, C first; D the table later)
+Decided: A unit, currency and coin tags convert a list cell by cell; date
+formats and time zones refuse a list. B median, stdev/stdevp (sample,
+population), rank, norm, eig (values only); `var` became `variance` /
+`variancep` because `var` is the parameter of the default
+function(var)=var*cos(var) and builtin names are reserved. `.*` not done;
+`**` is free today (an error), but in Python and JavaScript `**` is the
+power, so `2**3` meaning 6 would mislead: not used. B4 (reverse, cumsum,
+count) after this set. C all digits shown, with a note under the result
+(`about k of 32 digits may be off`), k from Hadamard's bound / |det| minus
+the guard digits. D table: cells shortened, at most 10x10 shown, lists
+stay one line.
+
+Built 2026-11-24: all of A, B, C. eig at most 20x20 (20x20 takes 1.1 s on
+the desktop), sorted by real part, a pair a+bi / a-bi with +bi first.
+SymPy cases for median, variance, stdev, norm, rank and eig (1653 in all).
+
+## Round 2 notes (before the owner's decisions)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).
 - `eig`, `rank`, `norm`, `median`, `stdev`, `var`, element-wise `.*`?
