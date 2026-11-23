@@ -567,3 +567,29 @@ describe("the Graph's lines (G2, owner 2026-11-19)", () =>
 		expect(calc.entries).toEqual([]);
 	});
 });
+
+describe("card() in Input (owner 2026-11-24)", () =>
+{
+	it("hands the engine the decks at start and again only when they change", async () =>
+	{
+		const { calc, engine } = await started();
+		const sent = () => engine.sent.filter(message => message.op === "decks");
+		expect(sent()).toHaveLength(1);
+		const decks = sent()[0].args.decks as { name: string; alias?: string; cards: { name: string; off?: boolean }[] }[];
+		const pack = decks.find(deck => deck.name === "Playing cards")!;
+		expect(pack.alias).toBe("ไพ่ 1 สำรับ");
+		expect(pack.cards.filter(card => card.off)).toHaveLength(2);
+		expect(decks.find(deck => deck.name === "Months")!.cards[0]).toEqual({ name: "January", alias: "มกราคม", weight: 1 });
+		calc.saveCards({ ...calc.cards, count: 3 });
+		await Promise.resolve();
+		expect(sent()).toHaveLength(1);
+		calc.saveCards({ ...calc.cards, decks: [{ id: "mine:1", name: "Dice", cards: [{ name: "1", weight: 2 }] }] });
+		await Promise.resolve();
+		expect(sent()).toHaveLength(2);
+		const now = sent()[1].args.decks as { name: string; cards: unknown[] }[];
+		expect(now[0]).toEqual({ name: "Dice", cards: [{ name: "1", weight: 2 }] });
+		calc.saveCards({ ...calc.cards, language: "th" });    // the language shown does not change what card() gets
+		await Promise.resolve();
+		expect(sent()).toHaveLength(2);
+	});
+});

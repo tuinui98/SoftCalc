@@ -453,6 +453,15 @@ public sealed class CardsTests
 		}
 	}
 
+	[Fact]
+	public void CommandWritesTheCardLine()
+	{
+		Assert.Equal("card(\"Food\")", CardText.Command("Food"));
+		Assert.Equal("card(\"เดือน\", 3)", CardText.Command("เดือน", 3));
+		Assert.Equal("card(\"Food\", 3, 1)", CardText.Command("Food", 3, noRepeat: true));
+		Assert.Equal("card(\"Say 'hi'\")", CardText.Command("Say \"hi\"", 1, noRepeat: true));
+	}
+
 	private static T Field<T>(RandomWindow window, string name)
 	{
 		return (T)typeof(RandomWindow).GetField(name, System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!

@@ -7,7 +7,7 @@
 <script lang="ts">
 	import type { Calculator } from "../lib/calc";
 	import {
-		drawCards, formatLines, listed, newDeckId, parseCsv, parseLines, READY, readText, readyDecks, shownCard, shownDeck, toCsv,
+		cardCommand, drawCards, formatLines, listed, newDeckId, parseCsv, parseLines, READY, readText, readyDecks, shownCard, shownDeck, toCsv,
 		type CardsState, type Deck,
 	} from "../lib/cards";
 	import { copyText } from "../lib/clipboard";
@@ -132,6 +132,13 @@
 		{
 			void copyText(text).then(done => { if (done) say("Copied " + text); });
 		}
+	}
+
+	// card() for this deck, Count and No repeat, to run in Input (owner 2026-11-24); it leaves out
+	// only the cards saved unticked, not the ticks here
+	function insertCommand()
+	{
+		oninsert(cardCommand(shownDeck(deck, s.language), Math.min(1000, Math.max(1, Math.floor(s.count) || 1)), s.noRepeat));
 	}
 
 	//==================================================================
@@ -339,6 +346,7 @@
 		<button class="primary" use:tap={draw}>Draw</button>
 		{#if s.noRepeat}<button use:tap={shuffle}>Shuffle</button>{/if}
 		<button use:tap={() => void copyText(drawn.join("\n")).then(done => { if (done) say(`Copied ${drawn.length}`); })} disabled={drawn.length === 0}>Copy all</button>
+		<button use:tap={insertCommand}>Insert command</button>
 	</div>
 	<div class="buttons small">
 		<button use:tap={newDeck}>New deck</button>

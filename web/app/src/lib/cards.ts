@@ -392,5 +392,24 @@ export function cardsFrom(saved: unknown): CardsState
 	return state;
 }
 
+// The engine's `decks` for card() in Input (owner 2026-11-24; desktop CardStore.EngineDecks): own decks
+// first, then the ready-made ones in English with the Thai names as aliases; the name typed picks the language
+export function engineDecks(decks: Deck[]): { decks: unknown[] }
+{
+	return {
+		decks: [...decks, ...readyDecks()].map(deck => ({
+			name: deck.name, ...(deck.thai ? { alias: deck.thai } : {}),
+			cards: deck.cards.map(card => ({ name: card.name, ...(card.thai ? { alias: card.thai } : {}), weight: card.weight, ...(card.off ? { off: true } : {}) })),
+		})),
+	};
+}
+
+// The card() line for Input (owner 2026-11-24; desktop CardText.Command)
+export function cardCommand(deck: string, count = 1, noRepeat = false): string
+{
+	const tail = count <= 1 ? "" : noRepeat ? `, ${count}, 1` : `, ${count}`;
+	return `card("${deck.replace(/"/g, "'")}"${tail})`;
+}
+
 // A new own deck's id
 export const newDeckId = () => "mine:" + Date.now().toString(36) + Math.floor(Math.random() * 1e6).toString(36);

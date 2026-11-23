@@ -119,7 +119,7 @@ def test_catalog_lists_the_new_groups():
     catalog = Dispatcher().handle({"op": "catalog"})
     groups = catalog["functions"]
     assert groups["Rounding"] == ["round", "ceil", "floor"]
-    assert groups["Random"] == ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks"]
+    assert groups["Random"] == ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"]
 
 
 def test_draws_apart_leave_the_calculator_as_it_was():

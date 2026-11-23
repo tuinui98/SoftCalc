@@ -86,6 +86,60 @@ internal sealed class CardStore
 		return (new CardFile(), "The card decks could not be read (the old file is kept as cards.json.bak).");
 	}
 
+	// cards.json read without side effects (no .bak), for card() in Input; null when missing or unreadable
+	public static CardFile? TryRead(string path)
+	{
+		try
+		{
+			var file = JsonSerializer.Deserialize<CardFile>(System.IO.File.ReadAllText(path), Options);
+			if (file != null)
+			{
+				Sanitize(file);
+			}
+			return file;
+		}
+		catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or NotSupportedException)
+		{
+			return null;
+		}
+	}
+
+	// The engine's `decks` payload for card() (owner 2026-11-24): my decks first, then the
+	// ready-made ones in English with the Thai names as aliases; the name typed picks the language
+	public static System.Text.Json.Nodes.JsonObject EngineDecks(IEnumerable<Deck> mine)
+	{
+		var list = new System.Text.Json.Nodes.JsonArray();
+		foreach (var deck in mine.Concat(ReadyDecks.All))
+		{
+			list.Add(EngineDeck(deck.Name, deck.Thai, deck.Cards));
+		}
+		return new System.Text.Json.Nodes.JsonObject { ["decks"] = list };
+	}
+
+	private static System.Text.Json.Nodes.JsonObject EngineDeck(string name, string? alias, IEnumerable<Card> cards)
+	{
+		var array = new System.Text.Json.Nodes.JsonArray();
+		foreach (var card in cards)
+		{
+			var item = new System.Text.Json.Nodes.JsonObject { ["name"] = card.Name, ["weight"] = card.Weight };
+			if (!string.IsNullOrEmpty(card.Thai))
+			{
+				item["alias"] = card.Thai;
+			}
+			if (card.Off)
+			{
+				item["off"] = true;
+			}
+			array.Add(item);
+		}
+		var deck = new System.Text.Json.Nodes.JsonObject { ["name"] = name, ["cards"] = array };
+		if (!string.IsNullOrEmpty(alias))
+		{
+			deck["alias"] = alias;
+		}
+		return deck;
+	}
+
 	public void Save()
 	{
 		if (_folder == null)

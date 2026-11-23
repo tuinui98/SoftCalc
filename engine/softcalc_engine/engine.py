@@ -20,7 +20,8 @@ from .dates import (DATE_LITERAL, DURATION_LITERAL, ZONES, DateValue, DurationVa
 from . import dates, hints
 from .errors import CalcError
 from .formatting import RADIX, format_number, format_real, is_exact, working_digits
-from .functions import RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
+from . import cards
+from .functions import CARD_FUNCTION, RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
 from .random_shapes import SHAPE_FUNCTIONS, below, shaped
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
@@ -35,7 +36,7 @@ PLOT_DIGITS = 20
 EQUATION_REFINE = 6    # [DEF] each crossed coarse cell is split 6 x 6
 MAX_EQUATION_CELLS = 40000
 MAX_CALL_DEPTH = 200
-DRAW_FUNCTIONS = set(RANDOM_FUNCTIONS) - {"rands"}    # their drawn values show in History
+DRAW_FUNCTIONS = (set(RANDOM_FUNCTIONS) - {"rands"}) | {CARD_FUNCTION}    # their drawn values show in History
 CONSTANT_NAMES = {"pi", "e", "i", "j", "today", "now"}
 ANSWER_NAMES = {"answer", "ans"}
 RESERVED = CONSTANT_NAMES | ANSWER_NAMES | {"mod"}
@@ -112,6 +113,7 @@ class Engine:
         self.used_prices = False
         self.random = random.Random()    # rand(); seeded from the system until rands(seed)
         self.draws = {}    # id of a rand() node in the current line -> its value, for History
+        self.decks = {}    # card()'s decks by lower-case name (server `decks`, cards.py)
         if load_defaults:
             for line in DEFAULT_FUNCTIONS:
                 self.evaluate(line)
@@ -232,6 +234,7 @@ class Engine:
         """
         if self.settings.rpn:
             return re.sub(r"\S+", lambda m: self.display_rpn_item(m.group(), builtins), text)
+        texts = [self.format_value(value) for value in drawn if isinstance(value, TextValue)]
         source = self.fill_draws(self.fill_word_size(join_digit_spaces(text)), drawn)
         tokens = tokenize(source)
         out = []
@@ -251,7 +254,8 @@ class Engine:
             out.append(source[cursor:token.pos] + prefix + value + suffix)
             cursor = end
         out.append(source[cursor:])
-        return "".join(out)
+        # a drawn card's name stood in quotes, so it is not read as a variable
+        return re.sub(r'"\x01(\d+)"', lambda m: texts[int(m.group(1))], "".join(out))
 
     def fill_word_size(self, source):
         """`twos(-1)` -> `twos(-1, 32)`: the bits used, so the line still
@@ -322,7 +326,12 @@ class Engine:
                 return source
             before = tokens[index - 1] if index > 0 else None
             joined = before is not None and (self.ends_operand(before) or before.kind == "name")
-            out.append(source[cursor:token.pos] + ("*" if joined else "") + self.wrap(drawn[number]))
+            if isinstance(drawn[number], TextValue):
+                # a card's name, put back after the line is read (display_line)
+                shown = f'"\x01{sum(isinstance(value, TextValue) for value in drawn[:number])}"'
+            else:
+                shown = self.wrap(drawn[number])
+            out.append(source[cursor:token.pos] + ("*" if joined else "") + shown)
             cursor = tokens[close].pos + 1
         out.append(source[cursor:])
         return "".join(out)
@@ -378,6 +387,22 @@ class Engine:
         if not decimal:
             return mpmath.mpf(int(low) + below(self.random, int(high) - int(low) + 1))
         return low + (high - low) * self.random_fraction()
+
+    def card_call(self, node, builtins, scope, depth):
+        """card("Deck", [count], [no repeat]) (owner 2026-11-24): cards.py."""
+        args = node[2]
+        if not args or args[0][0] != "str":
+            raise CalcError('card: the deck name goes in quotes: card("Food")')
+        if len(args) > 3:
+            raise CalcError("card takes at most 3 arguments")
+        rest = [self.eval_node(arg, builtins, scope, depth) for arg in args[1:]]
+        if not all(isinstance(value, mpmath.mpf) for value in rest):
+            raise CalcError("card: the count and no repeat must be real numbers")
+        count = rest[0] if rest else mpmath.mpf(1)
+        if count != mpmath.floor(count) or not 1 <= count <= cards.MAX_COUNT:
+            raise CalcError(f"card: the count must be a whole number from 1 to {cards.MAX_COUNT}")
+        unique = len(rest) > 1 and rest[1] != 0
+        return cards.draw(self.random, self.decks, args[0][1], int(count), unique, self.format_value)
 
     def random_fraction(self):
         """A uniform value in [0, 1) with as many decimal digits as the precision.
@@ -599,6 +624,13 @@ class Engine:
             return self.lookup(node[1], builtins, scope)
         if kind == "ref":
             return self.result_ref(node[1])
+        if kind == "str":
+            raise CalcError('A name in quotes goes only in card("deck")')
+        if kind == "call" and node[1].lower() == CARD_FUNCTION:
+            value = self.card_call(node, builtins, scope, depth)
+            if depth == 0:
+                self.draws[id(node)] = value
+            return value
         if kind == "call":
             args = [self.eval_node(arg, builtins, scope, depth) for arg in node[2]]
             if node[1].lower() in RANDOM_FUNCTIONS:

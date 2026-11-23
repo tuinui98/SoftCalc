@@ -15,6 +15,7 @@ from .random_shapes import SHAPE_FUNCTIONS
 ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 WORD_FUNCTIONS = ("twos", "signed")    # two's complement (owner 2026-11-07)
 ROUNDING_FUNCTIONS = ("round", "ceil", "floor")    # owner 2026-11-12
+CARD_FUNCTION = "card"    # card("Deck", [count], [no repeat]): cards.py (owner 2026-11-24)
 RANDOM_FUNCTIONS = ("rand", "rands", *SHAPE_FUNCTIONS)    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
 MAX_ROUND_DIGITS = 1000
 MAX_BITS = 1024
@@ -76,7 +77,7 @@ class Functions:
 
     def names(self):
         return (set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS) | set(WORD_FUNCTIONS)
-                | set(ROUNDING_FUNCTIONS) | set(RANDOM_FUNCTIONS))
+                | set(ROUNDING_FUNCTIONS) | set(RANDOM_FUNCTIONS) | {CARD_FUNCTION})
 
     def min_arity(self, name):
         """Argument count used in RPN, where optional arguments cannot be told apart."""

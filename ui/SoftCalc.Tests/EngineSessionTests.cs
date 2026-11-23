@@ -35,6 +35,27 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		Assert.Equal(("result", "2x+1", "2*5+1", "11"), (reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
 	}
 
+	// card() (owner 2026-11-24): the decks go to the engine before a line when they changed
+	[Fact]
+	public async Task CardDrawsFromTheDecksHandedOver()
+	{
+		var mine = new[] { new SoftCalc.Logic.Deck { Name = "Dice", Cards = Enumerable.Range(1, 6).Select(n => new SoftCalc.Logic.Card { Name = n.ToString() }).ToList() } };
+		int asked = 0;
+		Session.DecksProvider = () => asked++ == 0 ? SoftCalc.Persistence.CardStore.EngineDecks(mine) : null;
+		var reply = await Session.EvalAsync("card(\"dice\")*10");
+		Assert.Equal("result", reply.Kind);
+		Assert.Contains(reply.Text, new[] { "10", "20", "30", "40", "50", "60" });
+		// the ready-made decks by either name, the jokers left out
+		var pack = await Session.EvalAsync("card(\"ไพ่ 1 สำรับ\", 52, 1)");
+		Assert.DoesNotContain("Joker", pack.Text);
+		Assert.Equal(52, pack.Text.Split(", ").Length);
+		// a Thai deck name gives Thai cards, an English one English
+		Assert.Contains((await Session.EvalAsync("card(\"วันในสัปดาห์\")")).Text, new[] { "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์" });
+		Assert.EndsWith("day", (await Session.EvalAsync("card(\"Days of the week\")")).Text);
+		Assert.Equal("ERROR:card: no deck named 'Nope'", (await Session.EvalAsync("card(\"Nope\")")).Text);
+		Assert.Equal(5, asked);    // asked before each line
+	}
+
 	[Fact]
 	public async Task ErrorsAndEmptyInputAreKinds()
 	{

@@ -14,6 +14,7 @@ import mpmath
 
 from . import __version__, crypto, currency, finance, menu, units
 from .dates import ZONES
+from .cards import decks_from
 from .engine import Engine, Settings
 from .errors import CalcError
 
@@ -40,7 +41,7 @@ CATALOG = {
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
         "Two's Complement": ["twos", "signed"],
         "Rounding": ["round", "ceil", "floor"],
-        "Random": ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks"],
+        "Random": ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"],
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
     "currencies": currency.CODES,
@@ -95,6 +96,7 @@ class Dispatcher:
             "set_rates": self.op_set_rates,
             "set_prices": self.op_set_prices,
             "draws": self.op_draws,
+            "decks": self.op_decks,
             "shutdown": lambda request: {},
         }
 
@@ -221,6 +223,17 @@ class Dispatcher:
             raise RequestError("'texts' must be a list of strings")
         return {"restored": self.engine.restore_results(texts)}
 
+    def op_decks(self, request):
+        """card()'s decks (owner 2026-11-24): the UI's own and ready-made decks."""
+        items = argument(request, "decks", list)
+        try:
+            self.engine.decks = decks_from(items)
+        except ValueError as exc:
+            raise RequestError(str(exc)) from exc
+        if self.apart is not None:
+            self.apart.decks = self.engine.decks
+        return {"decks": len(items)}
+
     def op_draws(self, request):
         """The Random window's Seed (owner 2026-11-12): rands(seed), then
         `line` count times, exactly as if typed in Input in that order.
@@ -234,6 +247,7 @@ class Dispatcher:
             if self.apart is None:
                 self.apart = Engine()
             self.apart.settings = dataclasses.replace(self.engine.settings)
+            self.apart.decks = self.engine.decks
             engine = self.apart
         seed = argument(request, "seed", str)
         line = argument(request, "line", str)

@@ -78,6 +78,13 @@ internal sealed class Deck
 
 internal static class CardText
 {
+	// The card() line for Input (owner 2026-11-24): card("Deck"), card("Deck", 3), card("Deck", 3, 1)
+	public static string Command(string deck, int count = 1, bool noRepeat = false)
+	{
+		string tail = count <= 1 ? "" : noRepeat ? $", {count}, 1" : $", {count}";
+		return $"card(\"{deck.Replace("\"", "'")}\"{tail})";
+	}
+
 	public const int MaxCards = 5000;
 	public const int MaxName = 200;
 	public const int MaxWeight = 1000;
