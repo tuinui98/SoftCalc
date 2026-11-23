@@ -1,6 +1,7 @@
 # Random
 
-Random numbers come two ways: functions such as `rand()` in any line,
+Random numbers come two ways: functions such as `rand()` and
+`card()` in any line,
 and the Random window for lists of numbers, coin flips, dice, numbers
 in a shape, passwords, a look at where randomness comes from, and
 draws from decks of cards of your own.
@@ -258,6 +259,11 @@ A draw picks from a pile of cards. The **...** tab holds the decks:
 - **My decks**: **New deck...**, **Edit...** (or a double-click),
   **Copy**, **Delete** (it asks first), **Import CSV...** (a new deck
   named after the file) and **Export CSV...**.
+- **Export all decks...** saves all your decks, with their pictures, in
+  one zip file; **Import decks...** adds the decks from one (see *Data
+  and files*). File > Export Decks... and Import Decks... do the same.
+- **Insert Command** puts `card("deck")` for the chosen deck in Input,
+  to draw from it in a line (see *Functions*).
 - **Ready-made decks**: playing cards (four colours: spades black,
   hearts red, diamonds blue, clubs green; the two jokers start unticked
   in a draw), months, days of the week, the provinces of Thailand and
@@ -310,6 +316,10 @@ theme and its steps:
   until you press Shuffle.
 - One Draw gives a line with a card from each step in turn, such as
   `Friday · Fried rice · Iced tea`.
+- **Insert Command** puts the `card()` line for the tab in Input, with
+  its Count and No repeat: `card("Months", 3, 1)`. It needs a tab of one
+  step with one deck and no Extra cards, and it leaves out only the
+  cards saved unticked, not the tab's ticks.
 - **Save as deck...** makes the Extra cards a deck of your own (the
   deck editor opens to name it); the step then uses that deck, with
   the cards' conditions, ticks and counts.
@@ -408,7 +418,7 @@ repeat, and has its own rows in Stats, such as `1 → Gym`.
 
 Decks and draw tabs, with their History and Stats, are kept in
 `cards.json` (and pictures in `cards\`) in the data folder. Nothing
-drawn goes to the calculator's History.
+drawn here goes to the calculator's History; `card()` in a line does.
 
 The other tabs keep nothing they drew: their lists are cleared when
 the window closes. The window keeps only its settings, never a seed,

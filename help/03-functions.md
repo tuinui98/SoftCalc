@@ -47,7 +47,7 @@ log10(1000)           => 3
 | Finance Functions | `fv pv pmt nper` (section *Finance*) |
 | Two's Complement | `twos` `signed` |
 | Rounding | `round` `ceil` `floor` |
-| Random | `rand` `rands` `randbeta` `randtri` `randexp` `randpeaks` (section *Random*) |
+| Random | `rand` `rands` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
 
 ## Angles
 
@@ -116,3 +116,38 @@ ceil(1.2)             => 2
 
 A value only a hair off a whole number from binary rounding counts as
 that number: `floor(0.1*30)` is 3.
+
+## Cards from a deck
+
+`card("deck")` draws a card from one of your decks or a ready-made
+deck, by weight. `card("deck", count)` draws several, and
+`card("deck", count, 1)` draws them with no card twice.
+
+```calc
+card("Months")
+card("เดือน", 3)
+card("Playing cards", 5, 1)
+card("Dice")*10
+```
+
+- The deck's name goes in quotes, in any case; a ready-made deck has an
+  English and a Thai name, and the cards come in the language of the
+  name you type: `card("Months")` gives March, `card("เดือน")` มีนาคม.
+- Cards saved to start unticked (the two jokers) are left out; the
+  ticks and piles of the Random window are not used.
+- A card named like a number gives that number, so it can go on into a
+  sum: a deck `Dice` of the cards 1 to 6 makes `card("Dice")*10` 10 to
+  60. Other cards give their name.
+- Several numbers come as a list such as `{3, 5, 1}`, the form a row of
+  a matrix will take; several names as `Rice, Soup, Rice`. A list is
+  shown, not computed with.
+- `rands(seed)` makes card draws repeat too.
+- History shows the cards drawn on the right, as with `rand()`.
+<!-- desktop -->
+- **Insert Command** in the Random window puts the line in Input for
+  you (see *Random*).
+<!-- /desktop -->
+<!-- web -->
+- **Insert command** on Random > Cards puts the line for the deck,
+  Count and No repeat in Input.
+<!-- /web -->

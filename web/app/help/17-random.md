@@ -4,8 +4,8 @@
 cards. Nothing it draws goes to History, and results are not kept; the
 options are. Done, or the phone's Back, goes back to the calculator.
 
-In Input, `rand()` draws too: `rand(1, 6)` rolls a die (see
-*Functions*).
+In Input, `rand()` draws too: `rand(1, 6)` rolls a die, and
+`card("Months")` draws a card from a deck (see *Functions*).
 
 ## Simple
 
@@ -65,7 +65,14 @@ Draws cards from a deck.
   **Delete** change them; **Copy to my decks** makes a ready-made deck
   your own.
 - **Import CSV** and **Export CSV** read and write the desktop's deck
-  file (name, weight, image, colour; pictures are not kept here).
+  file (name, weight, image, colour; a CSV's pictures are not read here).
+- **Export all decks** saves all your decks, with their pictures, in one
+  zip file, the desktop's; **Import decks** adds the decks from one. A
+  deck already here is skipped, one of the same name with other cards
+  comes in as `name (2)`. ⋮ > Export and Import do the same. The
+  pictures are kept, though not shown yet.
+- **Insert command** puts the `card()` line for the deck, Count and No
+  repeat in Input, such as `card("Months", 3, 1)`.
 - Tap the card count to see the cards; untick any to leave them out.
 - **No repeat** works like a pile: a drawn card stays out until
   **Shuffle**, also next time.
