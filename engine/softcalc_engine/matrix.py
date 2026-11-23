@@ -82,7 +82,31 @@ def to_mp(m):
 
 
 def from_mp(mp, flat=False):
-    return shaped([[mp[i, j] for j in range(mp.cols)] for i in range(mp.rows)], flat)
+    """Cells rounded to the working precision (`+x`), as mpmath worked them out."""
+    return shaped([[+mp[i, j] for j in range(mp.cols)] for i in range(mp.rows)], flat)
+
+
+#----------------------------------------------------------------------
+#  det, inverse and solve at twice the working digits (SymPy check,
+#  owner 2026-11-24): an ill-conditioned matrix keeps its shown digits,
+#  and a det smaller than the shown precision allows, against the
+#  matrix's own size (Hadamard's bound), counts as 0. Decimals such as
+#  0.316 are not exact in binary, so a matrix with det 0 on paper is
+#  otherwise left with a det of 1e-40 and an "inverse" of 1e43.
+#----------------------------------------------------------------------
+GUARD = 10    # engine.GUARD_DIGITS: the working digits past the shown ones
+
+
+def wide():
+    return mpmath.workdps(2 * mpmath.mp.dps)
+
+
+def det_wide(a):
+    """det of an mpmath matrix, or 0 when it is below the shown precision; call inside wide()."""
+    value = mpmath.det(a)
+    bound = mpmath.fprod(mpmath.sqrt(mpmath.fsum(abs(a[i, j]) ** 2 for j in range(a.cols))) for i in range(a.rows))
+    shown = mpmath.mpf(10) ** -(mpmath.mp.dps // 2 - GUARD)
+    return value if abs(value) > bound * shown else mpmath.mpf(0)
 
 
 def as_matrix(value, key):
@@ -159,15 +183,18 @@ def power(m, n):
     if n == 0:
         return identity([mpmath.mpf(count)])
     base = inverse_mp(m, "'^'") if n < 0 else to_mp(m)
-    return from_mp(base ** int(abs(n)))
+    with wide():
+        result = base ** int(abs(n))
+    return from_mp(result)
 
 
 def inverse_mp(m, key):
     square(m, key, MAX_SOLVE)
-    try:
-        return mpmath.inverse(to_mp(m))
-    except ZeroDivisionError as exc:
-        raise CalcError("The matrix has no inverse (its det is 0)") from exc
+    with wide():
+        a = to_mp(m)
+        if det_wide(a) == 0:
+            raise CalcError("The matrix has no inverse (its det is 0)")
+        return mpmath.inverse(a)
 
 
 #----------------------------------------------------------------------
@@ -287,7 +314,9 @@ def transpose(args):
 def det(args):
     m = as_matrix(args[0], "det")
     square(m, "det", MAX_SOLVE)
-    return mpmath.det(to_mp(m))
+    with wide():
+        value = det_wide(to_mp(m))
+    return +value
 
 
 def inv(args):
@@ -308,12 +337,13 @@ def solve(args):
     rhs = [[cell] for cell in b.rows[0]] if b.flat else [list(r) for r in b.rows]
     if len(rhs) != n:
         raise CalcError(f"solve: A has {n} rows, b has {len(rhs)}")
-    try:
-        answer = mpmath.inverse(to_mp(a)) * mpmath.matrix(rhs)
-    except ZeroDivisionError as exc:
-        raise CalcError("solve: the matrix has no inverse (its det is 0), so no single answer") from exc
+    with wide():
+        mp_a = to_mp(a)
+        if det_wide(mp_a) == 0:
+            raise CalcError("solve: the matrix has no inverse (its det is 0), so no single answer")
+        answer = mpmath.inverse(mp_a) * mpmath.matrix(rhs)
     if b.flat:
-        return shaped([[answer[i, 0] for i in range(n)]], True)
+        return shaped([[+answer[i, 0] for i in range(n)]], True)
     return from_mp(answer)
 
 

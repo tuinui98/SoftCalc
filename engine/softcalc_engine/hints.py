@@ -52,6 +52,31 @@ BUILTINS = {
     "randtri": "randtri(peak, [from, to]) - random in a triangle: randtri(3, 1, 10) peaks at 3",
     "randexp": "randexp(rate, [from, to]) - random falling (rate > 0) or rising (rate < 0): randexp(4, 0, 100)",
     "randpeaks": "randpeaks(gap, [from, to]) - random with two humps, gap 0 to 1: randpeaks(0.5, 1.0, 10)",
+    "identity": "identity(n) - the n x n identity matrix: identity(3)",
+    "zeros": "zeros(n) or zeros(rows, cols) - a list or a matrix of 0: zeros(2, 3)",
+    "ones": "ones(n) or ones(rows, cols) - a list or a matrix of 1: ones(3)",
+    "diag": "diag(list) - a matrix with the list down its diagonal; diag(matrix) - its diagonal",
+    "seq": "seq(from, to, [step]) - a list: seq(1, 5) = [1, 2, 3, 4, 5], seq(0, 1, 0.25)",
+    "randm": "randm(rows, cols, [from, to]) - a random matrix, each cell as rand(): randm(3, 3, 1, 6)",
+    "rows": "rows(m) - number of rows (a list has 1)",
+    "cols": "cols(m) - number of columns (a list: its length)",
+    "len": "len(m) - number of cells: len([4, 5, 6]) = 3",
+    "at": "at(list, n) or at(matrix, row, col) - one cell, counting from 1: at([5, 6, 7], 2) = 6",
+    "row": "row(m, i) - row i as a list: row([[1, 2], [3, 4]], 2) = [3, 4]",
+    "col": "col(m, j) - column j as a list: col([[1, 2], [3, 4]], 1) = [1, 3]",
+    "transpose": "transpose(m) - rows become columns",
+    "det": "det(m) - determinant of a square matrix: det([[1, 2], [3, 4]]) = -2",
+    "inv": "inv(m) - inverse of a square matrix (same as m^-1)",
+    "trace": "trace(m) - sum of the diagonal",
+    "solve": "solve(A, b) - x with A*x = b: solve([[2, 1], [1, -1]], [5, 1]) = [2, 1]",
+    "dot": "dot(a, b) - dot product of two lists: dot([1, 2, 3], [4, 5, 6]) = 32",
+    "cross": "cross(a, b) - cross product of two lists of 3",
+    "sum": "sum(...) - total of numbers and lists: sum([1, 2, 3]), sum(card(\"Dice\", 3))",
+    "mean": "mean(...) - average of numbers and lists: mean([1, 2, 3, 4]) = 2.5",
+    "prod": "prod(...) - numbers and lists multiplied: prod([1, 2, 3, 4]) = 24",
+    "min": "min(...) - smallest of numbers and lists: min([3, 1, 2]) = 1, min(3, 9)",
+    "max": "max(...) - largest of numbers and lists: max([3, 1, 2]) = 3, max(3, 9)",
+    "sort": "sort(list) - smallest first: sort([3, 1, 2]) = [1, 2, 3]",
     "pi": "pi - 3.14159...",
     "e": "e - 2.71828...",
     "i": "i (or j) - imaginary unit, e.g. 2+3i",
@@ -62,6 +87,7 @@ BUILTINS = {
     "ans": "ans (or answer) - the last result",
 }
 
+LIST_HINT = "[1, 2, 3] is a list, [[1, 2], [3, 4]] a matrix (rows in brackets); 2*[1, 2], A*B, det(A)"
 TAG_HINT = "[from->to] converts: [ft->in] [c->f] [h->min] [usd->thb] [utc->local]; [longdate] formats a date"
 REF_HINT = "$1 = last result, $2 = the one before, ..."
 MAX_NAMES = 6    # names listed for a word being typed
@@ -105,8 +131,8 @@ def hint_for(text, caret, lookup_user):
     #==================================================================
     #  BLOCK 1 - An open [ tag or a $ reference right before the caret
     #==================================================================
-    open_at = left.rfind("[")
-    if open_at >= 0 and "]" not in left[open_at:]:
+    open_at = open_bracket(left)
+    if open_at >= 0 and not opens_list(left[:open_at]):
         return TAG_HINT
     if REF_AT_END.search(left):
         return REF_HINT
@@ -138,7 +164,29 @@ def hint_for(text, caret, lookup_user):
                 name = WORD_AT_END.search(left[:index])
                 return describe(name.group(0), lookup_user) if name else None
             depth -= 1
-    return None
+    return LIST_HINT if open_at >= 0 else None
+
+
+def open_bracket(left):
+    """Where the innermost `[` still open at the caret is, or -1."""
+    depth = 0
+    for index in range(len(left) - 1, -1, -1):
+        if left[index] == "]":
+            depth += 1
+        elif left[index] == "[":
+            if depth == 0:
+                return index
+            depth -= 1
+    return -1
+
+
+def opens_list(before):
+    """A `[` after this text opens a list: no value ends right before it (lexer.ends_value)."""
+    before = before.rstrip()
+    if before == "" or before[-1] in "+-*/^(,[=":
+        return True
+    word = WORD_AT_END.search(before)
+    return bool(word) and word.group(0).lower() == "mod"
 
 
 def describe(name, lookup_user):

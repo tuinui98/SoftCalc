@@ -148,6 +148,29 @@ rands(seed). The names are reserved, so a .pcf variable called `sum` or
 - Help: a Matrices topic (new number), examples checked by the test.
 - Protocol: no new op; values travel as text as now.
 
+Built 2026-11-24: catalog group **Matrix** (25 names; the desktop
+Functions menu, the ribbon's fn: ids and the web Functions picker all
+come from it), a hint for every new name (test: every menu function has
+one), the open-`[` hint by the X0 position rule (a list hint where an
+operand starts, the tag hint after a value; a call inside a list still
+describes the call). Variables (desktop and web) needed no change: the
+engine sends the one-line text and Edit sends it back. Keypads: Sci has
+`,` and 2nd `[` `]` on desktop and web; Basic has neither (Sci sits
+beside it). Help waits until the owner finishes the matrix topic
+(owner rule: help after a topic is done).
+
+SymPy check (owner 2026-11-24): tools/make_matrix_reference.py (own
+venv `engine/.venv-ref`, SymPy 1.14.0 pins mpmath < 1.4) writes 1388
+random cases with exact answers to engine/tests/data/matrix_reference.json;
+test_matrix_reference.py compares to 28 digits. It found: a matrix with
+det 0 on paper but decimal cells (0.316 is not exact in binary) gave an
+"inverse" of 1e43 instead of the error. Fixed: det, inv, solve and `^`
+work at twice the working digits, and a det below the shown precision
+against Hadamard's bound counts as 0 (det shows 0, inv/solve say there is
+no inverse). Left as is: an ill-conditioned matrix (cond 1e20) loses that
+many of its shown digits to the rounding of its own input; the test
+allows cond x 1e-40. 50x50 inv takes 2.3 s (was 1.5 s) on the desktop.
+
 ## Round 2 (later, each to discuss)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).
