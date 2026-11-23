@@ -1,0 +1,105 @@
+# Matrices - plan (owner 2026-11-24, proposed; not started)
+
+Owner decisions 2026-11-24:
+- Written with `[ ]`: a list `[1, 2, 3]`, a matrix `[[1, 2], [3, 4]]`.
+  Before building, check for certain that it cannot clash with what `[ ]`
+  does now (step X0).
+- History shows a matrix on one line; a table view comes later (it has
+  many decisions of its own).
+- A list works as a row or a column, whichever a function needs:
+  `solve(A, [5, 1])`.
+- Limits: at most 10000 cells; `inv`, `det`, `solve` at most 50x50.
+- Variables, `$n`, `answer` and the .pcf hold matrices (the original
+  PowerCalc cannot read such a .pcf; that is fine).
+- No RPN (a matrix line in RPN mode is an error).
+
+## What `[ ]` does now (to keep working)
+- `value [from->to]`: a conversion; the body always has `->` (units,
+  currencies, coins, `utc`/`local`).
+- `value [name]`: a format, one of `longdatetime longdate longtime epoch
+  fromepoch`.
+- Both are read by `lexer.read_tag`, which drops spaces and lower-cases
+  the body, and both stand after a value (`parser` takes tags after an
+  additive expression).
+- `1-2-3 [rnw]`: rai-ngan-wa input is spotted by looking ahead for
+  `[rnw` (lexer `RNW_GROUP`).
+- `hints.py`: an open `[` before the caret shows the conversion hint.
+- Keypad (desktop and web): 2nd `(` `)` types `[` `]`.
+- The Random window's Extra cards `[1,100]` are the UI's own text, never
+  sent to the engine: no clash.
+
+## X0 - Clash check (first, before any code)
+Rule proposed: a `[` starts a conversion or format when its body (up to
+the matching `]`) holds `->`, or is exactly one of the five format names;
+anything else is a list or matrix. Check, with tests written first:
+1. Every golden row, help example and saved History line in the test
+   data still parses to the same tree (`spec/golden/*.tsv`,
+   `help/*.md`, engine tests).
+2. Spaces and case inside tags as people type them: `[ M -> FT ]`,
+   `[LongDate]`, `[rai-ngan-wa]`, `[ km/h -> mi/h ]`.
+3. Tags after a list: `[1, 2][m->ft]` converts every cell;
+   `[1, 2] [longdate]` an error.
+4. A list after a value: `2[1, 2]` is `2*[1, 2]` (implicit product,
+   as `2(1+2)`); `x[1, 2]` too. `5[m->ft]` stays a conversion.
+5. Names that are also format names: `[epoch]` stays the format; a
+   one-cell list of a variable called `epoch` needs `[epoch+0]` or
+   `[(epoch)]` (documented). Same for unit-like variable names?
+   (`[m]` has no `->`, so it is a list of the variable m: check that no
+   old line relied on `[m]` meaning anything else.)
+6. rnw: `1-2-3 [rnw]` still the rai-ngan-wa reading, `[1-2-3]` a list
+   holding 1-2-3 = -4.
+7. Old .pcf files and saved History (`restore_results`) that hold `[`
+   in a definition or result text.
+8. The hint for an open `[`: conversion hint while it could still be a
+   tag, list hint once a `,` or a digit shows it is not.
+9. The Graph: equations with `[ ]`, Conversions menu inserts, the
+   ribbon's conversion buttons.
+Outcome: a short report to the owner; build only after it is clean.
+
+## X1 - Engine core (round 1)
+- Lexer/parser: `[` `]` as list brackets under the X0 rule; items are
+  full expressions (`[a, 2x, sin(30)]`); nested lists of equal length
+  make a matrix; ragged ones an error. Parsed into a `("list", items)`
+  node; read_tag stays for tags.
+- Value: a matrix type over mpmath (`mpmath.matrix`), kept with its
+  shape (a list is 1xn but also fits as nx1 where needed). Real cells in
+  round 1; complex cells allowed where mpmath gives them (`eig` later).
+- Format: `[1, 2, 3]`, `[[1, 2], [3, 4]]`, each cell formatted like a
+  number now (precision, base, decimals); the text parses back to the
+  same value (History, `$n`, .pcf, Use Expression / Insert Result).
+- Limits: 10000 cells; 50x50 for inv/det/solve; clear errors.
+- card(): several number cards come out as a list value `[3, 5, 1]`
+  instead of the `{3, 5, 1}` text.
+
+## X2 - Functions (round 1)
+| group | functions |
+|---|---|
+| make | `[ ... ]`, `identity(n)`, `zeros(r, c)`, `ones(r, c)`, `diag(list)`, `seq(a, b, [step])`, `randm(r, c, [a, b])` (follows `rands`) |
+| shape, cells | `rows(m)`, `cols(m)`, `len(list)`, `at(m, i, [j])`, `row(m, i)`, `col(m, j)` (counting from 1) |
+| arithmetic | `+ -` cell by cell (same shape), `*` `/` with a number, `A*B` matrix product, `A^n` (whole n; `A^-1` the inverse), `dot(a, b)`, `cross(a, b)` |
+| linear algebra | `transpose(m)`, `det(m)`, `inv(m)`, `trace(m)`, `solve(A, b)` |
+| lists | `sum`, `mean`, `min`, `max`, `prod`, `sort` |
+| cell by cell | the one-number functions take a matrix and work on each cell: `sin([0, 30, 90])`, `round(m, 2)`, `abs(m)`, `sqrt(m)` |
+Names to check against existing functions and user names (min/max may
+exist already; a user function called `len` or `at`).
+
+## X3 - Around the engine (round 1)
+- Variables window (desktop) and Variables (web): a matrix variable shows
+  its one-line text; Edit takes the same text.
+- Hints for every new function; Functions menu group **Matrix** (desktop
+  menu and ribbon command ids, web func sheet).
+- Keypad: `[` `]` are already on 2nd `(` `)`; `,` is there? (check the
+  Basic and Sci layouts on desktop and web.)
+- Help: a Matrices topic (new number), examples checked by the test.
+- Protocol: no new op; values travel as text as now.
+
+## Round 2 (later, each to discuss)
+- History and Variables as a table (the decisions: alignment, wide
+  matrices, copy as text or tab-separated, click to insert).
+- `eig`, `rank`, `norm`, `median`, `stdev`, `var`, element-wise `.*`?
+- Conversions of a whole list (`[1, 2][m->ft]`) if not done in X1.
+
+## Tests
+Engine first (parser, values, every function, limits, errors, display
+and parse-back), then UI session tests over pipes, web tests, help
+examples; golden data must stay unchanged.
