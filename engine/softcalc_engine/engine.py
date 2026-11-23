@@ -132,10 +132,12 @@ class Engine:
         self.used_rates = False
         self.used_prices = False
         self.draws = {}
+        matrix.lost.update(digits=0, of=self.settings.precision)
         result = self.evaluate_line(text)
         if result.kind in ("result", "definition"):
             notes = [self.rates.note()] if self.used_rates else []
             notes += [self.prices.note()] if self.used_prices else []
+            notes += [matrix.lost_note()] if matrix.lost_note() else []
             result.note = "; ".join(notes) if notes else result.note
         return result
 
@@ -676,24 +678,33 @@ class Engine:
         if kind == "conv":
             value = self.eval_node(node[3], builtins, scope, depth)
             if node[1] in ZONES or node[2] in ZONES:
+                if isinstance(value, Matrix):
+                    raise CalcError("A time zone tag takes one date, not a list")
                 return convert_zone(value, node[1], node[2])
-            if not isinstance(value, mpmath.mpf):
-                raise CalcError("Only real numbers can be converted")
-            if crypto.involved(node[1], node[2]):
-                converted = crypto.convert_price(value, node[1], node[2], self.prices)
-                self.used_prices = True
-                return converted
-            if currency.is_currency(node[1], self.rates) or currency.is_currency(node[2], self.rates):
-                converted = currency.convert(value, node[1], node[2], self.rates)
-                self.used_rates = True
-                return converted
-            return convert(value, node[1], node[2])
+            if isinstance(value, Matrix):    # every cell (matrix round 2, owner 2026-11-24)
+                return matrix.map_cells(value, lambda cell: self.convert_one(cell, node[1], node[2]))
+            return self.convert_one(value, node[1], node[2])
         if kind == "fmt":
             fn = dates.FUNCTIONS.get(node[1])
             if fn is None:
                 raise CalcError(f"Unknown format [{node[1]}]")
-            return fn(self.eval_node(node[2], builtins, scope, depth))
+            value = self.eval_node(node[2], builtins, scope, depth)
+            if isinstance(value, Matrix):
+                raise CalcError(f"[{node[1]}] takes one date, not a list")
+            return fn(value)
         raise CalcError(f"Cannot evaluate '{kind}'")
+
+    def convert_one(self, value, source, target):
+        """One number through a unit, currency or coin tag."""
+        if not isinstance(value, mpmath.mpf):
+            raise CalcError("Only real numbers can be converted")
+        if crypto.involved(source, target):
+            self.used_prices = True
+            return crypto.convert_price(value, source, target, self.prices)
+        if currency.is_currency(source, self.rates) or currency.is_currency(target, self.rates):
+            self.used_rates = True
+            return currency.convert(value, source, target, self.rates)
+        return convert(value, source, target)
 
     def call(self, name, args, builtins, depth):
         key = name.lower()

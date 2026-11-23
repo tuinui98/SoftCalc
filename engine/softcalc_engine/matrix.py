@@ -96,6 +96,17 @@ def from_mp(mp, flat=False):
 #----------------------------------------------------------------------
 GUARD = 10    # engine.GUARD_DIGITS: the working digits past the shown ones
 
+# The most shown digits a det/inv/solve of this evaluation may have lost
+# (round 2, owner 2026-11-24: show them all, with a note); reset by the engine
+lost = {"digits": 0, "of": 32}    # "of": the shown precision, set by the engine
+
+
+def lost_note():
+    """The History note for a matrix near det 0, or ""."""
+    if lost["digits"] <= 0:
+        return ""
+    return f"about {lost['digits']} of {lost['of']} digits may be off"
+
 
 def wide():
     return mpmath.workdps(2 * mpmath.mp.dps)
@@ -105,8 +116,15 @@ def det_wide(a):
     """det of an mpmath matrix, or 0 when it is below the shown precision; call inside wide()."""
     value = mpmath.det(a)
     bound = mpmath.fprod(mpmath.sqrt(mpmath.fsum(abs(a[i, j]) ** 2 for j in range(a.cols))) for i in range(a.rows))
-    shown = mpmath.mpf(10) ** -(mpmath.mp.dps // 2 - GUARD)
-    return value if abs(value) > bound * shown else mpmath.mpf(0)
+    digits = mpmath.mp.dps // 2 - GUARD
+    if abs(value) <= bound * mpmath.mpf(10) ** -digits:
+        return mpmath.mpf(0)
+    # |det| / bound is about 1 / the condition number: rounding of the input
+    # (at the shown digits + GUARD) grows by that much
+    off = int(mpmath.floor(mpmath.log10(bound / abs(value)))) - GUARD
+    if off > lost["digits"]:
+        lost["digits"] = min(off, lost["of"])
+    return value
 
 
 def as_matrix(value, key):
@@ -380,6 +398,75 @@ def sort(args):
     return shaped([sorted(numbers_of(args, "sort", real=True))], True)
 
 
+def median(args):
+    values = sorted(numbers_of(args, "median", real=True))
+    middle = len(values) // 2
+    return values[middle] if len(values) % 2 else (values[middle - 1] + values[middle]) / 2
+
+
+def spread(key, sample, root):
+    """variance / stdev of a sample (n - 1) or a whole population (n)."""
+    def work(args):
+        values = numbers_of(args, key, real=True)
+        if len(values) < (2 if sample else 1):
+            raise CalcError(f"{key} needs at least {2 if sample else 1} numbers")
+        average = mpmath.fsum(values) / len(values)
+        value = mpmath.fsum((x - average) ** 2 for x in values) / (len(values) - (1 if sample else 0))
+        return mpmath.sqrt(value) if root else value
+    return work
+
+
+def norm(args):
+    """Length of a list (sqrt of the sum of squares); of a matrix, the same over every cell (Frobenius)."""
+    return mpmath.sqrt(mpmath.fsum(abs(cell) ** 2 for cell in cells(as_matrix(args[0], "norm"))))
+
+
+def rank(args):
+    """Rows that are not a mix of the others; a pivot below the shown precision counts as 0 (like det)."""
+    m = as_matrix(args[0], "rank")
+    rows, cols = m.shape
+    if rows * cols > MAX_SOLVE * MAX_SOLVE:
+        raise CalcError(f"rank takes at most {MAX_SOLVE * MAX_SOLVE} cells")
+    with wide():
+        a = [[mpmath.mpmathify(cell) for cell in row] for row in m.rows]
+        largest = max(abs(cell) for row in a for cell in row)
+        if largest == 0:
+            return mpmath.mpf(0)
+        tiny = largest * mpmath.mpf(10) ** -(mpmath.mp.dps // 2 - GUARD)
+        found = 0
+        for col in range(cols):
+            pivot = max(range(found, rows), key=lambda r: abs(a[r][col]), default=None)
+            if pivot is None or abs(a[pivot][col]) <= tiny:
+                continue
+            a[found], a[pivot] = a[pivot], a[found]
+            for r in range(found + 1, rows):
+                factor = a[r][col] / a[found][col]
+                a[r] = [x - factor * y for x, y in zip(a[r], a[found])]
+            found += 1
+            if found == rows:
+                break
+    return mpmath.mpf(found)
+
+
+MAX_EIG = 20    # eig is much slower than inv (round 2: timed before choosing)
+
+
+def eig(args):
+    """Eigenvalues of a square matrix, as a list: by real part, largest first; complex ones as a+bi."""
+    m = as_matrix(args[0], "eig")
+    square(m, "eig", MAX_EIG)
+    with wide():
+        values = mpmath.eig(to_mp(m), left=False, right=False)
+        values = [mpmath.mpc(v) for v in values]
+        shown = mpmath.mpf(10) ** -(mpmath.mp.dps // 2 - GUARD)
+        scale = max([abs(v) for v in values] + [mpmath.mpf(1)])
+        values = [v.real if abs(v.imag) <= scale * shown else v for v in values]
+        # rounded first, so a pair a+bi, a-bi whose real parts differ in the last digits keeps +bi first
+        step = scale * shown * 1000
+        values.sort(key=lambda v: (-mpmath.nint(mpmath.re(v) / step), -mpmath.im(v)))
+    return shaped([[+v for v in values]], True)
+
+
 # name -> (function, fewest arguments, most arguments; None: any number)
 FUNCTIONS = {
     "identity": (identity, 1, 1), "zeros": (filled("zeros", 0), 1, 2), "ones": (filled("ones", 1), 1, 2),
@@ -394,4 +481,8 @@ FUNCTIONS = {
     "min": (lambda a: min(numbers_of(a, "min", real=True)), 1, None),
     "max": (lambda a: max(numbers_of(a, "max", real=True)), 1, None),
     "sort": (sort, 1, 1),
+    "median": (median, 1, None),
+    "stdev": (spread("stdev", True, True), 1, None), "stdevp": (spread("stdevp", False, True), 1, None),
+    "variance": (spread("variance", True, False), 1, None), "variancep": (spread("variancep", False, False), 1, None),
+    "norm": (norm, 1, 1), "rank": (rank, 1, 1), "eig": (eig, 1, 1),
 }

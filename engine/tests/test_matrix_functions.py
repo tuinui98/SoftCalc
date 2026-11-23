@@ -141,3 +141,54 @@ def test_card_lists_compute():
 
 def test_matrix_names_are_reserved():
     assert engine().evaluate("det=5").text == "ERROR:'det' is a reserved name"
+
+
+#------------------------------------------------------------------
+#  Round 2 (owner 2026-11-24)
+#------------------------------------------------------------------
+@pytest.mark.parametrize("line, text", [
+    ("[1, 2] [m->cm]", "[100, 200]"),
+    ("[[0, 100], [37, -40]] [c->f]", "[[32, 212], [98.6, -40]]"),
+    ("median([3, 1, 2, 10])", "2.5"),
+    ("median(5, [1, 9])", "5"),
+    ("stdevp([2, 4, 4, 4, 5, 5, 7, 9])", "2"),
+    ("variance(1, 2, 3, 4)", "1.6666666666666666666666666666667"),
+    ("variancep([1, 2, 3, 4])", "1.25"),
+    ("norm([3, 4])", "5"),
+    ("rank([[1, 2], [2, 4]])", "1"),
+    ("rank([[1, 2, 3], [4, 5, 6], [7, 8, 9]])", "2"),
+    ("rank([[0.316, 1.2], [0.632, 2.4]])", "1"),
+    ("rank(zeros(2, 3))", "0"),
+    ("rank([1, 2])", "1"),
+    ("eig([[4, 1], [2, 3]])", "[5, 2]"),
+    ("eig([[0, -1], [1, 0]])", "[1i, -1i]"),
+])
+def test_round_two_values(line, text):
+    assert engine().evaluate(line).text == text
+
+
+@pytest.mark.parametrize("line, error", [
+    ("[1, 2] [longdate]", "[longdate] takes one date, not a list"),
+    ("[1, 2] [utc->local]", "A time zone tag takes one date, not a list"),
+    ("[1, 2] [m->kg]", "Cannot convert m to kg"),
+    ("stdev(5)", "stdev needs at least 2 numbers"),
+    ("median([1+2i])", "median needs real numbers"),
+    ("eig(identity(21))", "eig takes at most 20x20"),
+    ("eig([1, 2])", "eig needs a square matrix"),
+])
+def test_round_two_errors(line, error):
+    assert engine().evaluate(line).text == "ERROR:" + error
+
+
+def test_a_matrix_near_det_0_shows_every_digit_with_a_note():
+    e = engine()
+    result = e.evaluate("inv([[1, 1], [1, 1.00000000000000000001]])")
+    assert result.text.startswith("[[100000000000000000001.0000")
+    assert result.note == "about 10 of 32 digits may be off"
+    assert e.evaluate("inv(A)").note == ""    # a well-made matrix: no note, and the note does not linger
+    assert e.evaluate("det([[1, 1], [1, 1.0000000001]])").note == ""
+
+
+def test_var_stays_free_for_the_default_function():
+    # `var` would clash with the default function(var)=var*cos(var); variance is the name
+    assert not engine().evaluate("function(3)").text.startswith("ERROR")

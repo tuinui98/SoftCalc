@@ -591,6 +591,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       `<Version>` in SoftCalc.csproj. Fix next release: raise both to the
       release's version, and make the release steps (publish.ps1, a test)
       fail when the engine's version and SoftCalc's differ.
+- [ ] The program icon's number: 1.23 becomes 1.98 (owner 2026-11-24);
+      tools/IconMaker draws ui/SoftCalc/softcalc.ico, and the web/APK icons
+      come from it too (check which).
 
 ## Matrices (owner 2026-11-24; plan in design/matrix_plan.md)
 - [ ] Matrix functions in the engine. Owner 2026-11-24: written with
@@ -605,9 +608,12 @@ ends 1:1, the drag insert line is visible enough on dark.
         Help 16-errors has the list/matrix errors and the accuracy notes.
   - [ ] Help topic "Matrices" (how to write them, the functions), when
         the owner says the matrix topic is done.
-  - [ ] Round 2, each to discuss: table display in History; eig, rank,
-        norm, median, stdev, var; unit tags on a list (`[1, 2] [m->ft]`);
-        maybe hide digits an ill-conditioned matrix cannot vouch for.
+  - [x] Round 2 A-C (2026-11-24): unit tags on a list; median, stdev,
+        stdevp, variance, variancep, norm, rank, eig; the "digits may be
+        off" note.
+  - [ ] Round 2 D: table display in History (cells shortened, 10x10 at
+        most, lists stay one line).
+  - [ ] After round 2: reverse, cumsum, count and the like (owner B4).
   - [ ] Time 50x50 inv/solve on the web (Pyodide); 2.3 s on the desktop.
 
 ## Conversions (owner 2026-11-24)
