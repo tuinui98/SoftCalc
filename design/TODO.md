@@ -584,6 +584,14 @@ ends 1:1, the drag insert line is visible enough on dark.
     Insert Command on the draw tab, the ... tab and the web Cards tab.
     Owner OK; help updated (03, 14, 17, 12-ribbon).
 
+## Next release (owner 2026-11-24, after 1.8.0)
+- [ ] The web app and APK 1.8.0 say "Engine 1.7.0 ready in ...": the
+      engine's own version (`engine/softcalc_engine/__init__.py`
+      `__version__` and `engine/pyproject.toml`) was not raised with
+      `<Version>` in SoftCalc.csproj. Fix next release: raise both to the
+      release's version, and make the release steps (publish.ps1, a test)
+      fail when the engine's version and SoftCalc's differ.
+
 ## Matrices (owner 2026-11-24, noted only; plan and discuss first)
 - [ ] Matrix functions in the engine. Owner: numbers drawn by card()
       should go on into matrices. Written form proposed 2026-11-24 (to
