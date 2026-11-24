@@ -258,33 +258,55 @@ random they really are.
 
 ![The ... tab](img/random-cards.light.png)
 
-A draw picks from a pile of cards. The **...** tab holds the decks:
+A draw picks from a pile of cards. The **...** tab holds the decks,
+each shown by its cover; **Covers** and **List** switch to the list of
+names and back. The window grows once to fit a row of covers.
 
 - **My decks**: **New deck...**, **Edit...** (or a double-click),
-  **Copy**, **Delete** (it asks first), **Import CSV...** (a new deck
-  named after the file) and **Export CSV...**.
-- **Export all decks...** saves all your decks, with their pictures, in
-  one zip file; **Import decks...** adds the decks from one (see *Data
-  and files*). File > Export Decks... and Import Decks... do the same.
+  **Delete** (it asks first) and **Cover...**. **More** holds **Copy**,
+  **Import CSV...** (a new deck named after the file), **Export
+  CSV...**, and **Import decks...** / **Export all decks...**: all your
+  decks, with their pictures and covers, in one zip file (see *Data and
+  files*). File > Export Decks... and Import Decks... do the same.
+- A deck's **cover** is the picture chosen for it (**Cover...** >
+  Choose a picture, or **Use as cover** on a card), else its first
+  card's picture, else up to four of its cards' colours, else the first
+  letter of its name on a colour of its own (for a name such as
+  `Districts: Bangkok`, the letter after the colon). **Auto** goes back
+  to that from a chosen picture.
 - **Insert Command** puts `card("deck")` for the chosen deck in Input,
   to draw from it in a line (see *Functions*).
 - **Ready-made decks**: playing cards (four colours: spades black,
-  hearts red, diamonds blue, clubs green; the two jokers start unticked
-  in a draw), months, days of the week, the provinces of Thailand and
+  hearts red, diamonds blue, clubs green, with a picture of each card;
+  the two jokers start unticked in a draw), months, days of the week, the provinces of Thailand and
   its 928 districts (all of them, and a deck for each province; names
   from the Office of the Royal Society, see File > About), countries by
-  continent (the UN members, Palestine, Taiwan and the
+  continent with their flags (the UN members, Palestine, Taiwan and the
   Vatican; also all of them), twelve colours, the zodiac signs and the
   animal years. **Ready-made names** shows them in English or Thai.
   They cannot be edited: **View...** shows the cards, **Copy to my
-  decks** makes a deck you can change, in the language shown.
+  decks** makes a deck you can change, in the language shown, with its
+  pictures. The card pictures are heratexx's four-colour deck (CC0) with
+  jokers drawn to match; the flags are flag-icons (MIT); see File >
+  About.
 
 ![A deck](img/random-deck.light.png)
 
+- The cards show as **Pictures** (a weight above 1 as `×2` after the
+  name) or as a **List**; the editor keeps the one you chose.
+- **View large** (or a double-click, or Space) shows the chosen card
+  large: ◀ ▶ or the arrow keys go through the deck, Esc closes, **Use
+  as cover** makes its picture the deck's cover. A picture shows on
+  white, so a transparent one reads on the dark theme too.
+- The **Cover** row shows the deck's cover and where it comes from;
+  **Picture...** chooses one of its own, **Auto** goes back to the
+  first card's picture.
 - Each card has a name, a **Weight**, a **Picture** and a **Colour**.
   A card of weight 2 comes up twice as often as one of weight 1, when
-  the draw uses weights. A picture is shrunk to 128 pixels and kept in
-  the data folder, so the original file can move.
+  the draw uses weights. A picture is shrunk to 512 pixels and kept in
+  the data folder, so the original file can move (pictures added before
+  version 1.10 were kept at 128 pixels: choose them again to see them
+  sharper).
 - **Colour...** gives the chosen cards a colour (several at once),
   **No colour** takes it off. The dartboard and spin wheel fill a
   card's part with it, the slot machine shows a strip, and a card
@@ -384,7 +406,7 @@ repeat, and has its own rows in Stats, such as `1 → Gym`.
 
 | theme | the effect |
 |---|---|
-| List | the lines roll in Results, slowing down |
+| List | the lines roll in Results, slowing down; cards with pictures show large beside Results |
 | Slot machine | a reel for each card, stopping one by one from the left; with Count 2 to 5 every line plays, a row each (side by side when each line has one card); new tabs start here |
 | Dartboard | a board for each card, each card's part as big as its chance; the board spins 2 to 4 seconds and the dart is thrown 1 to 3 seconds in, so it may land while the board still turns and turn with it |
 | Spin wheel | up to three rings a wheel, a card each, turning in turn the other way and stopping from the outside in; the card under the marker at the top (and the one on the hub) is drawn; more cards spin more wheels |
@@ -405,6 +427,11 @@ repeat, and has its own rows in Stats, such as `1 → Gym`.
 - **Results** shows the last Draw, **History** every line with its
   date and time (newest first, the last 1000), **Stats** how often each
   card came up, its share, and the share its weight gives.
+- A drawn card with a picture shows it small in its Results line; on
+  the List theme the chosen line's cards show large beside Results
+  (the first line after a Draw; click another to see it).
+
+![The List theme with pictures](img/random-draw-list.light.png)
 - **Clear draw** empties Results; History and Stats stay. **Clear
   history...** (on the History tab) and **Clear stats...** (on the Stats
   tab) ask first, then empty that list. **Copy** copies the chosen lines

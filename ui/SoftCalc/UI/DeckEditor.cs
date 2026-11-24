@@ -148,7 +148,7 @@ internal sealed class DeckEditor : Form
 		var weightNote = new Label
 		{
 			AutoSize = true, MaximumSize = new Size(200, 0), ForeColor = SystemColors.GrayText,
-			Text = "A card of weight 2 comes up twice as often as one of weight 1 (when the draw uses weights).",
+			Text = "Weight 2: twice as likely as weight 1, when the draw uses weights.",
 		};
 		card.Controls.Add(Caption("Colour"), 0, 4);
 		var colourRow = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty, WrapContents = false };
