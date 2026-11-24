@@ -97,6 +97,10 @@
 .entry .top { display: flex; justify-content: space-between; gap: 16px; font-size: calc(16px * var(--text-scale, 1)); }
 .entry .top .sub { color: var(--faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .entry .result { padding-left: 28px; font-size: calc(20px * var(--text-scale, 1)); overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.entry .matrix-wrap { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; overflow-wrap: normal; }
+.entry table.matrix { border-collapse: collapse; border-left: 1.5px solid currentColor; border-right: 1.5px solid currentColor; border-radius: 3px; }
+.entry table.matrix td { padding: 0 8px; text-align: right; white-space: nowrap; }
+.entry .matrix-wrap .size { color: var(--faint); font-size: 12px; align-self: center; }
 .entry .note { padding-left: 28px; color: var(--faint); font-size: 12px; font-style: italic; }
 .entry.selected .note { color: var(--select-ink); }
 .entry.error .result { color: var(--error); }

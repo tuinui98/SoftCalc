@@ -16,6 +16,7 @@ internal sealed class VariablesPanel : Panel
 	{
 		Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, MultiSelect = false,
 		ShowGroups = !Theme.IsDark, HeaderStyle = ColumnHeaderStyle.Nonclickable, HideSelection = false,
+		ShowItemToolTips = true,    // a matrix variable shows its table (matrix round 2 D)
 	};
 	private readonly ListViewGroup _constants = new("Constants");
 	private readonly ListViewGroup _user = new("User Defined");
@@ -87,7 +88,11 @@ internal sealed class VariablesPanel : Panel
 		AddHeading(_user.Header, state.Variables.Count);
 		foreach (var variable in state.Variables)
 		{
-			_list.Items.Add(new ListViewItem(new[] { variable.Name, variable.Value }, _user) { Tag = variable });
+			_list.Items.Add(new ListViewItem(new[] { variable.Name, variable.Value }, _user)
+			{
+				Tag = variable,
+				ToolTipText = Logic.MatrixTable.Parse(variable.Value)?.Preview() ?? "",
+			});
 		}
 		_list.EndUpdate();
 		UpdateButtons();

@@ -188,6 +188,16 @@ Built 2026-11-24: all of A, B, C. eig at most 20x20 (20x20 takes 1.1 s on
 the desktop), sorted by real part, a pair a+bi / a-bi with +bi first.
 SymPy cases for median, variance, stdev, norm, rank and eig (1653 in all).
 
+D built 2026-11-24: the UIs make the table from the result text
+(desktop Logic/MatrixTable.cs, web lib/table.ts; no protocol change, old
+History lines show the same). Cells shortened to 6 significant digits
+while Decimal Places is All. Desktop: at most 10 rows, fewer at large
+text sizes (a list box item is at most 255 pixels), as many columns as
+the width holds then "…", the size and note beside; Copy as Table
+(tab-separated); a matrix variable's tooltip shows its table. Web: 10 x
+10, scrolls sideways, long-press Copy as table; the names sheet keeps
+one line.
+
 ## Round 2 notes (before the owner's decisions)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).

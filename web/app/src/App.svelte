@@ -13,6 +13,7 @@
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
 	import { Calculator, CRYPTO_GROUP, cryptoTargets, stepDecimals } from "./lib/calc";
+	import { MAX_SHOWN, parseTable, shownCells, tableTsv } from "./lib/table";
 	import { copyText } from "./lib/clipboard";
 	import type { Engine } from "./lib/engine";
 	import { BASIC, SCIENTIFIC, type Key } from "./lib/keys";
@@ -394,15 +395,17 @@
 		}
 		// Only a calculated line has a result worth using again (not "Variable Added" or an error)
 		const result = entry.kind === "result";
+		const table = result ? parseTable(entry.text) : null;
 		const choice = await pick(entry.input, [...(result ? ["Insert result"] : []), "Insert line",
-			...(result ? ["Copy result"] : []), "Copy line", "Delete line"]);
+			...(result ? ["Copy result"] : []), ...(table ? ["Copy as table"] : []), "Copy line", "Delete line"]);
 		if (choice === "Insert result" || choice === "Insert line")
 		{
 			calc.insertText(choice === "Insert result" ? entry.text : entry.input, choice === "Insert result");
 		}
-		else if (choice === "Copy result" || choice === "Copy line")
+		else if (choice === "Copy result" || choice === "Copy line" || choice === "Copy as table")
 		{
-			const done = await copyText(choice === "Copy result" ? entry.text : entry.input);
+			const text = choice === "Copy as table" && table ? tableTsv(table) : choice === "Copy result" ? entry.text : entry.input;
+			const done = await copyText(text);
 			calc.say(done ? "Copied" : "Could not copy");
 		}
 		else if (choice === "Delete line")
@@ -634,12 +637,26 @@
 			{#if view.entries.length === 0}<div class="empty-history">Type with the keys; tap a line to use it again.
 				Swipe the keys left or right for Sci, up for the menu.</div>{/if}
 			{#each view.entries as entry, index}
+				{@const table = entry.kind === "result" ? parseTable(entry.text) : null}
 				<div class="entry {entry.kind}" class:selected={index === view.highlight} role="button" tabindex="-1"
 					use:longPress={index}
 					onclick={() => { calc.tapEntry(index); focusInput(); }} onkeydown={() => {}}>
 					<div class="top"><span>{entry.input}</span>
 						{#if entry.display !== entry.input}<span class="sub">{entry.display}</span>{/if}</div>
-					<div class="result">{entry.text}</div>
+					{#if table}
+						<!-- a matrix as a table, cells shortened (matrix round 2 D) -->
+						<div class="result matrix-wrap">
+							<table class="matrix"><tbody>
+								{#each shownCells(table, decimalsShown === "all") as row}
+									<tr>{#each row as cell}<td>{cell}</td>{/each}{#if table.cols > MAX_SHOWN}<td>…</td>{/if}</tr>
+								{/each}
+								{#if table.rows > MAX_SHOWN}<tr>{#each shownCells(table, false)[0] as _}<td>⋮</td>{/each}</tr>{/if}
+							</tbody></table>
+							<span class="size">{table.size}</span>
+						</div>
+					{:else}
+						<div class="result">{entry.text}</div>
+					{/if}
 					{#if entry.note}<div class="note">{entry.note}</div>{/if}
 				</div>
 			{/each}
