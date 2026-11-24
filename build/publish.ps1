@@ -20,6 +20,19 @@ $dotnet = "C:\Program Files\dotnet\dotnet.exe"
 $dist = Join-Path $root "dist"
 
 #==================================================================
+#  BLOCK 0 - One version: SoftCalc.csproj, the engine package, pyproject.toml
+#==================================================================
+# 1.8.0 shipped saying "Engine 1.7.0 ready" (owner 2026-11-24): stop before building instead
+$softcalc = [regex]::Match((Get-Content (Join-Path $root "ui\SoftCalc\SoftCalc.csproj") -Raw), "<Version>([\d.]+)</Version>").Groups[1].Value
+$package = [regex]::Match((Get-Content (Join-Path $root "engine\softcalc_engine\__init__.py") -Raw), '__version__ = "([\d.]+)"').Groups[1].Value
+$project = [regex]::Match((Get-Content (Join-Path $root "engine\pyproject.toml") -Raw), '(?m)^version = "([\d.]+)"').Groups[1].Value
+if ($softcalc -eq "" -or $package -ne $softcalc -or $project -ne $softcalc)
+{
+	throw "versions differ: SoftCalc.csproj '$softcalc', engine __init__.py '$package', pyproject.toml '$project'"
+}
+# end BLOCK 0
+
+#==================================================================
 #  BLOCK 1 - Engine : freeze and test
 #==================================================================
 & powershell -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot "build_engine.ps1")

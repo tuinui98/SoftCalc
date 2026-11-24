@@ -585,18 +585,18 @@ ends 1:1, the drag insert line is visible enough on dark.
     Owner OK; help updated (03, 14, 17, 12-ribbon).
 
 ## Next release (owner 2026-11-24, after 1.8.0)
-- [ ] The web app and APK 1.8.0 say "Engine 1.7.0 ready in ...": the
+- [x] (1.9.0: engine 1.9.0, test_version.py, publish.ps1 BLOCK 0) The web app and APK 1.8.0 say "Engine 1.7.0 ready in ...": the
       engine's own version (`engine/softcalc_engine/__init__.py`
       `__version__` and `engine/pyproject.toml`) was not raised with
       `<Version>` in SoftCalc.csproj. Fix next release: raise both to the
       release's version, and make the release steps (publish.ps1, a test)
       fail when the engine's version and SoftCalc's differ.
-- [ ] The program icon's number: 1.23 becomes 1.98 (owner 2026-11-24);
+- [x] (1.9.0: desktop, Android and web icons; IconMaker --web) The program icon's number: 1.23 becomes 1.98 (owner 2026-11-24);
       tools/IconMaker draws ui/SoftCalc/softcalc.ico, and the web/APK icons
       come from it too (check which).
 
 ## Matrices (owner 2026-11-24; plan in design/matrix_plan.md)
-- [ ] Matrix functions in the engine. Owner 2026-11-24: written with
+- [x] (released in 1.9.0) Matrix functions in the engine. Owner 2026-11-24: written with
       `[ ]` (`[1, 2, 3]`, `[[1, 2], [3, 4]]`), but first check for
       certain that it cannot clash with conversions and formats (plan
       step X0); one-line display, a table later; a list fits as a row or

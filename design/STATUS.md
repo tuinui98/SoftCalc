@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-24: version 1.8.0 released (ribbon rows; card decks exported and imported as one zip; card() draws from a deck in Input). Everything below is committed on `main` and
+Updated 2026-11-24: version 1.9.0 released (lists and matrices; Conversions > Cryptocurrency; the engine says SoftCalc's version; icon 1.98). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -177,6 +177,22 @@ out as {a, b, c}); Insert Command on the draw tab, the ... tab and the web
 Cards tab. Help 03, 12, 14, 17; web 17.
 
 Tests: engine `pytest` 649 passed; UI `dotnet test` 464 passed; web 129.
+
+Version 1.9.0 (2026-11-24): lists and matrices (design/matrix_plan.md):
+`[1, 2]` and `[[1, 2], [3, 4]]` by the position rule (a `[` after a
+value is still a tag), arithmetic and the matrix product, 38 functions
+in Functions > Matrix (det inv solve eig rank, statistics, fill, seq,
+reshape...), `fill` with rand or card draws every cell, unit tags on a
+list, a matrix result as a table in History (Copy as Table), a note when
+a matrix near det 0 may lose digits. Checked against SymPy (1653 cases);
+one LU serves det/inv/solve (inv 50x50 at 64 digits 0.23 s desktop).
+The web says how long each line took and counts Working... after a
+second. Conversions > Cryptocurrency holds Bitcoin, Ethereum, Tron and
+Tether. The engine now says SoftCalc's version (test_version.py and
+publish.ps1 BLOCK 0 check it); the icon's screen shows 1.98, and
+IconMaker --web writes the web icons. Help 03, 16, 17, 18, 19 (new).
+
+Tests: engine `pytest` 2523 passed; UI `dotnet test` 478 passed; web 135.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for

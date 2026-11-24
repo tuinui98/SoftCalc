@@ -294,7 +294,8 @@ and set it back to 0 with the next SoftCalc version.
 
 Icons: `dotnet run --project tools/IconMaker -- --android
 web/android/app/src/main/res` draws the launcher icons from the same
-drawing as the desktop icon, on the web app's dark page colour.
+drawing as the desktop icon, on the web app's dark page colour;
+`-- --web web/app/public/icons` draws the web app's manifest icons.
 
 ```
 cd web
