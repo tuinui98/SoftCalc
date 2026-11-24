@@ -3,7 +3,7 @@
 // A fake engine answers a few lines by table, so these run without
 // Pyodide; the real engine has its own tests (test_engine.mjs).
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { Calculator, clearEntry, cryptoTargets, memoryAdd, stepDecimals, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { MemoryStore } from "../src/lib/store";
@@ -287,6 +287,45 @@ describe("saving between visits", () =>
 		expect(again.engine.definitions).toContain("rate=5");
 		const restored = again.engine.sent.find(message => message.op === "restore_results");
 		expect(restored?.args.texts).toEqual(["42"]);
+	});
+
+	it("a line over a second shows Working... while it runs, then how long it took (owner 2026-11-24)", async () =>
+	{
+		vi.useFakeTimers();
+		try
+		{
+			const slow = new FakeEngine();
+			const { calc } = await started(new MemoryStore(), slow);
+			const ready = calc.status;
+			let finish!: () => void;
+			const send = slow.send.bind(slow);
+			slow.send = async (op, args = {}) =>
+			{
+				if (op === "eval" && args.input === "1+2")
+					await new Promise<void>(resolve => { finish = resolve; });
+				return send(op, args);
+			};
+			await press(calc, "1", "+", "2");
+			const equals = calc.press("=");
+			await vi.advanceTimersByTimeAsync(900);
+			expect(calc.status).toBe(ready);    // quick lines never flash it
+			await vi.advanceTimersByTimeAsync(700);
+			expect(calc.status).toMatch(/^Working\.\.\. 1\.[4-6] s$/);
+			await vi.advanceTimersByTimeAsync(1500);
+			expect(calc.status).toMatch(/^Working\.\.\. 3\.\d s$/);
+			finish();
+			await equals;
+			expect(calc.status).toMatch(/^Took 3\.\d s$/);
+			expect(calc.entries.at(-1)?.text).toBe("3");
+
+			slow.send = send;
+			await press(calc, "2", "+", "2", "=");    // the next quick line brings the status back
+			expect(calc.status).toBe(ready);
+		}
+		finally
+		{
+			vi.useRealTimers();
+		}
 	});
 
 	it("History shows while the engine loads; = then waits for it (owner 2026-11-19)", async () =>

@@ -112,10 +112,43 @@ def wide():
     return mpmath.workdps(2 * mpmath.mp.dps)
 
 
-def det_wide(a):
-    """det of an mpmath matrix, or 0 when it is below the shown precision; call inside wide()."""
-    value = mpmath.det(a)
-    bound = mpmath.fprod(mpmath.sqrt(mpmath.fsum(abs(a[i, j]) ** 2 for j in range(a.cols))) for i in range(a.rows))
+def factor(m):
+    """LU of a square Matrix on plain lists, with row swaps (call inside wide()).
+
+    Returns (lu, order, det): lu holds L below the diagonal and U on and
+    above it, order the original row of each row. One factorisation serves
+    det, inv, solve and A^-n (matrix speed work, owner 2026-11-24: mpmath's
+    det and inverse each factorised again, through slow cell access). det
+    is 0 when it is below the shown precision against Hadamard's bound.
+    """
+    a = [[mpmath.mpmathify(cell) for cell in row] for row in m.rows]
+    n = len(a)
+    bound = mpmath.fprod(mpmath.sqrt(mpmath.fsum(abs(x) ** 2 for x in row)) for row in a)
+    order = list(range(n))
+    sign = 1
+    for k in range(n):
+        pivot_row = max(range(k, n), key=lambda r: abs(a[r][k]))
+        if a[pivot_row][k] == 0:
+            return a, order, mpmath.mpf(0)
+        if pivot_row != k:
+            a[k], a[pivot_row] = a[pivot_row], a[k]
+            order[k], order[pivot_row] = order[pivot_row], order[k]
+            sign = -sign
+        top = a[k]
+        pivot = top[k]
+        for i in range(k + 1, n):
+            row = a[i]
+            if row[k] == 0:
+                continue
+            f = row[k] / pivot
+            row[k] = f
+            row[k + 1:] = [x - f * y for x, y in zip(row[k + 1:], top[k + 1:])]
+    value = sign * mpmath.fprod(a[k][k] for k in range(n))
+    return a, order, checked_det(value, bound)
+
+
+def checked_det(value, bound):
+    """0 for a det below the shown precision; else the det, noting the digits it may cost."""
     digits = mpmath.mp.dps // 2 - GUARD
     if abs(value) <= bound * mpmath.mpf(10) ** -digits:
         return mpmath.mpf(0)
@@ -125,6 +158,29 @@ def det_wide(a):
     if off > lost["digits"]:
         lost["digits"] = min(off, lost["of"])
     return value
+
+
+def lu_solve(lu, order, column):
+    """x with A*x = column, from factor()'s lu and order."""
+    n = len(lu)
+    y = [column[order[i]] for i in range(n)]
+    for i in range(1, n):
+        y[i] -= mpmath.fdot(lu[i][:i], y[:i])
+    x = [mpmath.mpf(0)] * n
+    for i in range(n - 1, -1, -1):
+        x[i] = (y[i] - mpmath.fdot(lu[i][i + 1:], x[i + 1:])) / lu[i][i]
+    return x
+
+
+def inverse_rows(m, key, singular="The matrix has no inverse (its det is 0)"):
+    """The inverse as rows of cells at twice the digits (call inside wide())."""
+    square(m, key, MAX_SOLVE)
+    lu, order, value = factor(m)
+    if value == 0:
+        raise CalcError(singular)
+    n = len(lu)
+    columns = [lu_solve(lu, order, [mpmath.mpf(1 if i == j else 0) for i in range(n)]) for j in range(n)]
+    return [[columns[j][i] for j in range(n)] for i in range(n)]
 
 
 def as_matrix(value, key):
@@ -207,12 +263,8 @@ def power(m, n):
 
 
 def inverse_mp(m, key):
-    square(m, key, MAX_SOLVE)
     with wide():
-        a = to_mp(m)
-        if det_wide(a) == 0:
-            raise CalcError("The matrix has no inverse (its det is 0)")
-        return mpmath.inverse(a)
+        return mpmath.matrix(inverse_rows(m, key))
 
 
 #----------------------------------------------------------------------
@@ -337,12 +389,15 @@ def det(args):
     m = as_matrix(args[0], "det")
     square(m, "det", MAX_SOLVE)
     with wide():
-        value = det_wide(to_mp(m))
+        value = factor(m)[2]
     return +value
 
 
 def inv(args):
-    return from_mp(inverse_mp(as_matrix(args[0], "inv"), "inv"))
+    m = as_matrix(args[0], "inv")
+    with wide():
+        rows = inverse_rows(m, "inv")
+    return shaped([[+cell for cell in row] for row in rows], False)
 
 
 def trace(args):
@@ -360,13 +415,13 @@ def solve(args):
     if len(rhs) != n:
         raise CalcError(f"solve: A has {n} rows, b has {len(rhs)}")
     with wide():
-        mp_a = to_mp(a)
-        if det_wide(mp_a) == 0:
+        lu, order, value = factor(a)
+        if value == 0:
             raise CalcError("solve: the matrix has no inverse (its det is 0), so no single answer")
-        answer = mpmath.inverse(mp_a) * mpmath.matrix(rhs)
+        columns = [lu_solve(lu, order, [row[j] for row in rhs]) for j in range(len(rhs[0]))]
     if b.flat:
-        return shaped([[+answer[i, 0] for i in range(n)]], True)
-    return from_mp(answer)
+        return shaped([[+x for x in columns[0]]], True)
+    return shaped([[+columns[j][i] for j in range(len(columns))] for i in range(n)], False)
 
 
 #----------------------------------------------------------------------
@@ -459,10 +514,10 @@ def eig(args):
     """Eigenvalues of a square matrix, as a list: by real part, largest first; complex ones as a+bi."""
     m = as_matrix(args[0], "eig")
     square(m, "eig", MAX_EIG)
-    with wide():
+    with mpmath.workdps(mpmath.mp.dps + GUARD):    # was twice the digits: half the time, same shown digits
         values = mpmath.eig(to_mp(m), left=False, right=False)
         values = [mpmath.mpc(v) for v in values]
-        shown = mpmath.mpf(10) ** -(mpmath.mp.dps // 2 - GUARD)
+        shown = mpmath.mpf(10) ** -(mpmath.mp.dps - 2 * GUARD)
         scale = max([abs(v) for v in values] + [mpmath.mpf(1)])
         values = [v.real if abs(v.imag) <= scale * shown else v for v in values]
         # rounded first, so a pair a+bi, a-bi whose real parts differ in the last digits keeps +bi first
