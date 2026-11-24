@@ -221,6 +221,9 @@ cell access, and solve inverted A. Now matrix.factor() makes one LU on
 plain lists; solve substitutes b's columns. eig works at the working
 digits (+ guard) instead of twice them. The SymPy cases still match.
 The owner's phone took about 3 s and tablet 4 s for inv 50x50 before.
+After, at 512 digits (owner 2026-11-24): det(randm(50, 50, -9, 9)) phone
+1.35 s, tablet 2.1 s; eig(randm(20, 20, -9, 9)) phone 5.3 s, tablet 8.8 s.
+Kept the same limits on the web; Working... counts while a line runs.
 
 ## Round 2 notes (before the owner's decisions)
 - History and Variables as a table (the decisions: alignment, wide
