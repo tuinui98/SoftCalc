@@ -596,7 +596,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       come from it too (check which).
 
 ## Next release (owner 2026-11-24, after 1.9.0)
-- [ ] Desktop: the time each line took, as the web shows it (status
+- [x] (2026-11-24: in the hint line under Input, owner) Desktop: the time each line took, as the web shows it (status
       "Took 0.23 s" after every line, "Working... 1.4 s" counting after a
       second). The desktop has no status line yet: where it goes is to
       settle (the hint line under Input, or the window's title).

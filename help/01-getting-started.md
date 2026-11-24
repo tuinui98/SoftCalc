@@ -66,6 +66,8 @@ The faint line under Input explains what is left of the caret:
 - tag examples inside an open `[`
 - a number typed in another base, shown in the output base: `0xFF`
   shows `255` when the output is decimal
+- with nothing to explain, how long the last line took: `Took 0.23 s`;
+  a line that runs past a second counts while it runs, `Working... 1.4 s`
 
 Turn it off with View > Show Input Hints.
 

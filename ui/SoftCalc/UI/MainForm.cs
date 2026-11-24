@@ -421,9 +421,9 @@ internal sealed partial class MainForm : Form
 		try
 		{
 			string? hint = await _session.HintAsync(text, caret);
-			if (request == _hintRequest && _showHintsItem.Checked)
+			if (request == _hintRequest && _showHintsItem.Checked && !_busy)
 			{
-				_hint.Text = hint ?? "";
+				_hint.Text = hint ?? _lineTime ?? "";    // no hint for the text: how long the last line took
 			}
 		}
 		catch (EngineException)
@@ -899,6 +899,9 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
+	// How long the last line took, shown in the hint line when it has nothing else (owner 2026-11-24)
+	private string? _lineTime;
+
 	private async Task SubmitAsync()
 	{
 		if (_busy || !_engineReady)
@@ -907,6 +910,17 @@ internal sealed partial class MainForm : Form
 		}
 		_busy = true;
 		_input.ReadOnly = true;
+		var clock = System.Diagnostics.Stopwatch.StartNew();
+		// past a second, the hint line counts while the line runs, so the window does not look stuck
+		using var working = new System.Windows.Forms.Timer { Interval = 200 };
+		working.Tick += (_, _) =>
+		{
+			if (clock.Elapsed >= LineTime.WorkingAfter && _showHintsItem.Checked)
+			{
+				_hint.Text = LineTime.Working(clock.Elapsed);
+			}
+		};
+		working.Start();
 		try
 		{
 			string? lastInput = _history.Entries.LastOrDefault(entry => entry.Kind != "notice")?.Input;
@@ -916,6 +930,7 @@ internal sealed partial class MainForm : Form
 				return;
 			}
 			var reply = await _session.EvalAsync(line);
+			_lineTime = LineTime.Took(clock.Elapsed);
 			if (reply.Kind == "empty")
 			{
 				return;
@@ -935,9 +950,11 @@ internal sealed partial class MainForm : Form
 		}
 		finally
 		{
+			working.Stop();
 			_input.ReadOnly = false;
 			_busy = false;
 			_input.SelectionStart = _input.TextLength;
+			UpdateHint();    // the time now, or the hint for the text an error kept
 		}
 	}
 
