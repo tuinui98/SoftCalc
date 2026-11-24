@@ -84,4 +84,25 @@ public class DeckCoversTests
 		var cover = DeckCovers.Of(deck, "en", name => ReadyDecks.Picture(name) != null);
 		Assert.Equal((CoverKind.Picture, "ready:playing/As.png"), (cover.Kind, cover.Image));
 	}
+
+	[Fact]
+	public void EveryCountryShowsItsFlag()
+	{
+		var all = ReadyDecks.All.First(d => d.Id == ReadyDecks.Prefix + "countries");
+		Assert.Equal(196, all.Cards.Count);
+		var codes = new HashSet<string>();
+		foreach (var card in all.Cards)
+		{
+			Assert.Matches(@"^ready:flags/[a-z]{2}\.png$", card.Image!);
+			Assert.True(codes.Add(card.Image!), card.Name);    // no flag twice
+			using var image = new Bitmap(new MemoryStream(ReadyDecks.Picture(card.Image!)!));
+			Assert.Equal((512, 384), (image.Width, image.Height));
+		}
+		Assert.Equal("ready:flags/th.png", all.Cards.Single(c => c.Name == "Thailand").Image);
+		foreach (var continent in ReadyDecks.All.Where(d => d.Id.StartsWith(ReadyDecks.Prefix + "countries-")))
+		{
+			Assert.All(continent.Cards, c => Assert.NotNull(c.Image));
+			Assert.Equal(CoverKind.Picture, DeckCovers.Of(continent, "en", name => ReadyDecks.Picture(name) != null).Kind);
+		}
+	}
 }

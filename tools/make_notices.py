@@ -119,6 +119,8 @@ def main():
                 (ROOT / "ui" / "SoftCalc" / "Icons" / "LICENSE.txt").read_text(encoding="utf-8")),
         section("District names: Office of the Royal Society, DGA Open Government License", DISTRICTS),
         section("Playing card pictures: heratexx, \"Classic 4 color poker deck (SVG)\", CC0 1.0", CARDS),
+        section("Flags: flag-icons (https://github.com/lipis/flag-icons), MIT",
+                (ROOT / "data" / "cards" / "flags" / "LICENSE.txt").read_text(encoding="utf-8")),
         section("NBitcoin (https://github.com/MetacoSA/NBitcoin), MIT", NBITCOIN_MIT),
         section("Newtonsoft.Json (https://www.newtonsoft.com/json), MIT, used by NBitcoin",
                 (NUGET / "newtonsoft.json" / "13.0.4" / "LICENSE.md").read_text(encoding="utf-8")),
