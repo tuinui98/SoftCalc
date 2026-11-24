@@ -17,7 +17,8 @@ import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
 import { inputsFrom, type CompoundInputs, type Schedule } from "./compound";
-import { cardsFrom, engineDecks, type CardsState } from "./cards";
+import { cardsFrom, engineDecks, type CardsState, type Deck } from "./cards";
+import { pictureName, READY_PICTURE, readyPictureUrl } from "./covers";
 import { decksZip, importDecks, readDecks, report, usedPictures, type Pictures } from "./decks";
 import { prefsFrom, type RandomPrefs } from "./random";
 import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from "./graph";
@@ -667,6 +668,75 @@ export class Calculator
 				this.save(this.store.put("pictures", this.pictures));
 			}
 		}
+	}
+
+	//==================================================================
+	//  Pictures (owner 2026-11-24, deck covers): an own deck's from this.pictures,
+	//  a ready-made deck's from the build (covers.ts)
+	//==================================================================
+	private pictureUrls = new Map<string, string>();
+
+	// A URL to show the picture, or null when there is none
+	pictureUrl(name: string | undefined): string | null
+	{
+		if (!name)
+		{
+			return null;
+		}
+		if (name.startsWith(READY_PICTURE))
+		{
+			return readyPictureUrl(name);
+		}
+		const bytes = this.pictures[name];
+		if (!bytes)
+		{
+			return null;
+		}
+		let url = this.pictureUrls.get(name);
+		if (!url)
+		{
+			url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: "image/png" }));
+			this.pictureUrls.set(name, url);
+		}
+		return url;
+	}
+
+	// A ready-made deck copied to the own decks: its built pictures kept as its own (named as the desktop does)
+	async ownPictures(deck: Deck): Promise<Deck>
+	{
+		const named = new Map<string, string | undefined>();
+		const cards = [];
+		for (const card of deck.cards)
+		{
+			if (!card.image?.startsWith(READY_PICTURE))
+			{
+				cards.push(card);
+				continue;
+			}
+			if (!named.has(card.image))
+			{
+				let name: string | undefined;
+				const url = readyPictureUrl(card.image);
+				try
+				{
+					const bytes = url ? new Uint8Array(await (await fetch(url)).arrayBuffer()) : null;
+					if (bytes && bytes.length > 0)
+					{
+						name = await pictureName(bytes);
+						this.pictures = { ...this.pictures, [name]: bytes };
+					}
+				}
+				catch
+				{
+					name = undefined;    // offline before the picture was ever loaded: the card goes without
+				}
+				named.set(card.image, name);
+			}
+			const name = named.get(card.image);
+			cards.push(name ? { ...card, image: name } : { ...card, image: undefined });
+		}
+		this.save(this.store.put("pictures", this.pictures));
+		return { ...deck, cards, cover: undefined };
 	}
 
 	// Export Decks (owner 2026-11-23): all own decks and their pictures in one zip, null when there are none

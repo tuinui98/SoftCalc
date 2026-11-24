@@ -53,6 +53,7 @@ public class DeckCoversTests
 		Assert.Equal("ไ", DeckCovers.Initial("ไทย"));
 		Assert.Equal("กิ", DeckCovers.Initial("กิน"));    // a Thai letter with its vowel mark
 		Assert.Equal("?", DeckCovers.Initial("  "));
+		Assert.Equal(("B", "ก", "N"), (DeckCovers.Initial("Districts: Bangkok"), DeckCovers.Initial("อำเภอ: กรุงเทพมหานคร"), DeckCovers.Initial("Note: ")));
 	}
 
 	[Fact]

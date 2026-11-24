@@ -652,6 +652,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       Countries have their flags (owner 2026-11-24): flag-icons 7.6.0 (MIT),
       the 196 used in data/cards/flags/, ISO code as countries.txt's 4th
       column, 512 x 384, embedded as ready:flags/<code>.png.
+      Web built 2026-11-24 (branch web-deck-covers): the Cards tab's deck
+      button opens the decks as covers; a deck's cards show as pictures
+      (on white), a tap shows one full screen (swipe, Use as cover, Leave
+      out); ready-made pictures come from the build (covers.ts); Copy to my
+      decks keeps them; the cover goes through the decks zip. A letter
+      cover takes the part after ": " (Districts: Bangkok is B), both apps.
 - [ ] (first note) Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
       the ready-made decks too, at least the playing cards. Free-licence

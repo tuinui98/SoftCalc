@@ -49,10 +49,12 @@ internal static class DeckCovers
 		return new DeckCover(CoverKind.Letter, null, Array.Empty<string>(), Initial(deck.Shown(language)), BackFor(deck.Id));
 	}
 
-	// The first letter as a reader sees it (a Thai letter with its marks; ไ in ไทย)
+	// The first letter as a reader sees it (a Thai letter with its marks; ไ in ไทย); of the part after
+	// ": " when there is one, so "Districts: Bangkok" is B and the district decks are told apart
 	public static string Initial(string name)
 	{
-		string trimmed = name.Trim();
+		int colon = name.LastIndexOf(": ", StringComparison.Ordinal);
+		string trimmed = (colon >= 0 && name[(colon + 2)..].Trim().Length > 0 ? name[(colon + 2)..] : name).Trim();
 		if (trimmed.Length == 0)
 		{
 			return "?";
