@@ -4,14 +4,16 @@
 // - Fixed: Pyodide (in a folder named after its version) and the build's
 //   hashed assets never change under the same name, so they come from the
 //   cache first.
-// - Fresh: the page, worker.js, engine.zip and the manifest keep their
-//   names across versions, so they come from the network first, and from
-//   the cache only when the network fails (offline).
+// - Fresh: the page, worker.js, engine.zip, the manifest and the icons keep
+//   their names across versions, so they come from the network first, and
+//   from the cache only when the network fails (offline). The icons were
+//   fixed until 1.9.0 changed the picture under the same name and the start
+//   screen kept the old one (owner 2026-11-24).
 // The page posts the files it already loaded ("cache"), so they are kept
 // from the first visit on, before this worker was in charge of them.
 
 const CACHE = "softcalc";
-const FRESH = /(\/|\.html|worker\.js|engine\.zip|\.webmanifest)$/;
+const FRESH = /(\/|\.html|worker\.js|engine\.zip|\.webmanifest|\/icons\/[^/]+\.png)$/;
 
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", event => event.waitUntil(self.clients.claim()));
