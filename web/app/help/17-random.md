@@ -58,23 +58,35 @@ drops `Il1O0o`. Every password has at least one of each kind chosen.
 
 Draws cards from a deck.
 
-- **Ready-made decks**, in English or ไทย: a pack of playing cards (the
-  two jokers start unticked), months, days, the provinces of Thailand,
-  the districts (all, or by province), countries (all, or by
-  continent), colours, the zodiac and the animal years.
+- Tap **Deck** to choose one: your decks and the ready-made ones show as
+  covers. A deck's cover is the picture chosen for it, else its first
+  card's picture, else its cards' colours, else the first letter of its
+  name.
+- **Ready-made decks**, in English or ไทย: a pack of playing cards with
+  their pictures (the two jokers start unticked), months, days, the
+  provinces of Thailand, the districts (all, or by province), countries
+  with their flags (all, or by continent), colours, the zodiac and the
+  animal years. The card pictures are heratexx's four-colour deck (CC0)
+  with jokers drawn to match; the flags are flag-icons (MIT).
 - **Your own decks**: **New deck**, then one card a line; a weight after
   a bar makes a card more likely (`Fried rice | 3`). **Edit** and
   **Delete** change them; **Copy to my decks** makes a ready-made deck
-  your own.
+  your own, with its pictures.
 - **Import CSV** and **Export CSV** read and write the desktop's deck
   file (name, weight, image, colour; a CSV's pictures are not read here).
-- **Export all decks** saves all your decks, with their pictures, in one
-  zip file, the desktop's; **Import decks** adds the decks from one. A
-  deck already here is skipped, one of the same name with other cards
-  comes in as `name (2)`. ⋮ > Export and Import do the same. The
-  pictures are kept, though not shown yet.
+- **Export all decks** saves all your decks, with their pictures and
+  covers, in one zip file, the desktop's; **Import decks** adds the decks
+  from one. A deck already here is skipped, one of the same name with
+  other cards comes in as `name (2)`. ⋮ > Export and Import do the same.
 - **Insert command** puts the `card()` line for the deck, Count and No
   repeat in Input, such as `card("Months", 3, 1)`.
-- Tap the card count to see the cards; untick any to leave them out.
+- Tap the card count to see the cards, as pictures when the deck has
+  them; untick any to leave them out. Tap a picture to see the card
+  full screen: swipe (or ‹ ›) for the next one, **Leave out** / **Put
+  back**, and on your own decks **Use as cover**. Pictures show on
+  white, so a transparent one reads on the dark theme too.
+- Drawn cards with pictures show one small on each line, and the chosen
+  one large above them with **Insert into Input** and **Copy**; tap a
+  line to show it. Without pictures, a tap on a line offers the same.
 - **No repeat** works like a pile: a drawn card stays out until
   **Shuffle**, also next time.

@@ -635,7 +635,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       currencies; old ribbon ids still work. Merged 2026-11-24.
 
 ## Later (owner 2026-11-23, a separate piece of work)
-- [ ] Deck covers, desktop built 2026-11-24 (branch deck-covers; mock-up
+- [x] (help 17 and 14 updated 2026-11-24) Deck covers, desktop built 2026-11-24 (branch deck-covers; mock-up
       https://claude.ai/artifact/EaFVN9n5friaqiXuDvgLnB): the ... tab shows
       decks as covers or a list; Cover... and the editor's Cover row set a
       deck's own picture, else the first card's picture, its colours or
@@ -658,7 +658,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       out); ready-made pictures come from the build (covers.ts); Copy to my
       decks keeps them; the cover goes through the decks zip. A letter
       cover takes the part after ": " (Districts: Bangkok is B), both apps.
-- [ ] (first note) Deck covers: a new deck chooser that shows each deck's cover; the
+- [x] (first note) Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
       the ready-made decks too, at least the playing cards. Free-licence
       candidates found 2026-11-23 (licences to check again before use):

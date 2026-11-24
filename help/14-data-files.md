@@ -73,16 +73,16 @@ days stay apart.
   comes in as `name (2)`.
 - Past 500 decks the rest are left out. A message says how many decks
   were added, renamed and skipped.
-- The zip holds `decks.json` and a `pictures` folder, each picture once.
-  Ready-made decks and draw tabs are not in it.
+- The zip holds `decks.json` and a `pictures` folder, each picture once,
+  the decks' own covers too. Ready-made decks and draw tabs are not in it.
 
 ### Between computers and phones
 
 The web app and the Android app write and read the same files
 (⋮ > Export and ⋮ > Import), so History, definitions, Graph equations
 and card decks move between SoftCalc on a computer, a phone and a
-tablet. A phone keeps the cards' pictures, though it does not show them
-yet, so they come back with the decks.
+tablet. A phone shows the cards' pictures and keeps them, so they come
+back with the decks.
 On the phone, Import adds definitions to the ones there instead of
 replacing them.
 
