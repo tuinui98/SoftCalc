@@ -676,6 +676,14 @@ ends 1:1, the drag insert line is visible enough on dark.
       card), the command's form (`?det` / `help det`; neither is taken in
       the engine) and what a keyword with several matches does. To settle
       with the owner before building.
+  - [ ] Links out for the harder functions (owner 2026-11-24): links,
+        not fetched text (offline, the typed word stays private,
+        licences). A "More:" line under a function in Help, from one
+        function -> URL table: NIST DLMF for special functions (stable
+        section URLs, e.g. dlmf.nist.gov/5.2 for gamma), the NIST/SEMATECH
+        e-Handbook for statistics, OEIS for sequences, MathWorld as the
+        fallback, mpmath docs for what the engine computes (branch cuts).
+        Check each site's terms again before use.
 
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
