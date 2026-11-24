@@ -5,10 +5,13 @@
 // (owner's choice 2026-11-06: draft 2, dark body, teal screen, orange key).
 // Usage: dotnet run --project tools/IconMaker -- <output.ico> [preview.png]
 //        dotnet run --project tools/IconMaker -- --android <app/src/main/res>
+//        dotnet run --project tools/IconMaker -- --web <app/public/icons>
 // The second form writes the Android app's launcher icons (owner 2026-11-18):
 // the adaptive icon's foreground (the calculator inside the 66 dp circle that
 // every launcher mask keeps) on the web app's dark page colour, and square and
-// round icons for Android 7.
+// round icons for Android 7. The third writes the web app's icons: 192 and
+// 512 px, and a maskable 512 on the dark page colour (owner 2026-11-24: the
+// screen's number became 1.98, and the web icons had been made by hand).
 
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -33,9 +36,13 @@ internal static class Program
 		{
 			return Android(args[1]);
 		}
+		if (args.Length == 2 && args[0] == "--web")
+		{
+			return Web(args[1]);
+		}
 		if (args.Length < 1)
 		{
-			Console.Error.WriteLine("usage: IconMaker <output.ico> [preview.png] | --android <res folder>");
+			Console.Error.WriteLine("usage: IconMaker <output.ico> [preview.png] | --android <res folder> | --web <icons folder>");
 			return 2;
 		}
 		var images = Sizes.Select(size => (size, png: Png(Draw(size)))).ToList();
@@ -88,6 +95,28 @@ internal static class Program
 			Save(Canvas((int)Math.Round(48 * scale), 34 * scale, Page, true), Path.Combine(folder, "ic_launcher_round.png"));
 		}
 		Console.WriteLine($"wrote Android launcher icons in {res}");
+		return 0;
+	}
+
+	// The web app's manifest icons: plain 192 and 512, and a maskable 512 whose
+	// calculator stays inside the 80 % safe circle on a full dark square
+	private static int Web(string folder)
+	{
+		Directory.CreateDirectory(folder);
+		Save(Draw(192), Path.Combine(folder, "softcalc-192.png"));
+		Save(Draw(512), Path.Combine(folder, "softcalc-512.png"));
+		var maskable = new Bitmap(512, 512, PixelFormat.Format32bppArgb);
+		using (var g = Graphics.FromImage(maskable))
+		{
+			g.Clear(Page);
+			g.SmoothingMode = SmoothingMode.AntiAlias;
+			g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+			using var icon = Draw(358);
+			float at = (512 - icon.Width) / 2f;
+			g.DrawImage(icon, at, at, icon.Width, icon.Height);
+		}
+		Save(maskable, Path.Combine(folder, "softcalc-maskable-512.png"));
+		Console.WriteLine($"wrote web icons in {folder}");
 		return 0;
 	}
 
@@ -148,7 +177,7 @@ internal static class Program
 			using var font = new Font("Segoe UI Semibold", 2.1f * s, GraphicsUnit.Pixel);
 			using var text = new SolidBrush(ScreenText);
 			var area = new RectangleF(4.25f * s, 3f * s, 7.1f * s, 3.25f * s);
-			g.DrawString("1.23", font, text, area, new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center });
+			g.DrawString("1.98", font, text, area, new StringFormat { Alignment = StringAlignment.Far, LineAlignment = StringAlignment.Center });
 		}
 		for (int row = 0; row < 2; row++)
 		{
