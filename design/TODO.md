@@ -674,8 +674,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       scrolls to the first mark. Needs: an id per heading (## and ###),
       a keyword index (heading words, function names such as det, fill,
       card), the command's form (`?det` / `help det`; neither is taken in
-      the engine) and what a keyword with several matches does. To settle
-      with the owner before building.
+      the engine) and what a keyword with several matches does. Owner
+      2026-11-24: both desktop and web; the command's form is settled
+      when the work starts.
   - [ ] Links out for the harder functions (owner 2026-11-24): links,
         not fetched text (offline, the typed word stays private,
         licences). A "More:" line under a function in Help, from one
