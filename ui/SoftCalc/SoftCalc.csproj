@@ -39,6 +39,7 @@
 	<ItemGroup>
 		<EmbeddedResource Include="..\..\data\decks\*.txt" LogicalName="decks/%(Filename)%(Extension)" />
 		<EmbeddedResource Include="..\..\data\cards\playing\png\*.png" LogicalName="cards/playing/%(Filename)%(Extension)" />
+		<EmbeddedResource Include="..\..\data\cards\flags\png\*.png" LogicalName="cards/flags/%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<!-- Help topics and their pictures (owner 2026-11-10); help/README.md is for authors and stays out -->

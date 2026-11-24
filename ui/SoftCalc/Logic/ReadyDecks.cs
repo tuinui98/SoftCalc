@@ -60,7 +60,7 @@ internal static class ReadyDecks
 		decks.Add(new Deck
 		{
 			Id = Prefix + "countries", Name = "Countries: all", Thai = "ประเทศ: ทั้งหมด", Alphabetical = true,
-			Cards = countries.Select(r => new Card { Name = r[1], Thai = r[2] }).ToList(),
+			Cards = countries.Select(Country).ToList(),
 		});
 		foreach (var (english, thai) in Continents)
 		{
@@ -68,7 +68,7 @@ internal static class ReadyDecks
 			{
 				Id = Prefix + "countries-" + english.ToLowerInvariant().Replace(' ', '-'),
 				Name = "Countries: " + english, Thai = "ประเทศ: " + thai, Alphabetical = true,
-				Cards = countries.Where(r => r[0] == english).Select(r => new Card { Name = r[1], Thai = r[2] }).ToList(),
+				Cards = countries.Where(r => r[0] == english).Select(Country).ToList(),
 			});
 		}
 		decks.AddRange(Districts());
@@ -137,6 +137,13 @@ internal static class ReadyDecks
 		cards.Add(new Card { Name = "Joker (black)", Thai = "โจ๊กเกอร์ดำ", Off = true, Color = SuitShades[0][0], Image = PicturePrefix + "playing/joker_black.png" });
 		cards.Add(new Card { Name = "Joker (red)", Thai = "โจ๊กเกอร์แดง", Off = true, Color = SuitShades[1][0], Image = PicturePrefix + "playing/joker_red.png" });
 		return new Deck { Id = Prefix + "playing-cards", Name = "Playing cards", Thai = "ไพ่ 1 สำรับ", Cards = cards };
+	}
+
+	// A country's card with its flag (flag-icons, MIT; data/cards/flags/README.md, owner 2026-11-24):
+	// continent|English|Thai|ISO 3166 code
+	private static Card Country(string[] row)
+	{
+		return new Card { Name = row[1], Thai = row[2], Image = row.Length > 3 ? $"{PicturePrefix}flags/{row[3]}.png" : null };
 	}
 
 	// The lines of data/decks/<name>.txt split at '|'; '#' starts a comment line

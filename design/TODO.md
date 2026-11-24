@@ -649,6 +649,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       four-colour deck (CC0) and jokers drawn to match, data/cards/playing/,
       tools/render_cards.py, embedded as ready:playing/*.png; Copy to my
       decks stores them as the user's own. Web: to do with its covers.
+      Countries have their flags (owner 2026-11-24): flag-icons 7.6.0 (MIT),
+      the 196 used in data/cards/flags/, ISO code as countries.txt's 4th
+      column, 512 x 384, embedded as ready:flags/<code>.png.
 - [ ] (first note) Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
       the ready-made decks too, at least the playing cards. Free-licence
