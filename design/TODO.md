@@ -667,6 +667,14 @@ ends 1:1, the drag insert line is visible enough on dark.
       Classic 4-color poker deck (CC0, SVG), Jumbo index cards (CC0).
       Avoid Byron Knoll's set (public-domain claim not backed up).
 
+## Hints (owner 2026-11-24)
+- [ ] rands hint: today one hint for `rands(` (hints.py "rands"), and
+      "rands(): unpredictable again" sits at its end, cut off on a narrow
+      window. Give `rands()` (empty brackets) a hint of its own that says
+      it takes a new seed from the system, e.g. "rands() - a new seed
+      from the system: the draws after it are unpredictable again"; keep
+      `rands(` for the seeded form. Desktop and web.
+
 ## Help from the Input box (owner 2026-11-24)
 - [ ] Type help + a keyword in Input to open Help at that heading, desktop
       and web. Today Help opens a whole topic only (20 files); headings
