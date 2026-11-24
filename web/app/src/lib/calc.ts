@@ -37,6 +37,14 @@ export interface EngineLike
 const LOADING: Record<string, string> = { worker: "Loading Python...", python: "Loading the engine...",
 	unpack: "Loading the engine...", import: "Restoring History..." };
 
+const WORKING_AFTER = 1000;    // ms before "Working..." shows
+
+// "Took 0.23 s" after every line (owner 2026-11-24: time each line); 2 places under 10 s
+export function tookText(seconds: number): string
+{
+	return `Took ${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
+}
+
 export interface Entry
 {
 	kind: string;          // result, definition, error, notice
@@ -423,8 +431,8 @@ export class Calculator
 	// both (BTC to an ECB currency), so up to two rounds; then the engine answers with what it has.
 	private async evaluate(line: string): Promise<Answer>
 	{
-		let answer = await this.engine.send("eval", { input: line });
-		const before = this.status;
+		const started = Date.now();
+		let answer = await this.timed(this.engine.send("eval", { input: line }), started);
 		let failed = "";
 		for (let round = 0; round < 2 && answer.ok && (answer.kind === "rates_needed" || answer.kind === "prices_needed"); round++)
 		{
@@ -436,8 +444,31 @@ export class Calculator
 			failed = given.stale ? `${rates ? "ECB rates" : "Coin prices"} not fetched: ${(rates ? this.rates : this.prices).lastError}` : failed;
 			answer = await this.engine.send("eval", { input: line });
 		}
-		this.status = failed || before;
+		const took = (Date.now() - started) / 1000;
+		this.status = failed || tookText(took);
 		return answer;
+	}
+
+	// A line that takes over a second (a 50 x 50 inv on a phone, owner 2026-11-24) shows
+	// "Working... 1.4 s" in the status line, counting, so the app does not look stuck
+	private async timed<T>(work: Promise<T>, started: number): Promise<T>
+	{
+		let ticker: ReturnType<typeof setInterval> | undefined;
+		const show = () => this.say(`Working... ${((Date.now() - started) / 1000).toFixed(1)} s`);
+		const wait = setTimeout(() =>
+		{
+			show();
+			ticker = setInterval(show, 200);
+		}, WORKING_AFTER);
+		try
+		{
+			return await work;
+		}
+		finally
+		{
+			clearTimeout(wait);
+			clearInterval(ticker);
+		}
 	}
 
 	private recallLines(): number[]

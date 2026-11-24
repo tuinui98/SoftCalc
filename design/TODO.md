@@ -617,7 +617,11 @@ ends 1:1, the drag insert line is visible enough on dark.
         desktop and web; Copy as Table.
   - [x] fill, reshape, seq stepping like a deck, reverse, cumsum, count
         (owner B4, 2026-11-24).
-  - [ ] Time 50x50 inv/solve on the web (Pyodide); 2.3 s on the desktop.
+  - [x] Timed 2026-11-24 (web/time_matrix.mjs, owner's phone 3 s and
+        tablet 4 s for inv 50x50); then one LU on plain lists for det, inv,
+        solve and A^-n, eig at the working digits: inv 50x50 at 64 digits
+        1.26 s -> 0.23 s desktop, 1.48 s -> 0.35 s web on the PC. The web
+        status line shows "Working... 1.4 s" after a second, then "Took 2.1 s".
 
 ## Conversions (owner 2026-11-24)
 - [x] One Conversions > Cryptocurrency submenu (Bitcoin, Ethereum, Tron,

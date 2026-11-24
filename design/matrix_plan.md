@@ -205,6 +205,23 @@ toward the end whatever its sign, like a deck's [10,1,3]; reverse, cumsum
 cannot be written in the calculator: [1, 100] is a list of two, and
 [1..100] / [1:100] clash with decimals and durations; seq is the way.
 
+Speed (owner 2026-11-24, best of 3, the same random matrices):
+
+| line | desktop before -> after | web (Pyodide, PC) before -> after |
+|---|---|---|
+| 64 digits det 50x50 | 0.41 -> 0.12 s | 0.48 -> 0.18 s |
+| 64 inv 50x50 | 1.26 -> 0.23 s | 1.48 -> 0.35 s |
+| 64 solve 50x50 | 1.21 -> 0.12 s | 1.48 -> 0.39 s |
+| 64 eig 20x20 | 0.78 -> 0.55 s | 1.12 -> 0.87 s |
+| 512 inv 50x50 | 2.76 -> 1.37 s | 3.55 -> 1.80 s |
+| 512 eig 20x20 | 5.38 -> 2.14 s | 6.62 -> 4.18 s |
+
+Before: mpmath's det and inverse each made their own LU through slow
+cell access, and solve inverted A. Now matrix.factor() makes one LU on
+plain lists; solve substitutes b's columns. eig works at the working
+digits (+ guard) instead of twice them. The SymPy cases still match.
+The owner's phone took about 3 s and tablet 4 s for inv 50x50 before.
+
 ## Round 2 notes (before the owner's decisions)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).
