@@ -3,6 +3,10 @@
 // Pictures are read from the cards folder once and kept while the
 // Random window is open; the file is read into memory so it is never
 // locked. A card without a picture but with a colour gets a swatch.
+// Lists, covers and the large view show a picture on white (Shown, Flat:
+// owner 2026-11-24, a transparent PNG drawn in black vanished on the dark
+// theme); the draw stages keep the picture as it is (For), over the card's
+// colour.
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -39,6 +43,33 @@ internal sealed class CardPictures : IDisposable
 		return null;
 	}
 
+	// What lists and the editor show for a card: its picture on white, else its colour swatch
+	public Image? Shown(Card card)
+	{
+		return card.Image != null && Flat(card.Image) is { } flat ? flat : For(card) is { } swatch && card.Color != null ? swatch : null;
+	}
+
+	// The picture on a white ground, so a transparent one reads on any theme
+	public Image? Flat(string name)
+	{
+		string key = "flat:" + name;
+		if (!_cache.TryGetValue(key, out var flat))
+		{
+			if (Picture(name) is { } image)
+			{
+				var white = new Bitmap(image.Width, image.Height);
+				using (var g = Graphics.FromImage(white))
+				{
+					g.Clear(Color.White);
+					g.DrawImage(image, 0, 0, image.Width, image.Height);
+				}
+				flat = white;
+			}
+			_cache[key] = flat;
+		}
+		return flat;
+	}
+
 	// A stored picture by its file name, or null when its file is gone or unreadable
 	public Image? Picture(string name)
 	{
@@ -72,7 +103,7 @@ internal sealed class CardPictures : IDisposable
 		{
 			case CoverKind.Picture:
 			{
-				var image = Picture(cover.Image!)!;
+				var image = Flat(cover.Image!)!;
 				double scale = Math.Max((double)width / image.Width, (double)height / image.Height);
 				int w = (int)Math.Ceiling(image.Width * scale), h = (int)Math.Ceiling(image.Height * scale);
 				g.DrawImage(image, (width - w) / 2, (height - h) / 2, w, h);
@@ -121,7 +152,7 @@ internal sealed class CardPictures : IDisposable
 		{
 			if (Key(card) is { } key && !list.Images.ContainsKey(key))
 			{
-				list.Images.Add(key, Fit(For(card)!, size));
+				list.Images.Add(key, Fit(Shown(card)!, size));
 			}
 		}
 		return list;

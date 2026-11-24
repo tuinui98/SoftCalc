@@ -288,7 +288,7 @@ internal sealed class DeckEditor : Form
 		bool editable = card != null && !_readOnly;
 		_cardName.Text = card?.Shown(_language) ?? "";
 		_weight.Value = card?.Weight ?? 1;
-		_picture.Image = card == null ? null : _pictures.For(card);
+		_picture.Image = card == null ? null : _pictures.Shown(card);
 		_cardName.Enabled = editable;
 		_weight.Enabled = editable;
 		_choose.Enabled = editable;

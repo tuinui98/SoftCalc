@@ -123,7 +123,7 @@ internal sealed class CardViewer : Form
 		var card = _cards[_index];
 		_swatch?.Dispose();
 		_swatch = null;
-		if (card.Image != null && _pictures.Picture(card.Image) is { } picture)
+		if (card.Image != null && _pictures.Flat(card.Image) is { } picture)
 		{
 			_picture.Image = picture;
 		}
