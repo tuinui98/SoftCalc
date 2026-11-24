@@ -38,7 +38,12 @@ const LOADING: Record<string, string> = { worker: "Loading Python...", python: "
 	unpack: "Loading the engine...", import: "Restoring History..." };
 
 const WORKING_AFTER = 1000;    // ms before "Working..." shows
-const TOOK = "Took ";
+
+// "Took 0.23 s" after every line (owner 2026-11-24: time each line); 2 places under 10 s
+export function tookText(seconds: number): string
+{
+	return `Took ${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
+}
 
 export interface Entry
 {
@@ -97,7 +102,6 @@ export class Calculator
 	settings: Settings = { precision: 64, angle: "deg", base: "dec" };
 	second = false;
 	status = "Loading Python...";
-	private idleStatus = "";    // the status line before a slow line's "Took 2.1 s"
 	loading = "page";          // the last start step done: page, worker, python, unpack, import, then done or failed
 	startTimes = "";           // how long each start step took (Settings), "" until started
 	ready = false;
@@ -427,8 +431,6 @@ export class Calculator
 	// both (BTC to an ECB currency), so up to two rounds; then the engine answers with what it has.
 	private async evaluate(line: string): Promise<Answer>
 	{
-		const before = this.status.startsWith(TOOK) ? this.idleStatus : this.status;
-		this.idleStatus = before;
 		const started = Date.now();
 		let answer = await this.timed(this.engine.send("eval", { input: line }), started);
 		let failed = "";
@@ -443,7 +445,7 @@ export class Calculator
 			answer = await this.engine.send("eval", { input: line });
 		}
 		const took = (Date.now() - started) / 1000;
-		this.status = failed || (took >= WORKING_AFTER / 1000 ? `${TOOK}${took.toFixed(1)} s` : before);
+		this.status = failed || tookText(took);
 		return answer;
 	}
 

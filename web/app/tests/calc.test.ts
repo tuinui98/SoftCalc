@@ -289,14 +289,16 @@ describe("saving between visits", () =>
 		expect(restored?.args.texts).toEqual(["42"]);
 	});
 
-	it("a line over a second shows Working... while it runs, then how long it took (owner 2026-11-24)", async () =>
+	it("every line says how long it took; one over a second shows Working... while it runs (owner 2026-11-24)", async () =>
 	{
 		vi.useFakeTimers();
 		try
 		{
 			const slow = new FakeEngine();
 			const { calc } = await started(new MemoryStore(), slow);
-			const ready = calc.status;
+			await press(calc, "6", "*", "7", "=");
+			expect(calc.status).toMatch(/^Took 0\.\d\d s$/);
+			const quick = calc.status;
 			let finish!: () => void;
 			const send = slow.send.bind(slow);
 			slow.send = async (op, args = {}) =>
@@ -308,19 +310,19 @@ describe("saving between visits", () =>
 			await press(calc, "1", "+", "2");
 			const equals = calc.press("=");
 			await vi.advanceTimersByTimeAsync(900);
-			expect(calc.status).toBe(ready);    // quick lines never flash it
+			expect(calc.status).toBe(quick);    // under a second: no Working...
 			await vi.advanceTimersByTimeAsync(700);
 			expect(calc.status).toMatch(/^Working\.\.\. 1\.[4-6] s$/);
 			await vi.advanceTimersByTimeAsync(1500);
 			expect(calc.status).toMatch(/^Working\.\.\. 3\.\d s$/);
 			finish();
 			await equals;
-			expect(calc.status).toMatch(/^Took 3\.\d s$/);
+			expect(calc.status).toMatch(/^Took 3\.\d\d s$/);
 			expect(calc.entries.at(-1)?.text).toBe("3");
 
 			slow.send = send;
-			await press(calc, "2", "+", "2", "=");    // the next quick line brings the status back
-			expect(calc.status).toBe(ready);
+			await press(calc, "2", "+", "2", "=");
+			expect(calc.status).toMatch(/^Took 0\.\d\d s$/);
 		}
 		finally
 		{
