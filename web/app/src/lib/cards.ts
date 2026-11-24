@@ -19,7 +19,7 @@ export interface Card
 	weight: number;
 	color?: string;    // "#RRGGBB" (the ready-made colours and pack)
 	off?: boolean;     // starts unticked (the jokers)
-	image?: string;    // a picture's name (decks.ts); kept, not shown yet
+	image?: string;    // a picture: an own deck's "<16 hex>.png" (decks.ts) or a ready-made "ready:<set>/<file>.png" (covers.ts)
 }
 
 export interface Deck
@@ -29,6 +29,7 @@ export interface Deck
 	thai?: string;
 	cards: Card[];
 	alphabetical?: boolean;
+	cover?: string;    // a picture of the deck's own for its cover; none: worked out (covers.ts, owner 2026-11-24)
 }
 
 export const READY = "ready:";
@@ -76,12 +77,17 @@ const CONTINENTS: [string, string][] = [
 	["North America", "อเมริกาเหนือ"], ["South America", "อเมริกาใต้"], ["Oceania", "โอเชียเนีย"],
 ];
 const slug = (text: string) => text.toLowerCase().replace(/ /g, "-");
+// continent|English|Thai|ISO code: the card with its flag (owner 2026-11-24, data/cards/flags)
+const country = (r: string[]): Card => ({ name: r[1], thai: r[2], weight: 1, ...(r[3] ? { image: `ready:flags/${r[3]}.png` } : {}) });
 
 function build(): Deck[]
 {
-	const pack: Card[] = SUITS.flatMap((suit, s) => RANKS.map((rank, r) => ({ name: rank + suit, weight: 1, color: SHADES[s][r % 2] })));
-	pack.push({ name: "Joker (black)", thai: "โจ๊กเกอร์ดำ", weight: 1, off: true, color: SHADES[0][0] });
-	pack.push({ name: "Joker (red)", thai: "โจ๊กเกอร์แดง", weight: 1, off: true, color: SHADES[1][0] });
+	// pictures (owner 2026-11-24, data/cards/playing): rank A 2..9 T J Q K, suit s h d c, as the desktop's ReadyDecks
+	const rankFiles = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K"], suitFiles = ["s", "h", "d", "c"];
+	const pack: Card[] = SUITS.flatMap((suit, s) => RANKS.map((rank, r) => ({ name: rank + suit, weight: 1, color: SHADES[s][r % 2],
+		image: `ready:playing/${rankFiles[r]}${suitFiles[s]}.png` })));
+	pack.push({ name: "Joker (black)", thai: "โจ๊กเกอร์ดำ", weight: 1, off: true, color: SHADES[0][0], image: "ready:playing/joker_black.png" });
+	pack.push({ name: "Joker (red)", thai: "โจ๊กเกอร์แดง", weight: 1, off: true, color: SHADES[1][0], image: "ready:playing/joker_red.png" });
 	const decks: Deck[] = [{ id: READY + "playing-cards", name: "Playing cards", thai: "ไพ่ 1 สำรับ", cards: pack }];
 	for (const [file, id, english, thai, alphabetical] of LISTS)
 	{
@@ -92,11 +98,11 @@ function build(): Deck[]
 	}
 	const countries = rows("countries");
 	decks.push({ id: READY + "countries", name: "Countries: all", thai: "ประเทศ: ทั้งหมด", alphabetical: true,
-		cards: countries.map(r => ({ name: r[1], thai: r[2], weight: 1 })) });
+		cards: countries.map(country) });
 	for (const [english, thai] of CONTINENTS)
 	{
 		decks.push({ id: READY + "countries-" + slug(english), name: "Countries: " + english, thai: "ประเทศ: " + thai, alphabetical: true,
-			cards: countries.filter(r => r[0] === english).map(r => ({ name: r[1], thai: r[2], weight: 1 })) });
+			cards: countries.filter(r => r[0] === english).map(country) });
 	}
 	// Districts: all of them, a name two provinces share followed by its province, and a deck per province
 	const thaiProvince = new Map(rows("provinces").map(r => [r[0], r[1]]));
@@ -371,6 +377,13 @@ export function cardsFrom(saved: unknown): CardsState
 	{
 		state.decks = s.decks.filter((d): d is Deck => typeof d === "object" && d !== null && typeof (d as Deck).id === "string"
 			&& typeof (d as Deck).name === "string" && Array.isArray((d as Deck).cards));
+		// an own deck names only its own pictures (a ready-made picture is copied in, never named)
+		const own = /^[0-9a-f]{16}\.png$/;
+		state.decks = state.decks.map(deck => ({
+			...deck,
+			cover: typeof deck.cover === "string" && own.test(deck.cover) ? deck.cover : undefined,
+			cards: deck.cards.map(card => typeof card.image === "string" && !own.test(card.image) ? { ...card, image: undefined } : card),
+		}));
 	}
 	if (typeof s.deck === "string")
 	{

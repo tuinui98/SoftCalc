@@ -1,9 +1,9 @@
 // decks.ts - Export / Import Decks: the user's own decks and their pictures in one zip (owner 2026-11-23)
 //
 // The desktop's file (DeckTransfer.cs): decks.json and pictures/<name>.png,
-// each picture once however many cards use it. This app does not show the
-// pictures yet but keeps them, so a deck from the desktop goes through a
-// phone and back with its pictures. Import adds, never replaces: a deck of
+// each picture once however many cards use it, and a deck's own cover
+// picture (owner 2026-11-24), so a deck goes through a phone and back with
+// its pictures. Import adds, never replaces: a deck of
 // the same name and the same cards is skipped, one of the same name with
 // other cards comes in as "name (2)". Only decks.json and
 // pictures/<16 hex>.png are read from a zip, with limits (zip.ts).
@@ -30,6 +30,7 @@ interface RawDeck
 {
 	name: unknown;
 	cards: unknown;
+	cover?: unknown;
 }
 
 export interface DecksRead
@@ -72,7 +73,7 @@ export function report(done: DecksImported): string
 // The picture names the decks use
 export function usedPictures(decks: Deck[]): Set<string>
 {
-	return new Set(decks.flatMap(deck => deck.cards.map(card => card.image ?? "")).filter(name => name.length > 0));
+	return new Set(decks.flatMap(deck => [...deck.cards.map(card => card.image ?? ""), deck.cover ?? ""]).filter(name => name.length > 0));
 }
 
 //==================================================================
@@ -82,10 +83,16 @@ export function usedPictures(decks: Deck[]): Set<string>
 export function decksZip(decks: Deck[], pictures: Pictures, time = new Date()): Uint8Array
 {
 	const used = new Map<string, Uint8Array>();
+	const keep = (name: string) =>
+	{
+		used.set(name, pictures[name]);
+		return name;
+	};
 	const model = {
 		format: FORMAT, version: VERSION,
 		decks: decks.map(deck => ({
 			name: deck.name,
+			...(deck.cover && pictures[deck.cover] ? { cover: keep(deck.cover) } : {}),
 			cards: deck.cards.map(card =>
 			{
 				const image = card.image && pictures[card.image] ? card.image : undefined;
@@ -275,7 +282,8 @@ export function importDecks(state: CardsState, pictures: Pictures, read: DecksRe
 		{
 			done.renamed++;
 		}
-		decks.push({ id: newDeckId(), name: free, cards });
+		const cover = typeof raw.cover === "string" && IMAGE.test(raw.cover) && read.pictures[raw.cover] ? raw.cover : undefined;
+		decks.push({ id: newDeckId(), name: free, cards, ...(cover ? { cover } : {}) });
 		done.added++;
 	}
 	done.picturesLost = lost.size;
