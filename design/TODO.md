@@ -595,6 +595,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       tools/IconMaker draws ui/SoftCalc/softcalc.ico, and the web/APK icons
       come from it too (check which).
 
+## Next release (owner 2026-11-24, after 1.9.0)
+- [ ] Desktop: the time each line took, as the web shows it (status
+      "Took 0.23 s" after every line, "Working... 1.4 s" counting after a
+      second). The desktop has no status line yet: where it goes is to
+      settle (the hint line under Input, or the window's title).
+
 ## Matrices (owner 2026-11-24; plan in design/matrix_plan.md)
 - [x] (released in 1.9.0) Matrix functions in the engine. Owner 2026-11-24: written with
       `[ ]` (`[1, 2, 3]`, `[[1, 2], [3, 4]]`), but first check for
