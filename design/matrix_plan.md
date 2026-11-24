@@ -198,6 +198,13 @@ the width holds then "…", the size and note beside; Copy as Table
 10, scrolls sideways, long-press Copy as table; the names sheet keeps
 one line.
 
+Filling and B4 (owner 2026-11-24): fill(n, v), fill(r, c, v), fill(r, c, list)
+(the list as every row); reshape(list, r, c) row by row; seq's step goes
+toward the end whatever its sign, like a deck's [10,1,3]; reverse, cumsum
+(lists), count(...) (numbers in numbers and lists). A deck's [1,100] range
+cannot be written in the calculator: [1, 100] is a list of two, and
+[1..100] / [1:100] clash with decimals and durations; seq is the way.
+
 ## Round 2 notes (before the owner's decisions)
 - History and Variables as a table (the decisions: alignment, wide
   matrices, copy as text or tab-separated, click to insert).

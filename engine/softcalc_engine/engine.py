@@ -293,6 +293,17 @@ class Engine:
             source = f"{source[:pos]}, {self.settings.word_size}{source[pos:]}"
         return source
 
+    @staticmethod
+    def draws_in(node):
+        """True when the tree calls rand(), a shaped rand or card() (not rands)."""
+        if isinstance(node, list):
+            return any(Engine.draws_in(child) for child in node)
+        if not isinstance(node, tuple):
+            return False
+        if node[0] == "call" and node[1].lower() in DRAW_FUNCTIONS:
+            return True
+        return any(Engine.draws_in(child) for child in node[1:])
+
     def drawn_in(self, tree):
         """The rand() values of the line, in the order the calls are written."""
         values = []
@@ -304,7 +315,8 @@ class Engine:
                 return
             if not isinstance(node, tuple):
                 return
-            if node[0] == "call" and node[1].lower() in DRAW_FUNCTIONS and id(node) in self.draws:
+            drawing = node[0] == "call" and (node[1].lower() in DRAW_FUNCTIONS or node[1].lower() == "fill")
+            if drawing and id(node) in self.draws:
                 values.append(self.draws[id(node)])
             for child in node[1:]:
                 walk(child)
@@ -323,7 +335,9 @@ class Engine:
         cursor = 0
         count = 0
         for index, token in enumerate(tokens[:-1]):
-            if token.kind != "name" or token.text.lower() not in DRAW_FUNCTIONS or tokens[index + 1].text != "(":
+            if token.kind != "name" or tokens[index + 1].text != "(":
+                continue
+            if token.text.lower() not in DRAW_FUNCTIONS and not self.drawing_fill(tokens, index):
                 continue
             number = count
             count += 1
@@ -343,6 +357,15 @@ class Engine:
             cursor = tokens[close].pos + 1
         out.append(source[cursor:])
         return "".join(out)
+
+    @classmethod
+    def drawing_fill(cls, tokens, index):
+        """tokens[index] starts a fill( whose brackets hold a rand()/card() call."""
+        if tokens[index].text.lower() != "fill":
+            return False
+        close = cls.closing(tokens, index + 1)
+        inside = tokens[index + 2:close] if close is not None else []
+        return any(t.kind == "name" and t.text.lower() in DRAW_FUNCTIONS for t in inside)
 
     @staticmethod
     def closing(tokens, opening):
@@ -652,6 +675,13 @@ class Engine:
             raise CalcError('A name in quotes goes only in card("deck")')
         if kind == "call" and node[1].lower() == CARD_FUNCTION:
             value = self.card_call(node, builtins, scope, depth)
+            if depth == 0:
+                self.draws[id(node)] = value
+            return value
+        if kind == "call" and node[1].lower() == "fill" and len(node[2]) in (2, 3) and self.draws_in(node[2][-1]):
+            # fill(2, 3, rand(1, 6)): a new draw for every cell (owner 2026-11-24)
+            size = [self.eval_node(arg, builtins, scope, depth) for arg in node[2][:-1]]
+            value = matrix.fill_with(size, lambda: self.eval_node(node[2][-1], builtins, scope, depth))
             if depth == 0:
                 self.draws[id(node)] = value
             return value

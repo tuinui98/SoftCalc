@@ -251,14 +251,18 @@ def diag(args):
 
 
 def seq(args):
-    """seq(a, b, [step]): a, a+step, ... up to b (step 1, or -1 when b < a)."""
+    """seq(a, b, [step]): a, a+step, ... up to b. The step goes toward b
+    whatever its sign, as a deck's [10,1,3] does (owner 2026-11-24):
+    seq(10, 1, 3) and seq(10, 1, -3) are both 10, 7, 4, 1."""
     for value in args:
         if not isinstance(value, mpmath.mpf):
             raise CalcError("seq needs real numbers")
     start, end = args[0], args[1]
-    step = args[2] if len(args) > 2 else mpmath.mpf(1 if end >= start else -1)
-    if step == 0 or (end - start) * step < 0:
-        raise CalcError("seq: the step must go from the start toward the end")
+    step = abs(args[2]) if len(args) > 2 else mpmath.mpf(1)
+    if step == 0:
+        raise CalcError("seq: the step cannot be 0")
+    if end < start:
+        step = -step
     count = int(mpmath.floor((end - start) / step + mpmath.mpf(10) ** (2 - mpmath.mp.dps))) + 1
     if count > MAX_CELLS:
         raise CalcError(f"A list may have at most {MAX_CELLS} numbers")
@@ -467,6 +471,68 @@ def eig(args):
     return shaped([[+v for v in values]], True)
 
 
+#----------------------------------------------------------------------
+#  Filling, reshaping, running totals (owner 2026-11-24)
+#----------------------------------------------------------------------
+def fill(args):
+    """fill(n, value): a list of n; fill(rows, cols, value): a matrix;
+    fill(rows, cols, list): the list as every row (its length = cols)."""
+    return fill_with(args[:-1], lambda: args[-1])
+
+
+def fill_with(size, make):
+    """fill with make() giving each value: once per cell, or once per row for
+    a list. The engine passes a make() that draws again when the value holds
+    rand() or card() (owner 2026-11-24); otherwise it gives the same value."""
+    rows = whole_number(size[0], "fill")
+    cols = whole_number(size[1], "fill") if len(size) > 1 else None
+    if rows * (cols or 1) > MAX_CELLS:
+        raise CalcError(f"A matrix may have at most {MAX_CELLS} cells")
+    first = make()
+    if isinstance(first, Matrix):
+        if cols is None:
+            raise CalcError("fill(rows, cols, list) repeats a list as each row")
+        out = []
+        for value in [first] + [make() for _ in range(rows - 1)]:
+            if not isinstance(value, Matrix) or not value.flat:
+                raise CalcError("fill takes a number or a list, not a matrix")
+            if len(value.rows[0]) != cols:
+                raise CalcError(f"fill: the list has {len(value.rows[0])} numbers, the rows {cols}")
+            out.append(list(value.rows[0]))
+        return shaped(out, False)
+    values = [first] + [make() for _ in range(rows * (cols or 1) - 1)]
+    if not all(is_cell(value) for value in values):
+        raise CalcError("fill needs a number or a list to fill with")
+    if cols is None:
+        return shaped([values], True)
+    return shaped([values[r * cols:(r + 1) * cols] for r in range(rows)], False)
+
+
+def reshape(args):
+    """reshape(list, rows, cols): the cells row by row (a matrix's cells read row by row)."""
+    values = cells(as_matrix(args[0], "reshape"))
+    rows, cols = whole_number(args[1], "reshape"), whole_number(args[2], "reshape")
+    if rows * cols != len(values):
+        raise CalcError(f"reshape: {len(values)} numbers do not make {rows}x{cols} ({rows * cols})")
+    return shaped([values[r * cols:(r + 1) * cols] for r in range(rows)], rows == 1 and args[0].flat)
+
+
+def a_list(value, key):
+    m = as_matrix(value, key)
+    if not m.flat:
+        raise CalcError(f"{key} takes a list")
+    return list(m.rows[0])
+
+
+def cumsum(args):
+    """Running totals: cumsum([1, 2, 3]) = [1, 3, 6]."""
+    totals, running = [], mpmath.mpf(0)
+    for value in a_list(args[0], "cumsum"):
+        running += value
+        totals.append(running)
+    return shaped([totals], True)
+
+
 # name -> (function, fewest arguments, most arguments; None: any number)
 FUNCTIONS = {
     "identity": (identity, 1, 1), "zeros": (filled("zeros", 0), 1, 2), "ones": (filled("ones", 1), 1, 2),
@@ -485,4 +551,7 @@ FUNCTIONS = {
     "stdev": (spread("stdev", True, True), 1, None), "stdevp": (spread("stdevp", False, True), 1, None),
     "variance": (spread("variance", True, False), 1, None), "variancep": (spread("variancep", False, False), 1, None),
     "norm": (norm, 1, 1), "rank": (rank, 1, 1), "eig": (eig, 1, 1),
+    "fill": (fill, 2, 3), "reshape": (reshape, 3, 3), "cumsum": (cumsum, 1, 1),
+    "reverse": (lambda a: shaped([a_list(a[0], "reverse")[::-1]], True), 1, 1),
+    "count": (lambda a: mpmath.mpf(len(numbers_of(a, "count"))), 1, None),
 }

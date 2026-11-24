@@ -107,7 +107,7 @@ def test_values(line, text):
     ("cross([1, 2], [3, 4])", "cross needs two lists of 3 numbers"),
     ("sort(A)", "sort takes a list"),
     ("det(5)", "det needs a list or a matrix"),
-    ("seq(1, 5, -1)", "seq: the step must go from the start toward the end"),
+    ("seq(1, 5, 0)", "seq: the step cannot be 0"),
     ("seq(1, 100000)", "A list may have at most 10000 numbers"),
     ("zeros(200, 200)", "A matrix may have at most 10000 cells"),
     ("min([1+2i])", "min needs real numbers"),
@@ -192,3 +192,58 @@ def test_a_matrix_near_det_0_shows_every_digit_with_a_note():
 def test_var_stays_free_for_the_default_function():
     # `var` would clash with the default function(var)=var*cos(var); variance is the name
     assert not engine().evaluate("function(3)").text.startswith("ERROR")
+
+
+#------------------------------------------------------------------
+#  fill, reshape, B4 (owner 2026-11-24)
+#------------------------------------------------------------------
+@pytest.mark.parametrize("line, text", [
+    ("fill(3, 7)", "[7, 7, 7]"),
+    ("fill(2, 3, 7)", "[[7, 7, 7], [7, 7, 7]]"),
+    ("fill(2, 3, [1, 2, 3])", "[[1, 2, 3], [1, 2, 3]]"),
+    ("fill(1, 2, 0.5)", "[[0.5, 0.5]]"),
+    ("reshape(seq(1, 6), 2, 3)", "[[1, 2, 3], [4, 5, 6]]"),
+    ("reshape(A, 1, 4)", "[[1, 2, 3, 4]]"),
+    ("reshape([1, 2, 3, 4], 4, 1)", "[[1], [2], [3], [4]]"),
+    ("reshape([1, 2, 3], 1, 3)", "[1, 2, 3]"),
+    ("seq(1, 5, -1)", "[1, 2, 3, 4, 5]"),
+    ("seq(10, 1, 3)", "[10, 7, 4, 1]"),
+    ("seq(10, 1, -3)", "[10, 7, 4, 1]"),
+    ("reverse([1, 2, 3])", "[3, 2, 1]"),
+    ("cumsum([1, 2, 3, 4])", "[1, 3, 6, 10]"),
+    ("count([4, 5], 6)", "3"),
+    ("count(A)", "4"),
+])
+def test_fill_and_b4_values(line, text):
+    assert engine().evaluate(line).text == text
+
+
+@pytest.mark.parametrize("line, error", [
+    ("fill(3, [1, 2])", "fill(rows, cols, list) repeats a list as each row"),
+    ("fill(2, 3, [1, 2])", "fill: the list has 2 numbers, the rows 3"),
+    ("fill(2, 2, A)", "fill takes a number or a list, not a matrix"),
+    ("fill(0, 2)", "fill needs a whole number from 1"),
+    ("fill(200, 200, 1)", "A matrix may have at most 10000 cells"),
+    ("reshape(seq(1, 6), 4, 2)", "reshape: 6 numbers do not make 4x2 (8)"),
+    ("reverse(A)", "reverse takes a list"),
+    ("cumsum(5)", "cumsum needs a list or a matrix"),
+])
+def test_fill_and_b4_errors(line, error):
+    assert engine().evaluate(line).text == "ERROR:" + error
+
+
+def test_fill_draws_every_cell_and_follows_the_seed():
+    e = engine()
+    e.decks = decks_from([{"name": "Dice", "cards": [{"name": str(n)} for n in range(1, 7)]}])
+    e.evaluate("rands(7)")
+    first = e.evaluate("fill(4, 5, rand(1, 6))")
+    cells = first.text.replace("[", "").replace("]", "").split(", ")
+    assert len(cells) == 20 and len(set(cells)) > 1    # not one value 20 times
+    assert first.display_input == first.text    # History shows what was drawn
+    e.evaluate("rands(7)")
+    assert e.evaluate("fill(4, 5, rand(1, 6))").text == first.text
+    assert len(set(e.evaluate("fill(30, round(randbeta(4, 4, 1, 10)))").text.split(", "))) > 1
+    rows = e.evaluate('fill(3, 6, card("Dice", 6, 1))').text[2:-2].split("], [")    # a list per row, each drawn
+    assert len(rows) == 3 and all(sorted(row.split(", ")) == list("123456") for row in rows)
+    assert e.evaluate("fill(2, 3, 7)").display_input == "fill(2, 3, 7)"    # nothing drawn: shown as typed
+    assert e.evaluate("1+fill(2, rand(1, 6))*0").text == "[1, 1]"
