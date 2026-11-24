@@ -606,8 +606,10 @@ ends 1:1, the drag insert line is visible enough on dark.
         25 functions, Functions > Matrix, hints; checked against SymPy
         (1388 cases), which found and fixed det 0 with decimal cells.
         Help 16-errors has the list/matrix errors and the accuracy notes.
-  - [ ] Help topic "Matrices" (how to write them, the functions), when
-        the owner says the matrix topic is done.
+  - [x] Help topic 19 "Lists and matrices" (2026-11-24, owner: matrix
+        topic done), shared by desktop and web; Random and Functions point
+        to it; pictures matrix.*.png, menu-functions and menu-conversions
+        (Matrix group, Cryptocurrency) remade.
   - [x] Round 2 A-C (2026-11-24): unit tags on a list; median, stdev,
         stdevp, variance, variancep, norm, rank, eig; the "digits may be
         off" note.

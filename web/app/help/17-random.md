@@ -6,6 +6,8 @@ options are. Done, or the phone's Back, goes back to the calculator.
 
 In Input, `rand()` draws too: `rand(1, 6)` rolls a die, and
 `card("Months")` draws a card from a deck (see *Functions*).
+`randm(3, 3, 1, 6)` rolls nine dice into a matrix, and
+`fill(2, 3, rand(1, 6))` draws every cell again (see *Lists and matrices*).
 
 ## Simple
 

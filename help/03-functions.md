@@ -48,6 +48,7 @@ log10(1000)           => 3
 | Two's Complement | `twos` `signed` |
 | Rounding | `round` `ceil` `floor` |
 | Random | `rand` `rands` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
+| Matrix | lists and matrices: `det` `inv` `solve` `sum` `mean` `fill` `seq` and more (section *Lists and matrices*) |
 
 ## Angles
 

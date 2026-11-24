@@ -52,6 +52,10 @@ rand(1, 6)      => 4
 A seed is a number (`42`, `-7.5`). A short seed is easy to guess, so a
 seed is for repeating draws, never for secrets.
 
+Many draws at once go in a list or a matrix: `randm(3, 3, 1, 6)` rolls
+nine dice, and `fill(2, 3, rand(1, 6))` draws every cell again (see
+*Lists and matrices*).
+
 ## Numbers in a shape
 
 `rand()` gives every value the same chance. These give some values
