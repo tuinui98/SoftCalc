@@ -468,7 +468,10 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "provinces" } } } };
 		var spin = new DrawSetup { Id = "spin01", Name = "Spin", Theme = "spin", Effects = false, StageHeight = 300,
 			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "zodiac" } }, new DrawStep { Decks = { ReadyDecks.Prefix + "animal-years" } } } };
-		cards.File.Draws.AddRange(new[] { lunch, provinces, spin });
+		// the List theme with pictures: the chosen line's cards large beside Results (owner 2026-11-24)
+		var hand = new DrawSetup { Id = "hand01", Name = "Cards", Theme = "list", Effects = false, Count = 3,
+			Steps = { new DrawStep { Decks = { ReadyDecks.Prefix + "playing-cards" } } } };
+		cards.File.Draws.AddRange(new[] { lunch, provinces, spin, hand });
 		using var random = new RandomWindow(new RandomPrefs { Tab = "cards" }, _ => { }, null, cards);
 		random.StartPosition = FormStartPosition.Manual;
 		random.Location = new Point(form.Right + 20, form.Top);
@@ -485,7 +488,8 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		var steps = ModalShotAsync("random-draw-edit", "Edit tab", 800);
 		Program.Call(random, "EditDraw", pages[0]);
 		await steps;
-		foreach (var (page, name) in new[] { (pages[0], "random-draw-slot"), (pages[1], "random-draw-dart"), (pages[2], "random-draw-spin") })
+		foreach (var (page, name) in new[] { (pages[0], "random-draw-slot"), (pages[1], "random-draw-dart"), (pages[2], "random-draw-spin"),
+			(pages[3], "random-draw-list") })
 		{
 			tabs.SelectedTab = page;
 			for (int i = 0; i < 4; i++)

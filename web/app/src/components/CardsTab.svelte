@@ -5,7 +5,8 @@
      also ⋮ > Export / Import). Untick cards to leave them out; No repeat keeps drawn cards out until Shuffle,
      also next time. Cards are drawn by weight from the secure generator (cards.ts).
      Owner 2026-11-24 (deck covers): decks are chosen from their covers (covers.ts), a deck's cards show as
-     pictures, and a tap on one shows it full screen: swipe for the next, Use as cover, Leave out. -->
+     pictures, and a tap on one shows it full screen: swipe for the next, Use as cover, Leave out.
+     Drawn cards show a small picture each; the chosen one shows large above them, with Insert and Copy. -->
 <script lang="ts">
 	import type { Calculator } from "../lib/calc";
 	import {
@@ -45,7 +46,8 @@
 	const pile = $derived(new Set(s.piles[deck.id] ?? []));
 	const left = $derived(ticked.filter(card => !pile.has(card.name)).length);
 
-	let drawn: string[] = $state([]);
+	let drawn: { text: string; image?: string }[] = $state([]);
+	let shown = $state(0);    // the drawn card shown large (owner 2026-11-24)
 	let note = $state("");
 	let error = $state(false);
 	let showCards = $state(false);
@@ -74,6 +76,7 @@
 	//==================================================================
 	const coverOf = (d: Deck): Cover => deckCover(d, shownDeck(d, s.language), name => calc.pictureUrl(name) !== null);
 	const pictured = $derived(cards.some(card => calc.pictureUrl(card.image) !== null));
+	const drawnPictures = $derived(drawn.some(line => calc.pictureUrl(line.image) !== null));
 
 	function pick(id: string)
 	{
@@ -138,7 +141,8 @@
 		{
 			s.piles = { ...s.piles, [deck.id]: [...kept] };
 		}
-		drawn = result.drawn.map(card => shownCard(card, s.language));
+		drawn = result.drawn.map(card => ({ text: shownCard(card, s.language), image: card.image }));
+		shown = 0;
 		if (result.error)
 		{
 			say(result.error, true);
@@ -400,7 +404,7 @@
 	<div class="buttons">
 		<button class="primary" use:tap={draw}>Draw</button>
 		{#if s.noRepeat}<button use:tap={shuffle}>Shuffle</button>{/if}
-		<button use:tap={() => void copyText(drawn.join("\n")).then(done => { if (done) say(`Copied ${drawn.length}`); })} disabled={drawn.length === 0}>Copy all</button>
+		<button use:tap={() => void copyText(drawn.map(d => d.text).join("\n")).then(done => { if (done) say(`Copied ${drawn.length}`); })} disabled={drawn.length === 0}>Copy all</button>
 		<button use:tap={insertCommand}>Insert command</button>
 	</div>
 	<div class="buttons small">
@@ -418,9 +422,24 @@
 	</div>
 	{#if note}<p class="note" class:error>{note}</p>{/if}
 </div>
+{#if drawnPictures && drawn[shown]}
+	<!-- the chosen drawn card, large; a tap on a line below chooses it -->
+	<div class="shown">
+		<div class="shown-art">{@render pictureOf(drawn[shown].image, drawn[shown].text)}</div>
+		<div class="shown-name">{drawn[shown].text}</div>
+		<div class="buttons">
+			<button use:tap={() => oninsert(drawn[shown].text)}>Insert into Input</button>
+			<button use:tap={() => void copyText(drawn[shown].text).then(done => { if (done) say("Copied " + drawn[shown].text); })}>Copy</button>
+		</div>
+	</div>
+{/if}
 <div class="results">
-	{#each drawn as text, index (index)}
-		<button class="result" use:tap={() => { menuFor = text; }}>{text}</button>
+	{#each drawn as line, index (index)}
+		<button class="result" class:chosen={drawnPictures && index === shown}
+			use:tap={() => { if (drawnPictures) shown = index; else menuFor = line.text; }}>
+			{#if drawnPictures}<span class="thumb">{@render pictureOf(line.image, line.text)}</span>{/if}
+			<span>{line.text}</span>
+		</button>
 	{/each}
 </div>
 {#if menuFor !== null}
@@ -491,6 +510,14 @@
 	{/if}
 {/snippet}
 
+{#snippet pictureOf(image: string | undefined, text: string)}
+	{#if calc.pictureUrl(image)}
+		<img class="fit" src={calc.pictureUrl(image)} alt="" />
+	{:else}
+		<span class="letter small">{text.slice(0, 2)}</span>
+	{/if}
+{/snippet}
+
 {#snippet cardArt(card: Deck["cards"][number])}
 	{#if calc.pictureUrl(card.image)}
 		<img class="fit" src={calc.pictureUrl(card.image)} alt="" />
@@ -556,6 +583,14 @@
 		font: inherit; font-size: 17px; cursor: pointer; touch-action: manipulation; overflow-wrap: anywhere;
 	}
 	.result:active { background: var(--line); }
+	.result { display: flex; align-items: center; gap: 10px; }
+	.result.chosen { background: color-mix(in srgb, var(--select) 18%, transparent); }
+	.thumb { width: 36px; height: 48px; flex: none; border-radius: 4px; overflow: hidden; display: flex; background: #fff; border: 1px solid var(--line); }
+	.shown { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 12px 10px; border-top: 1px solid var(--line); }
+	.shown-art { height: min(42vh, 320px); max-width: 100%; display: flex; justify-content: center; }
+	.shown-art .fit { width: auto; height: 100%; max-width: 100%; border-radius: 10px; }
+	.shown-art .letter { width: 200px; border-radius: 10px; }
+	.shown-name { font-size: 20px; font-weight: 500; }
 	.backdrop { position: fixed; inset: 0; background: rgb(0 0 0 / 0.35); z-index: 33; touch-action: none; }
 	.editor
 	{

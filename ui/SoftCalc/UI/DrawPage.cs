@@ -54,6 +54,12 @@ internal sealed class DrawPage : TabPage
 	private bool _busy;
 	private List<StageStep>? _lastStage;    // the theme's last result, shown again in the new order after Shuffle
 	private bool _skip;    // a click on Results ends the List effect
+	// Owner 2026-11-24: each Results line shows its cards' pictures small; the chosen line's show large
+	// beside Results (the List theme; the others have their stage)
+	private readonly CardPictures _pictures;
+	private readonly List<List<Card>> _lineCards = new();
+	private readonly Panel _shown = new DoubleBufferedPanel { Dock = DockStyle.Right, Width = 220, Visible = false };
+	private const int Thumb = 36;
 
 	public DrawSetup Setup { get; }
 
@@ -67,6 +73,7 @@ internal sealed class DrawPage : TabPage
 		_picker = picker;
 		_save = save;
 		Padding = new Padding(8);
+		_pictures = pictures;
 		_slot.Pictures = pictures;
 		_dart.Pictures = pictures;
 		_spin.Pictures = pictures;
@@ -108,8 +115,14 @@ internal sealed class DrawPage : TabPage
 		//==================================================================
 		_results.Font = new Font(Font.FontFamily, 11f);
 		_results.MouseDown += (_, _) => _skip = true;
+		_results.DrawMode = DrawMode.OwnerDrawFixed;
+		_results.DrawItem += DrawResult;
+		_results.SelectedIndexChanged += (_, _) => _shown.Invalidate();
+		_shown.Paint += PaintShown;
+		_shown.Resize += (_, _) => _shown.Invalidate();
 		var (resultsPage, historyPage, statsPage) = (_views[0], _views[1], _views[2]);
 		resultsPage.Controls.Add(_results);
+		resultsPage.Controls.Add(_shown);
 		historyPage.Controls.Add(_history);
 		var clearHistory = new Button { Text = "Clear &history...", AutoSize = true, Dock = DockStyle.Bottom };
 		clearHistory.Click += (_, _) => ClearHistory();
@@ -220,6 +233,7 @@ internal sealed class DrawPage : TabPage
 		_slot.Visible = Setup.Theme == "slot";
 		_dart.Visible = Setup.Theme == "dart";
 		_spin.Visible = Setup.Theme == "spin";
+		_shown.Visible = Setup.Theme == "list" && ResultPictures;
 		_stageHolder.Height = StageHeight();
 	}
 
@@ -306,10 +320,7 @@ internal sealed class DrawPage : TabPage
 			{
 				return;
 			}
-			_results.BeginUpdate();
-			_results.Items.Clear();
-			_results.Items.AddRange(lines.Select(l => (object)CardDraws.Text(l, Language)).ToArray());
-			_results.EndUpdate();
+			ShowResults(lines.Select(l => (CardDraws.Text(l, Language), l.Select(p => p.Card.Card).ToList())).ToList());
 			FillHistory();
 			ShowPiles();
 			if (error != null)
@@ -328,6 +339,98 @@ internal sealed class DrawPage : TabPage
 		}
 	}
 
+	//==================================================================
+	//  Results with pictures (owner 2026-11-24)
+	//==================================================================
+	private bool ResultPictures => _lineCards.Any(line => line.Any(card => card.Image != null && _pictures.Picture(card.Image) != null));
+
+	private void ShowResults(List<(string Text, List<Card> Cards)> lines)
+	{
+		_lineCards.Clear();
+		_lineCards.AddRange(lines.Select(l => l.Cards));
+		bool pictures = ResultPictures;
+		_results.ItemHeight = pictures ? LogicalToDeviceUnits(Thumb + 6) : _results.Font.Height + 4;
+		_results.BeginUpdate();
+		_results.Items.Clear();
+		_results.Items.AddRange(lines.Select(l => (object)l.Text).ToArray());
+		_results.EndUpdate();
+		_shown.Visible = pictures && Setup.Theme == "list";
+		_shown.Width = Math.Max(LogicalToDeviceUnits(160), _views[0].Width * 2 / 5);
+		if (_results.Items.Count > 0 && pictures)
+		{
+			_results.SelectedIndex = 0;
+		}
+		_shown.Invalidate();
+	}
+
+	// A Results line: its cards' pictures small (on white), then the text
+	private void DrawResult(object? sender, DrawItemEventArgs e)
+	{
+		if (e.Index < 0)
+		{
+			return;
+		}
+		e.DrawBackground();
+		var bounds = e.Bounds;
+		int x = bounds.Left + 4;
+		if (e.Index < _lineCards.Count && ResultPictures)
+		{
+			int size = LogicalToDeviceUnits(Thumb);
+			// only cards with a picture take a place; a colour alone is for the stages
+			foreach (var picture in _lineCards[e.Index].Where(c => c.Image != null).Select(c => _pictures.Flat(c.Image!)).OfType<Image>().Take(6))
+			{
+				var slot = new Rectangle(x, bounds.Top + (bounds.Height - size) / 2, size, size);
+				using var fitted = CardPictures.Fit(picture, size);
+				e.Graphics.FillRectangle(Brushes.White, slot);
+				e.Graphics.DrawImage(fitted, slot);
+				x += size + 4;
+			}
+			x += 4;
+		}
+		var text = new Rectangle(x, bounds.Top, bounds.Right - x, bounds.Height);
+		TextRenderer.DrawText(e.Graphics, _results.Items[e.Index].ToString(), e.Font, text, e.ForeColor,
+			TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+		e.DrawFocusRectangle();
+	}
+
+	// The chosen line's cards large, side by side, the line's text under them
+	private void PaintShown(object? sender, PaintEventArgs e)
+	{
+		int index = _results.SelectedIndex;
+		if (index < 0 || index >= _lineCards.Count)
+		{
+			return;
+		}
+		var faces = _lineCards[index].Where(c => c.Image != null).Select(c => _pictures.Flat(c.Image!)).OfType<Image>().ToList();
+		var area = _shown.ClientRectangle;
+		area.Inflate(-6, -6);
+		int textHeight = Font.Height * 2;
+		var pictures = new Rectangle(area.Left, area.Top, area.Width, Math.Max(0, area.Height - textHeight));
+		int count = Math.Max(1, faces.Count);
+		int width = (pictures.Width - 6 * (count - 1)) / count;
+		e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+		for (int i = 0; i < faces.Count; i++)
+		{
+			var picture = faces[i];
+			var slot = new Rectangle(pictures.Left + i * (width + 6), pictures.Top, width, pictures.Height);
+			double scale = Math.Min((double)slot.Width / picture.Width, (double)slot.Height / picture.Height);
+			int w = (int)(picture.Width * scale), h = (int)(picture.Height * scale);
+			e.Graphics.DrawImage(picture, slot.Left + (slot.Width - w) / 2, slot.Top + (slot.Height - h) / 2, w, h);
+		}
+		var name = new Rectangle(area.Left, pictures.Bottom, area.Width, textHeight);
+		TextRenderer.DrawText(e.Graphics, _results.Items[index].ToString(), _bold, name, ForeColor,
+			TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.WordBreak | TextFormatFlags.NoPrefix);
+	}
+
+	private sealed class DoubleBufferedPanel : Panel
+	{
+		public DoubleBufferedPanel()
+		{
+			DoubleBuffered = true;
+			ResizeRedraw = true;
+		}
+	}
+
 	// The List effect: random lines from the piles roll in Results, slowing down, before the drawn one
 	private async Task RollAsync(List<List<PoolCard>> live)
 	{
@@ -341,8 +444,7 @@ internal sealed class DrawPage : TabPage
 		for (var clock = System.Diagnostics.Stopwatch.StartNew(); !_skip && !IsDisposed && clock.Elapsed.TotalSeconds < 1.2; wait *= 1.12)
 		{
 			var line = live.Select(l => l[look.Next(l.Count)]).ToList();
-			_results.Items.Clear();
-			_results.Items.Add(CardDraws.Text(line, Language));
+			ShowResults(new() { (CardDraws.Text(line, Language), line.Select(p => p.Card).ToList()) });
 			await Task.Delay((int)wait);
 		}
 	}
@@ -372,7 +474,7 @@ internal sealed class DrawPage : TabPage
 
 	private void ClearDraw()
 	{
-		_results.Items.Clear();
+		ShowResults(new());
 		_slot.Clear();
 		_dart.Clear();
 		_spin.Clear();
