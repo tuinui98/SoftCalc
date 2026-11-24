@@ -667,6 +667,16 @@ ends 1:1, the drag insert line is visible enough on dark.
       Classic 4-color poker deck (CC0, SVG), Jumbo index cards (CC0).
       Avoid Byron Knoll's set (public-domain claim not backed up).
 
+## Help from the Input box (owner 2026-11-24)
+- [ ] Type help + a keyword in Input to open Help at that heading, desktop
+      and web. Today Help opens a whole topic only (20 files); headings
+      `#`-`####` render with no id, and search only filters topics and
+      scrolls to the first mark. Needs: an id per heading (## and ###),
+      a keyword index (heading words, function names such as det, fill,
+      card), the command's form (`?det` / `help det`; neither is taken in
+      the engine) and what a keyword with several matches does. To settle
+      with the owner before building.
+
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
       large-screen / foldable quality from April 2027 and wants foldable
