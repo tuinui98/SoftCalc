@@ -66,4 +66,22 @@ public class DeckCoversTests
 		var cards = ReadyDecks.All.First(d => d.Name == "Playing cards");
 		Assert.Equal(CoverKind.Colours, DeckCovers.Of(cards, "en", _ => false).Kind);    // the four suit colours
 	}
+
+	[Fact]
+	public void ThePlayingCardsShowTheirEmbeddedPictures()
+	{
+		var deck = ReadyDecks.All.First(d => d.Name == "Playing cards");
+		Assert.Equal(54, deck.Cards.Count(c => c.Image != null));
+		foreach (var card in deck.Cards)
+		{
+			byte[] png = ReadyDecks.Picture(card.Image!)!;
+			Assert.True(png != null, card.Name);
+			using var image = new Bitmap(new MemoryStream(png));
+			Assert.Equal((368, 512), (image.Width, image.Height));
+		}
+		Assert.Null(ReadyDecks.Picture("ready:playing/../secret.png"));
+		Assert.Null(ReadyDecks.Picture("0123456789abcdef.png"));    // the user's own files are not embedded
+		var cover = DeckCovers.Of(deck, "en", name => ReadyDecks.Picture(name) != null);
+		Assert.Equal((CoverKind.Picture, "ready:playing/As.png"), (cover.Kind, cover.Image));
+	}
 }

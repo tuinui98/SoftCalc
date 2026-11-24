@@ -75,7 +75,7 @@ internal sealed class CardPictures : IDisposable
 	{
 		if (!_cache.TryGetValue(name, out var image))
 		{
-			image = Read(_store.ImagePath(name));
+			image = ReadyDecks.Picture(name) is { } embedded ? Read(embedded) : Read(_store.ImagePath(name));
 			_cache[name] = image;
 		}
 		return image;
@@ -195,11 +195,23 @@ internal sealed class CardPictures : IDisposable
 		}
 		try
 		{
-			using var stream = new MemoryStream(File.ReadAllBytes(path));
+			return Read(File.ReadAllBytes(path));
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			return null;
+		}
+	}
+
+	private static Image? Read(byte[] bytes)
+	{
+		try
+		{
+			using var stream = new MemoryStream(bytes);
 			using var loaded = Image.FromStream(stream);
 			return new Bitmap(loaded);
 		}
-		catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
+		catch (ArgumentException)
 		{
 			return null;
 		}

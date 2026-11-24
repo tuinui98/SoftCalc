@@ -297,7 +297,7 @@ internal sealed partial class RandomWindow
 	{
 		if (Chosen(_readyDecks) is { } deck)
 		{
-			AddDeck(deck.CopyAs(CardStore.NewId(), _cards.FreeName(deck.Shown(Language)), Language));
+			AddDeck(_cards.OwnPictures(deck.CopyAs(CardStore.NewId(), _cards.FreeName(deck.Shown(Language)), Language)));
 		}
 	}
 

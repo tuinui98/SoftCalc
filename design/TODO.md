@@ -645,6 +645,10 @@ ends 1:1, the drag insert line is visible enough on dark.
       in the decks zip. Left: the web (it drops a deck's cover on its own
       export until then), Help 17 and its pictures, showing a drawn
       card's picture (owner to decide).
+      Ready-made Playing cards has pictures (owner 2026-11-24): heratexx's
+      four-colour deck (CC0) and jokers drawn to match, data/cards/playing/,
+      tools/render_cards.py, embedded as ready:playing/*.png; Copy to my
+      decks stores them as the user's own. Web: to do with its covers.
 - [ ] (first note) Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
       the ready-made decks too, at least the playing cards. Free-licence

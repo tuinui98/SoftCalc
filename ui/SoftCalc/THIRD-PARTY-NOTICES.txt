@@ -60,6 +60,18 @@ doubled spaces trimmed, and Bang Sai (บางซ้าย, Ayutthaya) written 
 as Wikipedia does, to tell it from Bang Sai (บางไทร).
 
 ========================================================================
+Playing card pictures: heratexx, "Classic 4 color poker deck (SVG)", CC0 1.0
+========================================================================
+
+The 52 card faces of the ready-made deck "Playing cards" are heratexx's
+"Classic 4 color poker deck (SVG)",
+https://opengameart.org/content/classic-4-color-poker-deck-svg,
+dedicated to the public domain under CC0 1.0 Universal
+(https://creativecommons.org/publicdomain/zero/1.0/). No credit is
+required; it is given with thanks. The two jokers were drawn for
+SoftCalc to match.
+
+========================================================================
 NBitcoin (https://github.com/MetacoSA/NBitcoin), MIT
 ========================================================================
 

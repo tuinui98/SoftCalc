@@ -224,4 +224,19 @@ public sealed class DeckTransferTests : IDisposable
 		CardStore.SanitizeDeck(deck);
 		Assert.Null(deck.Cover);
 	}
+
+	[Fact]
+	public void CopyToMyDecksStoresTheEmbeddedPicturesAsTheUsersOwn()
+	{
+		var store = Store("copy");
+		var ready = ReadyDecks.All.First(d => d.Name == "Playing cards");
+		var mine = store.OwnPictures(ready.CopyAs(CardStore.NewId(), "Cards", "en"));
+		Assert.All(mine.Cards, c => Assert.True(CardStore.IsImageName(c.Image!), c.Name));
+		Assert.Equal(54, mine.Cards.Select(c => c.Image).Distinct().Count());
+		Assert.True(File.Exists(store.ImagePath(mine.Cards[0].Image)));
+		Assert.StartsWith("ready:", ready.Cards[0].Image);    // the ready-made deck itself is unchanged
+
+		var memory = new CardStore(null);    // no data folder: the cards go without pictures
+		Assert.All(memory.OwnPictures(ready.CopyAs("x", "Cards", "en")).Cards, c => Assert.Null(c.Image));
+	}
 }

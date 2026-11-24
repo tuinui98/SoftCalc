@@ -85,6 +85,18 @@ SOFTWARE.
 """
 
 
+# The ready-made playing cards' pictures (data/cards/playing/README.md, owner 2026-11-24)
+CARDS = """
+The 52 card faces of the ready-made deck "Playing cards" are heratexx's
+"Classic 4 color poker deck (SVG)",
+https://opengameart.org/content/classic-4-color-poker-deck-svg,
+dedicated to the public domain under CC0 1.0 Universal
+(https://creativecommons.org/publicdomain/zero/1.0/). No credit is
+required; it is given with thanks. The two jokers were drawn for
+SoftCalc to match.
+"""
+
+
 def one(path_glob):
     """The single file matching a glob under site-packages."""
     found = sorted(SITE.glob(path_glob))
@@ -106,6 +118,7 @@ def main():
         section("Icons: IconMCP (https://iconmcp.com/), MIT",
                 (ROOT / "ui" / "SoftCalc" / "Icons" / "LICENSE.txt").read_text(encoding="utf-8")),
         section("District names: Office of the Royal Society, DGA Open Government License", DISTRICTS),
+        section("Playing card pictures: heratexx, \"Classic 4 color poker deck (SVG)\", CC0 1.0", CARDS),
         section("NBitcoin (https://github.com/MetacoSA/NBitcoin), MIT", NBITCOIN_MIT),
         section("Newtonsoft.Json (https://www.newtonsoft.com/json), MIT, used by NBitcoin",
                 (NUGET / "newtonsoft.json" / "13.0.4" / "LICENSE.md").read_text(encoding="utf-8")),

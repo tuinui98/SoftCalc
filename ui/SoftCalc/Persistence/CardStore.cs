@@ -257,6 +257,27 @@ internal sealed class CardStore
 		}
 	}
 
+	// A copy of a ready-made deck: its embedded pictures stored as the user's own files
+	// (none without the data folder: the cards then go without pictures)
+	public Deck OwnPictures(Deck deck)
+	{
+		var stored = new Dictionary<string, string?>();
+		foreach (var card in deck.Cards.Where(c => c.Image != null && !ImageName.IsMatch(c.Image)))
+		{
+			if (!stored.TryGetValue(card.Image!, out string? name))
+			{
+				name = ReadyDecks.Picture(card.Image!) is { } bytes ? StoreImage(bytes, keepSmallPng: true).Name : null;
+				stored[card.Image!] = name;
+			}
+			card.Image = name;
+		}
+		if (deck.Cover != null && !ImageName.IsMatch(deck.Cover))
+		{
+			deck.Cover = null;
+		}
+		return deck;
+	}
+
 	// A picture's file name: made from its content
 	public static string ImageNameOf(byte[] png)
 	{
