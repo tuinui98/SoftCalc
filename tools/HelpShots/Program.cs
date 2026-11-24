@@ -214,6 +214,14 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		await MenuShotAsync("menu-currency", "Conversions", "Currency", "From", "CHF");
 		await TypeAsync("");
 
+		// A matrix result as a table in History (matrix round 2 D)
+		foreach (string line in new[] { "A=[[4, 1], [2, 3]]", "inv(A)", "reshape(seq(1, 12), 3, 4)/7" })
+		{
+			await SubmitAsync(line);
+		}
+		var historyBox = Program.Field<Control>(form, "_historyBox");
+		Save("matrix", Crop(form, historyBox.RectangleToScreen(historyBox.ClientRectangle)));
+
 		//==================================================================
 		//  BLOCK 4 - Other windows
 		//==================================================================

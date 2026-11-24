@@ -24,7 +24,7 @@ const own = path.join(here, "help");
 // 14 Data files and 15 Keyboard are desktop parts; 17 Random is the web's own)
 const TOPICS = ["01-getting-started", "02-numbers-operators", "03-functions", "04-variables-functions",
 	"05-display-precision", "06-conversions", "07-currency", "08-dates-time", "09-finance", "11-graph", "16-errors", "17-random",
-	"18-cryptocurrency"];
+	"18-cryptocurrency", "19-matrices"];
 
 // The web's text: desktop blocks and pictures out, web blocks in
 export function forWeb(markdown)
