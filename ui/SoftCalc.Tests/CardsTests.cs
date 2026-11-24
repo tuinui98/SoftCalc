@@ -427,7 +427,7 @@ public sealed class CardsTests
 		try
 		{
 			string source = Path.Combine(dir, "big.png");
-			using (var big = new Bitmap(400, 200))
+			using (var big = new Bitmap(1024, 512))
 			{
 				using var g = Graphics.FromImage(big);
 				g.Clear(Color.Orange);
@@ -439,7 +439,7 @@ public sealed class CardsTests
 			Assert.Matches("^[0-9a-f]{16}\\.png$", name);
 			using (var stored = new Bitmap(store.ImagePath(name)!))
 			{
-				Assert.Equal((128, 64), (stored.Width, stored.Height));
+				Assert.Equal((512, 256), (stored.Width, stored.Height));
 			}
 			Assert.Equal(name, store.ImportImage(source).Name);    // the same picture: the same file
 			File.WriteAllText(Path.Combine(dir, "not.png"), "text");

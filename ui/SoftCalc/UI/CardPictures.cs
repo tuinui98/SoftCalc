@@ -3,6 +3,10 @@
 // Pictures are read from the cards folder once and kept while the
 // Random window is open; the file is read into memory so it is never
 // locked. A card without a picture but with a colour gets a swatch.
+// Lists, covers and the large view show a picture on white (Shown, Flat:
+// owner 2026-11-24, a transparent PNG drawn in black vanished on the dark
+// theme); the draw stages keep the picture as it is (For), over the card's
+// colour.
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -22,17 +26,9 @@ internal sealed class CardPictures : IDisposable
 	// The card's picture, a swatch for its colour, or null
 	public Image? For(Card card)
 	{
-		if (card.Image != null)
+		if (card.Image != null && Picture(card.Image) is { } image)
 		{
-			if (!_cache.TryGetValue(card.Image, out var image))
-			{
-				image = Read(_store.ImagePath(card.Image));
-				_cache[card.Image] = image;
-			}
-			if (image != null)
-			{
-				return image;
-			}
+			return image;
 		}
 		if (card.Color != null)
 		{
@@ -45,6 +41,100 @@ internal sealed class CardPictures : IDisposable
 			return swatch;
 		}
 		return null;
+	}
+
+	// What lists and the editor show for a card: its picture on white, else its colour swatch
+	public Image? Shown(Card card)
+	{
+		return card.Image != null && Flat(card.Image) is { } flat ? flat : For(card) is { } swatch && card.Color != null ? swatch : null;
+	}
+
+	// The picture on a white ground, so a transparent one reads on any theme
+	public Image? Flat(string name)
+	{
+		string key = "flat:" + name;
+		if (!_cache.TryGetValue(key, out var flat))
+		{
+			if (Picture(name) is { } image)
+			{
+				var white = new Bitmap(image.Width, image.Height);
+				using (var g = Graphics.FromImage(white))
+				{
+					g.Clear(Color.White);
+					g.DrawImage(image, 0, 0, image.Width, image.Height);
+				}
+				flat = white;
+			}
+			_cache[key] = flat;
+		}
+		return flat;
+	}
+
+	// A stored picture by its file name, or null when its file is gone or unreadable
+	public Image? Picture(string name)
+	{
+		if (!_cache.TryGetValue(name, out var image))
+		{
+			image = ReadyDecks.Picture(name) is { } embedded ? Read(embedded) : Read(_store.ImagePath(name));
+			_cache[name] = image;
+		}
+		return image;
+	}
+
+	//==================================================================
+	//  Deck covers (owner 2026-11-24): DeckCovers says what, this draws it
+	//==================================================================
+	public DeckCover CoverOf(Deck deck, string language)
+	{
+		return DeckCovers.Of(deck, language, name => Picture(name) != null);
+	}
+
+	// The deck's cover, width x height: a picture filled in (cut to fit), the colours as a
+	// 2 x 2 mosaic, or the first letter in white on the deck's own colour
+	public Bitmap Cover(Deck deck, string language, int width, int height)
+	{
+		var cover = CoverOf(deck, language);
+		var bitmap = new Bitmap(width, height);
+		using var g = Graphics.FromImage(bitmap);
+		g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+		g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+		var area = new Rectangle(0, 0, width, height);
+		switch (cover.Kind)
+		{
+			case CoverKind.Picture:
+			{
+				var image = Flat(cover.Image!)!;
+				double scale = Math.Max((double)width / image.Width, (double)height / image.Height);
+				int w = (int)Math.Ceiling(image.Width * scale), h = (int)Math.Ceiling(image.Height * scale);
+				g.DrawImage(image, (width - w) / 2, (height - h) / 2, w, h);
+				break;
+			}
+			case CoverKind.Colours:
+			{
+				int half = width / 2, middle = height / 2;
+				var cells = new[] { new Rectangle(0, 0, half, middle), new Rectangle(half, 0, width - half, middle),
+					new Rectangle(0, middle, half, height - middle), new Rectangle(half, middle, width - half, height - middle) };
+				for (int i = 0; i < cells.Length; i++)
+				{
+					using var fill = new SolidBrush(ColorTranslator.FromHtml(cover.Colours[i % cover.Colours.Count]));
+					g.FillRectangle(fill, cells[i]);
+				}
+				using var line = new Pen(Color.White, Math.Max(1, width / 48));
+				g.DrawLine(line, half, 0, half, height);
+				g.DrawLine(line, 0, middle, width, middle);
+				break;
+			}
+			default:
+			{
+				using var back = new SolidBrush(ColorTranslator.FromHtml(cover.Back));
+				g.FillRectangle(back, area);
+				using var font = new Font("Segoe UI Semibold", height * 0.42f, GraphicsUnit.Pixel);
+				TextRenderer.DrawText(g, cover.Letter, font, area, Color.White,
+					TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine);
+				break;
+			}
+		}
+		return bitmap;
 	}
 
 	// The key of the card's picture in an ImageList, or null
@@ -62,7 +152,7 @@ internal sealed class CardPictures : IDisposable
 		{
 			if (Key(card) is { } key && !list.Images.ContainsKey(key))
 			{
-				list.Images.Add(key, Fit(For(card)!, size));
+				list.Images.Add(key, Fit(Shown(card)!, size));
 			}
 		}
 		return list;
@@ -105,11 +195,23 @@ internal sealed class CardPictures : IDisposable
 		}
 		try
 		{
-			using var stream = new MemoryStream(File.ReadAllBytes(path));
+			return Read(File.ReadAllBytes(path));
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+		{
+			return null;
+		}
+	}
+
+	private static Image? Read(byte[] bytes)
+	{
+		try
+		{
+			using var stream = new MemoryStream(bytes);
 			using var loaded = Image.FromStream(stream);
 			return new Bitmap(loaded);
 		}
-		catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
+		catch (ArgumentException)
 		{
 			return null;
 		}

@@ -184,7 +184,7 @@ public sealed class DeckTransferTests : IDisposable
 	{
 		var store = Store("pics");
 		string path = Path.Combine(_dir, "big.png");
-		using (var bitmap = new Bitmap(300, 150))
+		using (var bitmap = new Bitmap(1200, 600))
 		{
 			bitmap.Save(path, System.Drawing.Imaging.ImageFormat.Png);
 		}
@@ -193,6 +193,50 @@ public sealed class DeckTransferTests : IDisposable
 		var to = Store("to");
 		DeckTransfer.Import(to, ReadBack(Zip(("decks.json", Json(json)), ("pictures/0123456789abcdef.png", png))));
 		using var stored = new Bitmap(to.ImagePath(to.File.Decks[0].Cards[0].Image)!);
-		Assert.Equal((128, 64), (stored.Width, stored.Height));
+		Assert.Equal((512, 256), (stored.Width, stored.Height));
+	}
+
+	[Fact]
+	public void ADecksOwnCoverGoesOutAndComesBack()
+	{
+		var from = WithDecks();
+		string blue = Picture(from, Color.Blue);
+		from.File.Decks[0].Cover = blue;
+		from.File.Decks[1].Cover = "0123456789abcdef.png";    // its file is gone: left out
+		var read = ReadBack(DeckTransfer.Write(from.File.Decks, from));
+		Assert.Equal((blue, null), (read.Decks[0].Cover, read.Decks[1].Cover));
+		Assert.True(read.Pictures.ContainsKey(blue));
+
+		var to = Store("to");
+		DeckTransfer.Import(to, read);
+		string? cover = to.File.Decks[0].Cover;
+		Assert.NotNull(cover);
+		Assert.True(File.Exists(to.ImagePath(cover)));
+		Assert.Null(to.File.Decks[1].Cover);
+		to.Save();    // a cover alone keeps its picture when unused pictures are dropped
+		Assert.True(File.Exists(to.ImagePath(cover)));
+	}
+
+	[Fact]
+	public void ACoverThatIsNotAPictureNameIsDropped()
+	{
+		var deck = new Deck { Name = "x", Cards = { new Card { Name = "a" } }, Cover = "../../secret.png" };
+		CardStore.SanitizeDeck(deck);
+		Assert.Null(deck.Cover);
+	}
+
+	[Fact]
+	public void CopyToMyDecksStoresTheEmbeddedPicturesAsTheUsersOwn()
+	{
+		var store = Store("copy");
+		var ready = ReadyDecks.All.First(d => d.Name == "Playing cards");
+		var mine = store.OwnPictures(ready.CopyAs(CardStore.NewId(), "Cards", "en"));
+		Assert.All(mine.Cards, c => Assert.True(CardStore.IsImageName(c.Image!), c.Name));
+		Assert.Equal(54, mine.Cards.Select(c => c.Image).Distinct().Count());
+		Assert.True(File.Exists(store.ImagePath(mine.Cards[0].Image)));
+		Assert.StartsWith("ready:", ready.Cards[0].Image);    // the ready-made deck itself is unchanged
+
+		var memory = new CardStore(null);    // no data folder: the cards go without pictures
+		Assert.All(memory.OwnPictures(ready.CopyAs("x", "Cards", "en")).Cards, c => Assert.Null(c.Image));
 	}
 }

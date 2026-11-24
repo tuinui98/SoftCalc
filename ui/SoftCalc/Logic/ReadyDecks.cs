@@ -100,13 +100,42 @@ internal static class ReadyDecks
 		}
 	}
 
-	// 52 cards, ace to king in each suit, and two jokers that start unticked
+	// A ready-made card's picture is embedded in the exe (data/cards/), named "ready:<set>/<file>.png";
+	// a deck of the user's own never names one (CardStore keeps only its own file names), and
+	// Copy to my decks stores the picture as the user's own (owner 2026-11-24)
+	public const string PicturePrefix = "ready:";
+
+	// The embedded picture's bytes, or null
+	public static byte[]? Picture(string name)
+	{
+		if (!name.StartsWith(PicturePrefix, StringComparison.Ordinal))
+		{
+			return null;
+		}
+		using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("cards/" + name[PicturePrefix.Length..]);
+		if (stream == null)
+		{
+			return null;
+		}
+		using var bytes = new MemoryStream();
+		stream.CopyTo(bytes);
+		return bytes.ToArray();
+	}
+
+	// 52 cards, ace to king in each suit, and two jokers that start unticked; pictures:
+	// heratexx's four-colour deck (CC0) and jokers drawn to match (data/cards/playing/README.md)
 	private static Deck PlayingCards()
 	{
-		var cards = Suits.SelectMany((s, suit) => Ranks.Select((r, rank) => new Card { Name = r + s, Color = SuitShades[suit][rank % 2] }))
-			.ToList();
-		cards.Add(new Card { Name = "Joker (black)", Thai = "โจ๊กเกอร์ดำ", Off = true, Color = SuitShades[0][0] });
-		cards.Add(new Card { Name = "Joker (red)", Thai = "โจ๊กเกอร์แดง", Off = true, Color = SuitShades[1][0] });
+		// the cards' files (data/cards/playing/svg): rank A 2..9 T J Q K, suit s h d c; here, not static
+		// fields: the deck is made while the class's static fields are still being set
+		string[] rankFiles = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K" };
+		string[] suitFiles = { "s", "h", "d", "c" };
+		var cards = Suits.SelectMany((s, suit) => Ranks.Select((r, rank) => new Card
+		{
+			Name = r + s, Color = SuitShades[suit][rank % 2], Image = $"{PicturePrefix}playing/{rankFiles[rank]}{suitFiles[suit]}.png",
+		})).ToList();
+		cards.Add(new Card { Name = "Joker (black)", Thai = "โจ๊กเกอร์ดำ", Off = true, Color = SuitShades[0][0], Image = PicturePrefix + "playing/joker_black.png" });
+		cards.Add(new Card { Name = "Joker (red)", Thai = "โจ๊กเกอร์แดง", Off = true, Color = SuitShades[1][0], Image = PicturePrefix + "playing/joker_red.png" });
 		return new Deck { Id = Prefix + "playing-cards", Name = "Playing cards", Thai = "ไพ่ 1 สำรับ", Cards = cards };
 	}
 

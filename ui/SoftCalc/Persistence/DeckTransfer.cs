@@ -28,6 +28,7 @@ internal sealed class ZipDeck
 {
 	public string Name { get; set; } = "";
 	public List<Card> Cards { get; set; } = new();
+	public string? Cover { get; set; }    // a picture in pictures/ (owner 2026-11-24); older files have none
 }
 
 // What a zip held: its decks (not yet checked) and the pictures they use
@@ -110,7 +111,20 @@ internal static class DeckTransfer
 				}
 				cards.Add(new Card { Name = card.Name, Weight = card.Weight, Image = image, Color = card.Color, Off = card.Off });
 			}
-			model.Decks.Add(new ZipDeck { Name = deck.Name, Cards = cards });
+			string? cover = deck.Cover;
+			if (cover != null && !pictures.ContainsKey(cover))
+			{
+				string? path = store.ImagePath(cover);
+				if (path != null && File.Exists(path))
+				{
+					pictures[cover] = path;
+				}
+				else
+				{
+					cover = null;
+				}
+			}
+			model.Decks.Add(new ZipDeck { Name = deck.Name, Cards = cards, Cover = cover });
 		}
 		using var output = new MemoryStream();
 		using (var zip = new ZipArchive(output, ZipArchiveMode.Create, leaveOpen: true))
@@ -182,7 +196,7 @@ internal static class DeckTransfer
 				return (null, "The file was made by a newer SoftCalc.");
 			}
 			var decks = (model.Decks ?? new()).Where(d => d != null).ToList();
-			var wanted = decks.SelectMany(d => d.Cards ?? new()).Select(c => c?.Image).Where(i => i != null).ToHashSet();
+			var wanted = decks.SelectMany(d => (d.Cards ?? new()).Select(c => c?.Image).Append(d.Cover)).Where(i => i != null).ToHashSet();
 			var pictures = new Dictionary<string, byte[]>();
 			foreach (var entry in zip.Entries)
 			{
@@ -249,19 +263,24 @@ internal static class DeckTransfer
 		int added = 0, renamed = 0, same = 0, overLimit = 0;
 		foreach (var source in read.Decks)
 		{
-			var deck = new Deck { Id = CardStore.NewId(), Name = source.Name, Cards = source.Cards ?? new() };
+			var deck = new Deck { Id = CardStore.NewId(), Name = source.Name, Cards = source.Cards ?? new(), Cover = source.Cover };
 			CardStore.SanitizeDeck(deck);
 			var cards = new List<Card>();
 			CardText.AddNew(cards, deck.Cards.Select(c => c.Copy()));
+			string? Stored(string picture)
+			{
+				if (!stored.TryGetValue(picture, out string? name))
+				{
+					name = read.Pictures.TryGetValue(picture, out var bytes) ? store.StoreImage(bytes, keepSmallPng: true).Name : null;
+					stored[picture] = name;
+				}
+				return name;
+			}
 			foreach (var card in cards.Where(c => c.Image != null))
 			{
-				if (!stored.TryGetValue(card.Image!, out string? name))
-				{
-					name = read.Pictures.TryGetValue(card.Image!, out var bytes) ? store.StoreImage(bytes, keepSmallPng: true).Name : null;
-					stored[card.Image!] = name;
-				}
-				card.Image = name;
+				card.Image = Stored(card.Image!);
 			}
+			deck.Cover = deck.Cover == null ? null : Stored(deck.Cover);
 			deck.Cards = cards;
 			if (deck.Cards.Count == 0)
 			{
