@@ -6,6 +6,8 @@
 // pictures: Import decks, Export all decks, also in the File menu) and
 // the ready-made ones (View, Copy to my decks, Export CSV), named in
 // English or Thai. Decks are saved in cards.json at once (CardStore).
+// Owner 2026-11-24: the decks show as covers (DeckCovers), or as the
+// list they were; Cover... sets a deck's own cover picture.
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -22,6 +24,32 @@ internal sealed partial class RandomWindow
 	private readonly ComboBox _language = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 100 };
 	private readonly Label _cardsNote = Note();
 	private readonly Button _newDraw = new() { Text = "New &draw...", AutoSize = true, MinimumSize = new Size(100, 0) };
+	private readonly RadioButton _showCovers = ViewButton("Co&vers");
+	private readonly RadioButton _showList = ViewButton("Lis&t");
+	private const int CoverWidth = 80;    // a row of covers fits the window's first size (560 x 520)
+	private const int CoverHeight = 60;
+
+	private bool ShowingCovers => _cards.File.DeckView == "covers";
+
+	// The size a row of covers in each list needs; a smaller window grows to it once (owner 2026-11-24)
+	private const int CoversWidth = 620;
+	private const int CoversHeight = 640;
+	private bool _grownForCovers;
+
+	private void GrowForCovers()
+	{
+		if (_grownForCovers || !ShowingCovers || WindowState != FormWindowState.Normal)
+		{
+			return;
+		}
+		_grownForCovers = true;
+		var wanted = new Size(Math.Max(Width, LogicalToDeviceUnits(CoversWidth)), Math.Max(Height, LogicalToDeviceUnits(CoversHeight)));
+		if (wanted != Size)
+		{
+			var area = Screen.FromControl(this).WorkingArea;
+			Bounds = WindowPlacement.FitOnScreen(new Rectangle(Location, wanted), new[] { area });
+		}
+	}
 
 	private string Language => _cards.File.Language;
 
@@ -40,16 +68,43 @@ internal sealed partial class RandomWindow
 			FillDecks();
 			LanguageChanged();
 		};
+		_showCovers.Checked = ShowingCovers;
+		_showList.Checked = !ShowingCovers;
+		_showCovers.CheckedChanged += (_, _) =>
+		{
+			_cards.File.DeckView = _showCovers.Checked ? "covers" : "list";
+			SaveCards();
+			FillDecks();
+			GrowForCovers();
+		};
+		_tabs.SelectedIndexChanged += (_, _) =>
+		{
+			if (_tabs.SelectedTab == _morePage)
+			{
+				GrowForCovers();
+			}
+		};
 		top.Controls.AddRange(new Control[] { _newDraw, newDeck,
-			new Label { Text = "Ready-made names", AutoSize = true, Margin = new Padding(18, 8, 3, 3) }, _language });
+			new Label { Text = "Ready-made names", AutoSize = true, Margin = new Padding(12, 8, 3, 3) }, _language, _showCovers, _showList });
+		_showCovers.Margin = new Padding(12, 3, 0, 3);
 		new ToolTip().SetToolTip(_language, "The language of the ready-made cards, in decks and draws");
 
 		// My decks
+		// One row of buttons, so the covers keep their room; Copy and the files go under More
 		var myButtons = Buttons(
-			("&Edit...", EditDeck), ("&Copy", CopyDeck), ("De&lete", DeleteDeck),
-			("&Import CSV...", ImportDeck), ("E&xport CSV...", () => ExportSelected(_myDecks)),
-			("Import deck&s...", ImportDecks), ("Export &all decks...", ExportDecks),
+			("&Edit...", EditDeck), ("De&lete", DeleteDeck), ("Co&ver...", ChooseCover),
 			("Insert Co&mmand", () => InsertDeckCommand(_myDecks)));
+		var more = new Button { Text = "M&ore ▾", AutoSize = true };
+		var files = new ContextMenuStrip();
+		files.Items.Add("&Copy", null, (_, _) => CopyDeck());
+		files.Items.Add(new ToolStripSeparator());
+		files.Items.Add("&Import CSV...", null, (_, _) => ImportDeck());
+		files.Items.Add("E&xport CSV...", null, (_, _) => ExportSelected(_myDecks));
+		files.Items.Add(new ToolStripSeparator());
+		files.Items.Add("Import deck&s...", null, (_, _) => ImportDecks());
+		files.Items.Add("Export &all decks...", null, (_, _) => ExportDecks());
+		more.Click += (_, _) => files.Show(more, new Point(0, more.Height));
+		myButtons.Controls.Add(more);
 		_myDecks.DoubleClick += (_, _) => EditDeck();
 		var mine = Group("My decks", _myDecks, myButtons);
 
@@ -84,16 +139,88 @@ internal sealed partial class RandomWindow
 	private void Fill(ListView list, IEnumerable<Deck> decks)
 	{
 		string? selected = list.SelectedItems.Count > 0 ? ((Deck)list.SelectedItems[0].Tag!).Id : null;
+		bool covers = ShowingCovers;
+		var old = list.LargeImageList;
 		list.BeginUpdate();
 		list.Items.Clear();
+		list.View = covers ? View.LargeIcon : View.Details;
+		list.LargeImageList = covers ? CoverImages(decks) : null;
 		foreach (var deck in decks)
 		{
-			var item = new ListViewItem(deck.Shown(Language)) { Tag = deck };
+			string name = deck.Shown(Language);
+			var item = new ListViewItem(covers ? $"{name} · {deck.Cards.Count}" : name)
+			{
+				Tag = deck, ImageKey = covers ? deck.Id : "", ToolTipText = $"{name}: {deck.Cards.Count} cards",
+			};
 			item.SubItems.Add(deck.Cards.Count.ToString());
 			list.Items.Add(item);
 			item.Selected = deck.Id == selected;
 		}
 		list.EndUpdate();
+		old?.Dispose();
+	}
+
+	// Each deck's cover, keyed by its id (CardPictures.Cover)
+	private ImageList CoverImages(IEnumerable<Deck> decks)
+	{
+		var images = new ImageList
+		{
+			ImageSize = new Size(LogicalToDeviceUnits(CoverWidth), LogicalToDeviceUnits(CoverHeight)), ColorDepth = ColorDepth.Depth32Bit,
+		};
+		foreach (var deck in decks)
+		{
+			images.Images.Add(deck.Id, _pictures.Cover(deck, Language, images.ImageSize.Width, images.ImageSize.Height));
+		}
+		return images;
+	}
+
+	// Cover...: a picture of the user's choosing for the chosen deck, or Auto (DeckCovers)
+	private void ChooseCover()
+	{
+		if (Chosen(_myDecks) is not { } deck)
+		{
+			return;
+		}
+		var menu = new ContextMenuStrip();
+		menu.Items.Add("Choose a &picture...", null, (_, _) =>
+		{
+			using var dialog = new OpenFileDialog
+			{
+				Title = $"Cover for '{deck.Name}'", Filter = "Pictures|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files|*.*",
+			};
+			if (dialog.ShowDialog(this) != DialogResult.OK)
+			{
+				return;
+			}
+			var (name, error) = _cards.ImportImage(dialog.FileName);
+			if (name == null)
+			{
+				Tell(_cardsNote, error ?? "The picture could not be read.", error: true);
+				return;
+			}
+			SetCover(deck, name);
+		});
+		var auto = menu.Items.Add("&Auto: the first card's picture, else its colours or first letter", null, (_, _) => SetCover(deck, null));
+		auto.Enabled = deck.Cover != null;
+		menu.Closed += (_, _) => BeginInvoke(menu.Dispose);
+		var button = _myDecks.Parent!.Controls.OfType<FlowLayoutPanel>().SelectMany(f => f.Controls.OfType<Button>())
+			.FirstOrDefault(b => b.Text == "Co&ver...");
+		if (button != null)
+		{
+			menu.Show(button, new Point(0, button.Height));
+		}
+		else
+		{
+			menu.Show(Cursor.Position);
+		}
+	}
+
+	private void SetCover(Deck deck, string? picture)
+	{
+		deck.Cover = picture;
+		SaveCards();
+		FillDecks();
+		Tell(_cardsNote, picture == null ? $"'{deck.Name}' shows its first card's picture again." : $"Cover of '{deck.Name}' set.");
 	}
 
 	private static Deck? Chosen(ListView list)
@@ -348,11 +475,16 @@ internal sealed partial class RandomWindow
 		var list = new ListView
 		{
 			Dock = DockStyle.Fill, View = View.Details, FullRowSelect = true, HideSelection = false, MultiSelect = false,
-			HeaderStyle = ColumnHeaderStyle.Nonclickable,
+			HeaderStyle = ColumnHeaderStyle.Nonclickable, ShowItemToolTips = true,
 		};
 		list.Columns.Add("Deck", 300);
 		list.Columns.Add("Cards", 70, HorizontalAlignment.Right);
 		return list;
+	}
+
+	private static RadioButton ViewButton(string text)
+	{
+		return new RadioButton { Text = text, Appearance = Appearance.Button, AutoSize = true, Margin = new Padding(0, 3, 0, 3) };
 	}
 
 	private static FlowLayoutPanel Buttons(params (string Text, Action Click)[] buttons)

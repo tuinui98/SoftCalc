@@ -39,6 +39,7 @@ internal sealed class Deck
 	public string Name { get; set; } = "";
 	public string? Thai { get; set; }
 	public List<Card> Cards { get; set; } = new();
+	public string? Cover { get; set; }    // a picture's file name for the deck's cover; null: worked out (DeckCovers)
 
 	[JsonIgnore]
 	public bool Ready => Id.StartsWith(ReadyDecks.Prefix, StringComparison.Ordinal);
@@ -72,7 +73,7 @@ internal sealed class Deck
 			copy.Thai = null;
 			return copy;
 		});
-		return new Deck { Id = id, Name = name, Cards = cards.ToList() };
+		return new Deck { Id = id, Name = name, Cards = cards.ToList(), Cover = Cover };
 	}
 }
 

@@ -5,7 +5,9 @@
 // commas or spaces (Auto: the first of them found); Edit all as text
 // ("name | weight" lines); CSV import and export (name,weight,image).
 // Works on a copy: OK keeps the changes, Cancel drops them. A
-// ready-made deck opens read-only.
+// ready-made deck opens read-only. Owner 2026-11-24 (deck covers): the
+// cards show as pictures or as the list; View large (a double-click,
+// Space) opens CardViewer; the deck's cover is chosen here too.
 
 using SoftCalc.Logic;
 using SoftCalc.Persistence;
@@ -15,6 +17,9 @@ namespace SoftCalc.UI;
 internal sealed class DeckEditor : Form
 {
 	private const int ThumbSize = 24;
+	private const int PictureSize = 88;    // a card in the Pictures view
+	private const int CoverWidth = 64;
+	private const int CoverHeight = 48;
 	private readonly Deck _deck;
 	private readonly CardStore _store;
 	private readonly CardPictures _pictures;
@@ -30,8 +35,19 @@ internal sealed class DeckEditor : Form
 	private readonly NumericUpDown _weight = new() { Minimum = 1, Maximum = CardText.MaxWeight, Width = 70 };
 	private readonly PictureBox _picture = new()
 	{
-		Size = new Size(96, 96), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3, 3, 3, 3),
+		Size = new Size(160, 160), SizeMode = PictureBoxSizeMode.Zoom, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3, 3, 3, 3),
 	};
+	private readonly Button _viewLarge = new() { Text = "&View large", AutoSize = true };
+	private readonly Button _useAsCover = new() { Text = "Use as co&ver", AutoSize = true };
+	private readonly PictureBox _coverPicture = new()
+	{
+		Size = new Size(CoverWidth, CoverHeight), SizeMode = PictureBoxSizeMode.Normal, BorderStyle = BorderStyle.FixedSingle, Margin = new Padding(3, 3, 3, 3),
+	};
+	private readonly Label _coverText = new() { AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(3, 8, 3, 3) };
+	private readonly Button _coverChoose = new() { Text = "Pictu&re...", AutoSize = true };
+	private readonly Button _coverAuto = new() { Text = "A&uto", AutoSize = true };
+	private readonly RadioButton _showPictures = new() { Text = "&Pictures", Appearance = Appearance.Button, AutoSize = true };
+	private readonly RadioButton _showList = new() { Text = "Lis&t", Appearance = Appearance.Button, AutoSize = true };
 	private readonly Button _choose = new() { Text = "C&hoose...", AutoSize = true };
 	private readonly Button _clearPicture = new() { Text = "C&lear", AutoSize = true };
 	// owner 2026-11-14: a colour for each card, shown on the dartboard and the spin wheel
@@ -49,7 +65,7 @@ internal sealed class DeckEditor : Form
 	public DeckEditor(Deck deck, CardStore store, CardPictures pictures, string language, bool readOnly)
 	{
 		_deck = new Deck { Id = deck.Id, Name = deck.Name, Thai = deck.Thai, Alphabetical = deck.Alphabetical,
-			Cards = deck.Cards.Select(c => c.Copy()).ToList() };
+			Cards = deck.Cards.Select(c => c.Copy()).ToList(), Cover = deck.Cover };
 		_store = store;
 		_pictures = pictures;
 		_language = language;
@@ -60,8 +76,8 @@ internal sealed class DeckEditor : Form
 		MinimizeBox = false;
 		StartPosition = FormStartPosition.CenterParent;
 		AutoScaleMode = AutoScaleMode.Dpi;
-		ClientSize = new Size(620, 500);
-		MinimumSize = new Size(560, 420);
+		ClientSize = new Size(780, 600);
+		MinimumSize = new Size(640, 480);
 		Padding = new Padding(8);
 
 		//==================================================================
@@ -71,17 +87,44 @@ internal sealed class DeckEditor : Form
 		nameRow.Controls.Add(new Label { Text = "&Name", AutoSize = true, Margin = new Padding(3, 7, 6, 3) });
 		nameRow.Controls.Add(_name);
 		nameRow.Controls.Add(_count);
+		nameRow.Controls.Add(new Label { Text = "Show", AutoSize = true, Margin = new Padding(18, 7, 3, 3) });
+		nameRow.Controls.Add(_showPictures);
+		nameRow.Controls.Add(_showList);
 		_name.Text = deck.Shown(language);
 		_name.ReadOnly = readOnly;
+		_showPictures.Checked = store.File.CardView == "pictures";
+		_showList.Checked = !_showPictures.Checked;
+		_showPictures.CheckedChanged += (_, _) =>
+		{
+			// kept with the decks; saved with the next change there
+			_store.File.CardView = _showPictures.Checked ? "pictures" : "list";
+			FillList(_list.SelectedIndices.Count > 0 ? _list.SelectedIndices[0] : 0);
+		};
+
+		// The deck's cover (owner 2026-11-24): its own picture, or Auto (DeckCovers)
+		var coverRow = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Top, WrapContents = false };
+		coverRow.Controls.Add(new Label { Text = "Cover", AutoSize = true, Margin = new Padding(3, 18, 6, 3) });
+		coverRow.Controls.AddRange(new Control[] { _coverPicture, _coverChoose, _coverAuto, _coverText });
+		_coverChoose.Margin = _coverAuto.Margin = new Padding(3, 13, 3, 3);
+		_coverText.Margin = new Padding(6, 18, 3, 3);
+		_coverChoose.Click += (_, _) => ChooseCover();
+		_coverAuto.Click += (_, _) => SetCover(null);
+		_coverChoose.Visible = _coverAuto.Visible = !readOnly;
 
 		_list.Columns.Add("Card", 240);
 		_list.Columns.Add("Weight", 60, HorizontalAlignment.Right);
 		_list.SelectedIndexChanged += (_, _) => ShowCard();
+		_list.DoubleClick += (_, _) => ViewLarge();
 		_list.KeyDown += (_, e) =>
 		{
 			if (e.KeyCode == Keys.Delete && !_readOnly)
 			{
 				RemoveCards();
+			}
+			else if (e.KeyCode == Keys.Space)
+			{
+				e.SuppressKeyPress = true;
+				ViewLarge();
 			}
 		};
 		var card = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Dock = DockStyle.Right, Padding = new Padding(8, 0, 0, 0) };
@@ -91,8 +134,16 @@ internal sealed class DeckEditor : Form
 		card.Controls.Add(_weight, 1, 1);
 		card.Controls.Add(Caption("Picture"), 0, 2);
 		card.Controls.Add(_picture, 1, 2);
-		var pictureButtons = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty };
-		pictureButtons.Controls.AddRange(new Control[] { _choose, _clearPicture });
+		var pictureButtons = new FlowLayoutPanel { AutoSize = true, Margin = Padding.Empty, MaximumSize = new Size(200, 0) };
+		pictureButtons.Controls.AddRange(new Control[] { _choose, _clearPicture, _viewLarge, _useAsCover });
+		_viewLarge.Click += (_, _) => ViewLarge();
+		_useAsCover.Click += (_, _) =>
+		{
+			if (Selected is { Image: { } image })
+			{
+				SetCover(image);
+			}
+		};
 		card.Controls.Add(pictureButtons, 1, 3);
 		var weightNote = new Label
 		{
@@ -169,6 +220,7 @@ internal sealed class DeckEditor : Form
 			{
 				control.Enabled = false;
 			}
+			_useAsCover.Visible = false;
 		}
 
 		Controls.Add(_list);
@@ -178,8 +230,14 @@ internal sealed class DeckEditor : Form
 		Controls.Add(fileRow);
 		Controls.Add(_note);
 		Controls.Add(okRow);
+		Controls.Add(coverRow);
 		Controls.Add(nameRow);
-		FormClosed += (_, _) => _list.SmallImageList?.Dispose();
+		FormClosed += (_, _) =>
+		{
+			_list.SmallImageList?.Dispose();
+			_list.LargeImageList?.Dispose();
+			_coverPicture.Image?.Dispose();
+		};
 		FillList(0);
 	}
 
@@ -188,21 +246,28 @@ internal sealed class DeckEditor : Form
 	//==================================================================
 	private IEnumerable<Card> Ordered => _readOnly ? _deck.Listed(_language) : _deck.Cards;
 
+	private bool ShowingPictures => _showPictures.Checked;
+
 	private void FillList(int select)
 	{
 		var old = _list.SmallImageList;
+		var oldLarge = _list.LargeImageList;
 		_list.BeginUpdate();
 		_list.Items.Clear();
+		_list.View = ShowingPictures ? View.LargeIcon : View.Details;
 		_list.SmallImageList = _pictures.List(_deck.Cards, ThumbSize);
+		_list.LargeImageList = ShowingPictures ? _pictures.List(_deck.Cards, LogicalToDeviceUnits(PictureSize)) : null;
 		foreach (var card in Ordered)
 		{
-			// a card without a picture shows its colour (CardPictures)
-			var item = new ListViewItem(card.Shown(_language)) { Tag = card, ImageKey = _pictures.Key(card) ?? "" };
+			// a card without a picture shows its colour (CardPictures); in Pictures a weight over 1 shows as x2
+			var item = new ListViewItem(ItemText(card)) { Tag = card, ImageKey = _pictures.Key(card) ?? "" };
 			item.SubItems.Add(card.Weight.ToString());
 			_list.Items.Add(item);
 		}
 		_list.EndUpdate();
 		old?.Dispose();
+		oldLarge?.Dispose();
+		ShowCover();
 		if (_list.Items.Count > 0)
 		{
 			int index = Math.Clamp(select, 0, _list.Items.Count - 1);
@@ -228,6 +293,8 @@ internal sealed class DeckEditor : Form
 		_weight.Enabled = editable;
 		_choose.Enabled = editable;
 		_clearPicture.Enabled = editable && card!.Image != null;
+		_viewLarge.Enabled = _deck.Cards.Count > 0;
+		_useAsCover.Enabled = editable && card!.Image != null && card.Image != _deck.Cover;
 		// colours go on every chosen card
 		var chosen = Chosen;
 		_swatch.BackColor = chosen.Count == 1 && chosen[0].Color != null ? ColorTranslator.FromHtml(chosen[0].Color!) : SystemColors.Control;
@@ -286,8 +353,80 @@ internal sealed class DeckEditor : Form
 			FillList(item.Index);
 			return;
 		}
-		item.Text = card.Name;
+		item.Text = ItemText(card);
 		item.SubItems[1].Text = card.Weight.ToString();
+	}
+
+	private string ItemText(Card card)
+	{
+		string name = card.Shown(_language);
+		return ShowingPictures && card.Weight > 1 ? $"{name} ×{card.Weight}" : name;
+	}
+
+	//==================================================================
+	//  Large view and the deck's cover (owner 2026-11-24)
+	//==================================================================
+	private void ViewLarge()
+	{
+		var cards = Ordered.ToList();
+		int index = Selected is { } card ? cards.IndexOf(card) : 0;
+		using var viewer = new CardViewer(_name.Text.Trim().Length > 0 ? _name.Text.Trim() : "Cards", cards, index, _pictures, _language,
+			_readOnly ? null : c => SetCover(c.Image));
+		viewer.ShowDialog(this);
+		// back on the card last looked at
+		if (viewer.Index < _list.Items.Count)
+		{
+			foreach (ListViewItem item in _list.SelectedItems)
+			{
+				item.Selected = false;
+			}
+			_list.Items[viewer.Index].Selected = true;
+			_list.Items[viewer.Index].Focused = true;
+			_list.EnsureVisible(viewer.Index);
+		}
+	}
+
+	private void ChooseCover()
+	{
+		using var dialog = new OpenFileDialog
+		{
+			Title = "Cover for the deck", Filter = "Pictures|*.png;*.jpg;*.jpeg;*.gif;*.bmp|All files|*.*",
+		};
+		if (dialog.ShowDialog(this) != DialogResult.OK)
+		{
+			return;
+		}
+		var (name, error) = _store.ImportImage(dialog.FileName);
+		Say(error);
+		if (name != null)
+		{
+			SetCover(name);
+		}
+	}
+
+	private void SetCover(string? picture)
+	{
+		_deck.Cover = picture;
+		ShowCover();
+		ShowCard();
+	}
+
+	private void ShowCover()
+	{
+		var old = _coverPicture.Image;
+		_coverPicture.Image = _pictures.Cover(_deck, _language, LogicalToDeviceUnits(CoverWidth), LogicalToDeviceUnits(CoverHeight));
+		_coverPicture.Size = _coverPicture.Image.Size + new Size(2, 2);
+		old?.Dispose();
+		var cover = _pictures.CoverOf(_deck, _language);
+		_coverText.Text = cover switch
+		{
+			{ Chosen: true } when _deck.Cards.FirstOrDefault(c => c.Image == cover.Image) is { } card => $"{card.Shown(_language)}'s picture",
+			{ Chosen: true } => "a picture of its own",
+			{ Kind: CoverKind.Picture } => "Auto: the first card's picture",
+			{ Kind: CoverKind.Colours } => "Auto: the cards' colours (no pictures)",
+			_ => "Auto: the first letter (no pictures or colours)",
+		};
+		_coverAuto.Enabled = !_readOnly && _deck.Cover != null;
 	}
 
 	private void ChoosePicture()

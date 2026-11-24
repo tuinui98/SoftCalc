@@ -635,7 +635,17 @@ ends 1:1, the drag insert line is visible enough on dark.
       currencies; old ribbon ids still work. Merged 2026-11-24.
 
 ## Later (owner 2026-11-23, a separate piece of work)
-- [ ] Deck covers: a new deck chooser that shows each deck's cover; the
+- [ ] Deck covers, desktop built 2026-11-24 (branch deck-covers; mock-up
+      https://claude.ai/artifact/EaFVN9n5friaqiXuDvgLnB): the ... tab shows
+      decks as covers or a list; Cover... and the editor's Cover row set a
+      deck's own picture, else the first card's picture, its colours or
+      its first letter (DeckCovers); Edit deck shows cards as pictures,
+      View large / double-click / Space opens CardViewer (arrows, Esc,
+      Use as cover); pictures are kept at 512 px (was 128); the cover goes
+      in the decks zip. Left: the web (it drops a deck's cover on its own
+      export until then), Help 17 and its pictures, showing a drawn
+      card's picture (owner to decide).
+- [ ] (first note) Deck covers: a new deck chooser that shows each deck's cover; the
       default cover is one of the deck's card pictures. Maybe pictures for
       the ready-made decks too, at least the playing cards. Free-licence
       candidates found 2026-11-23 (licences to check again before use):

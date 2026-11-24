@@ -3,9 +3,11 @@
 // Kept apart from settings.json (owner 2026-11-14) since decks, history
 // and counts grow. Written at once after each change, under the data
 // folder's lock; between two Random windows the last write wins. A
-// picture is shrunk to at most 128 px, stored as PNG under a name made
-// from its content, and dropped once no deck uses it. An unreadable file
-// is kept as cards.json.bak.
+// picture is shrunk to at most 512 px (128 until the deck covers, owner
+// 2026-11-24: pictures are looked at large now), stored as PNG under a
+// name made from its content, and dropped once no deck uses it, as a
+// card's picture or a deck's cover. An unreadable file is kept as
+// cards.json.bak.
 
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -24,6 +26,8 @@ internal sealed class CardFile
 	public string Language { get; set; } = "en";    // names of the ready-made cards: en or th
 	public List<Deck> Decks { get; set; } = new();
 	public List<DrawSetup> Draws { get; set; } = new();
+	public string DeckView { get; set; } = "covers";    // the ... tab's decks: covers or list (owner 2026-11-24)
+	public string CardView { get; set; } = "pictures";    // a deck's cards in the editor: pictures or list
 
 	// A first run (owner 2026-11-15): one draw tab to try, the zodiac on a spin wheel
 	public static CardFile ForNewUser()
@@ -39,7 +43,7 @@ internal sealed class CardFile
 
 internal sealed class CardStore
 {
-	public const int ImageSize = 128;
+	public const int ImageSize = 512;
 	public const int MaxDecks = 500;
 	public const int MaxDraws = 50;
 	private static readonly Regex ImageName = new(@"^[0-9a-f]{16}\.png$");
@@ -272,7 +276,7 @@ internal sealed class CardStore
 		{
 			return;
 		}
-		var used = new HashSet<string>(File.Decks.SelectMany(d => d.Cards).Select(c => c.Image ?? ""));
+		var used = new HashSet<string>(File.Decks.SelectMany(d => d.Cards.Select(c => c.Image).Append(d.Cover)).Select(i => i ?? ""));
 		foreach (string path in Directory.GetFiles(ImagesDir, "*.png"))
 		{
 			string name = System.IO.Path.GetFileName(path);
@@ -297,6 +301,14 @@ internal sealed class CardStore
 		if (file.Language is not ("en" or "th"))
 		{
 			file.Language = "en";
+		}
+		if (file.DeckView is not ("covers" or "list"))
+		{
+			file.DeckView = "covers";
+		}
+		if (file.CardView is not ("pictures" or "list"))
+		{
+			file.CardView = "pictures";
 		}
 		file.Decks = (file.Decks ?? new()).Where(d => d != null && !string.IsNullOrEmpty(d.Id) && !d.Ready)
 			.DistinctBy(d => d.Id).Take(MaxDecks).ToList();
@@ -340,6 +352,10 @@ internal sealed class CardStore
 	{
 		deck.Name = Trim(deck.Name, "Deck");
 		deck.Thai = null;
+		if (deck.Cover != null && !ImageName.IsMatch(deck.Cover))
+		{
+			deck.Cover = null;
+		}
 		deck.Cards = (deck.Cards ?? new()).Where(c => c != null && !string.IsNullOrWhiteSpace(c.Name))
 			.Take(CardText.MaxCards).ToList();
 		foreach (var card in deck.Cards)

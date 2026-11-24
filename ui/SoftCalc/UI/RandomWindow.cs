@@ -72,7 +72,7 @@ internal sealed partial class RandomWindow : Form
 		ShowInTaskbar = false;
 		MinimizeBox = false;    // owner 2026-11-14: minimized, an owned window sat as a strip above the taskbar
 		AutoScaleMode = AutoScaleMode.Dpi;
-		Size = new Size(560, 520);
+		Size = new Size(CoversWidth, CoversHeight);    // was 560 x 520, before the deck covers
 		MinimumSize = new Size(460, 440);
 		StartPosition = FormStartPosition.CenterParent;
 		if (prefs.Window is { HasPosition: true } w)
