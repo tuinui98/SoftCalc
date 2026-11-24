@@ -596,7 +596,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       come from it too (check which).
 
 ## Next release (owner 2026-11-24, after 1.9.0)
-- [x] (2026-11-24: in the hint line under Input, owner) Desktop: the time each line took, as the web shows it (status
+- [x] (released in 1.10.0; in the hint line under Input, owner) Desktop: the time each line took, as the web shows it (status
       "Took 0.23 s" after every line, "Working... 1.4 s" counting after a
       second). The desktop has no status line yet: where it goes is to
       settle (the hint line under Input, or the window's title).
@@ -635,7 +635,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       currencies; old ribbon ids still work. Merged 2026-11-24.
 
 ## Later (owner 2026-11-23, a separate piece of work)
-- [x] (help 17 and 14 updated 2026-11-24) Deck covers, desktop built 2026-11-24 (branch deck-covers; mock-up
+- [x] (released in 1.10.0; help 17 and 14 updated 2026-11-24) Deck covers, desktop built 2026-11-24 (branch deck-covers; mock-up
       https://claude.ai/artifact/EaFVN9n5friaqiXuDvgLnB): the ... tab shows
       decks as covers or a list; Cover... and the editor's Cover row set a
       deck's own picture, else the first card's picture, its colours or

@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-24: version 1.9.0 released (lists and matrices; Conversions > Cryptocurrency; the engine says SoftCalc's version; icon 1.98). Everything below is committed on `main` and
+Updated 2026-11-24: version 1.10.0 released (deck covers; card pictures; playing cards and flags; drawn cards with pictures; desktop line times). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -193,6 +193,21 @@ publish.ps1 BLOCK 0 check it); the icon's screen shows 1.98, and
 IconMaker --web writes the web icons. Help 03, 16, 17, 18, 19 (new).
 
 Tests: engine `pytest` 2523 passed; UI `dotnet test` 478 passed; web 135.
+
+Version 1.10.0 (2026-11-24): deck covers and card pictures. The ...
+tab (desktop) and the Cards tab's deck chooser (web) show decks as
+covers: a chosen picture, else the first card's picture, its colours, or
+its first letter on a colour of its own. Edit deck shows cards as
+pictures, View large / the web's full-screen view goes through them, Use
+as cover; pictures are kept at 512 px; the cover goes in the decks zip.
+Ready-made Playing cards has pictures (heratexx four-colour, CC0, jokers
+drawn to match); countries have flags (flag-icons, MIT). A drawn card
+shows its picture small in Results, the chosen line's large beside them
+(desktop List theme; web above the list). The desktop hint line under
+Input says how long each line took ("Took 0.23 s", "Working... 1.4 s").
+Help 01, 14, 17.
+
+Tests: UI `dotnet test` 489 passed; web 140.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
