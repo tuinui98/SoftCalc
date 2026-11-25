@@ -155,7 +155,8 @@ norm([3, 4])                  => 5
 
 ## Statistics and lists
 
-These take numbers and lists mixed, and use every cell:
+These take numbers and lists mixed, and use every cell; the functions
+menu has them under Statistics:
 
 ```calc
 sum([1, 2, 3], 4)             => 10
@@ -236,16 +237,21 @@ lists the errors of lists and matrices.
 ## The functions, by group
 
 <!-- desktop -->
-Functions > Matrix lists them all.
+Functions > Matrix has the ten used most on top (`det` `inv` `solve`
+`transpose` `eig` `identity` `fill` `seq` `sum` `mean`), then a submenu
+for each group below; the statistics are in Functions > Statistics.
 <!-- /desktop -->
 <!-- web -->
-func > Matrix lists them all.
+func > Matrix has the ten used most on top (`det` `inv` `solve`
+`transpose` `eig` `identity` `fill` `seq` `sum` `mean`), then a line
+for each group below (`Build ›`); the statistics are in func >
+Statistics.
 <!-- /web -->
 
 | group | functions |
 |---|---|
-| make | `identity` `zeros` `ones` `fill` `diag` `seq` `reshape` `randm` |
-| size and cells | `rows` `cols` `len` `at` `row` `col` |
-| linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `cross` `norm` |
-| statistics | `sum` `mean` `median` `prod` `min` `max` `count` `stdev` `stdevp` `variance` `variancep` |
-| lists | `sort` `reverse` `cumsum` |
+| Build | `identity` `zeros` `ones` `diag` `fill` `seq` `reshape` `randm` |
+| Size and pick | `rows` `cols` `len` `at` `row` `col` |
+| Linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `cross` `norm` |
+| Arrange | `sort` `reverse` `cumsum` |
+| Statistics (its own menu) | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep` |

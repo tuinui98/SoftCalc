@@ -17,7 +17,7 @@ function by group. Picking one:
 - an operator (`+`, `^`, `mod`, `!`, ...) is put at the caret too.
 
 <!-- desktop -->
-![Functions menu with Trig Functions open](img/menu-functions.light.png)
+![Functions menu with Matrix > Build open](img/menu-functions.light.png)
 
 User Functions, at the bottom, lists the functions you defined
 (section *Variables and user functions*).
@@ -48,7 +48,8 @@ log10(1000)           => 3
 | Two's Complement | `twos` `signed` |
 | Rounding | `round` `ceil` `floor` |
 | Random | `rand` `rands` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
-| Matrix | lists and matrices: `det` `inv` `solve` `sum` `mean` `fill` `seq` and more (section *Lists and matrices*) |
+| Matrix | the ten used most (`det` `inv` `solve` `transpose` `eig` `identity` `fill` `seq` `sum` `mean`), then Build, Size and pick, Linear algebra and Arrange (section *Lists and matrices*) |
+| Statistics | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep`, on numbers or lists (section *Lists and matrices*) |
 
 ## Angles
 

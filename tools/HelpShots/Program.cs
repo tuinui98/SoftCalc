@@ -207,7 +207,7 @@ internal sealed class Shots(MainForm form, EngineSession session, string outDir,
 		//==================================================================
 		await TypeAsync("");
 		await MenuShotAsync("menu-view", "View");
-		await MenuShotAsync("menu-functions", "Functions", "Trig Functions", "sin");
+		await MenuShotAsync("menu-functions", "Functions", "Matrix", "Build", "fill");    // the ten on top, then the submenus (2026-11-26)
 		await TypeAsync("5");
 		await MenuShotAsync("menu-conversions", "Conversions", "Length", "ft", "m");
 		await TypeAsync("250");
