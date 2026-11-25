@@ -151,6 +151,7 @@ internal sealed class HelpWindow : Form
 			}
 		};
 		FilterTopics();
+		_built = true;
 	}
 
 	//==================================================================
@@ -171,11 +172,22 @@ internal sealed class HelpWindow : Form
 			_topics.SelectedIndex = _shown.IndexOf(_current);
 			ShowTopic(_current);    // marks the new search words
 		}
-		else if (_shown.Count > 0 && _search.Text.Trim().Length > 0)
+		else if (_shown.Count > 0 && (_search.Text.Trim().Length > 0 || (_built && _current == null)))
 		{
-			_topics.SelectedIndex = 0;
+			_topics.SelectedIndex = 0;    // also the first topic again after a search that found none
+		}
+		else if (_shown.Count == 0)
+		{
+			// Owner 2026-11-26: a ?word that no topic holds left a new Help window white
+			_current = null;
+			SetPage(Page(NoTopic, Array.Empty<string>(), null));
 		}
 	}
+
+	private bool _built;    // the constructor's first FilterTopics is done (Open then shows a topic)
+
+	private static readonly HelpTopic NoTopic = new("", "No topic found",
+		"# No topic found\n\nNo topic holds every word of the search. Try fewer words, or another word.");
 
 	internal void ShowTopic(HelpTopic topic)
 	{
