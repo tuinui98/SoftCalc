@@ -708,6 +708,18 @@ ends 1:1, the drag insert line is visible enough on dark.
         fallback, mpmath docs for what the engine computes (branch cuts).
         Check each site's terms again before use.
 
+## QR codes (owner 2026-11-26; details when the work starts)
+- [ ] A QR code from the Input text or a History line (the answer or
+      the whole line), desktop and web. Offline; a library rather than
+      our own encoder (candidates: QRCoder MIT for C#, qrcode-generator
+      MIT for the web; check versions and licences, notices, exact npm
+      pin). To settle then: shown text or full digits, a matrix's form,
+      too long (version 40: 7089 digits, 2953 bytes, Thai ~980 letters),
+      error level, dark on white with a 4-module quiet zone in both
+      themes, Copy image / Save PNG / Share. Tests decode it back
+      (ZXing.Net in the test project, jsQR in vitest). Scanning a QR
+      into Input is separate work (camera permission).
+
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
       large-screen / foldable quality from April 2027 and wants foldable
