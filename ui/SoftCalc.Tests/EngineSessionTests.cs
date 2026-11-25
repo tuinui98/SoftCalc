@@ -79,6 +79,19 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	}
 
 	[Fact]
+	public async Task TypedSettingsAreTracked()
+	{
+		var reply = await Session.EvalAsync(":deg :prec 64");
+		Assert.True(reply.SettingsChanged);
+		Assert.Equal(("definition", "Degrees, Precision 64"), (reply.Kind, reply.Text));
+		Assert.Equal("deg", (string?)Session.Settings["angle"]);
+		Assert.Equal(64, (int?)Session.Settings["precision"]);
+		Assert.False((await Session.EvalAsync(":")).SettingsChanged);
+		Assert.False((await Session.EvalAsync(":prec 100")).SettingsChanged);
+		Assert.Equal(64, (int?)Session.Settings["precision"]);
+	}
+
+	[Fact]
 	public async Task StateListsUserFunctions()
 	{
 		await Session.EvalAsync("grow(p, n)=p*2^n");

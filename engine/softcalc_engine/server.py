@@ -139,8 +139,14 @@ class Dispatcher:
     #------------------------------------------------------------------
     def op_eval(self, request):
         result = self.engine.evaluate(argument(request, "input", str))
-        return {"kind": result.kind, "input": result.input,
-                "display_input": result.display_input, "text": result.text, "note": result.note}
+        reply = {"kind": result.kind, "input": result.input,
+                 "display_input": result.display_input, "text": result.text, "note": result.note}
+        if result.settings_changed:
+            reply["settings"] = self.current_settings()    # a `:` line (commands.py); the UI keeps them
+        return reply
+
+    def current_settings(self):
+        return {name: getattr(self.engine.settings, name) for name in Settings.__dataclass_fields__}
 
     def op_clear_history(self, request):
         self.engine.clear_history()
@@ -157,7 +163,7 @@ class Dispatcher:
             if name == "decimals" and value is not None and not 0 <= value <= 512:
                 raise RequestError("'decimals' must be between 0 and 512")
             setattr(settings, name, value)
-        return {name: getattr(settings, name) for name in Settings.__dataclass_fields__}
+        return self.current_settings()
 
     def op_delete(self, request):
         return {"deleted": self.engine.delete(argument(request, "name", str))}

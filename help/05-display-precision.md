@@ -77,3 +77,42 @@ binary. Fractions work too: `3.5` in hex is `0x3.8`.
 When you type a number in another base than the output, History shows
 it converted on the right, faint (`0x1F+1` shows `31+1`), and so does
 the hint line while you type.
+
+## Settings typed in Input
+
+A line that starts with `:` changes settings instead of calculating:
+
+```calc
+:deg :prec 64         => Degrees, Precision 64
+sin(30)               => 0.5
+:hex                  => Hexadecimal
+255                   => 0xFF
+:dec :digits 2 :pad   => Decimal, 2 decimal places, Pad zeros on
+2.5                   => 2.50
+:digits all :pad off  => All digits, Pad zeros off
+:prec 100             => ERROR:Precision is 32, 64, 128 or 512
+```
+
+| setting | type |
+|---|---|
+| angle | `:deg` `:rad` `:grad` |
+| output base | `:dec` `:hex` `:bin` `:oct` |
+| precision | `:prec 32`, `64`, `128` or `512` |
+| decimal places | `:digits 0` to `512`, or `:digits all` |
+| pad with zeros | `:pad on` / `:pad off` |
+| RPN mode | `:rpn on` / `:rpn off` (or `:infix`) |
+| word size of `twos` and `signed` | `:word 8`, `16`, `32` or `64` |
+
+- Full names work too: `:degrees`, `:hexadecimal`, `:precision 64`,
+  `:decimals 2`, `:wordsize 16`, and `=` in place of the space
+  (`:prec=64`). Letter case does not matter.
+- Several on one line apply together; if one is wrong, none of them
+  changes and the error says what it takes.
+- A setting typed is kept like one picked from the menus, and the
+  menus, the ribbon and the keypad show it at once.
+- The line is not a result: it leaves `answer` and `$1` as they were.
+- `:` alone lists every setting as the line that sets them all again,
+  such as `:prec 32 :rad :dec :rpn off :digits all :pad off :word 32`;
+  copy it to put the same settings back later.
+- While you type, the hint line lists the commands, then what a command
+  takes (`:prec` shows `32 64 128 512`).

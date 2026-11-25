@@ -427,6 +427,12 @@ export class Calculator
 		{
 			const note = typeof answer.note === "string" && answer.note.length > 0 ? answer.note : undefined;
 			this.add({ kind: answer.kind, input: answer.input, display: answer.display_input, text: answer.text, note });
+			// a `:` line changed the settings (owner 2026-11-26): kept as a Settings change keeps them
+			if (answer.settings && typeof answer.settings === "object")
+			{
+				this.settings = answer.settings as Settings;
+				this.save(this.store.saveSettings(this.settings));
+			}
 			if (answer.kind === "definition")
 			{
 				await this.saveDefinitions();

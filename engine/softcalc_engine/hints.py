@@ -12,6 +12,8 @@ the original's help (owner 2026-11-06).
 
 import re
 
+from . import commands
+
 BUILTINS = {
     "sqrt": "sqrt(x) - square root",
     "abs": "abs(x) - absolute value (size of a complex number)",
@@ -146,6 +148,8 @@ def hint_for(text, caret, lookup_user):
     Inside an open fill( holding rand/card, the hint first says each cell
     is drawn again (owner 2026-11-24).
     """
+    if commands.is_command(text):
+        return commands.hint(left_of(text, caret))    # a settings line (owner 2026-11-26)
     plain = rands_empty(text, caret) or plain_hint(text, caret, lookup_user)
     if drawing_fill(left_of(text, caret)):
         return FILL_DRAW_HINT if plain is None else FILL_DRAW_HINT + "  |  " + plain

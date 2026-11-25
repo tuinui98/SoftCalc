@@ -30,6 +30,7 @@ from .parser import parse, parse_line
 from .rpn import parse_rpn
 from .units import RNW_NAMES, canonical, convert, rnw_text, rnw_value
 from . import crypto
+from . import commands
 from . import currency
 from . import fastplot
 
@@ -76,6 +77,8 @@ class EvalResult:
     and $n replaced by their values (extensions.md E10).
     text: the History result line (number, message, or error text).
     note: the ECB rate date when a currency rate was used, else "".
+    settings_changed: a `:` line changed the settings (commands.py); the
+    server then sends them with the reply.
     """
 
     kind: str
@@ -84,6 +87,7 @@ class EvalResult:
     display_input: str = ""
     value: object = field(default=None, repr=False)
     note: str = ""
+    settings_changed: bool = False
 
 
 @dataclass
@@ -144,6 +148,8 @@ class Engine:
     def evaluate_line(self, text):
         if text == "":
             return EvalResult("empty", text)
+        if commands.is_command(text):
+            return self.command(text)
         try:
             with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
                 if text.strip() == "":
@@ -167,6 +173,22 @@ class Engine:
         self.answer = value
         self.results.append(value)
         return EvalResult("result", text, shown, display, value)
+
+    def command(self, text):
+        """A settings line (`:deg :prec 64`, owner 2026-11-26): applied all or none, then said back.
+
+        It is a "definition" to the UI: a message in History, no `$n`, no answer.
+        """
+        try:
+            changes = commands.parse(text)
+        except CalcError as exc:
+            return EvalResult("error", text, f"ERROR:{exc}", text)
+        if not changes:
+            return EvalResult("definition", text, commands.describe_all(self.settings), text)
+        for name, value in changes:
+            setattr(self.settings, name, value)
+        said = ", ".join(dict.fromkeys(commands.describe(name, getattr(self.settings, name)) for name, _ in changes))
+        return EvalResult("definition", text, said, text, settings_changed=True)
 
     def repeat(self, text, count, unique, give_up):
         """The Random window's Seed draws (server `draws`): the line parsed

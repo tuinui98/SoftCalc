@@ -58,13 +58,13 @@ log10(1000)           => 3
 
 <!-- desktop -->
 Pick the unit with the ribbon's **Angle**
-group (Deg / Rad) or View > Advanced Options > Degrees / Radians /
-Grads. SoftCalc starts in degrees. Hyperbolic functions do not use it.
+group (Deg / Rad), View > Advanced Options > Degrees / Radians /
+Grads, or type `:deg`, `:rad` or `:grad`. SoftCalc starts in degrees. Hyperbolic functions do not use it.
 <!-- /desktop -->
 
 <!-- web -->
-Pick the unit with the **deg ▸** key or Settings > Angle (deg, rad,
-grad). SoftCalc starts in degrees. Hyperbolic functions do not use it.
+Pick the unit with the **deg ▸** key, Settings > Angle (deg, rad,
+grad), or type `:deg`, `:rad` or `:grad`. SoftCalc starts in degrees. Hyperbolic functions do not use it.
 <!-- /web -->
 
 ```calc
