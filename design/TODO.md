@@ -736,6 +736,16 @@ ends 1:1, the drag insert line is visible enough on dark.
       extension (chrome.storage or its IndexedDB), no sw.js, a compact
       layout, `npm run extension`. Maybe a context menu "calculate the
       selected text". Check Chrome's current docs before building.
+      Owner 2026-11-26: the toolbar popup with the engine kept warm in an
+      offscreen document, plus a Pop out button (a small resizable
+      window). Input-box only: keep what typing does (arithmetic, every
+      function, variables and f(x) =, ans and $n, units, currency and
+      coins, dates, finance functions, bases, rand/randm/shapes, matrices
+      as one line, hints under Input); leave out what needs its own UI
+      (Graph, Compound window, Random window and Cards tab, deck editor
+      and pictures, Names sheet, the matrix table, file import/export).
+      A few settings in a small menu (precision, angle, format). Numpad:
+      to decide (numbers and + - * / ( ) . = ⌫ only, no scientific keys).
 
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
