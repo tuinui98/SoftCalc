@@ -86,6 +86,9 @@ leans to the small end, `randbeta(5, 2, ...)` to the large end and
 `randbeta(0.5, 0.5, ...)` keeps away from the middle. In RPN give all
 four (or three) numbers: `2 5 1 10 randbeta`.
 
+For a bell, the normal distribution, `randnorm(mean, sd)` draws a
+decimal (see *Statistics*).
+
 More: randbeta, [NIST: Beta Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda366h.htm);
 randexp, [NIST: Exponential Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda3667.htm); randtri,
 [MathWorld: Triangular Distribution](https://mathworld.wolfram.com/TriangularDistribution.html).

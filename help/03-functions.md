@@ -47,9 +47,9 @@ log10(1000)           => 3
 | Finance Functions | `fv pv pmt nper` (section *Finance*) |
 | Two's Complement | `twos` `signed` |
 | Rounding | `round` `ceil` `floor` |
-| Random | `rand` `rands` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
+| Random | `rand` `rands` `randnorm` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
 | Matrix | the ten used most (`det` `inv` `solve` `transpose` `eig` `identity` `fill` `seq` `sum` `mean`), then Build, Size and pick, Linear algebra and Arrange (section *Lists and matrices*) |
-| Statistics | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep`, on numbers or lists (section *Lists and matrices*) |
+| Statistics | the ten used most (`sum` `mean` `median` `mode` `stdev` `variance` `percentile` `comb` `normcdf` `norminv`), then Descriptive, Counting and Distributions (section *Statistics*) |
 
 More: exp, ln and log10 in [DLMF §4.2](https://dlmf.nist.gov/4.2); how SoftCalc
 computes them, with mpmath: [powers and logarithms](https://mpmath.org/doc/current/functions/powers.html).

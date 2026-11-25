@@ -24,7 +24,8 @@ from . import cards
 from . import matrix
 from .matrix import Matrix
 from .functions import CARD_FUNCTION, RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
-from .random_shapes import SHAPE_FUNCTIONS, below, shaped
+from .random_shapes import SHAPE_FUNCTIONS, below, normal, shaped
+from . import stats
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
 from .rpn import parse_rpn
@@ -137,6 +138,7 @@ class Engine:
         self.used_prices = False
         self.draws = {}
         matrix.lost.update(digits=0, of=self.settings.precision)
+        stats.ties.clear()
         result = self.evaluate_line(text)
         if result.kind in ("result", "definition"):
             notes = [self.rates.note()] if self.used_rates else []
@@ -162,8 +164,8 @@ class Engine:
                     return self.define(text, tree, builtins)
                 value = self.eval_node(tree, builtins, {}, 0)
                 shown = self.format_value(value)
-                display = (self.display_line(text, builtins, self.drawn_in(tree)) + self.word_suffix(text, value)
-                           + self.rnw_suffix(text, value))
+                display = self.mode_ties() or (self.display_line(text, builtins, self.drawn_in(tree))
+                                               + self.word_suffix(text, value) + self.rnw_suffix(text, value))
         except currency.RatesNeeded:
             return EvalResult("rates_needed", text)
         except crypto.PricesNeeded:
@@ -419,6 +421,14 @@ class Engine:
                 raise CalcError(f"{key} needs real numbers")
         if key == "randm":
             return self.random_matrix(node, args)
+        if key == "randnorm":
+            # randnorm(), randnorm(mean, sd): always a decimal; round() makes it whole (owner 2026-11-26)
+            if len(args) not in (0, 2):
+                raise CalcError("randnorm expects no arguments, or mean and sd")
+            mean, sd = args if args else (mpmath.mpf(0), mpmath.mpf(1))
+            if sd <= 0:
+                raise CalcError("randnorm: sd must be above 0")
+            return mean + sd * normal(self.random)
         if key in SHAPE_FUNCTIONS:
             fixed, full = SHAPE_FUNCTIONS[key]
             span = node[2][fixed:] if len(args) == full else []
@@ -502,6 +512,12 @@ class Engine:
         if not names & set(WORD_FUNCTIONS):
             return ""
         return " = " + format_real(value, self.settings.precision, "hex")
+
+    def mode_ties(self):
+        """`[3, 1]` when a mode() in the line had a tie: the result is the first
+        of them; History shows them all faint on the right, and only them (owner 2026-11-26).
+        """
+        return self.format_value(matrix.from_items(stats.ties[0])) if stats.ties else ""
 
     def rnw_suffix(self, text, value):
         """` = 4-1-0` when the line's last tag converts to rai-ngan-wa

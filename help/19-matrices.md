@@ -164,24 +164,15 @@ More (MathWorld): [Transpose](https://mathworld.wolfram.com/Transpose.html),
 
 ## Statistics and lists
 
-These take numbers and lists mixed, and use every cell; the functions
-menu has them under Statistics:
+The statistics functions take a list or a matrix (every cell), mixed
+with numbers; *Statistics* has them all, with mode, percentile,
+comb and the normal distribution:
 
 ```calc
 sum([1, 2, 3], 4)             => 10
-mean([2, 4, 9])               => 5
-median([3, 1, 2, 10])         => 2.5
-prod([1, 2, 3, 4])            => 24
-min([3, 1, 2])                => 1
-max(3, 9, 2)                  => 9
-count([4, 5], 6)              => 3
+mean([[1, 2], [3, 4]])        => 2.5
 stdevp([2, 4, 4, 4, 5, 5, 7, 9]) => 2
-variancep([1, 2, 3, 4])       => 1.25
-variance(1, 2, 3, 4)          => 1.6666666666666666666666666666667
 ```
-
-`stdev` and `variance` are for a sample (dividing by n - 1, as Excel's
-STDEV.S); `stdevp` and `variancep` for a whole population (n).
 
 These take one list:
 
@@ -190,11 +181,6 @@ sort([3, 1, 2])               => [1, 2, 3]
 reverse([1, 2, 3])            => [3, 2, 1]
 cumsum([1, 2, 3, 4])          => [1, 3, 6, 10]
 ```
-
-More (NIST/SEMATECH e-Handbook of Statistical Methods): mean and
-median in [Measures of Location](https://www.itl.nist.gov/div898/handbook/eda/section3/eda351.htm); variance and standard
-deviation in [Measures of Scale](https://www.itl.nist.gov/div898/handbook/eda/section3/eda356.htm).
-
 
 ## Functions and conversions on every cell
 
@@ -253,7 +239,7 @@ lists the errors of lists and matrices.
 <!-- desktop -->
 Functions > Matrix has the ten used most on top (`det` `inv` `solve`
 `transpose` `eig` `identity` `fill` `seq` `sum` `mean`), then a submenu
-for each group below; the statistics are in Functions > Statistics.
+for each group below; the statistics are in Functions > Statistics (see *Statistics*).
 <!-- /desktop -->
 <!-- web -->
 func > Matrix has the ten used most on top (`det` `inv` `solve`
@@ -268,4 +254,4 @@ Statistics.
 | Size and pick | `rows` `cols` `len` `at` `row` `col` |
 | Linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `cross` `norm` |
 | Arrange | `sort` `reverse` `cumsum` |
-| Statistics (its own menu) | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep` |
+| Statistics (its own menu, see *Statistics*) | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep` and more |

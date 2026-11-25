@@ -1,0 +1,5816 @@
+[
+ {
+  "line": "comb(30, 28)",
+  "value": "435/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(30, 28)",
+  "value": "132626429906095529318154240000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(2, 4)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(2, 4)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(42, 5)",
+  "value": "850668/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(42, 5)",
+  "value": "102080160/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(54, 18)",
+  "value": "96926348578605/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(54, 18)",
+  "value": "620558705531887159346749440000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(20, 20)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(20, 20)",
+  "value": "2432902008176640000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(14, 9)",
+  "value": "2002/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(14, 9)",
+  "value": "726485760/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(6, 6)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(6, 6)",
+  "value": "720/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(22, 7)",
+  "value": "170544/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(22, 7)",
+  "value": "859541760/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(34, 8)",
+  "value": "18156204/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(34, 8)",
+  "value": "732058145280/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(34, 36)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(34, 36)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(54, 25)",
+  "value": "1683191473897752/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(54, 25)",
+  "value": "26108336494771895963771793761107968000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(25, 22)",
+  "value": "2300/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(25, 22)",
+  "value": "2585201673888497664000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(23, 11)",
+  "value": "1352078/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(23, 11)",
+  "value": "53970627110400/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(13, 15)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(13, 15)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(53, 4)",
+  "value": "292825/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(53, 4)",
+  "value": "7027800/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(36, 15)",
+  "value": "5567902560/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(36, 15)",
+  "value": "7281003461233582080000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(45, 6)",
+  "value": "8145060/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(45, 6)",
+  "value": "5864443200/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(22, 19)",
+  "value": "1540/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(22, 19)",
+  "value": "187333454629601280000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(25, 8)",
+  "value": "1081575/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(25, 8)",
+  "value": "43609104000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(33, 23)",
+  "value": "92561040/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(33, 23)",
+  "value": "2392889555448601878174105600000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(16, 1)",
+  "value": "16/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(16, 1)",
+  "value": "16/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(26, 9)",
+  "value": "3124550/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(26, 9)",
+  "value": "1133836704000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(1, 1)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(1, 1)",
+  "value": "1/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(29, 21)",
+  "value": "4292145/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(29, 21)",
+  "value": "219289731987591814348800000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(11, 2)",
+  "value": "55/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(11, 2)",
+  "value": "110/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(8, 3)",
+  "value": "56/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(8, 3)",
+  "value": "336/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(60, 43)",
+  "value": "387221678682300/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(60, 43)",
+  "value": "23394099581432370964932821776849007691597882025697712537600000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(50, 52)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(50, 52)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(49, 29)",
+  "value": "28277527346376/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(49, 29)",
+  "value": "250023166568122405335142878324631535616000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(39, 21)",
+  "value": "62359143990/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(39, 21)",
+  "value": "3185987419470392273402265600000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(25, 19)",
+  "value": "177100/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(25, 19)",
+  "value": "21543347282404147200000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(48, 36)",
+  "value": "69668534468/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(48, 36)",
+  "value": "25916229909328220763484483240501440994187673600000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(50, 28)",
+  "value": "88749815264600/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(50, 28)",
+  "value": "27058784260619307936703774710457958400000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(27, 2)",
+  "value": "351/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(27, 2)",
+  "value": "702/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(53, 27)",
+  "value": "973469712824056/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(53, 27)",
+  "value": "10599984616877389761291348267009835008000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(45, 33)",
+  "value": "28760021745/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(45, 33)",
+  "value": "249732403535771476675575116023950055833600000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(0, 3)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(0, 3)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(8, 9)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(8, 9)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(41, 38)",
+  "value": "10660/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(41, 38)",
+  "value": "5575421102193967851361677008906791944192000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(2, 4)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(2, 4)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(12, 2)",
+  "value": "66/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(12, 2)",
+  "value": "132/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(26, 20)",
+  "value": "230230/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(26, 20)",
+  "value": "560127029342507827200000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(49, 17)",
+  "value": "6499270398159/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(49, 17)",
+  "value": "2311708772421640603275264000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(44, 37)",
+  "value": "38320568/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(44, 37)",
+  "value": "527434836267549358738814645042582517920563200000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(46, 31)",
+  "value": "511738760544/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(46, 31)",
+  "value": "4207945261042303269991375581355935006720000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(7, 7)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(7, 7)",
+  "value": "5040/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(42, 27)",
+  "value": "98672427616/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(42, 27)",
+  "value": "1074431182666478554501377674969088000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(36, 20)",
+  "value": "7307872110/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(36, 20)",
+  "value": "17779336731917059409510400000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(25, 18)",
+  "value": "480700/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(25, 18)",
+  "value": "3077621040343449600000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(60, 13)",
+  "value": "5166863427600/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(60, 13)",
+  "value": "32174166034424494080000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(17, 9)",
+  "value": "24310/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(17, 9)",
+  "value": "8821612800/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(16, 5)",
+  "value": "4368/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(16, 5)",
+  "value": "524160/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(21, 21)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(21, 21)",
+  "value": "51090942171709440000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(16, 16)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(16, 16)",
+  "value": "20922789888000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(37, 38)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(37, 38)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(10, 3)",
+  "value": "120/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(10, 3)",
+  "value": "720/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(22, 6)",
+  "value": "74613/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(22, 6)",
+  "value": "53721360/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(35, 33)",
+  "value": "595/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(35, 33)",
+  "value": "5166573983193072464833325668761600000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(58, 13)",
+  "value": "3155581562280/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(58, 13)",
+  "value": "19649872024414055424000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(24, 9)",
+  "value": "1307504/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(24, 9)",
+  "value": "474467051520/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(1, 3)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(1, 3)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(9, 7)",
+  "value": "36/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(9, 7)",
+  "value": "181440/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(22, 13)",
+  "value": "497420/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(22, 13)",
+  "value": "3097444686336000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(51, 48)",
+  "value": "20825/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(51, 48)",
+  "value": "258519792214563713370707169411550535177209953336164352000000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(35, 27)",
+  "value": "23535820/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(35, 27)",
+  "value": "256278471388545261152446709760000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(17, 3)",
+  "value": "680/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(17, 3)",
+  "value": "4080/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(0, 3)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(0, 3)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(49, 38)",
+  "value": "29135916264/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(49, 38)",
+  "value": "15238743186684993808928876145414847304582352076800000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(56, 48)",
+  "value": "1420494075/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(56, 48)",
+  "value": "17633893546747605452729306732731273554972668127013106614272000000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(56, 39)",
+  "value": "97997533741800/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(56, 39)",
+  "value": "1998942137513404062886245328374792595178590033674240000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(2, 5)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(2, 5)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(33, 20)",
+  "value": "573166440/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(33, 20)",
+  "value": "1394457782895455639961600000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(8, 6)",
+  "value": "28/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(8, 6)",
+  "value": "20160/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(44, 9)",
+  "value": "708930508/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(44, 9)",
+  "value": "257256702743040/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(28, 14)",
+  "value": "40116600/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(28, 14)",
+  "value": "3497296636753920000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(5, 1)",
+  "value": "5/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(5, 1)",
+  "value": "5/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(8, 4)",
+  "value": "70/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(8, 4)",
+  "value": "1680/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(53, 37)",
+  "value": "14844575908435/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(53, 37)",
+  "value": "204317077547666360444120794747303235437927071744000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(2, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(2, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(40, 2)",
+  "value": "780/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(40, 2)",
+  "value": "1560/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(52, 39)",
+  "value": "635013559600/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(52, 39)",
+  "value": "12952931708682244737589544723602620208894999265280000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(29, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(29, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(35, 3)",
+  "value": "6545/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(35, 3)",
+  "value": "39270/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(8, 4)",
+  "value": "70/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(8, 4)",
+  "value": "1680/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(11, 10)",
+  "value": "11/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(11, 10)",
+  "value": "39916800/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(40, 32)",
+  "value": "76904685/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(40, 32)",
+  "value": "20235994128172066824047898551490969600000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(12, 5)",
+  "value": "792/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(12, 5)",
+  "value": "95040/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(4, 7)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(4, 7)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(59, 28)",
+  "value": "55317304280338408/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(59, 28)",
+  "value": "16865601330414850728578531029741712965632000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(16, 10)",
+  "value": "8008/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(16, 10)",
+  "value": "29059430400/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(17, 1)",
+  "value": "17/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(17, 1)",
+  "value": "17/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(1, 2)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(1, 2)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(54, 33)",
+  "value": "520341450264090/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(54, 33)",
+  "value": "4518290082876301646265386880745317015434035200000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(50, 34)",
+  "value": "4923689695575/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(50, 34)",
+  "value": "1453634690427063664618520694579407748071424000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(19, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(19, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(34, 28)",
+  "value": "1344904/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(34, 28)",
+  "value": "410045554221672417843914735616000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(22, 24)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(22, 24)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(18, 20)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(18, 20)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(50, 4)",
+  "value": "230300/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(50, 4)",
+  "value": "5527200/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(51, 48)",
+  "value": "20825/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(51, 48)",
+  "value": "258519792214563713370707169411550535177209953336164352000000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(54, 16)",
+  "value": "21094923659355/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(54, 16)",
+  "value": "441364655428084750602240000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(6, 5)",
+  "value": "6/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(6, 5)",
+  "value": "720/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(41, 25)",
+  "value": "103077446706/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(41, 25)",
+  "value": "1598855926587021658484192968704000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(30, 10)",
+  "value": "30045015/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(30, 10)",
+  "value": "109027350432000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(6, 5)",
+  "value": "6/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(6, 5)",
+  "value": "720/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(59, 52)",
+  "value": "341149446/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(59, 52)",
+  "value": "27516491774938459471813297563569326655933110470771315980321685504000000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(5, 7)",
+  "value": "0/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(5, 7)",
+  "value": "0/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(39, 32)",
+  "value": "15380937/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(39, 32)",
+  "value": "4047198825634413364809579710298193920000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(58, 12)",
+  "value": "891794789340/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(58, 12)",
+  "value": "427171130965522944000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(46, 38)",
+  "value": "260932815/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(46, 38)",
+  "value": "136473763884228396573668289404768226511945728000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(0, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(0, 0)",
+  "value": "1/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(19, 17)",
+  "value": "171/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(19, 17)",
+  "value": "60822550204416000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(57, 1)",
+  "value": "57/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(57, 1)",
+  "value": "57/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(29, 10)",
+  "value": "20030010/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(29, 10)",
+  "value": "72684900288000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(44, 41)",
+  "value": "13244/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(44, 41)",
+  "value": "443045262464741461340604301835769315053273088000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(35, 35)",
+  "value": "1/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(35, 35)",
+  "value": "10333147966386144929666651337523200000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(54, 26)",
+  "value": "1877405874732108/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(54, 26)",
+  "value": "757141758348384982949382019072131072000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(52, 47)",
+  "value": "2598960/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(52, 47)",
+  "value": "672151459757865654763838640470031391460745878674027315200000000000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(4, 3)",
+  "value": "4/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(4, 3)",
+  "value": "24/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(30, 11)",
+  "value": "54627300/1",
+  "error": null,
+  "group": "comb"
+ },
+ {
+  "line": "perm(30, 11)",
+  "value": "2180547008640000/1",
+  "error": null,
+  "group": "perm"
+ },
+ {
+  "line": "comb(-1, 2)",
+  "value": null,
+  "error": "comb:",
+  "group": "comb"
+ },
+ {
+  "line": "comb(5, -1)",
+  "value": null,
+  "error": "comb:",
+  "group": "comb"
+ },
+ {
+  "line": "comb(5, 2.5)",
+  "value": null,
+  "error": "comb:",
+  "group": "comb"
+ },
+ {
+  "line": "percentile([6.4, 21, -29.1, 42.4, 22.8, -21.3, 19, 12.1], 0.21)",
+  "value": "-8281/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([6.4, 21, -29.1, 42.4, 22.8, -21.3, 19, 12.1], 4)",
+  "value": "212/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([39.1, -33.5, 17, -5.1], 0.54)",
+  "value": "4301/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([39.1, -33.5, 17, -5.1], 1)",
+  "value": "-61/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-10.85, 17.31, -22, -7, -2.5, -32.9], 0.5)",
+  "value": "-357/40",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-10.85, 17.31, -22, -7, -2.5, -32.9], 1)",
+  "value": "-1537/80",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([32], 0.55)",
+  "value": "32/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([32], 0)",
+  "value": "32/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-49.76, 28.71, -21.93, 42.55, 8, -12, 25.77, -5.4, 36, -20.98, -30.1], 0.11)",
+  "value": "-29283/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-49.76, 28.71, -21.93, 42.55, 8, -12, 25.77, -5.4, 36, -20.98, -30.1], 1)",
+  "value": "-4291/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([24.8, -19.19, 38, 31.29, -37.21, 9.6, 30.22, 48.98, 30, 27.4, 8.2], 0.85)",
+  "value": "6929/200",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([24.8, -19.19, 38, 31.29, -37.21, 9.6, 30.22, 48.98, 30, 27.4, 8.2], 4)",
+  "value": "2449/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([23.1, 7.73, -45.8, 38, -26, 21.5, 23.47], 0.09)",
+  "value": "-8777/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([23.1, 7.73, -45.8, 38, -26, 21.5, 23.47], 4)",
+  "value": "38/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-46, 45.3], 0.01)",
+  "value": "-45087/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-46, 45.3], 3)",
+  "value": "899/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-32.4, 43, 38.83, -6.8, -7.4, -17.98, -2.08, -9, 11.8, -6, -37], 0.36)",
+  "value": "-201/25",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-32.4, 43, 38.83, -6.8, -7.4, -17.98, -2.08, -9, 11.8, -6, -37], 4)",
+  "value": "43/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-1.2, 13, -1, -27, -41.29, -15.81, -18.39, -0.9, -41], 0.79)",
+  "value": "-121/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-1.2, 13, -1, -27, -41.29, -15.81, -18.39, -0.9, -41], 0)",
+  "value": "-4129/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([10, 38.32], 0.65)",
+  "value": "3551/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([10, 38.32], 0)",
+  "value": "10/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([10.03, 37.9, 5, 48.4, 29.45, 13, 49.66, -5.3, 40], 0.56)",
+  "value": "16753/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([10.03, 37.9, 5, 48.4, 29.45, 13, 49.66, -5.3, 40], 4)",
+  "value": "2483/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([3], 0.14)",
+  "value": "3/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([3], 4)",
+  "value": "3/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-43.14], 0.76)",
+  "value": "-2157/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-43.14], 4)",
+  "value": "-2157/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([31.4, -33, 5.2, 21.5, -14.8, 27.32, -23.1, -18.7, -40, 35.87], 0.13)",
+  "value": "-31317/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([31.4, -33, 5.2, 21.5, -14.8, 27.32, -23.1, -18.7, -40, 35.87], 4)",
+  "value": "3587/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([35.4, 33.5, 28.8, -19, -16, 31.29, 12, -5.8], 0.11)",
+  "value": "-1669/100",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([35.4, 33.5, 28.8, -19, -16, 31.29, 12, -5.8], 3)",
+  "value": "12737/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-47, -2.1, -35.26, -13.6], 0.67)",
+  "value": "-2697/200",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-47, -2.1, -35.26, -13.6], 4)",
+  "value": "-21/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([19.7, -33], 0.39)",
+  "value": "-12447/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([19.7, -33], 1)",
+  "value": "-793/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([36.46, 9.5, 39.7, 12, 5.43, -4, -34.05, 0], 0.36)",
+  "value": "7059/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([36.46, 9.5, 39.7, 12, 5.43, -4, -34.05, 0], 1)",
+  "value": "-1/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-32.6], 0.18)",
+  "value": "-163/5",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-32.6], 4)",
+  "value": "-163/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-14, -14.68, 4, 29.2, 33.73, 0, 20, 36.1], 0.79)",
+  "value": "316009/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-14, -14.68, 4, 29.2, 33.73, 0, 20, 36.1], 4)",
+  "value": "361/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-39.2, 19, 12.68, 30.2, 36.82, -42.48, -25, 36, 44.3], 0.32)",
+  "value": "-2437/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-39.2, 19, 12.68, 30.2, 36.82, -42.48, -25, 36, 44.3], 0)",
+  "value": "-1062/25",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([40.4, 0.9, -17, 33.83, -21], 0.74)",
+  "value": "40641/1250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([40.4, 0.9, -17, 33.83, -21], 3)",
+  "value": "3383/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([23.3, 27, 29, 5, -13, 12, -11.4, -36.18, 22, -4.21, -20.7], 0.64)",
+  "value": "16/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([23.3, 27, 29, 5, -13, 12, -11.4, -36.18, 22, -4.21, -20.7], 4)",
+  "value": "29/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([48, -44.42, -21, 45.58, -49.72, -31], 0.27)",
+  "value": "-39723/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([48, -44.42, -21, 45.58, -49.72, -31], 0)",
+  "value": "-1243/25",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-48.87, -7.66, 41.02, -17, 35, -22.9, -3.65, 21.5], 0.36)",
+  "value": "-15179/1250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-48.87, -7.66, 41.02, -17, 35, -22.9, -3.65, 21.5], 2)",
+  "value": "-1131/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-23.41, 13, 6.8, 1], 0.27)",
+  "value": "-36379/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-23.41, 13, 6.8, 1], 3)",
+  "value": "167/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([48.8, 24, 44, 6.47, -21.8, 43.7], 0.06)",
+  "value": "-13319/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([48.8, 24, 44, 6.47, -21.8, 43.7], 1)",
+  "value": "4341/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-14, 24.8, 14, -8, 48, 49.37, -11.59], 0.83)",
+  "value": "5942/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-14, 24.8, 14, -8, 48, 49.37, -11.59], 1)",
+  "value": "-1959/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-1.51, 45, -30.1, -48, -49, 16, 6, 37.3, 21.08, 8, 3.2, 4], 0.14)",
+  "value": "-19167/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-1.51, 45, -30.1, -48, -49, 16, 6, 37.3, 21.08, 8, 3.2, 4], 2)",
+  "value": "5/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([6.6, -30.7, 5.07, -0.76, 1, 7.6, -17.3, 28.39, 34.63, -7.31, -8.26, 3.07], 1)",
+  "value": "3463/100",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([6.6, -30.7, 5.07, -0.76, 1, 7.6, -17.3, 28.39, 34.63, -7.31, -8.26, 3.07], 1)",
+  "value": "-3019/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-24.35, 6.87, -28.8, -43, 2.4, 27, 23.21, 50, -1.54], 0.37)",
+  "value": "-6131/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-24.35, 6.87, -28.8, -43, 2.4, 27, 23.21, 50, -1.54], 1)",
+  "value": "-487/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-16, 28, 21, -30.26, 43.5, -42.64, 9.1, -44.7, 16.9, -37.81, 13.89], 0.76)",
+  "value": "484/25",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-16, 28, 21, -30.26, 43.5, -42.64, 9.1, -44.7, 16.9, -37.81, 13.89], 4)",
+  "value": "87/2",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([46.37, 11, 14.7, -11, -47.24, -43.43, -25.3, -3.91, 14], 0.52)",
+  "value": "-3811/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([46.37, 11, 14.7, -11, -47.24, -43.43, -25.3, -3.91, 14], 0)",
+  "value": "-1181/25",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-50, 41, 8.6, -21.3, 23.9, -3.62, -21.8, 12.18, -22.73, -17.98, 44], 0.57)",
+  "value": "2467/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-50, 41, 8.6, -21.3, 23.9, -3.62, -21.8, 12.18, -22.73, -17.98, 44], 2)",
+  "value": "-181/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-12.7, 16, -20, -34, 29, -15.89, 29], 0.95)",
+  "value": "29/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-12.7, 16, -20, -34, 29, -15.89, 29], 1)",
+  "value": "-3589/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([40.78, 29.38], 0.8)",
+  "value": "77/2",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([40.78, 29.38], 3)",
+  "value": "3793/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-47], 0.27)",
+  "value": "-47/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-47], 0)",
+  "value": "-47/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([20, -15.14, 46, 35, -49, -33.76, 33, 29.62, -37.5], 0.27)",
+  "value": "-19238/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([20, -15.14, 46, 35, -49, -33.76, 33, 29.62, -37.5], 1)",
+  "value": "-844/25",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-21.19, 49.86, -23.5, -25.2, -7.8], 0.46)",
+  "value": "-53899/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-21.19, 49.86, -23.5, -25.2, -7.8], 1)",
+  "value": "-47/2",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([21, -30, 20], 0.61)",
+  "value": "1011/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([21, -30, 20], 0)",
+  "value": "-30/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-2.6, 19.8, 1, 24, 32, -25.9], 0.34)",
+  "value": "-2/25",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-2.6, 19.8, 1, 24, 32, -25.9], 4)",
+  "value": "32/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-1.83], 0.26)",
+  "value": "-183/100",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-1.83], 2)",
+  "value": "-183/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([19.1, 32.81, 8.3, -33.1, 2.1, 11, 6, 38.4, 33.8, -39.1], 0.79)",
+  "value": "329189/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([19.1, 32.81, 8.3, -33.1, 2.1, 11, 6, 38.4, 33.8, -39.1], 3)",
+  "value": "11753/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([48], 0.25)",
+  "value": "48/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([48], 2)",
+  "value": "48/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-41.3, 22, -48, -50, -30.79, -26, 6, -15.04], 0.52)",
+  "value": "-69311/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-41.3, 22, -48, -50, -30.79, -26, 6, -15.04], 0)",
+  "value": "-50/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([47, 40, 8.6, -12, -39.33, 13, -14.6, 10.39, -5.89, -27, 34.6, -18.09], 0.13)",
+  "value": "-231687/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([47, 40, 8.6, -12, -39.33, 13, -14.6, 10.39, -5.89, -27, 34.6, -18.09], 1)",
+  "value": "-6189/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-35.29, -35.49, 26.8, 44.1, 26.68, 21.51, -19], 0.59)",
+  "value": "121509/5000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-35.29, -35.49, 26.8, 44.1, 26.68, 21.51, -19], 4)",
+  "value": "441/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-18, 38.09, 8.72, 24.19, 31.14, 5.07], 0.69)",
+  "value": "10927/400",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-18, 38.09, 8.72, 24.19, 31.14, 5.07], 4)",
+  "value": "3809/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([13.2, -8, -19, 21.9, 44.57, 14.3, 29.15, -12.07], 0.38)",
+  "value": "749/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([13.2, -8, -19, 21.9, 44.57, 14.3, 29.15, -12.07], 0)",
+  "value": "-19/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([11, -17.9, -23, -40, 47, 8], 0.02)",
+  "value": "-383/10",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([11, -17.9, -23, -40, 47, 8], 2)",
+  "value": "-99/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-47, -32.05, 36, 19.54, -14.04, -34.85, 49, 11.56], 0.24)",
+  "value": "-16473/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-47, -32.05, 36, 19.54, -14.04, -34.85, 49, 11.56], 4)",
+  "value": "49/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-49, -38, 19, -22, 30.97, -46, 0], 0.11)",
+  "value": "-2351/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-49, -38, 19, -22, 30.97, -46, 0], 1)",
+  "value": "-42/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([21, -45.4, 16.1, -8.5, 46.58, -27.1, -32.58], 0.29)",
+  "value": "-17828/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([21, -45.4, 16.1, -8.5, 46.58, -27.1, -32.58], 3)",
+  "value": "371/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([18, -8.8, -41.06, -20.28, 25.87, -9, -33.23, -19.92], 0.7)",
+  "value": "-441/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([18, -8.8, -41.06, -20.28, 25.87, -9, -33.23, -19.92], 1)",
+  "value": "-9407/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-28.4, -13.8, 14], 0.21)",
+  "value": "-5567/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-28.4, -13.8, 14], 3)",
+  "value": "1/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([18.56, -16.02, -43.27, -32.4, 6.94, -11, -44.2, 10.1], 0.48)",
+  "value": "-8883/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([18.56, -16.02, -43.27, -32.4, 6.94, -11, -44.2, 10.1], 0)",
+  "value": "-221/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([4], 0.47)",
+  "value": "4/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([4], 2)",
+  "value": "4/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-36.97, 28, 2.09, -17.24, 34, 0.94, -19, 48, -26.5, -33.62, -37.1], 0.96)",
+  "value": "212/5",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-36.97, 28, 2.09, -17.24, 34, 0.94, -19, 48, -26.5, -33.62, -37.1], 1)",
+  "value": "-1503/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-19], 0.65)",
+  "value": "-19/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-19], 3)",
+  "value": "-19/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-24, 38.01, 9.61, -16.55, 28.9, -43.05], 0.53)",
+  "value": "227/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-24, 38.01, 9.61, -16.55, 28.9, -43.05], 0)",
+  "value": "-861/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-22.2, 49.5, 48, 40, -29.02, 5, -14.36, -7, 40.48, 3], 0.53)",
+  "value": "227/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-22.2, 49.5, 48, 40, -29.02, 5, -14.36, -7, 40.48, 3], 4)",
+  "value": "99/2",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([30, 28, -24, 46.07], 0.93)",
+  "value": "426953/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([30, 28, -24, 46.07], 3)",
+  "value": "13607/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([49, -16, 17.2, -19.9], 0.73)",
+  "value": "11621/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([49, -16, 17.2, -19.9], 0)",
+  "value": "-199/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-8, 26.3, -23, 7.9, 32, -27.2, 13.54, -25.8, 3.5, -46.2, 1.5, 48], 0.56)",
+  "value": "1051/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-8, 26.3, -23, 7.9, 32, -27.2, 13.54, -25.8, 3.5, -46.2, 1.5, 48], 2)",
+  "value": "5/2",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([17, -31.5, 35.9, 4.5, 10.5], 0.27)",
+  "value": "249/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([17, -31.5, 35.9, 4.5, 10.5], 3)",
+  "value": "17/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([10.4, 44.68, 11.6, 37.9, 39.71, -23, 1.7, 13.4], 0.43)",
+  "value": "5809/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([10.4, 44.68, 11.6, 37.9, 39.71, -23, 1.7, 13.4], 1)",
+  "value": "329/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([27, 13.74, 26, 9, 31], 0.42)",
+  "value": "13798/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([27, 13.74, 26, 9, 31], 1)",
+  "value": "687/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-11.7, 39, 49.6], 0.64)",
+  "value": "5246/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-11.7, 39, 49.6], 2)",
+  "value": "39/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-19.69, 35, -19.3, -17.57, -34.71, -39.86, 47.11, 13.66], 0.27)",
+  "value": "-106711/5000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-19.69, 35, -19.3, -17.57, -34.71, -39.86, 47.11, 13.66], 1)",
+  "value": "-4689/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([41.31, 31.4, 44, 49, 16.7, -20.53, 13.2, 37.12, -17.24, -23.1, 7.27, 12.38], 0.38)",
+  "value": "31319/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([41.31, 31.4, 44, 49, 16.7, -20.53, 13.2, 37.12, -17.24, -23.1, 7.27, 12.38], 2)",
+  "value": "299/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-2.07, 29.63, -31, 42, -41.96, 0.8, -15.6, -5], 0.59)",
+  "value": "-16969/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-2.07, 29.63, -31, 42, -41.96, 0.8, -15.6, -5], 2)",
+  "value": "-707/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-0.6, -43, -46.35], 0.14)",
+  "value": "-11353/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-0.6, -43, -46.35], 2)",
+  "value": "-43/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-19.06, 18, -11, -20.1], 0.03)",
+  "value": "-12504/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-19.06, 18, -11, -20.1], 0)",
+  "value": "-201/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([24.76, -13], 0.87)",
+  "value": "12407/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([24.76, -13], 4)",
+  "value": "619/25",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([28.1, -12.99, 6.21], 0.08)",
+  "value": "-4959/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([28.1, -12.99, 6.21], 3)",
+  "value": "3431/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-43.61, 37, 26], 0)",
+  "value": "-4361/100",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-43.61, 37, 26], 3)",
+  "value": "63/2",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([21.1, -16.29, -2, 26.35], 0.61)",
+  "value": "17173/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([21.1, -16.29, -2, 26.35], 0)",
+  "value": "-1629/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-28.41, -48, 31], 0.85)",
+  "value": "13177/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-28.41, -48, 31], 1)",
+  "value": "-7641/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-7, 27, -1.49, -2.5, -9.74, 8.97, 48.6], 0.08)",
+  "value": "-10531/1250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-7, 27, -1.49, -2.5, -9.74, 8.97, 48.6], 0)",
+  "value": "-487/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([22.3, 16, -3.45, 15, -29.14, 3.42, 3.6], 0.99)",
+  "value": "10961/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([22.3, 16, -3.45, 15, -29.14, 3.42, 3.6], 0)",
+  "value": "-1457/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-23, 31.5, 38.9, -21, 47.64, -25, -50], 0)",
+  "value": "-50/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-23, 31.5, 38.9, -21, 47.64, -25, -50], 0)",
+  "value": "-50/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([4.7, 21, -28, 10.7, -2], 0.73)",
+  "value": "511/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([4.7, 21, -28, 10.7, -2], 1)",
+  "value": "-2/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([42.57], 0.5)",
+  "value": "4257/100",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([42.57], 3)",
+  "value": "4257/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([46, 24.44, -36.6, -46.48, -11.13, 46.6, -4, -16.5, -49.35], 0.28)",
+  "value": "-3972/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([46, 24.44, -36.6, -46.48, -11.13, 46.6, -4, -16.5, -49.35], 4)",
+  "value": "233/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([34.9, -13.9, 9.09, 22.5, 5.29, 50, 19.8, 13, 30.22], 0.47)",
+  "value": "2271/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([34.9, -13.9, 9.09, 22.5, 5.29, 50, 19.8, 13, 30.22], 3)",
+  "value": "1511/50",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-2.09, 22.1], 0.76)",
+  "value": "10184/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-2.09, 22.1], 1)",
+  "value": "1583/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-32.7, 46.12, 17, 11.57, -7.2, 9.6, -12, -21.03, 22], 0.33)",
+  "value": "-1116/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-32.7, 46.12, 17, 11.57, -7.2, 9.6, -12, -21.03, 22], 1)",
+  "value": "-12/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([4, -49, 43.3, 25.1, -37.2, -7, 27.6, -21.2, -43.9], 0.17)",
+  "value": "-5186/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([4, -49, 43.3, 25.1, -37.2, -7, 27.6, -21.2, -43.9], 1)",
+  "value": "-186/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([49.51], 0.83)",
+  "value": "4951/100",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([49.51], 0)",
+  "value": "4951/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-31.4], 1)",
+  "value": "-157/5",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-31.4], 4)",
+  "value": "-157/5",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-48, -22, 43, 23.3, 47, 48.02, 12, -30, -48, -10.68], 0.01)",
+  "value": "-48/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-48, -22, 43, 23.3, 47, 48.02, 12, -30, -48, -10.68], 0)",
+  "value": "-48/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([30, -32.9, 28, 39.9], 0.51)",
+  "value": "1453/50",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([30, -32.9, 28, 39.9], 3)",
+  "value": "1299/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-12, 48, 7, 30, -36], 0.4)",
+  "value": "-3/5",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-12, 48, 7, 30, -36], 1)",
+  "value": "-12/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([41.1], 0.81)",
+  "value": "411/10",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([41.1], 1)",
+  "value": "411/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([28, 17.76, 31], 0.98)",
+  "value": "772/25",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([28, 17.76, 31], 0)",
+  "value": "444/25",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-0.47, -39.9, 17.5], 0.77)",
+  "value": "46169/5000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-0.47, -39.9, 17.5], 4)",
+  "value": "35/2",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-19.4, 2, 46.4, 49.9, 22.9, 34, -23.37, 6], 0.78)",
+  "value": "4963/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-19.4, 2, 46.4, 49.9, 22.9, 34, -23.37, 6], 3)",
+  "value": "371/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([29.23, 17.9, 5.22, -28, -26, 23.08], 0.17)",
+  "value": "-263/10",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([29.23, 17.9, 5.22, -28, -26, 23.08], 3)",
+  "value": "4357/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([35, 31.7, 22.1, -5.33, 32.25, -12, -46.3, -1, -27.73, -14.6, -29], 0.49)",
+  "value": "-5997/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([35, 31.7, 22.1, -5.33, 32.25, -12, -46.3, -1, -27.73, -14.6, -29], 1)",
+  "value": "-4233/200",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([15.7, -31.88, -8.1, -42, -31, -42.99, -6.8, -4.6, 9.49, -41.18, -37.43, 37], 0.02)",
+  "value": "-213861/5000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([15.7, -31.88, -8.1, -42, -31, -42.99, -6.8, -4.6, 9.49, -41.18, -37.43, 37], 1)",
+  "value": "-15347/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-1, -7.33, -41, -9, 27.23, 49.6, -35.32, -4.7, -38.8, -35, 13, -46.2], 0.99)",
+  "value": "471393/10000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-1, -7.33, -41, -9, 27.23, 49.6, -35.32, -4.7, -38.8, -35, 13, -46.2], 1)",
+  "value": "-3619/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([38.67, -16.5, 5.55, -37.3], 0.74)",
+  "value": "32091/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([38.67, -16.5, 5.55, -37.3], 2)",
+  "value": "-219/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([1, -28, 2, -42.1, 35, -48.25], 0.9)",
+  "value": "37/2",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([1, -28, 2, -42.1, 35, -48.25], 4)",
+  "value": "35/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([7, -43.21, 10.45, 27.8, 42.9], 0.51)",
+  "value": "1393/125",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([7, -43.21, 10.45, 27.8, 42.9], 0)",
+  "value": "-4321/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([11, 34.45, 17, 47.45, -25.3, 34, 27.3, -49.2, -47.36, -22], 0.21)",
+  "value": "-138633/5000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([11, 34.45, 17, 47.45, -25.3, 34, 27.3, -49.2, -47.36, -22], 2)",
+  "value": "14/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([6, -47.6, -16.46, -26.8, -19, -47.58, 34, 34.78, -28], 0.89)",
+  "value": "42617/1250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([6, -47.6, -16.46, -26.8, -19, -47.58, 34, 34.78, -28], 1)",
+  "value": "-28/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([37], 0.78)",
+  "value": "37/1",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([37], 0)",
+  "value": "37/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([1, 40, 17.19, 39.5, 4.6], 0.26)",
+  "value": "12759/2500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([1, 40, 17.19, 39.5, 4.6], 2)",
+  "value": "1719/100",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-41, 17, 32, 26.9, -31.26, 40, -50, -35.85], 0.16)",
+  "value": "-20191/500",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-41, 17, 32, 26.9, -31.26, 40, -50, -35.85], 3)",
+  "value": "1127/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-13.5, -19.6, 16.23, 6, 8.98, 1.43, 17, -32], 0.3)",
+  "value": "-12007/1000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-13.5, -19.6, 16.23, 6, 8.98, 1.43, 17, -32], 4)",
+  "value": "17/1",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([46.9, -15.1, 24, 36, -13, 17, 3.76, -25.65], 0.3)",
+  "value": "-2831/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([46.9, -15.1, 24, 36, -13, 17, 3.76, -25.65], 1)",
+  "value": "-541/40",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-42, 19.7, 40.27, -9.16, -49, 33.4, 9.2], 0.26)",
+  "value": "-14756/625",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-42, 19.7, 40.27, -9.16, -49, 33.4, 9.2], 3)",
+  "value": "531/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-24.22, 0.36, -7.9, -25.57, 41.1, 29.97, 40.3, 39.1, -32.3], 0.99)",
+  "value": "10259/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-24.22, 0.36, -7.9, -25.57, 41.1, 29.97, 40.3, 39.1, -32.3], 4)",
+  "value": "411/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([4, -50, -37, 22.7, -47.2, 13, -28, 1.34, -19, -29.1, -19.2, -36], 0.03)",
+  "value": "-12269/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([4, -50, -37, 22.7, -47.2, 13, -28, 1.34, -19, -29.1, -19.2, -36], 1)",
+  "value": "-145/4",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-49.1, -22.2, 46.01, -34, -8.2, -43.4], 0.87)",
+  "value": "21547/2000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-49.1, -22.2, 46.01, -34, -8.2, -43.4], 2)",
+  "value": "-281/10",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-3, -16], 0.4)",
+  "value": "-54/5",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-3, -16], 1)",
+  "value": "-51/4",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-22.62, -48.08, 16.04, -19.3, 29.71, 30.1, 45.79, 31.61], 0.85)",
+  "value": "63069/2000",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-22.62, -48.08, 16.04, -19.3, 29.71, 30.1, 45.79, 31.61], 2)",
+  "value": "183/8",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-20, 15.3, -2.7], 0.34)",
+  "value": "-2059/250",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-20, 15.3, -2.7], 1)",
+  "value": "-227/20",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([-44.7, -29.67, -14.87, -4.68], 0.55)",
+  "value": "-401/20",
+  "error": null,
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([-44.7, -29.67, -14.87, -4.68], 1)",
+  "value": "-13371/400",
+  "error": null,
+  "group": "quartile"
+ },
+ {
+  "line": "percentile([1, 2], 1.5)",
+  "value": null,
+  "error": "percentile:",
+  "group": "percentile"
+ },
+ {
+  "line": "quartile([1, 2], 2.5)",
+  "value": null,
+  "error": "quartile:",
+  "group": "quartile"
+ },
+ {
+  "line": "normcdf(-4.71)",
+  "value": "0.00000123858395735247042934824286716944332521048462",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-47.585, -50.9, 1.3)",
+  "value": "0.994613854045933312013252243328204650240252342",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(3.11, 3.18)",
+  "value": "0.000199061457960168704260420505577900374429160038",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-46.857, -46.766, -50.9, 1.3)",
+  "value": "0.000199061457960168704260420505577900374429160038",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.944)",
+  "value": "1.58926755705139215927242488792117719504059611",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.944, -50.9, 1.3)",
+  "value": "-48.8339521758331901929458476457024696464472251",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-4.84)",
+  "value": "0.000000649195642861334712793285034967576418813668220",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-44.932, -21.7, 12.1)",
+  "value": "0.0274289497038368175901360040814525230484956470",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.21, 1.78)",
+  "value": "0.849322573207505919574865632118489862034893116",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-36.341, -0.162, -21.7, 12.1)",
+  "value": "0.849322573207505919574865632118489862034893116",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.38)",
+  "value": "-0.305480788099397339370912812886145593705389378",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.38, -21.7, 12.1)",
+  "value": "-25.3963175360027078063880450359223616838352115",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.65)",
+  "value": "0.999868879845579515419321144818224498449547019",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(27.67, 4.9, 11)",
+  "value": "0.980773827772482709655747206269670472851388777",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(1.54, 3.88)",
+  "value": "0.0617279484794100753672381239966399739812951174",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(21.84, 47.58, 4.9, 11)",
+  "value": "0.0617279484794100753672381239966399739812951174",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.821)",
+  "value": "0.919182735146819864775230264366280097607853309",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.821, 4.9, 11)",
+  "value": "15.0110100866150185125275329080290810736863864",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.62)",
+  "value": "0.995603511651878686859170193039694519335415349",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-90.656, -34.6, 28.6)",
+  "value": "0.0249978951482204341365842690408371900224997791",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.48, 3.13)",
+  "value": "0.314739665000591020879957820920572870755863172",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-20.872, 54.918, -34.6, 28.6)",
+  "value": "0.314739665000591020879957820920572870755863172",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.45)",
+  "value": "-0.125661346855074034210184388300799303397350647",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.45, -34.6, 28.6)",
+  "value": "-38.1939145200551173784112735054028600771642285",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.16)",
+  "value": "0.0153863347839254529869023738330427326098269084",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-33.1, -39.5, 20)",
+  "value": "0.625515834723320019052958052586567635676353531",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.46, -1.19)",
+  "value": "0.110076345234484403575987613700111890651036348",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-88.7, -63.3, -39.5, 20)",
+  "value": "0.110076345234484403575987613700111890651036348",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.951)",
+  "value": "1.65462790235107794339553884845856578340795259",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.951, -39.5, 20)",
+  "value": "-6.40744195297844113208922303082868433184094814",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.71)",
+  "value": "0.999896370376325968899253577608165075465925687",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(53.288, 80, 21.2)",
+  "value": "0.103834681121300398157148720473745777914112125",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.91, -0.43)",
+  "value": "0.331790676814651241552423901652615713133682659",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(18.308, 70.884, 80, 21.2)",
+  "value": "0.331790676814651241552423901652615713133682659",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.98)",
+  "value": "2.05374891063182305293735165774045344641624739",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.98, 80, 21.2)",
+  "value": "123.539476905394648722271855144097613064024445",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-3.54)",
+  "value": "0.000200063516007320197920765448708148447720701372",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(30.004, 27.7, 6.4)",
+  "value": "0.640576433217991242320012775230742533941348384",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.17, 2.32)",
+  "value": "0.868829076910262122400521200934368174063205091",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(20.212, 42.548, 27.7, 6.4)",
+  "value": "0.868829076910262122400521200934368174063205091",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.307)",
+  "value": "-0.504371986238381538993239056522498000932171223",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.307, 27.7, 6.4)",
+  "value": "24.4720192880743581504432700382560127940341042",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.97)",
+  "value": "0.999999998813732063774273387721068032999840069",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(44.3, 67.7, 9)",
+  "value": "0.00466118802371875025099340922905871604586139922",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.18, 3.62)",
+  "value": "0.985223967716103266149430560662359619955464924",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(48.08, 100.28, 67.7, 9)",
+  "value": "0.985223967716103266149430560662359619955464924",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.129)",
+  "value": "-1.13113090083863355611772614690872689031318642",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.129, 67.7, 9)",
+  "value": "57.5198218924522979949404646778214579871813222",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.11)",
+  "value": "0.999980217044131775948434713011507928461147001",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.768, 10.8, 13.2)",
+  "value": "0.223627292437599433893301912054303722315204688",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.07, 3.92)",
+  "value": "0.857646071159748699626277491138030480836795191",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.324, 62.544, 10.8, 13.2)",
+  "value": "0.857646071159748699626277491138030480836795191",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.186)",
+  "value": "-0.892733324320855977387554295070938086053854266",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.186, 10.8, 13.2)",
+  "value": "-0.984079881035298901515716694936382735910876309",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-0.49)",
+  "value": "0.312066949417390546129866919147826703965264342",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-83.756, -90.7, 11.2)",
+  "value": "0.732371106531016970034611369152303337288581688",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.58, 3.52)",
+  "value": "0.280741535499269621793696229931586319280777788",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-84.204, -51.276, -90.7, 11.2)",
+  "value": "0.280741535499269621793696229931586319280777788",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.726)",
+  "value": "0.600759774249318788877476285118304929807923963",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.726, -90.7, 11.2)",
+  "value": "-83.9714905284076295645722656066749847861512516",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-0.11)",
+  "value": "0.456204687457683214211952532957498436672830509",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(103.925, -5.2, 29.1)",
+  "value": "0.999911582714799196132182245330973496664803945",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.68, -2.77)",
+  "value": "0.00268619765594965997411821530317762171621916192",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-112.288, -85.807, -5.2, 29.1)",
+  "value": "0.00268619765594965997411821530317762171621916192",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.569)",
+  "value": "0.173828812501662389980915995254663692161275142",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.569, -5.2, 29.1)",
+  "value": "-0.141581556201624451555344538089286558106893359",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.06)",
+  "value": "0.980300729590623100523357642482858062908749526",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(53.474, 52.1, 22.9)",
+  "value": "0.523922182654106843963682082693747561624653465",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.57, 2.29)",
+  "value": "0.704650492629264458151343133650699929920517850",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(39.047, 104.541, 52.1, 22.9)",
+  "value": "0.704650492629264458151343133650699929920517850",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.749)",
+  "value": "0.671346214877805200911697740831144954387964789",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.749, 52.1, 22.9)",
+  "value": "67.4738283207017391008778782650332194554843937",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.54)",
+  "value": "0.999999984876417664239029059125732576409596760",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-14.688, 16.5, 9.2)",
+  "value": "0.000349463118337971346799829833175715959567101953",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.26, -1.06)",
+  "value": "0.144015238594884982582123209332527289628719758",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-13.492, 6.748, 16.5, 9.2)",
+  "value": "0.144015238594884982582123209332527289628719758",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.8)",
+  "value": "0.841621233572914205178706121363248100626297534",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.8, 16.5, 9.2)",
+  "value": "24.2429153488708106876440963165418825257619373",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.84)",
+  "value": "0.999999350804357138665287206714965032423581186",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(2.464, 41.4, 15.7)",
+  "value": "0.00656911913554676256994524182764061621255232016",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.42, 2.36)",
+  "value": "0.983102278918873684585711743193957824190696708",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(3.406, 78.452, 41.4, 15.7)",
+  "value": "0.983102278918873684585711743193957824190696708",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.752)",
+  "value": "0.680796918764574729883887391025725325664085821",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.752, 41.4, 15.7)",
+  "value": "52.0885116246038232591770320391038876129261474",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-3.7)",
+  "value": "0.000107799733477388336937469432870453051737942109",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(91.297, 62.3, 27.1)",
+  "value": "0.857690345644060770344506747719317971024495349",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.48, 2.34)",
+  "value": "0.674744433538419079394890085298066375887958661",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(49.292, 125.714, 62.3, 27.1)",
+  "value": "0.674744433538419079394890085298066375887958661",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.943)",
+  "value": "1.58046681839936169273644556257618668098797251",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.943, 62.3, 27.1)",
+  "value": "105.130650778622701873157674745814659054774055",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.82)",
+  "value": "0.793891946414186919634942732099541487395263342",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(175.446, 88.2, 26.2)",
+  "value": "0.999565770079618344504712827171670974432863497",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.93, 3.18)",
+  "value": "0.997568814719168806630321052183725223488233544",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(11.434, 171.516, 88.2, 26.2)",
+  "value": "0.997568814719168806630321052183725223488233544",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.427)",
+  "value": "-0.184017151161979562105356273395274140810400480",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.427, 88.2, 26.2)",
+  "value": "83.3787506395561354728396656370438175107675074",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.09)",
+  "value": "0.0183088998516589623515847007937174223175250549",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(14.78, 29.1, 4)",
+  "value": "0.000171797103745930777725150410722543495496617210",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.9, -2.51)",
+  "value": "0.00417074478002862170808897440025262397658834315",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(17.5, 19.06, 29.1, 4)",
+  "value": "0.00417074478002862170808897440025262397658834315",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.899)",
+  "value": "1.27587417914912975112885430092468497545555744",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.899, 29.1, 4)",
+  "value": "34.2034967165965190045154172036987399018222298",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.26)",
+  "value": "0.988089374581452934900461666070319491080677977",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-6.908, -4.1, 23.4)",
+  "value": "0.452241573979416149036853114517919926402599505",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(1.29, 2.15)",
+  "value": "0.0827477216586573262502885404890560725297187523",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(26.086, 46.21, -4.1, 23.4)",
+  "value": "0.0827477216586573262502885404890560725297187523",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.014)",
+  "value": "-2.19728637664105222287987209995358495024119528",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.014, -4.1, 23.4)",
+  "value": "-55.5165012134006220153890071389138878356439695",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-1.84)",
+  "value": "0.0328841186591638876652456950409566144704067611",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-87.775, -93.9, 24.5)",
+  "value": "0.598706325682923724240853791581033739282047481",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.26, 0.67)",
+  "value": "0.351139218106450387218436448594680323090081410",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-100.27, -77.485, -93.9, 24.5)",
+  "value": "0.351139218106450387218436448594680323090081410",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.937)",
+  "value": "1.53006758813782860742689888230185110224587481",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.937, -93.9, 24.5)",
+  "value": "-56.4133440906231991180409773836046479949760671",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-1.27)",
+  "value": "0.102042315074819146426272483687748257573778988",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-14.99, -5, 7.4)",
+  "value": "0.0885079914374020344665867299182920581501764400",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.69, -2.3)",
+  "value": "0.00715150906927606605724554487189172038400733730",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-24.906, -22.02, -5, 7.4)",
+  "value": "0.00715150906927606605724554487189172038400733730",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.927)",
+  "value": "1.45380635894057476858185594130587063205765958",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.927, -5, 7.4)",
+  "value": "5.75816705616025328750573396566344267722668088",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.45)",
+  "value": "0.992857189264728580820150631498899951818859202",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-118.264, -47.2, 25.2)",
+  "value": "0.00240118247418925153807140023492472832656892272",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.43, 3.46)",
+  "value": "0.999428121681427887936088662408173385644588455",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-133.636, 39.992, -47.2, 25.2)",
+  "value": "0.999428121681427887936088662408173385644588455",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.044)",
+  "value": "-1.70604339688896194055138941206426223923049207",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.044, -47.2, 25.2)",
+  "value": "-90.1922936016018409018950131840194084286084001",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(1.8)",
+  "value": "0.964069680887074196039674138557777651588531142",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-35.487, -30.8, 10.9)",
+  "value": "0.333597820595457670655021929132944772657226006",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.97, 1.44)",
+  "value": "0.759043054402143344227870830638211258646070595",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-41.373, -15.104, -30.8, 10.9)",
+  "value": "0.759043054402143344227870830638211258646070595",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.79)",
+  "value": "0.806421247018240208488746226175499820795538715",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.79, -30.8, 10.9)",
+  "value": "-22.0100084075011817274726661346870519533286280",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.82)",
+  "value": "0.999999282208893053099643682766788722557236549",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-44, 52.8, 27.5)",
+  "value": "0.000215773399294717541794839582255309337399329724",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.58, 2.97)",
+  "value": "0.941457568017008309830797578112049766443931381",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(9.35, 134.475, 52.8, 27.5)",
+  "value": "0.941457568017008309830797578112049766443931381",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.359)",
+  "value": "-0.361133033557212267926270807952800494247595079",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.359, 52.8, 27.5)",
+  "value": "42.8688415771766626320275527812979864081911353",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-5.26)",
+  "value": "0.0000000720277008096595279637056231780269290505808795",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(12.808, 43, 29.6)",
+  "value": "0.153864230372734856253943863970939082620203532",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.51, 3.37)",
+  "value": "0.934102446992683416041604702047589500439983423",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.696, 142.752, 43, 29.6)",
+  "value": "0.934102446992683416041604702047589500439983423",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.881)",
+  "value": "1.18000054034772907381170504561000789317800833",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.881, 43, 29.6)",
+  "value": "77.9280159942927805848264693500562336380690465",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.21)",
+  "value": "0.999987231465586265048017308193578375974553142",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(34.129, 14.2, 7.3)",
+  "value": "0.996833283722642205096339346393594442076164867",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.98, 1.27)",
+  "value": "0.897923227291065800497101571859673098155810660",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-14.854, 23.471, 14.2, 7.3)",
+  "value": "0.897923227291065800497101571859673098155810660",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.22)",
+  "value": "-0.772193214188684698688571998607086142237175463",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.22, 14.2, 7.3)",
+  "value": "8.56298953642260169957342441016827116166861912",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.06)",
+  "value": "0.998893315042590753056044333519384259890443634",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-97.445, -29.3, 17.7)",
+  "value": "0.0000590589124189225414538724614229575775376597283",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.07, 1.31)",
+  "value": "0.762592427848821725953410525200615461438837328",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-48.239, -6.113, -29.3, 17.7)",
+  "value": "0.762592427848821725953410525200615461438837328",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.85)",
+  "value": "1.03643338949378957971324407467350336613474060",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.85, -29.3, 17.7)",
+  "value": "-10.9551290059599244390755798782789904194150915",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.95)",
+  "value": "0.00158886964736486849633211208332681233215150182",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-28.17, 0.6, 27.4)",
+  "value": "0.146859056375895945453717477325070257357187523",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(3.56, 3.73)",
+  "value": "0.0000896875116643634419031870180829531244311591657",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(98.144, 102.802, 0.6, 27.4)",
+  "value": "0.0000896875116643634419031870180829531244311591657",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.576)",
+  "value": "0.191670902248420026764517297625192000114269498",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.576, 0.6, 27.4)",
+  "value": "5.85178272160670873334777395493026080313098426",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.73)",
+  "value": "0.999999994978468275075464848013373304459970182",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.474, 40.2, 13.4)",
+  "value": "0.000935436719514099619352410687263536906773984248",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.37, 3.57)",
+  "value": "0.990927466755758375233098267932934782732304906",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(8.442, 88.038, 40.2, 13.4)",
+  "value": "0.990927466755758375233098267932934782732304906",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.968)",
+  "value": "1.85217985876904713402028685415754239368458386",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.968, 40.2, 13.4)",
+  "value": "65.0192101075052315958718438457110680753734238",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-0.47)",
+  "value": "0.319177508782555804861246451521353626599656700",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(99.444, 86.8, 11.6)",
+  "value": "0.862143427967964506596827469440103165834433399",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.54, 2.47)",
+  "value": "0.931464170681047453525517251173987147192838300",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(68.936, 115.452, 86.8, 11.6)",
+  "value": "0.931464170681047453525517251173987147192838300",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.316)",
+  "value": "-0.478913734112255807529219157935008198232905151",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.316, 86.8, 11.6)",
+  "value": "81.2446006842978326326610577679539049004983003",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.91)",
+  "value": "0.00180714378080642910259802748032905952354334672",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-37.024, 78.6, 29.8)",
+  "value": "0.0000522282324018201483548080777595594058080018155",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.35, 3.14)",
+  "value": "0.910647269389139338145236447822548185266881391",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(38.37, 172.172, 78.6, 29.8)",
+  "value": "0.910647269389139338145236447822548185266881391",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.715)",
+  "value": "0.568051498338982766439332493530509318235724296",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.715, 78.6, 29.8)",
+  "value": "95.5279346505016864398921083072091776834245840",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.93)",
+  "value": "0.823814457754742086040607277711516915541398323",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(28.302, 64.8, 15.4)",
+  "value": "0.00889404263033677739560657119849365828256148233",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(2.36, 4)",
+  "value": "0.00910579628873955101700296842049057499925727500",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(101.144, 126.4, 64.8, 15.4)",
+  "value": "0.00910579628873955101700296842049057499925727500",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.453)",
+  "value": "-0.118085389425552894129589519440964606575435161",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.453, 64.8, 15.4)",
+  "value": "62.9814850028464854304043214006091450587382985",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-5.68)",
+  "value": "0.00000000673473710155751969771661198004188925948252865",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-28.008, 3.8, 14.2)",
+  "value": "0.0125454614359465682605648689966849723104743843",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(2.78, 3.24)",
+  "value": "0.00212029642476684288183066728668258835837629104",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(43.276, 49.808, 3.8, 14.2)",
+  "value": "0.00212029642476684288183066728668258835837629104",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.433)",
+  "value": "-0.168741467620538008914565047637207068937882727",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.433, 3.8, 14.2)",
+  "value": "1.40387115978836027341317632355165962108206528",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.66)",
+  "value": "0.999999992431350248002280018252183515288458739",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(32.344, 61.6, 15.9)",
+  "value": "0.0328841186591638876652456950409566144704067611",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.09, 3.95)",
+  "value": "0.535817316988574319659105410581509440925365741",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(60.169, 124.405, 61.6, 15.9)",
+  "value": "0.535817316988574319659105410581509440925365741",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.323)",
+  "value": "-0.459326110835662934909292329056397263023962911",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.323, 61.6, 15.9)",
+  "value": "54.2967148377129593349422519680032835179189897",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-5.55)",
+  "value": "0.0000000142834798939227545267971718226504563472369615",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.953, -87.2, 25.9)",
+  "value": "0.999565770079618344504712827171670974432863497",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.69, 1.16)",
+  "value": "0.831461619627106822147710991280618839230236066",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-130.971, -57.156, -87.2, 25.9)",
+  "value": "0.831461619627106822147710991280618839230236066",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.89)",
+  "value": "1.22652812003661008044903776136479554636220914",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.89, -87.2, 25.9)",
+  "value": "-55.4329216910517989163699219806517953492187832",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.37)",
+  "value": "0.991105957369663222604393428801506341717438518",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(45.887, -30.8, 22.1)",
+  "value": "0.999739770817572533181885227151912551232764368",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.52, 2.33)",
+  "value": "0.984229182725503183987791535739125891172908723",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-86.492, 20.693, -30.8, 22.1)",
+  "value": "0.984229182725503183987791535739125891172908723",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.662)",
+  "value": "0.417927671669481831698610694265531437736184297",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.662, -30.8, 22.1)",
+  "value": "-21.5637984561044515194607036567317552260303270",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.88)",
+  "value": "0.810570345223287870723974356154005569074784420",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-56.216, -31.1, 16.1)",
+  "value": "0.0593799405947930314435603123779811714033863060",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.92, 1.45)",
+  "value": "0.105257120004723366045153792613545251957282238",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-16.288, -7.755, -31.1, 16.1)",
+  "value": "0.105257120004723366045153792613545251957282238",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.689)",
+  "value": "0.493017814484464851603724999270270800867241108",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.689, -31.1, 16.1)",
+  "value": "-23.1624131868001158891800275117486401060374182",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.85)",
+  "value": "0.00218596145491324077079043882989835528799009764",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(22.168, 65.2, 16.3)",
+  "value": "0.00414530136103604145671304379805737062315945418",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.89, 1.18)",
+  "value": "0.0677328355819719252029072058928237070867876324",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(79.707, 84.434, 65.2, 16.3)",
+  "value": "0.0677328355819719252029072058928237070867876324",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.318)",
+  "value": "-0.473298825432436950241690294801203162718280477",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.318, 65.2, 16.3)",
+  "value": "57.4852291454512777110604481947403884476920282",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.79)",
+  "value": "0.999999166093434077089315025663844715146015452",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(97.48, 91, 6)",
+  "value": "0.859928909911230947210325822162276191935151569",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.32, 1.79)",
+  "value": "0.588788879024593721279165737134569342553577197",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(89.08, 101.74, 91, 6)",
+  "value": "0.588788879024593721279165737134569342553577197",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.144)",
+  "value": "-1.06251930227086695734175567436455068673968213",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.144, 91, 6)",
+  "value": "84.6248841863747982559494659538126958795619072",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.7)",
+  "value": "0.758036347776926985250649571827492485260834658",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(42.35, 0.5, 22.5)",
+  "value": "0.968557237019247290957604395442972899342638466",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.39, 0.93)",
+  "value": "0.172082731218759699768161363009930356919523023",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(9.275, 21.425, 0.5, 22.5)",
+  "value": "0.172082731218759699768161363009930356919523023",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.138)",
+  "value": "-1.08934902792427691790738132392646834501387681",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.138, 0.5, 22.5)",
+  "value": "-24.0103531282962306529160797883455377628122283",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.69)",
+  "value": "0.999999993648031406728035682728656282417984358",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(24.536, -15.6, 17.3)",
+  "value": "0.989829561331280322752815313188758751444741802",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.45, 1.91)",
+  "value": "0.645578173052307467033051485677824841083303156",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-23.385, 17.443, -15.6, 17.3)",
+  "value": "0.645578173052307467033051485677824841083303156",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.48)",
+  "value": "-0.0501535834647336160209056999197052899164184876",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.48, -15.6, 17.3)",
+  "value": "-16.4676569939398915571616686086109015155540398",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-3.69)",
+  "value": "0.000112127025982247081878944996741525661294438772",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-78.468, -94.2, 22.8)",
+  "value": "0.754902906325690541863928328325548588501169978",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.95, 2.51)",
+  "value": "0.822907315611105532456228211570340356275882975",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-115.86, -36.972, -94.2, 22.8)",
+  "value": "0.822907315611105532456228211570340356275882975",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.874)",
+  "value": "1.14550506139269668345770170837959641880231801",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.874, -94.2, 22.8)",
+  "value": "-68.0824846002465156171644010489452016513071495",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.96)",
+  "value": "0.831472392533162187257682768748021103101112598",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-64.47, -47.7, 21.5)",
+  "value": "0.217695437585733130881543972799473676529499068",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.45, 1.02)",
+  "value": "0.519780549339345117977671095260054173116296783",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-57.375, -25.77, -47.7, 21.5)",
+  "value": "0.519780549339345117977671095260054173116296783",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.904)",
+  "value": "1.30468538522878962760957682951468241514358986",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.904, -47.7, 21.5)",
+  "value": "-19.6492642175810230063940981654343280744128179",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.32)",
+  "value": "0.999999948116373981575758422736601892169751206",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-48.476, -66.2, 8.4)",
+  "value": "0.982570822062342912372468806646971977581852694",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.87, -0.03)",
+  "value": "0.485981167590947601287326213322689090650855179",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-90.308, -66.452, -66.2, 8.4)",
+  "value": "0.485981167590947601287326213322689090650855179",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.954)",
+  "value": "1.68494076787191451495910204421022157259946324",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.954, -66.2, 8.4)",
+  "value": "-52.0464975498759180743435428286341387901645087",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-5.91)",
+  "value": "0.00000000171053865556700391973312636491995280721921042",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-38.766, -45.6, 10.2)",
+  "value": "0.748571104904689885708711830329224497275320499",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.77, 2.87)",
+  "value": "0.959584070642189012362181630241230278827736641",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-63.654, -16.326, -45.6, 10.2)",
+  "value": "0.959584070642189012362181630241230278827736641",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.324)",
+  "value": "-0.456542383839840468576671127298043738823270781",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.324, -45.6, 10.2)",
+  "value": "-50.2567323151663727794820454984400461359973620",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-0.29)",
+  "value": "0.385908118801122668283047574322625916556989835",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-5.44, -49.6, 12.8)",
+  "value": "0.999719706723183822588468429009523545674142957",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(1.65, 1.77)",
+  "value": "0.0111078976707768620860790696583597139217498113",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-28.48, -26.944, -49.6, 12.8)",
+  "value": "0.0111078976707768620860790696583597139217498113",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.782)",
+  "value": "0.778965564347545111113610186585895334946103571",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.782, -49.6, 12.8)",
+  "value": "-39.6292407763514225777457896117005397126898743",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.66)",
+  "value": "0.999873892375861513261236582656332584569808854",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(47.382, 13.8, 19.3)",
+  "value": "0.959070491021192632689884755075608282006002705",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.09, 3.39)",
+  "value": "0.998649754405048018254403252740079693095035819",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-45.837, 79.227, 13.8, 19.3)",
+  "value": "0.998649754405048018254403252740079693095035819",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.665)",
+  "value": "0.426148007841278176396615072188059858487668891",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.665, 13.8, 19.3)",
+  "value": "22.0246565513366688044546708932295552688120096",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.85)",
+  "value": "0.997814038545086759229209561170101644712009902",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(66.482, -25.9, 26.7)",
+  "value": "0.999729912306036525318985925902177052018582827",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.87, 2.31)",
+  "value": "0.181706125041745107499696133352317602951790033",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.671, 35.777, -25.9, 26.7)",
+  "value": "0.181706125041745107499696133352317602951790033",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.726)",
+  "value": "0.600759774249318788877476285118304929807923963",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.726, -25.9, 26.7)",
+  "value": "-9.85971402754318833697138318734125837412843018",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-4.96)",
+  "value": "0.000000352465898176424060242186959942062043372971562",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-95.484, -23.1, 23.2)",
+  "value": "0.000904255199822339975893902210751937634938613646",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.6, 3.5)",
+  "value": "0.995106182897245724712656664884213299180589851",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-83.42, 58.1, -23.1, 23.2)",
+  "value": "0.995106182897245724712656664884213299180589851",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.224)",
+  "value": "-0.758753544504370985175351265498472405205857528",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.224, -23.1, 23.2)",
+  "value": "-40.7030822325014068560681493595645598007758947",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.94)",
+  "value": "0.999999998574889616403434542954119201886124140",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(36.319, 85.5, 18.7)",
+  "value": "0.00426924340908935117870912362909211166893207750",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.6, 2.78)",
+  "value": "0.997122946487141207480467750120575717699231378",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(18.18, 137.486, 85.5, 18.7)",
+  "value": "0.997122946487141207480467750120575717699231378",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.433)",
+  "value": "-0.168741467620538008914565047637207068937882727",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.433, 85.5, 18.7)",
+  "value": "82.3445345554959392332976336091842278108615930",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(1.28)",
+  "value": "0.899727432045557906947831697200447969246400166",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(55.095, 54.4, 13.9)",
+  "value": "0.519938805838372461596321471772615034998789734",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.38, 0.74)",
+  "value": "0.761693683809692853863158564941286667015277642",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(21.318, 64.686, 54.4, 13.9)",
+  "value": "0.761693683809692853863158564941286667015277642",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.974)",
+  "value": "1.94313375110506681620857242032085128158323219",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.974, 54.4, 13.9)",
+  "value": "81.4095591403604287452991566424598328140069275",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-4.08)",
+  "value": "0.0000225178503885254405900409660716790931782925791",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-20.986, 38.3, 24.1)",
+  "value": "0.00694685078862431520350187529034226536706583409",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(1.21, 2.63)",
+  "value": "0.108870203034887936457920380269023741225643788",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(67.461, 101.683, 38.3, 24.1)",
+  "value": "0.108870203034887936457920380269023741225643788",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.69)",
+  "value": "0.495850347347453326566833937426691406092591715",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.69, 38.3, 24.1)",
+  "value": "50.2499933710736251702606978919832628868314603",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.87)",
+  "value": "0.999945582323366300228536390821383068471215304",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-91.854, -84.2, 8.9)",
+  "value": "0.194894521251808354400544006730596358998382275",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.22, 2.4)",
+  "value": "0.404738041427189261122542081389858546840152527",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-82.242, -62.84, -84.2, 8.9)",
+  "value": "0.404738041427189261122542081389858546840152527",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.666)",
+  "value": "0.428894504074201589135229798470820767622290831",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.666, -84.2, 8.9)",
+  "value": "-80.3828389137396058566964547936096951681616116",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-1.21)",
+  "value": "0.113139446443977287636629503898115852894575865",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(112.016, 93.8, 18.4)",
+  "value": "0.838912940489169088801024936025001367954985390",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.04, 1.91)",
+  "value": "0.970750502597123086044875779652514267286984964",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(37.864, 128.944, 93.8, 18.4)",
+  "value": "0.970750502597123086044875779652514267286984964",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.49)",
+  "value": "-0.0250689082587110357623634318346904202917356820",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.49, 93.8, 18.4)",
+  "value": "93.3387320880397169419725128542416962666320634",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.84)",
+  "value": "0.999999350804357138665287206714965032423581186",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-88.736, -45, 15.4)",
+  "value": "0.00225567669154232279402454585401220493875964076",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(2.9, 3.47)",
+  "value": "0.00160558411795657113219551201694848443942887179",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-0.34, 8.438, -45, 15.4)",
+  "value": "0.00160558411795657113219551201694848443942887179",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.475)",
+  "value": "-0.0627067779432137840672087621150106607447543651",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.475, -45, 15.4)",
+  "value": "-45.9656843803254922746350149365711641754692172",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-0.33)",
+  "value": "0.370699981059346478967835924153121445701545050",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-25.669, -51.1, 14.7)",
+  "value": "0.958184862386405052047839701449472853355479722",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.4, 1.53)",
+  "value": "0.936654706270344694144074043570660866376653459",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-101.08, -28.609, -51.1, 14.7)",
+  "value": "0.936654706270344694144074043570660866376653459",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.245)",
+  "value": "-0.690308823933033970218152306246379055047860963",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.245, -51.1, 14.7)",
+  "value": "-61.2475397118155993622068389018217721092035562",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-5.26)",
+  "value": "0.0000000720277008096595279637056231780269290505808795",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-83.064, -60, 6.2)",
+  "value": "0.0000996113889759166224893083039731785499583355964",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.94, 2.78)",
+  "value": "0.971092210136846049396457584414289738191895878",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-72.028, -42.764, -60, 6.2)",
+  "value": "0.971092210136846049396457584414289738191895878",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.67)",
+  "value": "0.439913165673233807753539942333681399993425979",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.67, -60, 6.2)",
+  "value": "-57.2725383728259503919280523575311753200407589",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-3.95)",
+  "value": "0.0000390755965977875126434650965600593045709610026",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(38.972, 53, 8.4)",
+  "value": "0.0474596818029473243599396813596561666936794474",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.09, -0.78)",
+  "value": "0.199386537734074168529959272005756254211974013",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(35.444, 46.448, 53, 8.4)",
+  "value": "0.199386537734074168529959272005756254211974013",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.833)",
+  "value": "0.966088297132373368094117536364773583495145750",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.833, 53, 8.4)",
+  "value": "61.1151416959119362919905873054640981013592243",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(5.32)",
+  "value": "0.999999948116373981575758422736601892169751206",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-22.016, -4.7, 11.1)",
+  "value": "0.0593799405947930314435603123779811714033863060",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(1.2, 1.97)",
+  "value": "0.0906504849414857221181123979020161551138037481",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(8.62, 17.167, -4.7, 11.1)",
+  "value": "0.0906504849414857221181123979020161551138037481",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.56)",
+  "value": "0.150969215496777258868519848228720453673565344",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.56, -4.7, 11.1)",
+  "value": "-3.02424170798577242655942968466120296422342468",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-1.88)",
+  "value": "0.0300540389611997871616754304941235382419506567",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(4.216, -9.4, 7.4)",
+  "value": "0.967115881340836112334754304959043385529593239",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.93, 1.91)",
+  "value": "0.148118935585485406760829248735314669805404517",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.518, 4.734, -9.4, 7.4)",
+  "value": "0.148118935585485406760829248735314669805404517",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.578)",
+  "value": "0.196779620218466705989577162549469659728978774",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.578, -9.4, 7.4)",
+  "value": "-7.94383081038334637567712899713392451800555707",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.81)",
+  "value": "0.00247707499878586151856472151329040168538709027",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.764, -89.7, 26.2)",
+  "value": "0.999480964566793027197020128485138396242753821",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.26, -0.68)",
+  "value": "0.236341605035023463796157975219139754675679008",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-148.912, -107.516, -89.7, 26.2)",
+  "value": "0.236341605035023463796157975219139754675679008",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.076)",
+  "value": "-1.43250272082581160562959073407436333494446395",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.076, -89.7, 26.2)",
+  "value": "-127.231571285636264067495277232748319375544955",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.22)",
+  "value": "0.986790616192743719229543623831312408892205774",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(10.24, 13.6, 14)",
+  "value": "0.405165128302204153330458410981768111483299797",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.69, -1.03)",
+  "value": "0.151392875762361452189093691437148346913152290",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-38.06, -0.82, 13.6, 14)",
+  "value": "0.151392875762361452189093691437148346913152290",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.868)",
+  "value": "1.11698672787660981716545973879288290245817976",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.868, 13.6, 14)",
+  "value": "29.2378141902725374403164363431003606344145167",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-1.07)",
+  "value": "0.142309654355939229655493252280682028975504651",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(143.681, 85.1, 20.7)",
+  "value": "0.997672599793268445501177049572501797727724188",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.17, 3.73)",
+  "value": "0.432409328439692668733976223180691213092097287",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(88.619, 162.311, 85.1, 20.7)",
+  "value": "0.432409328439692668733976223180691213092097287",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.085)",
+  "value": "-1.37220380899872593732878200138369143366392843",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.085, 85.1, 20.7)",
+  "value": "56.6953811537263730972942125713575873231566814",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-4.7)",
+  "value": "0.00000130080745391728205960195696117120534301146873",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-109.278, -61.1, 21.8)",
+  "value": "0.0135525811464199820314612927563291941196886993",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.89, 2.75)",
+  "value": "0.183753179802118068616098107885960361792973264",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-41.698, -1.15, -61.1, 21.8)",
+  "value": "0.183753179802118068616098107885960361792973264",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.992)",
+  "value": "2.40891554581546122957874030519720720204614608",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.992, -61.1, 21.8)",
+  "value": "-8.58564110122294519518346134670088299539401553",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.99)",
+  "value": "0.999966963352370597554495448584425970900212449",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(76.824, 60.3, 20.4)",
+  "value": "0.791029912128398406847995694357314484016460811",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.62, 2.77)",
+  "value": "0.944581046912982915806879897388801643532674661",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(27.252, 116.808, 60.3, 20.4)",
+  "value": "0.944581046912982915806879897388801643532674661",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.487)",
+  "value": "-0.0325919366966630453295650550119326534397553034",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.487, 60.3, 20.4)",
+  "value": "59.6351244913880738752768728777565738698289918",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.25)",
+  "value": "0.0122244726550447031526239312997414925241647832",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.964, -6.5, 18.9)",
+  "value": "0.594834871697795846669541589018231888516700203",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.19, 1)",
+  "value": "0.724321550045434229805743056641583766459810784",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-28.991, 12.4, -6.5, 18.9)",
+  "value": "0.724321550045434229805743056641583766459810784",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.235)",
+  "value": "-0.722479051928062554714542052264076391004450951",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.235, -6.5, 18.9)",
+  "value": "-20.1548540814403822841048447877910437899841230",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(1.6)",
+  "value": "0.945200708300442006039526033425821317565545590",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(73.675, 69.4, 9.5)",
+  "value": "0.673644779712079974231614959230993255736500315",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.13, 3.55)",
+  "value": "0.998933352908732799649434967027889901918649690",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(39.665, 103.125, 69.4, 9.5)",
+  "value": "0.998933352908732799649434967027889901918649690",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.056)",
+  "value": "-1.58926755705139215927242488792117719504059611",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.056, 69.4, 9.5)",
+  "value": "54.3019582080117744869119635647488166471143369",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(4.02)",
+  "value": "0.999970900929288069020894962893505888410426216",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-44.95, -60.7, 7.5)",
+  "value": "0.982135579437183443216075759801635354786367730",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.42, 1.65)",
+  "value": "0.942768278415798259873865725566115759855400101",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-78.85, -48.325, -60.7, 7.5)",
+  "value": "0.942768278415798259873865725566115759855400101",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.909)",
+  "value": "1.33462228670019306324389672315761687084728520",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.909, -60.7, 7.5)",
+  "value": "-50.6903328497485520256707745763178734686453610",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.65)",
+  "value": "0.995975411457241692491577585799010600583580167",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(28.423, 45.6, 8.9)",
+  "value": "0.0268034188770549610534094552762000466239699414",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.66, 3.92)",
+  "value": "0.951498499248965111724955616506632197448554378",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(30.826, 80.488, 45.6, 8.9)",
+  "value": "0.951498499248965111724955616506632197448554378",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.975)",
+  "value": "1.95996398454005423552459443052055152795555008",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.975, 45.6, 8.9)",
+  "value": "63.0436794624064826961688904316329085988043957",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.77)",
+  "value": "0.999918376226297313887932392783302087772697045",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(155.41, 69.2, 23.3)",
+  "value": "0.999892200266522611663062530567129546948262058",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.91, -0.07)",
+  "value": "0.470289686038672467308965156297852445759160488",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(1.397, 67.569, 69.2, 23.3)",
+  "value": "0.470289686038672467308965156297852445759160488",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.867)",
+  "value": "1.11232136724931142957883454271405843879758285",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.867, 69.2, 23.3)",
+  "value": "95.1170878569089563091868448452375616239836804",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.45)",
+  "value": "0.673644779712079974231614959230993255736500315",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-32.65, -66.9, 13.7)",
+  "value": "0.993790334674223864833021895425807778872102253",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.28, 3.75)",
+  "value": "0.988607738476246403499902961796856327781510947",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-98.136, -15.525, -66.9, 13.7)",
+  "value": "0.988607738476246403499902961796856327781510947",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.314)",
+  "value": "-0.484543782441079076515538673811144284328465619",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.314, -66.9, 13.7)",
+  "value": "-73.5382498194427833482628798312126766952999790",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(1.16)",
+  "value": "0.876975596948656622948864432909570943027838354",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-94.283, -23.3, 29.7)",
+  "value": "0.00842418639934569210395003012375625370029046044",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.8, -2.25)",
+  "value": "0.00966934232461677035109257050739286405099447275",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-106.46, -90.125, -23.3, 29.7)",
+  "value": "0.00966934232461677035109257050739286405099447275",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.297)",
+  "value": "-0.533048510902908964848892980930230165247636031",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.297, -23.3, 29.7)",
+  "value": "-39.1315407738163962560121215336278359078547901",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-4.56)",
+  "value": "0.00000255768103945152538886816671161565306459533367",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-44.76, -72.5, 7.3)",
+  "value": "0.999927651956074880026006587427209134974037486",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-1.55, -0.17)",
+  "value": "0.371934310322902572493512765005931349278764329",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-83.815, -73.741, -72.5, 7.3)",
+  "value": "0.371934310322902572493512765005931349278764329",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.029)",
+  "value": "-1.89569792399183844418145597126526262013168445",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.029, -72.5, 7.3)",
+  "value": "-86.3385948451404206425246285902364171269612965",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-1.14)",
+  "value": "0.127143150562798256720000139981028895054496930",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(121.788, 90.3, 12.3)",
+  "value": "0.994766391836444211053902574746310663434030717",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.81, -0.89)",
+  "value": "0.186663459641292760196698106930513632081400409",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(43.437, 79.353, 90.3, 12.3)",
+  "value": "0.186663459641292760196698106930513632081400409",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.095)",
+  "value": "-1.31057911216812872966287231110169105695745959",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.095, 90.3, 12.3)",
+  "value": "74.1798769203320166251466705734491999994232471",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-4.35)",
+  "value": "0.00000680687659933405305150417398672254094915298528",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-32.669, -61.4, 18.3)",
+  "value": "0.941792444361446980283365569282837876429748517",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.14, 2.29)",
+  "value": "0.433319336869682183201547112023039286248151155",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-58.838, -19.493, -61.4, 18.3)",
+  "value": "0.433319336869682183201547112023039286248151155",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.955)",
+  "value": "1.69539771027213631465960937404132749234638104",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.955, -61.4, 18.3)",
+  "value": "-30.3742219020199054417291484550437068900612269",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(0.83)",
+  "value": "0.796730608171931596299935298565534142532787060",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(55.768, -4.4, 18.4)",
+  "value": "0.999462262578170304978748327506904096742615357",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.88, 2.13)",
+  "value": "0.172843848093107116316955210926049704008198082",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(11.792, 34.792, -4.4, 18.4)",
+  "value": "0.172843848093107116316955210926049704008198082",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.753)",
+  "value": "0.683960672350682196130769456237772997395535112",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.753, -4.4, 18.4)",
+  "value": "8.18487637125255240880615799477502315207784607",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.69)",
+  "value": "0.00357260095239973933510993899092282116596547863",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(10.4, -23.6, 20)",
+  "value": "0.955434537241456960512566995292027993393923830",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-3.4, -1.06)",
+  "value": "0.144235370398232723309613946877298439122091926",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-91.6, -44.8, -23.6, 20)",
+  "value": "0.144235370398232723309613946877298439122091926",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.844)",
+  "value": "1.01103432814181649336098692025257118712011428",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.844, -23.6, 20)",
+  "value": "-3.37931343716367013278026159494857625759771439",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-2.72)",
+  "value": "0.00326409581589131247321520899514683519463773017",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-71.78, -80.9, 4)",
+  "value": "0.988696155761447207367720716465882831116707002",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.95, -2.34)",
+  "value": "0.00805300029799346412773469154893442922447443734",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-92.7, -90.26, -80.9, 4)",
+  "value": "0.00805300029799346412773469154893442922447443734",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.652)",
+  "value": "0.390725700196869970101462128113875757114281559",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.652, -80.9, 4)",
+  "value": "-79.3370971992125201195941514875444969715428738",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(2.03)",
+  "value": "0.978821730357327733350350981639185150786887375",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-53.427, -55, 12.1)",
+  "value": "0.551716786654561138906436046661550558664549166",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(2.04, 3.14)",
+  "value": "0.0198304236926114263504405287111001612476255530",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-30.316, -17.006, -55, 12.1)",
+  "value": "0.0198304236926114263504405287111001612476255530",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.926)",
+  "value": "1.44663206715897848371486835958123472653377471",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.926, -55, 12.1)",
+  "value": "-37.4957519873763603470500928490670598089413260",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(3.8)",
+  "value": "0.999927651956074880026006587427209134974037486",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-27.35, -2.3, 15)",
+  "value": "0.0474596818029473243599396813596561666936794474",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-2.15, 3.74)",
+  "value": "0.984130382481435385731517619710238244622085772",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(-34.55, 53.8, -2.3, 15)",
+  "value": "0.984130382481435385731517619710238244622085772",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.443)",
+  "value": "-0.143367435457766692327366190465267546312640391",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.443, -2.3, 15)",
+  "value": "-4.45051153186650038491049285697901319468960586",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(-5.11)",
+  "value": "0.000000161079406122137681440211219960681933767014007",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(74.342, 80.2, 2.9)",
+  "value": "0.0216916937676467858886765850659887232917101266",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(0.67, 3.31)",
+  "value": "0.250962415239202564910352941555755412831771976",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(82.143, 89.799, 80.2, 2.9)",
+  "value": "0.250962415239202564910352941555755412831771976",
+  "error": null,
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0.756)",
+  "value": "0.693493346283289366219416516330359983574564135",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.756, 80.2, 2.9)",
+  "value": "82.2111307042215391620363078973580439523662360",
+  "error": null,
+  "group": "norminv"
+ },
+ {
+  "line": "normcdf(1, 2, 3, 0)",
+  "value": null,
+  "error": "normcdf:",
+  "group": "normcdf"
+ },
+ {
+  "line": "normcdf(2, 1)",
+  "value": null,
+  "error": "normcdf(a, b)",
+  "group": "normcdf"
+ },
+ {
+  "line": "norminv(0)",
+  "value": null,
+  "error": "norminv:",
+  "group": "norminv"
+ },
+ {
+  "line": "norminv(0.5, 1)",
+  "value": null,
+  "error": "norminv expects",
+  "group": "norminv"
+ }
+]

@@ -8,7 +8,7 @@ infinite or NaN are domain errors.
 
 import mpmath
 
-from . import dates, finance, matrix
+from . import dates, finance, matrix, stats
 from .errors import CalcError
 from .random_shapes import SHAPE_FUNCTIONS
 
@@ -16,7 +16,7 @@ ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 WORD_FUNCTIONS = ("twos", "signed")    # two's complement (owner 2026-11-07)
 ROUNDING_FUNCTIONS = ("round", "ceil", "floor")    # owner 2026-11-12
 CARD_FUNCTION = "card"    # card("Deck", [count], [no repeat]): cards.py (owner 2026-11-24)
-RANDOM_FUNCTIONS = ("rand", "rands", "randm", *SHAPE_FUNCTIONS)    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
+RANDOM_FUNCTIONS = ("rand", "rands", "randm", "randnorm", *SHAPE_FUNCTIONS)    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
 MAX_ROUND_DIGITS = 1000
 MAX_BITS = 1024
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
@@ -77,7 +77,8 @@ class Functions:
 
     def names(self):
         return (set(self.table) | set(dates.FUNCTIONS) | set(finance.FUNCTIONS) | set(WORD_FUNCTIONS)
-                | set(ROUNDING_FUNCTIONS) | set(RANDOM_FUNCTIONS) | {CARD_FUNCTION} | set(matrix.FUNCTIONS))
+                | set(ROUNDING_FUNCTIONS) | set(RANDOM_FUNCTIONS) | {CARD_FUNCTION} | set(matrix.FUNCTIONS)
+                | set(stats.FUNCTIONS))
 
     def min_arity(self, name):
         """Argument count used in RPN, where optional arguments cannot be told apart."""
@@ -88,6 +89,8 @@ class Functions:
             return 0
         if key in matrix.FUNCTIONS:
             return matrix.FUNCTIONS[key][1]
+        if key in stats.FUNCTIONS:
+            return stats.FUNCTIONS[key][1]
         entry = finance.FUNCTIONS.get(key)
         return entry[1] if entry else 1
 
@@ -108,8 +111,8 @@ class Functions:
             if isinstance(args[0], matrix.Matrix):    # cell by cell (matrix_plan.md X2)
                 return matrix.map_cells(args[0], lambda cell: rounded(key, [cell, *args[1:]]))
             return rounded(key, args)
-        if key in matrix.FUNCTIONS:
-            fn, low, high = matrix.FUNCTIONS[key]
+        if key in matrix.FUNCTIONS or key in stats.FUNCTIONS:
+            fn, low, high = matrix.FUNCTIONS[key] if key in matrix.FUNCTIONS else stats.FUNCTIONS[key]
             if len(args) < low or (high is not None and len(args) > high):
                 wanted = f"{low} or more" if high is None else str(low) if low == high else f"{low} to {high}"
                 raise CalcError(f"{key} expects {wanted} argument(s)")

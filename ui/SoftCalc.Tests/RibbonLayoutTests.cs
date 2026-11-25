@@ -113,6 +113,9 @@ public sealed class RibbonLayoutTests
 		functions.DropDownItems.Add(matrix);
 		var statistics = new ToolStripMenuItem("Statistics");
 		statistics.DropDownItems.Add(new ToolStripMenuItem("median"));
+		var descriptive = new ToolStripMenuItem("Descriptive");
+		descriptive.DropDownItems.Add(new ToolStripMenuItem("prod"));
+		statistics.DropDownItems.Add(descriptive);
 		functions.DropDownItems.Add(statistics);
 		menu.Items.Add(functions);
 		var commands = RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), new HashSet<ToolStripMenuItem>());
@@ -121,6 +124,8 @@ public sealed class RibbonLayoutTests
 		Assert.Equal("Functions/Matrix/det", commands.Find("Functions/Matrix/det")!.Id);    // still on top
 		Assert.Same(commands.Find("Functions/Statistics/median"), commands.Find("Functions/Matrix/median"));
 		Assert.NotNull(commands.Find("Functions/Matrix/median"));
+		Assert.Same(commands.Find("Functions/Statistics/Descriptive/prod"), commands.Find("Functions/Matrix/prod"));
+		Assert.NotNull(commands.Find("Functions/Matrix/prod"));
 		Assert.Null(commands.Find("Functions/Matrix/nothing"));
 	}
 

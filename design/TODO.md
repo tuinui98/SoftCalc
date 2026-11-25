@@ -648,7 +648,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       Matrix: sum prod min max count mean median stdev stdevp variance
       variancep. Matrix > Statistics taken out (owner 2026-11-26); sum and
       mean stay in Matrix's top ten; old ribbon buttons find them here.
-- [ ] Functions still to add, then submenus (Descriptive, Counting,
+- [ ] (round 1 done 2026-11-26: stats.py, randnorm, menu with submenus, SymPy 969 cases, help topic 20 Statistics) Functions still to add, then submenus (Descriptive, Counting,
       Distributions, Two variables). Names proposed, check each against
       units and names first (range, mode, ...); mpmath has gamma,
       binomial, erf/erfinv, ncdf and the incomplete gamma/beta, so all at
