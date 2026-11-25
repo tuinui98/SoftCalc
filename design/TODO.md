@@ -629,6 +629,20 @@ ends 1:1, the drag insert line is visible enough on dark.
         1.26 s -> 0.23 s desktop, 1.48 s -> 0.35 s web on the PC. The web
         status line shows "Working... 1.4 s" after a second, then "Took 2.1 s".
 
+  - [ ] Functions > Matrix in groups (owner 2026-11-25): the 38 sit in
+        one flat submenu today (server.py CATALOG "Matrix"). On top the
+        ten used most: det inv solve transpose eig identity fill seq sum
+        mean; a separator; then five submenus:
+        Build (identity zeros ones diag fill seq reshape randm),
+        Size and pick (rows cols len at row col),
+        Linear algebra (transpose det inv trace rank solve eig dot cross norm),
+        Statistics (sum prod min max count mean median stdev stdevp
+        variance variancep), Arrange (sort reverse cumsum).
+        The ten stay in their groups too, so each group is whole.
+        CATALOG must nest (items and submenus in one group); desktop menu
+        and web; ribbon buttons made from the old Matrix menu keep working;
+        menu-functions help picture after the owner finishes the topic.
+
 ## Conversions (owner 2026-11-24)
 - [x] One Conversions > Cryptocurrency submenu (Bitcoin, Ethereum, Tron,
       Tether); a coin unit also goes to the other coins and the common
