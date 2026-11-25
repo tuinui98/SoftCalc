@@ -1,14 +1,21 @@
 <!-- HelpView.svelte - ⋮ > Help: the topics list, then one topic (owner 2026-11-18).
      The topics come from make_help.mjs (the desktop's help/*.md for the web app), loaded only
      when Help opens. A tap on an example puts its line in Input; a topic title in italics opens
-     that topic. The phone's Back goes from a topic to the list, then closes Help. -->
+     that topic. The phone's Back goes from a topic to the list, then closes Help.
+     Search (owner 2026-11-26, as the desktop): the list keeps the topics holding every word, and
+     a topic opened marks them. ?word in Input opens its best heading with the words searched;
+     nothing found, the list searched. -->
 <script lang="ts">
+	import { tick } from "svelte";
+	import { findHelp, markWords, searchTopics, searchWords } from "../lib/helpfind";
 	import { tapOn } from "../lib/repeat";
 
-	type Topic = { id: string; title: string; html: string };
+	type Topic = { id: string; title: string; html: string; markdown: string };
 
-	let { topic = $bindable(), onexample, onclose }: {
+	// query: `?word` typed in Input (owner 2026-11-26), opened at its best heading (helpfind.ts)
+	let { topic = $bindable(), query = $bindable(null), onexample, onclose }: {
 		topic: string | null;
+		query?: string | null;
 		onexample: (line: string) => void;
 		onclose: () => void;
 	} = $props();
@@ -17,9 +24,49 @@
 	let failed = $state("");
 	let page: HTMLElement | undefined = $state();
 	const shown = $derived(topics.find(item => item.id === topic) ?? null);
+	let search = $state("");
+	const listed = $derived(searchTopics(topics, search));
+	let anchor: string | null = null;    // the heading a ?word opens at, once
 
 	import("../generated/help.json").then(module => { topics = module.default as Topic[]; },
 		error => { failed = error instanceof Error ? error.message : String(error); });
+
+	// A ?word once the topics are in: its topic, scrolled to its heading; none found: the list
+	$effect(() =>
+	{
+		if (query === null || topics.length === 0)
+		{
+			return;
+		}
+		const spot = findHelp(topics, query);
+		search = query;
+		query = null;
+		anchor = spot?.anchor ?? null;
+		topic = spot?.topic ?? null;
+	});
+
+	// A topic shown: the search words marked; then its ?word heading, else the first mark, else the top
+	$effect(() =>
+	{
+		if (!shown)
+		{
+			return;
+		}
+		const words = searchWords(search);
+		void tick().then(() =>
+		{
+			const article = page?.querySelector("article");
+			const first = article ? markWords(article, words) : null;
+			const heading = anchor ? page?.querySelector(`#${CSS.escape(anchor)}`) : null;
+			anchor = null;
+			if (heading)
+				heading.scrollIntoView({ block: "start" });
+			else if (first)
+				first.scrollIntoView({ block: "center" });
+			else
+				page?.scrollTo({ top: 0 });
+		});
+	});
 
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
 
@@ -61,8 +108,11 @@
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions, a11y_click_events_have_key_events -->
 			<article onclick={onPage}>{@html shown.html}</article>
 		{:else}
-			{#each topics as item (item.id)}
+			<input class="search" type="search" placeholder="Search" bind:value={search} autocomplete="off" spellcheck="false" />
+			{#each listed as item (item.id)}
 				<button class="topic" use:tap={() => { topic = item.id; }}>{item.title}</button>
+			{:else}
+				<p class="none">No topic holds every word.</p>
 			{/each}
 		{/if}
 	</div>
@@ -97,6 +147,13 @@
 		background: none; color: inherit; font: inherit; font-size: 17px; cursor: pointer;
 	}
 	.topic:active { background: var(--line); }
+	.search
+	{
+		display: block; width: 100%; box-sizing: border-box; margin: 10px 0 4px; padding: 10px 12px; border: 1px solid var(--line);
+		border-radius: 8px; background: var(--page); color: var(--ink); font: inherit; font-size: 16px;
+	}
+	.none { color: var(--faint); }
+	article :global(mark) { background: color-mix(in srgb, #ffd54a 55%, transparent); color: inherit; border-radius: 2px; }
 	.failed { color: var(--error); }
 	article { max-width: 720px; margin: 0 auto; }
 	article :global(h1) { font-size: 1.5em; font-weight: 500; margin: 0.8em 0 0.4em; }

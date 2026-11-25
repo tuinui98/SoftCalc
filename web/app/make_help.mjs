@@ -15,6 +15,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Marked } from "marked";
+import { slug } from "./src/lib/helpfind.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const shared = path.resolve(here, "..", "..", "help");
@@ -50,6 +51,22 @@ export function forWeb(markdown)
 	return kept.join("\n");
 }
 
+// The reference sites a More: line may link to (owner 2026-11-26; desktop HelpMarkdown.WebHosts)
+export const WEB_HOSTS = ["dlmf.nist.gov", "www.itl.nist.gov", "mathworld.wolfram.com", "oeis.org", "mpmath.org"];
+
+export function isWebLink(href)
+{
+	try
+	{
+		const url = new URL(href);
+		return url.protocol === "https:" && WEB_HOSTS.includes(url.hostname);
+	}
+	catch
+	{
+		return false;
+	}
+}
+
 const escape = text => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export function makeHelp(read)
@@ -78,6 +95,20 @@ export function makeHelp(read)
 				});
 				return `<div class="examples">${rows.join("")}</div>\n`;
 			},
+			// ## and ### carry their slug as id, for `?word` (helpfind.ts, owner 2026-11-26)
+			heading({ tokens, depth })
+			{
+				const text = this.parser.parseInline(tokens);
+				const raw = tokens.map(token => token.raw).join("");
+				const id = depth === 2 || depth === 3 ? ` id="${slug(raw)}"` : "";
+				return `<h${depth}${id}>${text}</h${depth}>\n`;
+			},
+			// A More: link opens the reference site in a new tab (the phone's browser in the APK); others are text
+			link({ href, tokens })
+			{
+				const text = this.parser.parseInline(tokens);
+				return isWebLink(href) ? `<a href="${escape(href)}" target="_blank" rel="noopener noreferrer">${text}</a>` : text;
+			},
 			em({ tokens })
 			{
 				const text = this.parser.parseInline(tokens);
@@ -86,7 +117,8 @@ export function makeHelp(read)
 			},
 		},
 	});
-	return sources.map(({ id, title, markdown }) => ({ id, title, html: marked.parse(markdown) }));
+	// markdown: the web's text of the topic, for ?word (helpfind.ts)
+	return sources.map(({ id, title, markdown }) => ({ id, title, html: marked.parse(markdown), markdown }));
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))

@@ -27,9 +27,47 @@ internal sealed class HelpWindow : Form
 	private List<HelpTopic> _shown = new();
 	private HelpTopic? _current;
 	private MainForm? _target;
+	private string? _anchor;    // the heading the next page scrolls to (OpenAt), once; "" the top
 
 	// Show `topic` ("graph", "06-conversions"); examples go to `target`'s Input
 	public static void Open(string topic, MainForm? target)
+	{
+		var window = Window(target);
+		window.ShowTopic(HelpTopics.Find(topic));
+		window.Bring();
+	}
+
+	// `?word` in Input (owner 2026-11-26): the best heading for the words (HelpFind), with the
+	// words searched so the list keeps every topic holding them; nothing found, the search alone;
+	// a bare ? opens Help as it was. The page is set once: set two or three times in a row, the
+	// WebBrowser stayed white (owner 2026-11-26)
+	public static void OpenAt(string query, MainForm? target)
+	{
+		var window = Window(target);
+		var spot = HelpFind.Find(HelpTopics.All, query);
+		if (query.Length == 0)
+		{
+			window.ShowTopic(window._current ?? HelpTopics.All[0]);
+		}
+		else
+		{
+			if (spot != null)
+			{
+				(window._current, window._anchor) = (HelpTopics.Find(spot.TopicId), spot.Anchor);
+			}
+			if (window._search.Text != query)
+			{
+				window._search.Text = query;    // FilterTopics shows _current, or the first topic found
+			}
+			else if (spot != null)
+			{
+				window.ShowTopic(window._current!);
+			}
+		}
+		window.Bring();
+	}
+
+	private static HelpWindow Window(MainForm? target)
 	{
 		// A window made before a modal dialog opened is disabled by it; a new one is not
 		if (_open != null && !_open.IsDisposed && !NativeMethods.IsWindowEnabled(_open.Handle))
@@ -42,12 +80,16 @@ internal sealed class HelpWindow : Form
 			_open.Show();
 		}
 		_open._target = target ?? _open._target;
-		_open.ShowTopic(HelpTopics.Find(topic));
-		if (_open.WindowState == FormWindowState.Minimized)
+		return _open;
+	}
+
+	private void Bring()
+	{
+		if (WindowState == FormWindowState.Minimized)
 		{
-			_open.WindowState = FormWindowState.Normal;
+			WindowState = FormWindowState.Normal;
 		}
-		_open.Activate();
+		Activate();
 	}
 
 	private HelpWindow()
@@ -70,11 +112,19 @@ internal sealed class HelpWindow : Form
 		Load += (_, _) => split.SplitterDistance = LogicalToDeviceUnits(210);
 
 		_page.ObjectForScripting = new HelpBridge(this);
+		_page.DocumentCompleted += (_, _) =>
+		{
+			if (_waiting is { } html)
+			{
+				_waiting = null;
+				_page.DocumentText = html;
+			}
+		};
 		_page.Navigating += (_, e) =>
 		{
 			if (e.Url?.Scheme is not ("about" or "data"))
 			{
-				e.Cancel = true;    // the help has no web links; nothing leaves the window
+				e.Cancel = true;    // nothing leaves the window; a More: link opens the browser (HelpBridge.Web)
 			}
 		};
 		_search.TextChanged += (_, _) => FilterTopics();
@@ -101,6 +151,7 @@ internal sealed class HelpWindow : Form
 			}
 		};
 		FilterTopics();
+		_built = true;
 	}
 
 	//==================================================================
@@ -121,11 +172,22 @@ internal sealed class HelpWindow : Form
 			_topics.SelectedIndex = _shown.IndexOf(_current);
 			ShowTopic(_current);    // marks the new search words
 		}
-		else if (_shown.Count > 0 && _search.Text.Trim().Length > 0)
+		else if (_shown.Count > 0 && (_search.Text.Trim().Length > 0 || (_built && _current == null)))
 		{
-			_topics.SelectedIndex = 0;
+			_topics.SelectedIndex = 0;    // also the first topic again after a search that found none
+		}
+		else if (_shown.Count == 0)
+		{
+			// Owner 2026-11-26: a ?word that no topic holds left a new Help window white
+			_current = null;
+			SetPage(Page(NoTopic, Array.Empty<string>(), null));
 		}
 	}
+
+	private bool _built;    // the constructor's first FilterTopics is done (Open then shows a topic)
+
+	private static readonly HelpTopic NoTopic = new("", "No topic found",
+		"# No topic found\n\nNo topic holds every word of the search. Try fewer words, or another word.");
 
 	internal void ShowTopic(HelpTopic topic)
 	{
@@ -139,13 +201,27 @@ internal sealed class HelpWindow : Form
 		{
 			_topics.SelectedIndex = index;
 		}
-		_page.DocumentText = Page(topic, HelpTopics.SearchWords(_search.Text));
+		SetPage(Page(topic, HelpTopics.SearchWords(_search.Text), _anchor));
+		_anchor = null;
+	}
+
+	// A page set while the last one still loads waits for it, so the WebBrowser never ends white
+	private string? _waiting;
+
+	private void SetPage(string html)
+	{
+		if (_page.IsBusy)
+		{
+			_waiting = html;
+			return;
+		}
+		_page.DocumentText = html;
 	}
 
 	//==================================================================
 	//  The page: theme colours from SystemColors (remapped in dark mode)
 	//==================================================================
-	private static string Page(HelpTopic topic, string[] marks)
+	private static string Page(HelpTopic topic, string[] marks, string? anchor)
 	{
 		bool dark = Theme.IsDark;
 		string body = HelpMarkdown.ToHtml(topic.Markdown, path => HelpTopics.Picture(path, dark), HelpTopics.IdOfTitle);
@@ -201,6 +277,8 @@ internal sealed class HelpWindow : Form
 				var target = e.target || e.srcElement;
 				var example = up(target, function (n) { return n.className == "example"; });
 				if (example) { window.external.Example(example.getAttribute("data-line")); return false; }
+				var web = up(target, function (n) { return n.getAttribute && n.getAttribute("data-web"); });
+				if (web) { window.external.Web(web.getAttribute("data-web")); return false; }
 				var topic = up(target, function (n) { return n.getAttribute && n.getAttribute("data-topic"); });
 				if (topic) { window.external.Topic(topic.getAttribute("data-topic")); return false; }
 				return true;
@@ -234,6 +312,9 @@ internal sealed class HelpWindow : Form
 				var spans = document.getElementsByTagName("span");
 				for (var s = 0; s < spans.length; s++) { if (spans[s].className == "mark") { spans[s].scrollIntoView(); window.scrollBy(0, -40); break; } }
 			}
+			var anchor = {{(anchor == null ? "null" : "\"" + Escape(anchor) + "\"")}};
+			if (anchor === "") { window.scrollTo(0, 0); }
+			else if (anchor) { var heading = document.getElementById(anchor); if (heading) { heading.scrollIntoView(); window.scrollBy(0, -8); } }
 			</script>
 			</body></html>
 			""";
@@ -358,5 +439,14 @@ public sealed class HelpBridge
 	public void Topic(string id)
 	{
 		_window.BeginInvoke(() => _window.ShowTopic(HelpTopics.Find(id)));
+	}
+
+	// A More: link (owner 2026-11-26): the reference sites only, in the default browser
+	public void Web(string url)
+	{
+		if (HelpMarkdown.IsWebLink(url))
+		{
+			System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+		}
 	}
 }

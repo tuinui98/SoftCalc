@@ -153,6 +153,15 @@ norm([3, 4])                  => 5
 - `norm` of a list is its length; of a matrix, the same over every cell.
 - `det`, `inv`, `solve` and `^` take at most 50 x 50, `eig` 20 x 20.
 
+More (MathWorld): [Transpose](https://mathworld.wolfram.com/Transpose.html),
+[Determinant](https://mathworld.wolfram.com/Determinant.html), [Matrix Inverse](https://mathworld.wolfram.com/MatrixInverse.html),
+[Matrix Trace](https://mathworld.wolfram.com/MatrixTrace.html), [Matrix Rank](https://mathworld.wolfram.com/MatrixRank.html),
+[Linear System of Equations](https://mathworld.wolfram.com/LinearSystemofEquations.html),
+[Eigenvalue](https://mathworld.wolfram.com/Eigenvalue.html), [Dot Product](https://mathworld.wolfram.com/DotProduct.html),
+[Cross Product](https://mathworld.wolfram.com/CrossProduct.html), [Vector Norm](https://mathworld.wolfram.com/VectorNorm.html),
+[Frobenius Norm](https://mathworld.wolfram.com/FrobeniusNorm.html) (norm of a matrix).
+
+
 ## Statistics and lists
 
 These take numbers and lists mixed, and use every cell; the functions
@@ -181,6 +190,11 @@ sort([3, 1, 2])               => [1, 2, 3]
 reverse([1, 2, 3])            => [3, 2, 1]
 cumsum([1, 2, 3, 4])          => [1, 3, 6, 10]
 ```
+
+More (NIST/SEMATECH e-Handbook of Statistical Methods): mean and
+median in [Measures of Location](https://www.itl.nist.gov/div898/handbook/eda/section3/eda351.htm); variance and standard
+deviation in [Measures of Scale](https://www.itl.nist.gov/div898/handbook/eda/section3/eda356.htm).
+
 
 ## Functions and conversions on every cell
 

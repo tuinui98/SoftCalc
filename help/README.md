@@ -52,3 +52,12 @@ The desktop Help leaves out `web` blocks, the web app `desktop` blocks
 and all pictures. Leave a blank line after a block that ends a list.
 `web/app/help/` holds the web's own version of a topic (Getting
 started), checked by the same example test.
+
+## Links out
+
+A `More:` line may link to a reference page, `[DLMF §4.2](https://dlmf.nist.gov/4.2)`,
+on these sites only (owner 2026-11-26): dlmf.nist.gov, www.itl.nist.gov
+(the NIST/SEMATECH e-Handbook), mathworld.wolfram.com, oeis.org and
+mpmath.org. They open in the browser; any other link shows as plain
+text (`HelpMarkdown.WebHosts`, `make_help.mjs` WEB_HOSTS, both tested).
+Link only: nothing is copied from those pages.

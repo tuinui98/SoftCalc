@@ -939,6 +939,13 @@ internal sealed partial class MainForm : Form
 		working.Start();
 		try
 		{
+			// ?word opens Help at it (owner 2026-11-26); the engine never sees the line
+			if (HelpFind.IsHelpLine(_input.Text))
+			{
+				HelpWindow.OpenAt(HelpFind.Query(_input.Text), this);
+				_input.Clear();
+				return;
+			}
 			string? lastInput = _history.Entries.LastOrDefault(entry => entry.Kind != "notice")?.Input;
 			string? line = InputRules.ResolveSubmit(_input.Text, lastInput);
 			if (line == null)

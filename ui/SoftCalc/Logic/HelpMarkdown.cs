@@ -66,7 +66,9 @@ internal static partial class HelpMarkdown
 			else if (HeadingRegex().Match(line) is { Success: true } heading)
 			{
 				int level = heading.Groups[1].Length;
-				html.Append($"<h{level}>").Append(Format(heading.Groups[2].Value, topic)).Append($"</h{level}>\n");
+				// ## and ### carry their slug as id, for `?word` (HelpFind, owner 2026-11-26)
+				string id = level is 2 or 3 ? $" id=\"{HelpFind.Slug(heading.Groups[2].Value)}\"" : "";
+				html.Append($"<h{level}{id}>").Append(Format(heading.Groups[2].Value, topic)).Append($"</h{level}>\n");
 				i++;
 			}
 			else if (PictureRegex().Match(line.Trim()) is { Success: true } picture)
@@ -208,6 +210,13 @@ internal static partial class HelpMarkdown
 			}
 			string plain = n % 2 == 1 ? "`" + parts[n] : parts[n];    // an unclosed backtick stays as text
 			plain = WebUtility.HtmlEncode(plain);
+			plain = LinkRegex().Replace(plain, match =>
+			{
+				string url = WebUtility.HtmlDecode(match.Groups[2].Value);
+				return IsWebLink(url)
+					? $"<a href=\"#\" class=\"web\" data-web=\"{Attribute(url)}\" title=\"{Attribute(url)}\">{match.Groups[1].Value}</a>"
+					: match.Groups[1].Value;
+			});
 			plain = BoldRegex().Replace(plain, "<b>$1</b>");
 			plain = ItalicRegex().Replace(plain, match =>
 			{
@@ -222,10 +231,23 @@ internal static partial class HelpMarkdown
 		return html.ToString();
 	}
 
+	// The reference sites a More: line may link to (owner 2026-11-26); Help opens nothing else
+	public static readonly string[] WebHosts =
+		{ "dlmf.nist.gov", "www.itl.nist.gov", "mathworld.wolfram.com", "oeis.org", "mpmath.org" };
+
+	public static bool IsWebLink(string url)
+	{
+		return Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+			&& WebHosts.Contains(uri.Host, StringComparer.OrdinalIgnoreCase);
+	}
+
 	private static string Attribute(string text)
 	{
 		return WebUtility.HtmlEncode(text);
 	}
+
+	[GeneratedRegex(@"\[([^\]]+)\]\((https://[^)\s]+)\)")]
+	private static partial Regex LinkRegex();    // [text](https://...), a More: line
 
 	[GeneratedRegex(@"(?<!\\)\|")]
 	private static partial Regex CellRegex();    // a bar not written \|

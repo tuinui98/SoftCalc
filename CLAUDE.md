@@ -57,6 +57,9 @@ embedded, `dist\SoftCalc-standalone.exe` (self-contained) and `dist\SoftCalc.exe
 (needs the .NET 10 Desktop Runtime), and smoke-runs each from an empty
 folder (design/m9_plan.md). It ends with the SHA-256 of both exes;
 they go into the GitHub release notes (owner 2026-11-11).
+Before every release, check the help's links out (the More: lines):
+`engine/.venv/Scripts/python tools/check_help_links.py` must end with
+`0 failed`, and each title must still name the page (owner 2026-11-26).
 UI (run from `ui/`; .NET SDK at `C:\Program Files\dotnet\dotnet.exe`, 10.0.x,
 may not be on the PATH of an already-open shell):
 ```

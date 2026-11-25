@@ -105,6 +105,8 @@ BUILTINS = {
 # rands() with empty brackets: a hint of its own, so it is not cut off at the end of rands( (owner 2026-11-26)
 RANDS_EMPTY_HINT = "rands() - a new seed from the system: the draws after it are unpredictable again"
 RANDS_EMPTY = re.compile(r"(?<![A-Za-z0-9_])rands\(\s*(\)\s*)?\Z", re.IGNORECASE)
+# ?word in Input opens Help at it (owner 2026-11-26; desktop HelpFind.cs, web helpfind.ts)
+HELP_HINT = "?word opens Help at it: ?det  ?fill  ?seeds  ?rpn  (? alone opens Help)"
 FILL_DRAW_HINT = "fill draws again for every cell: fill(2, 3, rand(1, 6)) gives 6 rolls"
 DRAW_WORD = re.compile(r"\b(rand(?!s\b)[a-z]*|card)\b", re.IGNORECASE)
 LIST_HINT = "[1, 2, 3] is a list, [[1, 2], [3, 4]] a matrix (rows in brackets); 2*[1, 2], A*B, det(A)"
@@ -150,6 +152,8 @@ def hint_for(text, caret, lookup_user):
     """
     if commands.is_command(text):
         return commands.hint(left_of(text, caret))    # a settings line (owner 2026-11-26)
+    if text.lstrip().startswith("?"):
+        return HELP_HINT    # the UI opens Help; the engine never gets the line
     plain = rands_empty(text, caret) or plain_hint(text, caret, lookup_user)
     if drawing_fill(left_of(text, caret)):
         return FILL_DRAW_HINT if plain is None else FILL_DRAW_HINT + "  |  " + plain

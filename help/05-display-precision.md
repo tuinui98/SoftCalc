@@ -109,7 +109,7 @@ sin(30)               => 0.5
 - Several on one line apply together; if one is wrong, none of them
   changes and the error says what it takes.
 - A setting typed is kept like one picked from the menus, and the
-  menus, the ribbon and the keypad show it at once.
+  menus and buttons show it at once.
 - The line is not a result: it leaves `answer` and `$1` as they were.
 - `:` alone lists every setting as the line that sets them all again,
   such as `:prec 32 :rad :dec :rpn off :digits all :pad off :word 32`;
