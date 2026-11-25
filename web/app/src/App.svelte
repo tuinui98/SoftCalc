@@ -13,6 +13,7 @@
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
 	import { Calculator, CRYPTO_GROUP, cryptoTargets, functionItems, stepDecimals, SUBMENU, submenuItems } from "./lib/calc";
+	import { hintLines, sampleWidth } from "./lib/hintlines";
 	import { MAX_SHOWN, parseTable, shownCells, tableTsv } from "./lib/table";
 	import { copyText } from "./lib/clipboard";
 	import type { Engine } from "./lib/engine";
@@ -67,6 +68,33 @@
 	let helpTopic: string | null = $state(null);
 	let helpQuery: string | null = $state(null);    // ?word typed in Input (owner 2026-11-26)
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
+	// Owner 2026-11-26: a hint line too narrow for MIN_CHARS characters takes two lines, kept while
+	// the width stays; never switched by the text (hintlines.ts)
+	let hintBox: HTMLElement | undefined = $state();
+	let hintTwo = $state(false);
+
+	function fitHint()
+	{
+		if (!hintBox)
+		{
+			return;
+		}
+		const style = getComputedStyle(hintBox);
+		const room = hintBox.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+		hintTwo = hintLines(sampleWidth(hintBox), room) === 2;
+	}
+
+	$effect(() =>
+	{
+		if (!hintBox)
+		{
+			return;
+		}
+		fitHint();
+		const watcher = new ResizeObserver(() => fitHint());    // a narrower window may need the second line
+		watcher.observe(hintBox);
+		return () => watcher.disconnect();
+	});
 	let wide = $state(matchMedia(WIDE).matches);
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
 
@@ -685,7 +713,7 @@
 			<button bind:this={backBox} class="backspace" aria-label="Delete one character">⌫</button>
 		</div>
 		{#if showHints}
-			<div class="input-hint" class:open={hintOpen} role="button" tabindex="-1"
+			<div bind:this={hintBox} class="input-hint" class:open={hintOpen} class:two={hintTwo} role="button" tabindex="-1"
 				onclick={() => { hintOpen = !hintOpen; focusInput(); }} onkeydown={() => {}}>{view.hint}</div>
 		{/if}
 		<div bind:this={pagesBox} class="keys pages" class:wide>

@@ -47,7 +47,13 @@
 	grid-area: help; padding: 0 14px 4px; min-height: 1.4em; color: var(--faint); font-size: 13px;
 	white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; -webkit-tap-highlight-color: transparent;
 }
-.input-hint.open { white-space: normal; overflow-wrap: anywhere; }
+.input-hint.two
+{
+	/* too narrow for 80 characters: two lines, kept, cut at the end of the second (owner 2026-11-26) */
+	white-space: normal; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical;
+	-webkit-line-clamp: 2; line-clamp: 2; min-height: 2.8em;    /* the row keeps two lines while typing */
+}
+.input-hint.open { white-space: normal; overflow-wrap: anywhere; display: block; -webkit-line-clamp: unset; line-clamp: unset; }
 .input-row { grid-area: input; display: flex; align-items: center; gap: 6px; padding: 4px 10px; border-top: 1px solid var(--line); }
 .input-row .backspace
 {
