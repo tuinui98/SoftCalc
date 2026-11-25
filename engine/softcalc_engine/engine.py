@@ -24,7 +24,7 @@ from . import cards
 from . import matrix
 from .matrix import Matrix
 from .functions import CARD_FUNCTION, RANDOM_FUNCTIONS, WORD_FUNCTIONS, Functions, binary, negate, postfix
-from .random_shapes import SHAPE_FUNCTIONS, below, normal, shaped
+from .random_shapes import SHAPE_FUNCTIONS, below, normal, shaped, uniform
 from . import stats
 from .lexer import join_digit_spaces, tokenize
 from .parser import parse, parse_line
@@ -40,6 +40,8 @@ PLOT_DIGITS = 20
 EQUATION_REFINE = 6    # [DEF] each crossed coarse cell is split 6 x 6
 MAX_EQUATION_CELLS = 40000
 MAX_CALL_DEPTH = 200
+MAX_BINOM_TRIES = 100000    # randbinom draws one try at a time
+MAX_POISSON_MEAN = 10000    # randpois multiplies about mean + 1 draws
 DRAW_FUNCTIONS = (set(RANDOM_FUNCTIONS) - {"rands"}) | {CARD_FUNCTION}    # their drawn values show in History
 CONSTANT_NAMES = {"pi", "e", "i", "j", "today", "now"}
 ANSWER_NAMES = {"answer", "ans"}
@@ -429,6 +431,8 @@ class Engine:
             if sd <= 0:
                 raise CalcError("randnorm: sd must be above 0")
             return mean + sd * normal(self.random)
+        if key in ("randbinom", "randpois"):
+            return self.counted_draw(key, args)
         if key in SHAPE_FUNCTIONS:
             fixed, full = SHAPE_FUNCTIONS[key]
             span = node[2][fixed:] if len(args) == full else []
@@ -512,6 +516,28 @@ class Engine:
         if not names & set(WORD_FUNCTIONS):
             return ""
         return " = " + format_real(value, self.settings.precision, "hex")
+
+    def counted_draw(self, key, args):
+        """randbinom(n, p): successes in n tries of chance p; randpois(mean): a Poisson count
+        (owner 2026-11-26). Whole numbers, drawn with uniform() so rands repeats them."""
+        if key == "randbinom":
+            Functions.check_count(key, args, 2, 2)
+            n, p = args
+            if n != mpmath.floor(n) or not 0 <= n <= MAX_BINOM_TRIES:
+                raise CalcError(f"randbinom: n must be a whole number from 0 to {MAX_BINOM_TRIES}")
+            if not 0 <= p <= 1:
+                raise CalcError("randbinom: p goes from 0 to 1")
+            return mpmath.mpf(sum(1 for _ in range(int(n)) if uniform(self.random) < p))
+        Functions.check_count(key, args, 1, 1)
+        mean = args[0]
+        if not 0 < mean <= MAX_POISSON_MEAN:
+            raise CalcError(f"randpois: the mean must be above 0, at most {MAX_POISSON_MEAN}")
+        # Knuth: multiply uniform draws until the product falls below e^-mean
+        limit, product, count = mpmath.exp(-mean), uniform(self.random), 0
+        while product > limit:
+            product *= uniform(self.random)
+            count += 1
+        return mpmath.mpf(count)
 
     def mode_ties(self):
         """`[3, 1]` when a mode() in the line had a tie: the result is the first

@@ -85,6 +85,41 @@ def test_the_statistics_menu():
     top = catalog["functions"]["Statistics"]
     groups = catalog["subgroups"]["Statistics"]
     assert top == ["sum", "mean", "median", "mode", "stdev", "variance", "percentile", "comb", "normcdf", "norminv"]
-    assert list(groups) == ["Descriptive", "Counting", "Distributions"]
+    assert list(groups) == ["Descriptive", "Two variables", "Counting", "Distributions"]
     assert set(top) <= {name for names in groups.values() for name in names}
     assert "randnorm" in catalog["functions"]["Random"] and "randnorm" in groups["Distributions"]
+
+
+#======================================================================
+#  Round 2 (owner 2026-11-26)
+#======================================================================
+def test_zscore_of_a_list_keeps_its_shape(engine):
+    assert engine.evaluate("zscore([1, 2, 3])").text == "[-1, 0, 1]"
+    assert engine.evaluate("zscore(1, 2)").text.startswith("ERROR:zscore expects")
+
+
+def test_randbinom_and_randpois_are_whole_repeat_and_have_their_mean(engine):
+    engine.evaluate("rands(9)")
+    first = [engine.evaluate("randbinom(20, 0.3)").text for _ in range(5)] + [engine.evaluate("randpois(4)").text]
+    engine.evaluate("rands(9)")
+    again = [engine.evaluate("randbinom(20, 0.3)").text for _ in range(5)] + [engine.evaluate("randpois(4)").text]
+    assert first == again and all(text.isdigit() for text in first)
+    binom = [int(engine.evaluate("randbinom(20, 0.3)").text) for _ in range(1500)]
+    pois = [int(engine.evaluate("randpois(4)").text) for _ in range(1500)]
+    assert abs(sum(binom) / 1500 - 6) < 0.3 and abs(sum(pois) / 1500 - 4) < 0.3
+    assert engine.evaluate("randbinom(10, 1.5)").text == "ERROR:randbinom: p goes from 0 to 1"
+    assert engine.evaluate("randpois(0)").text.startswith("ERROR:randpois: the mean must be above 0")
+
+
+def test_special_functions_work_cell_by_cell(engine):
+    assert engine.evaluate("gamma([1, 2, 3, 4])").text == "[1, 1, 2, 6]"
+    assert engine.evaluate("erf(0)").text == "0"
+
+
+def test_the_round_2_menu():
+    catalog = Dispatcher().handle({"op": "catalog"})
+    assert catalog["functions"]["Special Functions"] == ["gamma", "erf", "erfc"]
+    groups = catalog["subgroups"]["Statistics"]
+    assert groups["Two variables"] == ["covar", "covarp", "correl", "slope", "intercept", "rsq", "forecast"]
+    assert {"range", "iqr", "geomean", "harmean", "zscore"} <= set(groups["Descriptive"])
+    assert {"normpdf", "binompdf", "binomcdf", "poisspdf", "poisscdf", "randbinom", "randpois"} <= set(groups["Distributions"])

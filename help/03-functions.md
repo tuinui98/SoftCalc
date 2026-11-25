@@ -47,9 +47,10 @@ log10(1000)           => 3
 | Finance Functions | `fv pv pmt nper` (section *Finance*) |
 | Two's Complement | `twos` `signed` |
 | Rounding | `round` `ceil` `floor` |
-| Random | `rand` `rands` `randnorm` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
+| Random | `rand` `rands` `randnorm` `randbinom` `randpois` `randbeta` `randtri` `randexp` `randpeaks` `card` (section *Random*) |
 | Matrix | the ten used most (`det` `inv` `solve` `transpose` `eig` `identity` `fill` `seq` `sum` `mean`), then Build, Size and pick, Linear algebra and Arrange (section *Lists and matrices*) |
-| Statistics | the ten used most (`sum` `mean` `median` `mode` `stdev` `variance` `percentile` `comb` `normcdf` `norminv`), then Descriptive, Counting and Distributions (section *Statistics*) |
+| Statistics | the ten used most (`sum` `mean` `median` `mode` `stdev` `variance` `percentile` `comb` `normcdf` `norminv`), then Descriptive, Two variables, Counting and Distributions (section *Statistics*) |
+| Special Functions | `gamma` `erf` `erfc` (below) |
 
 More: exp, ln and log10 in [DLMF §4.2](https://dlmf.nist.gov/4.2); how SoftCalc
 computes them, with mpmath: [powers and logarithms](https://mpmath.org/doc/current/functions/powers.html).
@@ -114,6 +115,24 @@ twos(300, 8)          => 44
 
 More: [MathWorld: Two's Complement](https://mathworld.wolfram.com/TwosComplement.html).
 
+
+## Special functions
+
+```calc
+gamma(5)              => 24
+gamma(0.5)            => 1.7724538509055160272981674833411
+erf(1)                => 0.84270079294971486934122063508261
+erfc(1)               => 0.15729920705028513065877936491739
+```
+
+- `gamma(n)` is (n - 1)! for whole n, and goes on between them;
+  0, -1, -2, ... are poles, so an error.
+- `erf` is the error function, `erfc` is 1 - erf, kept exact where erf
+  is nearly 1. Like the other one-number functions they work on every
+  cell of a list.
+
+More: gamma in [DLMF §5.2](https://dlmf.nist.gov/5.2), erf and erfc in
+[DLMF §7.2](https://dlmf.nist.gov/7.2).
 
 ## Rounding
 
