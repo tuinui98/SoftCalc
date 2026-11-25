@@ -744,8 +744,17 @@ ends 1:1, the drag insert line is visible enough on dark.
       as one line, hints under Input); leave out what needs its own UI
       (Graph, Compound window, Random window and Cards tab, deck editor
       and pictures, Names sheet, the matrix table, file import/export).
-      A few settings in a small menu (precision, angle, format). Numpad:
-      to decide (numbers and + - * / ( ) . = ⌫ only, no scientific keys).
+      A small settings menu (precision, angle, number format; owner OK).
+      Numpad (owner 2026-11-26): hidden at first, a button shows it and
+      the choice is kept; digits, . ( ) + - * / = ⌫ C only, no scientific
+      keys (Keypad.svelte with a "numpad" layout). card() stays, with the
+      ready-made decks as text only (no pictures, no own decks).
+
+## Settings typed in Input (owner 2026-11-26)
+- [ ] Commands typed in Input that change settings (precision, angle,
+      base, number format, ...), desktop, web and the extension. The form
+      (a keyword or a symbol) is chosen when the work starts; check it
+      cannot clash with names, functions, tags or `?keyword` (Help).
 
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
