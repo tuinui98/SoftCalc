@@ -164,8 +164,8 @@ class Engine:
                     return self.define(text, tree, builtins)
                 value = self.eval_node(tree, builtins, {}, 0)
                 shown = self.format_value(value)
-                display = (self.display_line(text, builtins, self.drawn_in(tree)) + self.word_suffix(text, value)
-                           + self.rnw_suffix(text, value) + self.mode_suffix())
+                display = self.mode_ties() or (self.display_line(text, builtins, self.drawn_in(tree))
+                                               + self.word_suffix(text, value) + self.rnw_suffix(text, value))
         except currency.RatesNeeded:
             return EvalResult("rates_needed", text)
         except crypto.PricesNeeded:
@@ -513,13 +513,11 @@ class Engine:
             return ""
         return " = " + format_real(value, self.settings.precision, "hex")
 
-    def mode_suffix(self):
-        """`  (modes [1, 2])` when a mode() in the line had a tie: the result
-        is the first of them; History shows all faint on the right (owner 2026-11-26).
+    def mode_ties(self):
+        """`[3, 1]` when a mode() in the line had a tie: the result is the first
+        of them; History shows them all faint on the right, and only them (owner 2026-11-26).
         """
-        if not stats.ties:
-            return ""
-        return "  (modes " + self.format_value(matrix.from_items(stats.ties[0])) + ")"
+        return self.format_value(matrix.from_items(stats.ties[0])) if stats.ties else ""
 
     def rnw_suffix(self, text, value):
         """` = 4-1-0` when the line's last tag converts to rai-ngan-wa

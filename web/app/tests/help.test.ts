@@ -71,7 +71,7 @@ describe("help for the web app", () =>
 				return readFileSync(path.join(root, "help", `${id}.md`), "utf8");
 			}
 		});
-		expect(topics.length).toBe(14);    // 19 Lists and matrices (owner 2026-11-24)
+		expect(topics.length).toBe(15);    // 19 Lists and matrices (owner 2026-11-24)
 		for (const topic of topics)
 		{
 			expect(topic.html, topic.id).not.toMatch(/View &gt;|ribbon|Ribbon|img\/|&lt;!--|press Enter/);

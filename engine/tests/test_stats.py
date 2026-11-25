@@ -19,7 +19,7 @@ def engine():
 def test_mode_gives_the_first_of_a_tie_and_shows_them_all(engine):
     result = engine.evaluate("mode([3, 1, 1, 3, 2])")
     assert result.text == "3"
-    assert result.display_input.endswith("  (modes [3, 1])")
+    assert result.display_input == "[3, 1]"    # only the ties, faint on the right (owner 2026-11-26)
     plain = engine.evaluate("mode([1, 2, 2, 3])")
     assert (plain.text, plain.display_input) == ("2", "mode([1, 2, 2, 3])")
 
