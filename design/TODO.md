@@ -720,6 +720,23 @@ ends 1:1, the drag insert line is visible enough on dark.
       (ZXing.Net in the test project, jsQR in vitest). Scanning a QR
       into Input is separate work (camera permission).
 
+## Chrome extension (owner 2026-11-26, no hurry)
+- [ ] SoftCalc's engine in a simple Chrome extension: Input and a short
+      History (2-3 lines, or as the user sizes it), like Cloudy Calculator
+      (the owner used it: a box under the toolbar icon). Offline works:
+      the web build already bundles Pyodide 314.0.7 from npm (~20 MB,
+      216 files, engine in a Worker); only ECB rates and CoinGecko prices
+      need the net (cache otherwise). Shape to choose: the toolbar popup
+      (that box; closes when focus leaves, at most 800 x 600, not sized by
+      the user; keep the engine warm in an offscreen document or Pyodide
+      reloads at every open), a pop-out window (floating, resizable), or
+      the side panel (stays open, width only). Needs: MV3 manifest, CSP
+      'wasm-unsafe-eval', host permissions for ECB/CoinGecko, no remote
+      code (Pyodide must not loadPackage from a CDN), storage in the
+      extension (chrome.storage or its IndexedDB), no sw.js, a compact
+      layout, `npm run extension`. Maybe a context menu "calculate the
+      selected text". Check Chrome's current docs before building.
+
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
       large-screen / foldable quality from April 2027 and wants foldable
