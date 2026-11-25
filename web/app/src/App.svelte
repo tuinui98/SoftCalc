@@ -12,7 +12,7 @@
 	import HelpView from "./components/HelpView.svelte";
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
-	import { Calculator, CRYPTO_GROUP, cryptoTargets, stepDecimals } from "./lib/calc";
+	import { Calculator, CRYPTO_GROUP, cryptoTargets, functionItems, stepDecimals, SUBMENU, submenuItems } from "./lib/calc";
 	import { MAX_SHOWN, parseTable, shownCells, tableTsv } from "./lib/table";
 	import { copyText } from "./lib/clipboard";
 	import type { Engine } from "./lib/engine";
@@ -163,7 +163,10 @@
 	{
 		const mine = calc.definitions.functions.map(fn => fn.name);
 		const group = await pick("Functions", [...(mine.length > 0 ? [YOURS] : []), ...Object.keys(calc.catalog.functions)]);
-		const name = group && await pick(group, group === YOURS ? mine : calc.catalog.functions[group]);
+		let name = group && await pick(group, group === YOURS ? mine : functionItems(calc.catalog, group));
+		const inner = group && name ? submenuItems(calc.catalog, group, name) : null;
+		if (inner)
+			name = await pick(`${group}: ${name!.slice(0, -SUBMENU.length)}`, inner);
 		if (name) await calc.insertFunction(name);
 		focusInput();
 	}

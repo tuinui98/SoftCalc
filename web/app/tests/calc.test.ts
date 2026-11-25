@@ -4,7 +4,7 @@
 // Pyodide; the real engine has its own tests (test_engine.mjs).
 
 import { describe, expect, it, vi } from "vitest";
-import { Calculator, clearEntry, cryptoTargets, memoryAdd, stepDecimals, type EngineLike } from "../src/lib/calc";
+import { Calculator, clearEntry, cryptoTargets, functionItems, memoryAdd, stepDecimals, submenuItems, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { MemoryStore } from "../src/lib/store";
 import { pcfBytes } from "../src/lib/transfer";
@@ -647,5 +647,26 @@ describe("Conversions > Cryptocurrency (owner 2026-11-24)", () =>
 	{
 		expect(cryptoTargets(catalog, "Bitcoin", "sat")).toEqual(["btc", "eth", "trx", "usdt", "THB", "USD"]);
 		expect(cryptoTargets(catalog, "Tether", "usdt")).toEqual(["btc", "eth", "trx", "THB", "USD"]);
+	});
+});
+
+describe("Functions > Matrix in submenus (owner 2026-11-25)", () =>
+{
+	const catalog = {
+		functions: { Matrix: ["det", "sum"], Rounding: ["round"] }, conversions: {},
+		subgroups: { Matrix: { Build: ["zeros", "fill"], Statistics: ["sum", "mean"] } },
+	};
+
+	it("lists a group's functions, then its submenus", () =>
+	{
+		expect(functionItems(catalog, "Matrix")).toEqual(["det", "sum", "Build ›", "Statistics ›"]);
+		expect(functionItems(catalog, "Rounding")).toEqual(["round"]);
+	});
+
+	it("opens a submenu, and leaves a function alone", () =>
+	{
+		expect(submenuItems(catalog, "Matrix", "Build ›")).toEqual(["zeros", "fill"]);
+		expect(submenuItems(catalog, "Matrix", "det")).toBeNull();
+		expect(submenuItems(catalog, "Rounding", "Build ›")).toBeNull();
 	});
 });

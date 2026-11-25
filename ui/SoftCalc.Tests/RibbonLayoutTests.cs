@@ -98,6 +98,28 @@ public sealed class RibbonLayoutTests
 	}
 
 	[Fact]
+	public void ButtonSavedBeforeMatrixSubmenusStillFindsItsCommand()
+	{
+		using var menu = new MenuStrip();
+		var functions = new ToolStripMenuItem("F&unctions");
+		var matrix = new ToolStripMenuItem("Matrix");
+		matrix.DropDownItems.Add(new ToolStripMenuItem("det"));
+		var build = new ToolStripMenuItem("Build");
+		build.DropDownItems.Add(new ToolStripMenuItem("zeros"));
+		var linear = new ToolStripMenuItem("Linear algebra");
+		linear.DropDownItems.Add(new ToolStripMenuItem("det"));
+		matrix.DropDownItems.Add(build);
+		matrix.DropDownItems.Add(linear);
+		functions.DropDownItems.Add(matrix);
+		menu.Items.Add(functions);
+		var commands = RibbonCommands.FromMenu(menu, Array.Empty<RibbonCommand>(), new HashSet<ToolStripMenuItem>());
+		Assert.Same(commands.Find("Functions/Matrix/Build/zeros"), commands.Find("Functions/Matrix/zeros"));
+		Assert.NotNull(commands.Find("Functions/Matrix/zeros"));
+		Assert.Equal("Functions/Matrix/det", commands.Find("Functions/Matrix/det")!.Id);    // still on top
+		Assert.Null(commands.Find("Functions/Matrix/nothing"));
+	}
+
+	[Fact]
 	public void LeafCommandClicksItsMenuItem()
 	{
 		using var menu = new MenuStrip();

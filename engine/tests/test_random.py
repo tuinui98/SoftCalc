@@ -122,6 +122,20 @@ def test_catalog_lists_the_new_groups():
     assert groups["Random"] == ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"]
 
 
+def test_matrix_menu_has_ten_on_top_and_five_whole_groups():
+    """Functions > Matrix (owner 2026-11-25): the ten used most, then five submenus holding all 38."""
+    from softcalc_engine.matrix import FUNCTIONS
+    catalog = Dispatcher().handle({"op": "catalog"})
+    top = catalog["functions"]["Matrix"]
+    groups = catalog["subgroups"]["Matrix"]
+    assert top == ["det", "inv", "solve", "transpose", "eig", "identity", "fill", "seq", "sum", "mean"]
+    assert list(groups) == ["Build", "Size and pick", "Linear algebra", "Statistics", "Arrange"]
+    every = [name for names in groups.values() for name in names]
+    assert len(every) == len(set(every)) == 38
+    assert set(top) <= set(every)
+    assert set(every) == set(FUNCTIONS) | {"randm"}    # randm draws, so the Engine keeps it (functions.py)
+
+
 def test_draws_apart_leave_the_calculator_as_it_was():
     from softcalc_engine.server import Dispatcher
 

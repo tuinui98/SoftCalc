@@ -709,10 +709,17 @@ internal sealed partial class MainForm : Form
 		foreach (var (group, names) in catalog.FunctionGroups)
 		{
 			var groupItem = new ToolStripMenuItem(group);
-			foreach (string name in names)
+			AddFunctionItems(groupItem, names);
+			// Functions > Matrix (owner 2026-11-25): the ten used most, a separator, then its submenus
+			if (catalog.Subgroups?.GetValueOrDefault(group) is { Count: > 0 } subgroups)
 			{
-				groupItem.DropDownItems.Add(new ToolStripMenuItem(name, null,
-					async (_, _) => await InsertFunctionOrOperatorAsync(name)));
+				groupItem.DropDownItems.Add(new ToolStripSeparator());
+				foreach (var (subgroup, subnames) in subgroups)
+				{
+					var subItem = new ToolStripMenuItem(subgroup);
+					AddFunctionItems(subItem, subnames);
+					groupItem.DropDownItems.Add(subItem);
+				}
 			}
 			_functionsMenu.DropDownItems.Add(groupItem);
 		}
@@ -721,6 +728,15 @@ internal sealed partial class MainForm : Form
 
 		FillConversions(_conversionsMenu.DropDownItems, catalog);
 		RebuildRibbon();    // functions and conversion pairs can now be found
+	}
+
+	private void AddFunctionItems(ToolStripMenuItem parent, IEnumerable<string> names)
+	{
+		foreach (string name in names)
+		{
+			parent.DropDownItems.Add(new ToolStripMenuItem(name, null,
+				async (_, _) => await InsertFunctionOrOperatorAsync(name)));
+		}
 	}
 
 	private void FillConversions(ToolStripItemCollection items, Catalog catalog)

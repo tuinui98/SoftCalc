@@ -629,7 +629,7 @@ ends 1:1, the drag insert line is visible enough on dark.
         1.26 s -> 0.23 s desktop, 1.48 s -> 0.35 s web on the PC. The web
         status line shows "Working... 1.4 s" after a second, then "Took 2.1 s".
 
-  - [ ] Functions > Matrix in groups (owner 2026-11-25): the 38 sit in
+  - [x] (built 2026-11-26: catalog "subgroups", ribbon ids kept) Functions > Matrix in groups (owner 2026-11-25): the 38 sit in
         one flat submenu today (server.py CATALOG "Matrix"). On top the
         ten used most: det inv solve transpose eig identity fill seq sum
         mean; a separator; then five submenus:
@@ -682,7 +682,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       Avoid Byron Knoll's set (public-domain claim not backed up).
 
 ## Hints (owner 2026-11-24)
-- [ ] rands hint: today one hint for `rands(` (hints.py "rands"), and
+- [x] (built 2026-11-26: hints.py RANDS_EMPTY_HINT) rands hint: today one hint for `rands(` (hints.py "rands"), and
       "rands(): unpredictable again" sits at its end, cut off on a narrow
       window. Give `rands()` (empty brackets) a hint of its own that says
       it takes a new seed from the system, e.g. "rands() - a new seed

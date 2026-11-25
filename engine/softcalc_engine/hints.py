@@ -47,7 +47,7 @@ BUILTINS = {
     "floor": "floor(x) - the next whole number down: floor(-1.2) = -2",
     "rand": "rand([a], [b]) - random: rand() 0 to 1, rand(6) 0 to 6, rand(1, 6) 1 to 6; rand(1.0, 6) a decimal",
     "card": 'card("deck", [count], [no repeat]) - cards drawn by weight: card("Dice"), card("Food", 3), card("Food", 3, 1) none twice',
-    "rands": "rands([seed]) - rands(42): the next rand() draws repeat; rands(): unpredictable again",
+    "rands": "rands(seed) - rands(42): the draws after it repeat, the same for the same seed; rands() for a new seed",
     "randbeta": "randbeta(a, b, [from, to]) - random in a Beta shape: randbeta(4, 4, 1, 10) a bell, whole 1 to 10",
     "randtri": "randtri(peak, [from, to]) - random in a triangle: randtri(3, 1, 10) peaks at 3",
     "randexp": "randexp(rate, [from, to]) - random falling (rate > 0) or rising (rate < 0): randexp(4, 0, 100)",
@@ -100,6 +100,9 @@ BUILTINS = {
     "ans": "ans (or answer) - the last result",
 }
 
+# rands() with empty brackets: a hint of its own, so it is not cut off at the end of rands( (owner 2026-11-26)
+RANDS_EMPTY_HINT = "rands() - a new seed from the system: the draws after it are unpredictable again"
+RANDS_EMPTY = re.compile(r"(?<![A-Za-z0-9_])rands\(\s*(\)\s*)?\Z", re.IGNORECASE)
 FILL_DRAW_HINT = "fill draws again for every cell: fill(2, 3, rand(1, 6)) gives 6 rolls"
 DRAW_WORD = re.compile(r"\b(rand(?!s\b)[a-z]*|card)\b", re.IGNORECASE)
 LIST_HINT = "[1, 2, 3] is a list, [[1, 2], [3, 4]] a matrix (rows in brackets); 2*[1, 2], A*B, det(A)"
@@ -143,10 +146,21 @@ def hint_for(text, caret, lookup_user):
     Inside an open fill( holding rand/card, the hint first says each cell
     is drawn again (owner 2026-11-24).
     """
-    plain = plain_hint(text, caret, lookup_user)
+    plain = rands_empty(text, caret) or plain_hint(text, caret, lookup_user)
     if drawing_fill(left_of(text, caret)):
         return FILL_DRAW_HINT if plain is None else FILL_DRAW_HINT + "  |  " + plain
     return plain
+
+
+def rands_empty(text, caret):
+    """RANDS_EMPTY_HINT at `rands(|)` (empty brackets around the caret) or right after `rands()`."""
+    left = left_of(text, caret)
+    match = RANDS_EMPTY.search(left)
+    if match is None:
+        return None
+    if match.group(1) is not None or text[len(left):].lstrip().startswith(")"):
+        return RANDS_EMPTY_HINT
+    return None
 
 
 def drawing_fill(left):

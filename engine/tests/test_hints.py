@@ -123,7 +123,8 @@ def test_a_call_inside_a_list_describes_the_call():
 
 def test_every_menu_function_has_a_hint():
     from softcalc_engine.server import CATALOG
-    names = [name for group in CATALOG["functions"].values() for name in group if name.isidentifier()]
+    groups = [*CATALOG["functions"].values(), *(g for sub in CATALOG["subgroups"].values() for g in sub.values())]
+    names = [name for group in groups for name in group if name.isidentifier()]
     assert [name for name in names if name not in hints.BUILTINS] == []
 
 
@@ -134,3 +135,15 @@ def test_rand_or_card_inside_fill_says_every_cell_draws():
     assert hint('fill(2, 3, card("Dice", 3)').startswith(hints.FILL_DRAW_HINT)
     assert not (hint("fill(2, 3, rands(1)") or "").startswith(hints.FILL_DRAW_HINT)    # rands sets the seed
     assert not (hint("fill(2, 3, rand(1, 6)) + ") or "").startswith(hints.FILL_DRAW_HINT)    # fill is closed
+
+
+def test_rands_empty_has_its_own_hint():
+    """rands() says it takes a new seed from the system (owner 2026-11-26)."""
+    assert hint("rands()") == hints.RANDS_EMPTY_HINT
+    assert hint("rands( )") == hints.RANDS_EMPTY_HINT
+    assert hint("rands()", 6) == hints.RANDS_EMPTY_HINT    # the caret between the brackets, as Insert puts it
+    assert hint("RANDS()") == hints.RANDS_EMPTY_HINT
+    assert hint("rands(").startswith("rands(seed)")
+    assert hint("rands(42").startswith("rands(seed)")
+    assert hint("rands(42)", 6).startswith("rands(seed)")
+    assert hint("myrands()") != hints.RANDS_EMPTY_HINT

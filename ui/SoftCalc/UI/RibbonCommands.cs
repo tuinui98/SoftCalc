@@ -63,6 +63,9 @@ internal sealed class RibbonCommands
 	// Ribbon buttons saved before the coins moved under Conversions > Cryptocurrency (owner 2026-11-24)
 	private static readonly string[] MovedCoins = { "Bitcoin", "Ethereum", "Tron" };
 
+	// Ribbon buttons saved before Functions > Matrix put most of its functions in submenus (owner 2026-11-25)
+	private const string MatrixMenu = "Functions/Matrix/";
+
 	public RibbonCommand? Find(string id)
 	{
 		var found = _byId.GetValueOrDefault(id);
@@ -72,6 +75,12 @@ internal sealed class RibbonCommands
 			if (coin != null)
 			{
 				found = _byId.GetValueOrDefault("Conversions/Cryptocurrency/" + id["Conversions/".Length..]);
+			}
+			else if (id.StartsWith(MatrixMenu, StringComparison.Ordinal) && id.IndexOf('/', MatrixMenu.Length) < 0)
+			{
+				string name = id[MatrixMenu.Length..];
+				found = _byId.Values.FirstOrDefault(c => c.Id.StartsWith(MatrixMenu, StringComparison.Ordinal)
+					&& c.Id.EndsWith("/" + name, StringComparison.Ordinal) && c.Id.Count(ch => ch == '/') == 3);
 			}
 		}
 		return found;
