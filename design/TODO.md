@@ -643,6 +643,24 @@ ends 1:1, the drag insert line is visible enough on dark.
         and web; ribbon buttons made from the old Matrix menu keep working;
         menu-functions help picture after the owner finishes the topic.
 
+## Statistics (owner 2026-11-26)
+- [x] (built 2026-11-26) Functions > Statistics, a group of its own after
+      Matrix, with the 11 that Matrix > Statistics has (sum prod min max
+      count mean median stdev stdevp variance variancep; both places).
+- [ ] Functions still to add, then submenus (Descriptive, Counting,
+      Distributions, Two variables). Names proposed, check each against
+      units and names first (range, mode, ...); mpmath has gamma,
+      binomial, erf/erfinv, ncdf and the incomplete gamma/beta, so all at
+      the working precision.
+      Round 1: comb(n, k) perm(n, k), mode, percentile, quartile, normcdf
+      norminv, randnorm(mean, sd) (the shaped draws have no normal yet).
+      Round 2: normpdf, binompdf binomcdf, poisspdf poisscdf, covar covarp,
+      correl, slope intercept rsq forecast; gamma, erf erfc; range iqr
+      geomean harmean zscore; randbinom randpois.
+      Later: tcdf chi2cdf, skew kurt, weighted mean, sumsq; statistics per
+      column of a matrix (colmean or mean(A, 1)) and cov(A). Out of scope:
+      hypothesis tests.
+
 ## Conversions (owner 2026-11-24)
 - [x] One Conversions > Cryptocurrency submenu (Bitcoin, Ethereum, Tron,
       Tether); a coin unit also goes to the other coins and the common

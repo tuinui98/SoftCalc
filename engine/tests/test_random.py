@@ -133,7 +133,9 @@ def test_matrix_menu_has_ten_on_top_and_five_whole_groups():
     every = [name for names in groups.values() for name in names]
     assert len(every) == len(set(every)) == 38
     assert set(top) <= set(every)
-    assert set(every) == set(FUNCTIONS) | {"randm"}    # randm draws, so the Engine keeps it (functions.py)
+    assert set(every) == set(FUNCTIONS) | {"randm"}
+    assert catalog["functions"]["Statistics"] == groups["Statistics"]    # also a group of its own (owner 2026-11-26)
+    assert list(catalog["functions"]).index("Statistics") == list(catalog["functions"]).index("Matrix") + 1    # randm draws, so the Engine keeps it (functions.py)
 
 
 def test_draws_apart_leave_the_calculator_as_it_was():

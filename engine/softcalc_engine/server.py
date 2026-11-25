@@ -31,6 +31,8 @@ SETTING_CHOICES = {
     "angle": ("rad", "deg", "grad"),
     "base": ("dec", "hex", "bin", "oct"),
 }
+STATISTICS = ["sum", "prod", "min", "max", "count", "mean", "median",
+              "stdev", "stdevp", "variance", "variancep"]
 CATALOG = {
     "functions": {
         "Basic Operations": ["+", "-", "*", "/", "^", "sqrt", "abs", "mod", "!", "%"],
@@ -44,6 +46,9 @@ CATALOG = {
         "Random": ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"],
         # The ten used most; the rest in "subgroups" below (owner 2026-11-25)
         "Matrix": ["det", "inv", "solve", "transpose", "eig", "identity", "fill", "seq", "sum", "mean"],
+        # Its own group too (owner 2026-11-26): they take numbers as well as lists; submenus come
+        # with the functions still to add (design/TODO.md Statistics)
+        "Statistics": STATISTICS,
     },
     # A function group's submenus, after its own items and a separator; the
     # top items stay in their submenu too, so each submenu is whole (owner 2026-11-25)
@@ -52,8 +57,7 @@ CATALOG = {
             "Build": ["identity", "zeros", "ones", "diag", "fill", "seq", "reshape", "randm"],
             "Size and pick": ["rows", "cols", "len", "at", "row", "col"],
             "Linear algebra": ["transpose", "det", "inv", "trace", "rank", "solve", "eig", "dot", "cross", "norm"],
-            "Statistics": ["sum", "prod", "min", "max", "count", "mean", "median",
-                           "stdev", "stdevp", "variance", "variancep"],
+            "Statistics": STATISTICS,
             "Arrange": ["sort", "reverse", "cumsum"],
         },
     },
