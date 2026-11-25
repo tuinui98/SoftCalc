@@ -36,7 +36,8 @@ internal sealed record Catalog(
 	IReadOnlyList<string> Formats,
 	IReadOnlyList<string> Currencies,
 	IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>>? CryptoGroups = null,    // coin -> its units
-	IReadOnlyList<string>? CryptoTargets = null);    // currencies a coin unit converts to
+	IReadOnlyList<string>? CryptoTargets = null,    // currencies a coin unit converts to
+	IReadOnlyDictionary<string, IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>>>? Subgroups = null);    // group -> its submenus
 
 internal sealed class EngineSession : IDisposable
 {
@@ -208,7 +209,9 @@ internal sealed class EngineSession : IDisposable
 			reply["formats"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>(),
 			reply["currencies"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>(),
 			Groups(reply["crypto"]),
-			reply["crypto_targets"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>());
+			reply["crypto_targets"]?.AsArray().Select(f => (string?)f ?? "").ToList() ?? new List<string>(),
+			(reply["subgroups"] as JsonObject)?.ToDictionary(g => g.Key,
+				g => (IReadOnlyList<KeyValuePair<string, IReadOnlyList<string>>>)Groups(g.Value)));
 	}
 
 	public async Task<(string Text, int Caret)> MenuInsertAsync(JsonObject arguments)

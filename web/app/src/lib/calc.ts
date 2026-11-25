@@ -70,7 +70,22 @@ export type Catalog = {
 	conversions: Record<string, string[]>;
 	crypto?: Record<string, string[]>;    // Conversions > Cryptocurrency: coin -> its units (owner 2026-11-24)
 	crypto_targets?: string[];    // the currencies a coin unit converts to
+	subgroups?: Record<string, Record<string, string[]>>;    // a group's submenus, after its own items (owner 2026-11-25)
 };
+
+export const SUBMENU = " ›";    // marks a submenu in a pick list
+
+// A function group's pick list: its own functions, then its submenus marked with SUBMENU
+export function functionItems(catalog: Catalog, group: string): string[]
+{
+	return [...(catalog.functions[group] ?? []), ...Object.keys(catalog.subgroups?.[group] ?? {}).map(name => name + SUBMENU)];
+}
+
+// The functions of a picked submenu ("Build ›"), or null when the pick is a function
+export function submenuItems(catalog: Catalog, group: string, item: string): string[] | null
+{
+	return item.endsWith(SUBMENU) ? catalog.subgroups?.[group]?.[item.slice(0, -SUBMENU.length)] ?? null : null;
+}
 
 export const CRYPTO_GROUP = "Cryptocurrency";
 

@@ -31,6 +31,8 @@ SETTING_CHOICES = {
     "angle": ("rad", "deg", "grad"),
     "base": ("dec", "hex", "bin", "oct"),
 }
+STATISTICS = ["sum", "prod", "min", "max", "count", "mean", "median",
+              "stdev", "stdevp", "variance", "variancep"]
 CATALOG = {
     "functions": {
         "Basic Operations": ["+", "-", "*", "/", "^", "sqrt", "abs", "mod", "!", "%"],
@@ -42,12 +44,21 @@ CATALOG = {
         "Two's Complement": ["twos", "signed"],
         "Rounding": ["round", "ceil", "floor"],
         "Random": ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"],
-        "Matrix": ["identity", "zeros", "ones", "fill", "diag", "seq", "reshape", "randm",
-                   "rows", "cols", "len", "at", "row", "col",
-                   "transpose", "det", "inv", "trace", "solve", "dot", "cross",
-                   "sum", "mean", "prod", "min", "max", "sort",
-                   "median", "stdev", "stdevp", "variance", "variancep", "norm", "rank", "eig",
-                   "reverse", "cumsum", "count"],
+        # The ten used most; the rest in "subgroups" below (owner 2026-11-25)
+        "Matrix": ["det", "inv", "solve", "transpose", "eig", "identity", "fill", "seq", "sum", "mean"],
+        # Its own group (owner 2026-11-26), no longer a Matrix submenu: they take numbers as well as
+        # lists; submenus come with the functions still to add (design/TODO.md Statistics)
+        "Statistics": STATISTICS,
+    },
+    # A function group's submenus, after its own items and a separator; the
+    # top items stay in their submenu too, so each submenu is whole (owner 2026-11-25)
+    "subgroups": {
+        "Matrix": {
+            "Build": ["identity", "zeros", "ones", "diag", "fill", "seq", "reshape", "randm"],
+            "Size and pick": ["rows", "cols", "len", "at", "row", "col"],
+            "Linear algebra": ["transpose", "det", "inv", "trace", "rank", "solve", "eig", "dot", "cross", "norm"],
+            "Arrange": ["sort", "reverse", "cumsum"],
+        },
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
     "currencies": currency.CODES,

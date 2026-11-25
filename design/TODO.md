@@ -629,19 +629,38 @@ ends 1:1, the drag insert line is visible enough on dark.
         1.26 s -> 0.23 s desktop, 1.48 s -> 0.35 s web on the PC. The web
         status line shows "Working... 1.4 s" after a second, then "Took 2.1 s".
 
-  - [ ] Functions > Matrix in groups (owner 2026-11-25): the 38 sit in
+  - [x] (built 2026-11-26: catalog "subgroups", ribbon ids kept) Functions > Matrix in groups (owner 2026-11-25): the 38 sit in
         one flat submenu today (server.py CATALOG "Matrix"). On top the
         ten used most: det inv solve transpose eig identity fill seq sum
-        mean; a separator; then five submenus:
+        mean; a separator; then four submenus:
         Build (identity zeros ones diag fill seq reshape randm),
         Size and pick (rows cols len at row col),
         Linear algebra (transpose det inv trace rank solve eig dot cross norm),
-        Statistics (sum prod min max count mean median stdev stdevp
-        variance variancep), Arrange (sort reverse cumsum).
+        Arrange (sort reverse cumsum); the statistics went to Functions >
+        Statistics (owner 2026-11-26).
         The ten stay in their groups too, so each group is whole.
         CATALOG must nest (items and submenus in one group); desktop menu
         and web; ribbon buttons made from the old Matrix menu keep working;
         menu-functions help picture after the owner finishes the topic.
+
+## Statistics (owner 2026-11-26)
+- [x] (built 2026-11-26) Functions > Statistics, a group of its own after
+      Matrix: sum prod min max count mean median stdev stdevp variance
+      variancep. Matrix > Statistics taken out (owner 2026-11-26); sum and
+      mean stay in Matrix's top ten; old ribbon buttons find them here.
+- [ ] Functions still to add, then submenus (Descriptive, Counting,
+      Distributions, Two variables). Names proposed, check each against
+      units and names first (range, mode, ...); mpmath has gamma,
+      binomial, erf/erfinv, ncdf and the incomplete gamma/beta, so all at
+      the working precision.
+      Round 1: comb(n, k) perm(n, k), mode, percentile, quartile, normcdf
+      norminv, randnorm(mean, sd) (the shaped draws have no normal yet).
+      Round 2: normpdf, binompdf binomcdf, poisspdf poisscdf, covar covarp,
+      correl, slope intercept rsq forecast; gamma, erf erfc; range iqr
+      geomean harmean zscore; randbinom randpois.
+      Later: tcdf chi2cdf, skew kurt, weighted mean, sumsq; statistics per
+      column of a matrix (colmean or mean(A, 1)) and cov(A). Out of scope:
+      hypothesis tests.
 
 ## Conversions (owner 2026-11-24)
 - [x] One Conversions > Cryptocurrency submenu (Bitcoin, Ethereum, Tron,
@@ -682,7 +701,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       Avoid Byron Knoll's set (public-domain claim not backed up).
 
 ## Hints (owner 2026-11-24)
-- [ ] rands hint: today one hint for `rands(` (hints.py "rands"), and
+- [x] (built 2026-11-26: hints.py RANDS_EMPTY_HINT) rands hint: today one hint for `rands(` (hints.py "rands"), and
       "rands(): unpredictable again" sits at its end, cut off on a narrow
       window. Give `rands()` (empty brackets) a hint of its own that says
       it takes a new seed from the system, e.g. "rands() - a new seed
