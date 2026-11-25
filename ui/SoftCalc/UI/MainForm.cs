@@ -177,8 +177,7 @@ internal sealed partial class MainForm : Form
 		historyBox.Controls.Add(_history);
 		_samplesBox.Controls.Add(_samples);
 		_inputBox.Controls.Add(_hint);
-		_hint.TextChanged += (_, _) => FitHint();
-		_hint.SizeChanged += (_, _) => FitHint();    // a narrower window may need the second line
+		_hint.SizeChanged += (_, _) => FitHint();    // the window or the font changed: one line or two
 		_inputBox.Controls.Add(_input);    // added last: docks first, above the hint
 		_keypadHost.Controls.Add(_keypad);
 		_keypadHost.Controls.Add(_keypadBar);
@@ -408,15 +407,15 @@ internal sealed partial class MainForm : Form
 		UpdateMinimumSize();
 	}
 
-	// Owner 2026-11-26: a hint that one line shows less than 3/4 of takes two lines (HintLines)
+	// Owner 2026-11-26: a hint line too narrow for HintLines.MinChars characters takes two lines, kept
+	// while the width stays (never switched by the text, which made the row jump while typing)
 	private int _hintLines = 1;
 
 	private void FitHint()
 	{
 		int room = _hint.ClientSize.Width - _hint.Padding.Horizontal;
-		int width = _hint.Text.Length == 0 ? 0
-			: TextRenderer.MeasureText(_hint.Text, _hint.Font, Size.Empty, TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine).Width;
-		int lines = room <= 0 ? _hintLines : HintLines.For(width, room);
+		int sample = TextRenderer.MeasureText(HintLines.Sample, _hint.Font, Size.Empty, TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine).Width;
+		int lines = room <= 0 ? _hintLines : HintLines.For(sample, room);
 		if (lines != _hintLines)
 		{
 			_hintLines = lines;

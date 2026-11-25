@@ -13,7 +13,7 @@
 	import NamesSheet from "./components/NamesSheet.svelte";
 	import Sheet from "./components/Sheet.svelte";
 	import { Calculator, CRYPTO_GROUP, cryptoTargets, functionItems, stepDecimals, SUBMENU, submenuItems } from "./lib/calc";
-	import { hintLines, textWidth } from "./lib/hintlines";
+	import { hintLines, sampleWidth } from "./lib/hintlines";
 	import { MAX_SHOWN, parseTable, shownCells, tableTsv } from "./lib/table";
 	import { copyText } from "./lib/clipboard";
 	import type { Engine } from "./lib/engine";
@@ -68,7 +68,8 @@
 	let helpTopic: string | null = $state(null);
 	let helpQuery: string | null = $state(null);    // ?word typed in Input (owner 2026-11-26)
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
-	// Owner 2026-11-26: a hint that one line shows less than 3/4 of takes two lines (hintlines.ts)
+	// Owner 2026-11-26: a hint line too narrow for MIN_CHARS characters takes two lines, kept while
+	// the width stays; never switched by the text (hintlines.ts)
 	let hintBox: HTMLElement | undefined = $state();
 	let hintTwo = $state(false);
 
@@ -80,12 +81,11 @@
 		}
 		const style = getComputedStyle(hintBox);
 		const room = hintBox.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-		hintTwo = hintLines(textWidth(hintBox, view.hint ?? ""), room) === 2;
+		hintTwo = hintLines(sampleWidth(hintBox), room) === 2;
 	}
 
 	$effect(() =>
 	{
-		void view.hint;
 		if (!hintBox)
 		{
 			return;

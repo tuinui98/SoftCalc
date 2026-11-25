@@ -7,12 +7,17 @@ namespace SoftCalc.Tests;
 public class HintLinesTests
 {
 	[Theory]
-	[InlineData(400, 500, 1)]    // all of it fits
-	[InlineData(400, 300, 1)]    // three quarters fit: one line, cut at the end
-	[InlineData(400, 299, 2)]    // less than three quarters: two lines
-	[InlineData(0, 100, 1)]    // no hint
-	public void TwoLinesWhenOneShowsLessThanThreeQuarters(int textWidth, int room, int lines)
+	[InlineData(500, 600, 1)]
+	[InlineData(500, 500, 1)]
+	[InlineData(500, 499, 2)]
+	public void TwoLinesWhenTheLineHoldsFewerThanMinChars(int sampleWidth, int room, int lines)
 	{
-		Assert.Equal(lines, HintLines.For(textWidth, room));
+		Assert.Equal(lines, HintLines.For(sampleWidth, room));
+	}
+
+	[Fact]
+	public void TheSampleIsMinCharsLong()
+	{
+		Assert.Equal(HintLines.MinChars, HintLines.Sample.Length);
 	}
 }
