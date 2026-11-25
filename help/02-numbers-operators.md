@@ -69,6 +69,10 @@ written (see *Display and precision*).
   error.
 - `%` divides by 100 and nothing more: `200*10%` is `200*0.1`.
 
+More: [MathWorld: Mod](https://mathworld.wolfram.com/Mod.html); n! is Γ(n+1),
+[DLMF §5.4](https://dlmf.nist.gov/5.4), and its values are [OEIS A000142](https://oeis.org/A000142).
+
+
 ## Implicit multiplication
 
 A number or `)` followed by a name or `(` multiplies:

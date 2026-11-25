@@ -718,7 +718,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       the engine) and what a keyword with several matches does. Owner
       2026-11-24: both desktop and web; the command's form is settled
       when the work starts.
-  - [ ] Links out for the harder functions (owner 2026-11-24): links,
+  - [x] (built 2026-11-26: More: lines in help 02, 03, 17, 19; WebHosts) Links out for the harder functions (owner 2026-11-24): links,
         not fetched text (offline, the typed word stays private,
         licences). A "More:" line under a function in Help, from one
         function -> URL table: NIST DLMF for special functions (stable

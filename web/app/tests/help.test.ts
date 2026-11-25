@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error: a plain build script without types
-import { forWeb, makeHelp } from "../make_help.mjs";
+import { forWeb, isWebLink, makeHelp } from "../make_help.mjs";
 
 const SAMPLE = [
 	"# Functions",
@@ -46,6 +46,15 @@ describe("help for the web app", () =>
 		expect(html).toContain('<button class="example" data-line="100 [usd-&gt;thb]"><span class="line">100 [usd-&gt;thb]</span></button>');
 		expect(html).toContain('<a href="#" data-topic="07-currency">Currency</a>');
 		expect(html).toContain("<em>Random</em>");
+	});
+
+	it("a More: link opens a reference site in a new tab; any other link is text (owner 2026-11-26)", () =>
+	{
+		const [topic] = makeHelp(() => "# T\n\nMore: [DLMF §4.2](https://dlmf.nist.gov/4.2), [x](https://example.com/), [y](http://oeis.org/)\n");
+		expect(topic.html).toContain('<a href="https://dlmf.nist.gov/4.2" target="_blank" rel="noopener noreferrer">DLMF §4.2</a>');
+		expect(topic.html).toContain(", x, y");
+		expect(isWebLink("https://oeis.org/A000142")).toBe(true);
+		expect(isWebLink("javascript:alert(1)")).toBe(false);
 	});
 
 	it("no desktop-only text reaches the real topics", () =>

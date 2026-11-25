@@ -51,6 +51,22 @@ export function forWeb(markdown)
 	return kept.join("\n");
 }
 
+// The reference sites a More: line may link to (owner 2026-11-26; desktop HelpMarkdown.WebHosts)
+export const WEB_HOSTS = ["dlmf.nist.gov", "www.itl.nist.gov", "mathworld.wolfram.com", "oeis.org", "mpmath.org"];
+
+export function isWebLink(href)
+{
+	try
+	{
+		const url = new URL(href);
+		return url.protocol === "https:" && WEB_HOSTS.includes(url.hostname);
+	}
+	catch
+	{
+		return false;
+	}
+}
+
 const escape = text => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 export function makeHelp(read)
@@ -85,8 +101,13 @@ export function makeHelp(read)
 				const text = this.parser.parseInline(tokens);
 				const raw = tokens.map(token => token.raw).join("");
 				const id = depth === 2 || depth === 3 ? ` id="${slug(raw)}"` : "";
-				return `<h${depth}${id}>${text}</h${depth}>
-`;
+				return `<h${depth}${id}>${text}</h${depth}>\n`;
+			},
+			// A More: link opens the reference site in a new tab (the phone's browser in the APK); others are text
+			link({ href, tokens })
+			{
+				const text = this.parser.parseInline(tokens);
+				return isWebLink(href) ? `<a href="${escape(href)}" target="_blank" rel="noopener noreferrer">${text}</a>` : text;
 			},
 			em({ tokens })
 			{

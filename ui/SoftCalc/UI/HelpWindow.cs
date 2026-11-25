@@ -93,7 +93,7 @@ internal sealed class HelpWindow : Form
 		{
 			if (e.Url?.Scheme is not ("about" or "data"))
 			{
-				e.Cancel = true;    // the help has no web links; nothing leaves the window
+				e.Cancel = true;    // nothing leaves the window; a More: link opens the browser (HelpBridge.Web)
 			}
 		};
 		_search.TextChanged += (_, _) => FilterTopics();
@@ -221,6 +221,8 @@ internal sealed class HelpWindow : Form
 				var target = e.target || e.srcElement;
 				var example = up(target, function (n) { return n.className == "example"; });
 				if (example) { window.external.Example(example.getAttribute("data-line")); return false; }
+				var web = up(target, function (n) { return n.getAttribute && n.getAttribute("data-web"); });
+				if (web) { window.external.Web(web.getAttribute("data-web")); return false; }
 				var topic = up(target, function (n) { return n.getAttribute && n.getAttribute("data-topic"); });
 				if (topic) { window.external.Topic(topic.getAttribute("data-topic")); return false; }
 				return true;
@@ -381,5 +383,14 @@ public sealed class HelpBridge
 	public void Topic(string id)
 	{
 		_window.BeginInvoke(() => _window.ShowTopic(HelpTopics.Find(id)));
+	}
+
+	// A More: link (owner 2026-11-26): the reference sites only, in the default browser
+	public void Web(string url)
+	{
+		if (HelpMarkdown.IsWebLink(url))
+		{
+			System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true });
+		}
 	}
 }
