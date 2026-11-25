@@ -27,6 +27,7 @@ internal sealed class HelpWindow : Form
 	private List<HelpTopic> _shown = new();
 	private HelpTopic? _current;
 	private MainForm? _target;
+	private string? _anchor;    // the heading the next page scrolls to (OpenAt), once; "" the top
 
 	// Show `topic` ("graph", "06-conversions"); examples go to `target`'s Input
 	public static void Open(string topic, MainForm? target)
@@ -48,6 +49,24 @@ internal sealed class HelpWindow : Form
 			_open.WindowState = FormWindowState.Normal;
 		}
 		_open.Activate();
+	}
+
+	// `?word` in Input (owner 2026-11-26): the best heading for the words (HelpFind), with the
+	// words searched so the list keeps every topic holding them; a bare ? opens Help as it was
+	public static void OpenAt(string query, MainForm? target)
+	{
+		var spot = HelpFind.Find(HelpTopics.All, query);
+		Open(spot?.TopicId ?? _open?._current?.Id ?? HelpTopics.All[0].Id, target);
+		if (query.Length == 0)
+		{
+			return;
+		}
+		_open!._search.Text = query;    // filters the list and marks the words
+		if (spot != null)
+		{
+			_open._anchor = spot.Anchor;
+			_open.ShowTopic(HelpTopics.Find(spot.TopicId));
+		}
 	}
 
 	private HelpWindow()
@@ -139,13 +158,14 @@ internal sealed class HelpWindow : Form
 		{
 			_topics.SelectedIndex = index;
 		}
-		_page.DocumentText = Page(topic, HelpTopics.SearchWords(_search.Text));
+		_page.DocumentText = Page(topic, HelpTopics.SearchWords(_search.Text), _anchor);
+		_anchor = null;
 	}
 
 	//==================================================================
 	//  The page: theme colours from SystemColors (remapped in dark mode)
 	//==================================================================
-	private static string Page(HelpTopic topic, string[] marks)
+	private static string Page(HelpTopic topic, string[] marks, string? anchor)
 	{
 		bool dark = Theme.IsDark;
 		string body = HelpMarkdown.ToHtml(topic.Markdown, path => HelpTopics.Picture(path, dark), HelpTopics.IdOfTitle);
@@ -234,6 +254,9 @@ internal sealed class HelpWindow : Form
 				var spans = document.getElementsByTagName("span");
 				for (var s = 0; s < spans.length; s++) { if (spans[s].className == "mark") { spans[s].scrollIntoView(); window.scrollBy(0, -40); break; } }
 			}
+			var anchor = {{(anchor == null ? "null" : "\"" + Escape(anchor) + "\"")}};
+			if (anchor === "") { window.scrollTo(0, 0); }
+			else if (anchor) { var heading = document.getElementById(anchor); if (heading) { heading.scrollIntoView(); window.scrollBy(0, -8); } }
 			</script>
 			</body></html>
 			""";

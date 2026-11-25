@@ -30,6 +30,14 @@
 	// The engine and the store are given once at start and never change
 	// svelte-ignore state_referenced_locally
 	const calc = new Calculator(engine, store);
+	// ?word in Input opens Help at it; a bare ? opens Help (owner 2026-11-26)
+	calc.onhelp = query =>
+	{
+		helpQuery = query.length > 0 ? query : null;
+		if (query.length === 0)
+			helpTopic = null;
+		helpOpen = true;
+	};
 	calc.showHints = loadHints();
 	const snap = () => ({
 		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
@@ -57,6 +65,7 @@
 	let graphInner = $state(false);    // a menu or the editor open on the Graph
 	let graphView: GraphView | undefined = $state();
 	let helpTopic: string | null = $state(null);
+	let helpQuery: string | null = $state(null);    // ?word typed in Input (owner 2026-11-26)
 	let hintOpen = $state(false);    // a long hint is cut to one line; a tap shows all of it (owner 2026-11-18)
 	let wide = $state(matchMedia(WIDE).matches);
 	let sheet: { title: string; items: string[]; done: (item: string | null) => void } | null = $state(null);
@@ -702,7 +711,7 @@
 	{#if sheet}<Sheet title={sheet.title} items={sheet.items} onpick={item => sheet?.done(item)} />{/if}
 
 	{#if helpOpen}
-		<HelpView bind:topic={helpTopic} onclose={() => { helpOpen = false; focusInput(); }}
+		<HelpView bind:topic={helpTopic} bind:query={helpQuery} onclose={() => { helpOpen = false; focusInput(); }}
 			onexample={line => { helpOpen = false; calc.typed(line, line.length); focusInput(); }} />
 	{/if}
 

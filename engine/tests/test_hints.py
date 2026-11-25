@@ -147,3 +147,9 @@ def test_rands_empty_has_its_own_hint():
     assert hint("rands(42").startswith("rands(seed)")
     assert hint("rands(42)", 6).startswith("rands(seed)")
     assert hint("myrands()") != hints.RANDS_EMPTY_HINT
+
+
+def test_a_help_line_says_what_it_does():
+    assert hint("?det") == hints.HELP_HINT
+    assert hint("  ?") == hints.HELP_HINT
+    assert hint("2?") != hints.HELP_HINT

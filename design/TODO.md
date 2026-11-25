@@ -709,7 +709,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       `rands(` for the seeded form. Desktop and web.
 
 ## Help from the Input box (owner 2026-11-24)
-- [ ] Type help + a keyword in Input to open Help at that heading, desktop
+- [x] (built 2026-11-26: `?word`, HelpFind.cs / helpfind.ts, heading ids) Type help + a keyword in Input to open Help at that heading, desktop
       and web. Today Help opens a whole topic only (20 files); headings
       `#`-`####` render with no id, and search only filters topics and
       scrolls to the first mark. Needs: an id per heading (## and ###),

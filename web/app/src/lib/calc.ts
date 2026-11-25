@@ -23,6 +23,7 @@ import { decksZip, importDecks, readDecks, report, usedPictures, type Pictures }
 import { prefsFrom, type RandomPrefs } from "./random";
 import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from "./graph";
 import { HISTORY_LIMIT, type Store } from "./store";
+import { helpQuery, isHelpLine } from "./helpfind";
 import { isZip } from "./zip";
 import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
 
@@ -122,6 +123,7 @@ export class Calculator
 	startTimes = "";           // how long each start step took (Settings), "" until started
 	ready = false;
 	catalog: Catalog = { functions: {}, conversions: {} };
+	onhelp?: (query: string) => void;    // ?word in Input (owner 2026-11-26): the app opens Help
 	definitions: Definitions = { variables: [], functions: [] };
 	graph: string[] = [];    // the Graph's equations; a .pcf's [Graph] section (transfer.ts)
 	graphView: GraphState = stateFrom(null);    // the Graph's range, lines shown and colours
@@ -400,6 +402,14 @@ export class Calculator
 	//==================================================================
 	async submit(line = this.text)
 	{
+		// ?word opens Help at it (owner 2026-11-26); the engine never gets the line
+		if (isHelpLine(line))
+		{
+			this.setText("");
+			this.onhelp?.(helpQuery(line));
+			this.notify();
+			return;
+		}
 		const toRun = line.length > 0 ? line : this.entries.at(-1)?.input;
 		if (!toRun || this.waitingEngine)
 		{

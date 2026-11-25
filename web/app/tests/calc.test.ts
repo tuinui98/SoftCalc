@@ -295,6 +295,21 @@ describe("saving between visits", () =>
 		expect(restored?.args.texts).toEqual(["42"]);
 	});
 
+	it("?word opens Help and never reaches the engine (owner 2026-11-26)", async () =>
+	{
+		const { calc, engine } = await started(new MemoryStore());
+		const asked: string[] = [];
+		calc.onhelp = query => asked.push(query);
+		calc.typed("?Det", 4);
+		await calc.press("=");
+		calc.typed("?", 1);
+		await calc.press("=");
+		expect(asked).toEqual(["det", ""]);
+		expect(engine.sent.filter(message => message.op === "eval")).toEqual([]);
+		expect(calc.text).toBe("");
+		expect(calc.entries).toEqual([]);
+	});
+
 	it("a setting typed in Input is kept like one from Settings (owner 2026-11-26)", async () =>
 	{
 		const store = new MemoryStore();

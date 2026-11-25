@@ -3,12 +3,16 @@
      when Help opens. A tap on an example puts its line in Input; a topic title in italics opens
      that topic. The phone's Back goes from a topic to the list, then closes Help. -->
 <script lang="ts">
+	import { tick } from "svelte";
+	import { findHelp } from "../lib/helpfind";
 	import { tapOn } from "../lib/repeat";
 
-	type Topic = { id: string; title: string; html: string };
+	type Topic = { id: string; title: string; html: string; markdown: string };
 
-	let { topic = $bindable(), onexample, onclose }: {
+	// query: `?word` typed in Input (owner 2026-11-26), opened at its best heading (helpfind.ts)
+	let { topic = $bindable(), query = $bindable(null), onexample, onclose }: {
 		topic: string | null;
+		query?: string | null;
 		onexample: (line: string) => void;
 		onclose: () => void;
 	} = $props();
@@ -20,6 +24,26 @@
 
 	import("../generated/help.json").then(module => { topics = module.default as Topic[]; },
 		error => { failed = error instanceof Error ? error.message : String(error); });
+
+	// A ?word once the topics are in: its topic, scrolled to its heading; none found: the list
+	$effect(() =>
+	{
+		if (query === null || topics.length === 0)
+		{
+			return;
+		}
+		const spot = findHelp(topics, query);
+		query = null;
+		topic = spot?.topic ?? null;
+		void tick().then(() =>
+		{
+			const heading = spot && spot.anchor ? page?.querySelector(`#${CSS.escape(spot.anchor)}`) : null;
+			if (heading)
+				heading.scrollIntoView({ block: "start" });
+			else
+				page?.scrollTo({ top: 0 });
+		});
+	});
 
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
 

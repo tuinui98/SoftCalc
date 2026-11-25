@@ -137,6 +137,6 @@ public sealed class HelpTests
 		Assert.Contains("<h1>Title</h1>", html);
 		Assert.Contains("<p>A line wrapped.</p>", html);
 		Assert.Contains("<img src=\"uri:img/main.light.png\" alt=\"Main window\">", html);
-		Assert.Contains("<h2>Part</h2>", html);
+		Assert.Contains("<h2 id=\"part\">Part</h2>", html);    // the anchor for ?word (HelpFind)
 	}
 }

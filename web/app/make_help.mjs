@@ -15,6 +15,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Marked } from "marked";
+import { slug } from "./src/lib/helpfind.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const shared = path.resolve(here, "..", "..", "help");
@@ -78,6 +79,15 @@ export function makeHelp(read)
 				});
 				return `<div class="examples">${rows.join("")}</div>\n`;
 			},
+			// ## and ### carry their slug as id, for `?word` (helpfind.ts, owner 2026-11-26)
+			heading({ tokens, depth })
+			{
+				const text = this.parser.parseInline(tokens);
+				const raw = tokens.map(token => token.raw).join("");
+				const id = depth === 2 || depth === 3 ? ` id="${slug(raw)}"` : "";
+				return `<h${depth}${id}>${text}</h${depth}>
+`;
+			},
 			em({ tokens })
 			{
 				const text = this.parser.parseInline(tokens);
@@ -86,7 +96,8 @@ export function makeHelp(read)
 			},
 		},
 	});
-	return sources.map(({ id, title, markdown }) => ({ id, title, html: marked.parse(markdown) }));
+	// markdown: the web's text of the topic, for ?word (helpfind.ts)
+	return sources.map(({ id, title, markdown }) => ({ id, title, html: marked.parse(markdown), markdown }));
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url))

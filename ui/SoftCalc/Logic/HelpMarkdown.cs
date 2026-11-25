@@ -66,7 +66,9 @@ internal static partial class HelpMarkdown
 			else if (HeadingRegex().Match(line) is { Success: true } heading)
 			{
 				int level = heading.Groups[1].Length;
-				html.Append($"<h{level}>").Append(Format(heading.Groups[2].Value, topic)).Append($"</h{level}>\n");
+				// ## and ### carry their slug as id, for `?word` (HelpFind, owner 2026-11-26)
+				string id = level is 2 or 3 ? $" id=\"{HelpFind.Slug(heading.Groups[2].Value)}\"" : "";
+				html.Append($"<h{level}{id}>").Append(Format(heading.Groups[2].Value, topic)).Append($"</h{level}>\n");
 				i++;
 			}
 			else if (PictureRegex().Match(line.Trim()) is { Success: true } picture)
