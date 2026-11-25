@@ -16,7 +16,7 @@ ANGLE_TO_RAD = {"rad": None, "deg": 180, "grad": 200}
 WORD_FUNCTIONS = ("twos", "signed")    # two's complement (owner 2026-11-07)
 ROUNDING_FUNCTIONS = ("round", "ceil", "floor")    # owner 2026-11-12
 CARD_FUNCTION = "card"    # card("Deck", [count], [no repeat]): cards.py (owner 2026-11-24)
-RANDOM_FUNCTIONS = ("rand", "rands", "randm", "randnorm", *SHAPE_FUNCTIONS)    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
+RANDOM_FUNCTIONS = ("rand", "rands", "randm", "randnorm", "randbinom", "randpois", *SHAPE_FUNCTIONS)    # drawn by the Engine, which keeps the seed (owner 2026-11-12)
 MAX_ROUND_DIGITS = 1000
 MAX_BITS = 1024
 NOISE_MARGIN = 1    # digits below working precision treated as rounding noise
@@ -73,6 +73,8 @@ class Functions:
             "atan": self.inverse(mpmath.atan),
             "sinh": mpmath.sinh, "cosh": mpmath.cosh, "tanh": mpmath.tanh,
             "asinh": mpmath.asinh, "acosh": mpmath.acosh, "atanh": mpmath.atanh,
+            # Special Functions (owner 2026-11-26)
+            "gamma": mpmath.gamma, "erf": mpmath.erf, "erfc": mpmath.erfc,
         }
 
     def names(self):

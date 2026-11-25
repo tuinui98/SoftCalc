@@ -105,6 +105,82 @@ def cases():
     add("normcdf(2, 1)", error="normcdf(a, b)", group="normcdf")
     add("norminv(0)", error="norminv:", group="norminv")
     add("norminv(0.5, 1)", error="norminv expects", group="norminv")
+
+    #==================================================================
+    #  BLOCK 4 - round 2: more description (owner 2026-11-26)
+    #==================================================================
+    def some(least=1, most=12, places=(0, 1, 2), low=-50, high=50):
+        return [decimal(low, high, rng.choice(places)) for _ in range(rng.randint(least, most))]
+
+    def listed(values):
+        return "[" + ", ".join(text(v) for v in values) + "]"
+
+    for _ in range(60):
+        values = some()
+        add(f"range({listed(values)})", max(values) - min(values), group="range")
+        add(f"iqr({listed(values)})", percentile(values, Rational(3, 4)) - percentile(values, Rational(1, 4)), group="iqr")
+        good = some(low=1, high=100)
+        add(f"geomean({listed(good)})", sympy.prod(good) ** Rational(1, len(good)), group="geomean")
+        add(f"harmean({listed(good)})", len(good) / sum(1 / v for v in good), group="harmean")
+        x, mean, sd = decimal(-100, 100, 1), decimal(-50, 50, 1), decimal(1, 20, 1)
+        add(f"zscore({text(x)}, {text(mean)}, {text(sd)})", (x - mean) / sd, group="zscore")
+    add("geomean([1, 0, 2])", error="geomean needs numbers above 0", group="geomean")
+
+    #==================================================================
+    #  BLOCK 5 - round 2: two variables, xs first
+    #==================================================================
+    for _ in range(60):
+        n = rng.randint(3, 10)
+        xs = some(n, n, low=-20, high=20)
+        ys = some(n, n, low=-20, high=20)
+        if len(set(xs)) < 2 or len(set(ys)) < 2:
+            continue
+        mx, my = sum(xs) / n, sum(ys) / n
+        sxx = sum((x - mx) ** 2 for x in xs)
+        syy = sum((y - my) ** 2 for y in ys)
+        sxy = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+        pair = f"{listed(xs)}, {listed(ys)}"
+        add(f"covar({pair})", sxy / (n - 1), group="covar")
+        add(f"covarp({pair})", sxy / n, group="covar")
+        add(f"correl({pair})", sxy / sqrt(sxx * syy), group="correl")
+        add(f"slope({pair})", sxy / sxx, group="line")
+        add(f"intercept({pair})", my - sxy / sxx * mx, group="line")
+        add(f"rsq({pair})", sxy ** 2 / (sxx * syy), group="line")
+        at = decimal(-30, 30, 1)
+        add(f"forecast({text(at)}, {pair})", my - sxy / sxx * mx + sxy / sxx * at, group="line")
+    add("slope([1, 2], [1, 2, 3])", error="slope: xs and ys", group="line")
+    add("correl([1, 1, 1], [1, 2, 3])", error="correl:", group="correl")
+
+    #==================================================================
+    #  BLOCK 6 - round 2: normpdf, binomial, Poisson, gamma, erf
+    #==================================================================
+    for _ in range(50):
+        x, mean, sd = decimal(-6, 6, 2), decimal(-10, 10, 1), decimal(1, 5, 1)
+        add(f"normpdf({text(x)})", sympy.exp(-x ** 2 / 2) / sqrt(2 * sympy.pi), group="normpdf")
+        add(f"normpdf({text(x)}, {text(mean)}, {text(sd)})",
+            sympy.exp(-((x - mean) / sd) ** 2 / 2) / (sd * sqrt(2 * sympy.pi)), group="normpdf")
+        n, p = rng.randint(1, 40), Rational(rng.randint(0, 100), 100)
+        k = rng.randint(0, n)
+        pmf = [sympy.binomial(n, i) * p ** i * (1 - p) ** (n - i) for i in range(n + 1)]
+        add(f"binompdf({n}, {text(p)}, {k})", pmf[k], group="binomial")
+        add(f"binomcdf({n}, {text(p)}, {k})", sum(pmf[:k + 1]), group="binomial")
+        a, b = sorted((rng.randint(0, n), rng.randint(0, n)))
+        add(f"binomcdf({n}, {text(p)}, {a}, {b})", sum(pmf[a:b + 1]), group="binomial")
+        lam, k = decimal(1, 30, 1), rng.randint(0, 40)
+        term = lambda i: sympy.exp(-lam) * lam ** i / sympy.factorial(i)
+        add(f"poisspdf({text(lam)}, {k})", term(k), group="poisson")
+        add(f"poisscdf({text(lam)}, {k})", sum(term(i) for i in range(k + 1)), group="poisson")
+        a, b = sorted((rng.randint(0, 40), rng.randint(0, 40)))
+        add(f"poisscdf({text(lam)}, {a}, {b})", sum(term(i) for i in range(a, b + 1)), group="poisson")
+        g = decimal(-5, 12, 2)
+        if g != sympy.floor(g) or g > 0:
+            add(f"gamma({text(g)})", sympy.gamma(g), group="special")
+        e = decimal(-4, 4, 2)
+        add(f"erf({text(e)})", sympy.erf(e), group="special")
+        add(f"erfc({text(e)})", sympy.erfc(e), group="special")
+    add("gamma(-2)", error="gamma is undefined here", group="special")
+    add("binompdf(5, 1.5, 2)", error="binompdf: p goes from 0 to 1", group="binomial")
+    add("poisscdf(0, 2)", error="poisscdf: the mean must be above 0", group="poisson")
     return out
 
 

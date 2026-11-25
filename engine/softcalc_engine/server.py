@@ -31,8 +31,9 @@ SETTING_CHOICES = {
     "angle": ("rad", "deg", "grad"),
     "base": ("dec", "hex", "bin", "oct"),
 }
-DESCRIPTIVE = ["sum", "prod", "min", "max", "count", "mean", "median", "mode",
-               "stdev", "stdevp", "variance", "variancep", "percentile", "quartile"]
+DESCRIPTIVE = ["sum", "prod", "min", "max", "count", "range", "mean", "median", "mode",
+               "geomean", "harmean", "stdev", "stdevp", "variance", "variancep",
+               "percentile", "quartile", "iqr", "zscore"]
 CATALOG = {
     "functions": {
         "Basic Operations": ["+", "-", "*", "/", "^", "sqrt", "abs", "mod", "!", "%"],
@@ -43,12 +44,14 @@ CATALOG = {
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
         "Two's Complement": ["twos", "signed"],
         "Rounding": ["round", "ceil", "floor"],
-        "Random": ["rand", "rands", "randnorm", "randbeta", "randtri", "randexp", "randpeaks", "card"],
+        "Random": ["rand", "rands", "randnorm", "randbinom", "randpois", "randbeta", "randtri", "randexp",
+                   "randpeaks", "card"],
         # The ten used most; the rest in "subgroups" below (owner 2026-11-25)
         "Matrix": ["det", "inv", "solve", "transpose", "eig", "identity", "fill", "seq", "sum", "mean"],
         # Its own group (owner 2026-11-26), not a Matrix submenu: they take numbers as well as lists.
         # The ten used most, then Descriptive, Counting and Distributions (round 1, design/TODO.md)
         "Statistics": ["sum", "mean", "median", "mode", "stdev", "variance", "percentile", "comb", "normcdf", "norminv"],
+        "Special Functions": ["gamma", "erf", "erfc"],    # owner 2026-11-26: a group of their own
     },
     # A function group's submenus, after its own items and a separator; the
     # top items stay in their submenu too, so each submenu is whole (owner 2026-11-25)
@@ -61,8 +64,10 @@ CATALOG = {
         },
         "Statistics": {
             "Descriptive": DESCRIPTIVE,
+            "Two variables": ["covar", "covarp", "correl", "slope", "intercept", "rsq", "forecast"],
             "Counting": ["comb", "perm"],
-            "Distributions": ["normcdf", "norminv", "randnorm"],
+            "Distributions": ["normpdf", "normcdf", "norminv", "binompdf", "binomcdf", "poisspdf", "poisscdf",
+                              "randnorm", "randbinom", "randpois"],
         },
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},
