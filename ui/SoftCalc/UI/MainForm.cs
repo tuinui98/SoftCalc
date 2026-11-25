@@ -177,6 +177,8 @@ internal sealed partial class MainForm : Form
 		historyBox.Controls.Add(_history);
 		_samplesBox.Controls.Add(_samples);
 		_inputBox.Controls.Add(_hint);
+		_hint.TextChanged += (_, _) => FitHint();
+		_hint.SizeChanged += (_, _) => FitHint();    // a narrower window may need the second line
 		_inputBox.Controls.Add(_input);    // added last: docks first, above the hint
 		_keypadHost.Controls.Add(_keypad);
 		_keypadHost.Controls.Add(_keypadBar);
@@ -400,9 +402,26 @@ internal sealed partial class MainForm : Form
 	{
 		int frame = Math.Max(29, _inputBox.Height - _inputBox.DisplayRectangle.Height);
 		_hint.Visible = _showHintsItem.Checked;
-		_hint.Height = _showHintsItem.Checked ? _hint.Font.Height + 4 : 0;    // Visible reads false before Show
+		_hint.Height = _showHintsItem.Checked ? _hint.Font.Height * _hintLines + 4 : 0;    // Visible reads false before Show
 		_column.RowStyles[2].Height = _input.PreferredHeight + _hint.Height + frame + 2;
+		_column.PerformLayout();    // a row style change alone does not lay the rows out again
 		UpdateMinimumSize();
+	}
+
+	// Owner 2026-11-26: a hint that one line shows less than 3/4 of takes two lines (HintLines)
+	private int _hintLines = 1;
+
+	private void FitHint()
+	{
+		int room = _hint.ClientSize.Width - _hint.Padding.Horizontal;
+		int width = _hint.Text.Length == 0 ? 0
+			: TextRenderer.MeasureText(_hint.Text, _hint.Font, Size.Empty, TextFormatFlags.NoPrefix | TextFormatFlags.SingleLine).Width;
+		int lines = room <= 0 ? _hintLines : HintLines.For(width, room);
+		if (lines != _hintLines)
+		{
+			_hintLines = lines;
+			LayoutInputRow();
+		}
 	}
 
 	private void UpdateHint()
