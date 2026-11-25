@@ -774,6 +774,19 @@ ends 1:1, the drag insert line is visible enough on dark.
       the choice is kept; digits, . ( ) + - * / = ⌫ C only, no scientific
       keys (Keypad.svelte with a "numpad" layout). card() stays, with the
       ready-made decks as text only (no pictures, no own decks).
+      Chrome Web Store (checked 2026-11-26, not Play's account: its own
+      registration, $5 once, the country must be on its list - check
+      Thailand): Manifest V3, no remote code (Pyodide and the engine in
+      the package, no loadPackage from a CDN; ECB and CoinGecko are data,
+      allowed), a single-purpose description, a privacy policy (the same
+      page as Play's), the least permissions each with its reason, a
+      review on every update; no 12-tester closed test as on Play.
+      Size (owner 2026-11-26: 20 MB is too big, maybe a build of its own):
+      the web build is 21 MB: Pyodide 14.7 MB (asm.wasm 9.2, stdlib pyc
+      zip 4.3, asm.mjs 1.2), card pictures 3.8 MB, engine.zip 0.9 MB.
+      Ways down: no pictures (text decks only) -3.8 MB; a stdlib zip with
+      only the modules the engine imports; measure the zipped package
+      (wasm packs well); a lighter engine (not Python) is a rewrite.
 
 ## Settings typed in Input (owner 2026-11-26)
 - [x] (built 2026-11-26, engine commands.py; help 05, 02, 03, 10) Commands typed in Input that change settings (precision, angle,
