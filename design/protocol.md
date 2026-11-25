@@ -38,6 +38,15 @@ by the engine. Only `plot` and the `schedule` graph series send floats.
   again (M8).
 - `note`: the rate date (`ECB 2026-11-05`, plus `, offline` when the
   last fetch failed) when a currency rate was used, else `""`.
+- A line starting with `:` sets settings (owner 2026-11-26,
+  `commands.py`): `:deg`, `:hex`, `:prec 64`, `:digits 2|all`,
+  `:pad on|off`, `:rpn on|off`, `:word 16`, short or full names, several
+  on a line, all or none. It answers `kind: "definition"` with the
+  settings said back (`Degrees, Precision 64`) and `settings`, the full
+  settings object as `settings` returns it, for the UI to keep; a bare `:`
+  lists them as the line that sets them again (`:prec 32 :rad :dec
+  :rpn off :digits all :pad off :word 32`) and sends no `settings`. A wrong one is an error and changes
+  nothing. No `$n`, no answer.
 - `display_input` is the History expression line (extensions.md E10);
   `input` is what to put back in the Input box when the line is
   clicked; `text` is the result line (`ERROR:...` for errors).

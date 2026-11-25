@@ -959,6 +959,10 @@ internal sealed partial class MainForm : Form
 			{
 				_input.Clear();    // an error keeps the text for fixing [KEEP]
 			}
+			if (reply.SettingsChanged)
+			{
+				SettingsTyped();
+			}
 			if (reply.Kind == "definition")
 			{
 				await RefreshStateAsync();
@@ -990,6 +994,14 @@ internal sealed partial class MainForm : Form
 		ShowSettingChecks();
 		await RefreshStateAsync();    // constants and values follow precision and base
 		_graphSettings.NotifyChanged();    // the angle unit changes trig plots
+		NotifyToolWindows();
+	}
+
+	// A `:` line in Input changed the settings (owner 2026-11-26): as a menu's change shows it
+	private void SettingsTyped()
+	{
+		ShowSettingChecks();
+		_graphSettings.NotifyChanged();
 		NotifyToolWindows();
 	}
 

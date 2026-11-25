@@ -69,6 +69,12 @@ class FakeEngine implements EngineLike
 
 	private evaluate(input: string): Record<string, unknown>
 	{
+		const typed = /^:prec (\d+)$/.exec(input);    // a settings line, as the engine's commands.py
+		if (typed)
+		{
+			this.settings.precision = Number(typed[1]);
+			return { kind: "definition", input, display_input: input, text: `Precision ${typed[1]}`, settings: { ...this.settings } };
+		}
 		if (/^\w+(\([^)]*\))?\s*=/.test(input))
 		{
 			this.definitions += input + "\n";
@@ -287,6 +293,20 @@ describe("saving between visits", () =>
 		expect(again.engine.definitions).toContain("rate=5");
 		const restored = again.engine.sent.find(message => message.op === "restore_results");
 		expect(restored?.args.texts).toEqual(["42"]);
+	});
+
+	it("a setting typed in Input is kept like one from Settings (owner 2026-11-26)", async () =>
+	{
+		const store = new MemoryStore();
+		const first = await started(store);
+		first.calc.typed(":prec 128", 9);
+		await first.calc.press("=");
+		expect(first.calc.settings.precision).toBe(128);
+		expect(first.calc.entries.at(-1)?.text).toBe("Precision 128");
+		await new Promise(resolve => setTimeout(resolve, 0));
+
+		const again = await started(store);
+		expect(again.calc.settings.precision).toBe(128);
 	});
 
 	it("every line says how long it took; one over a second shows Working... while it runs (owner 2026-11-24)", async () =>

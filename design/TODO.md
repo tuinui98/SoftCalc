@@ -776,10 +776,15 @@ ends 1:1, the drag insert line is visible enough on dark.
       ready-made decks as text only (no pictures, no own decks).
 
 ## Settings typed in Input (owner 2026-11-26)
-- [ ] Commands typed in Input that change settings (precision, angle,
+- [x] (built 2026-11-26, engine commands.py; help when the owner is done) Commands typed in Input that change settings (precision, angle,
       base, number format, ...), desktop, web and the extension. The form
       (a keyword or a symbol) is chosen when the work starts; check it
       cannot clash with names, functions, tags or `?keyword` (Help).
+      Owner 2026-11-26: `:`, short and full names, the engine's 7 first:
+      :deg :rad :grad, :dec :hex :bin :oct, :prec, :digits (all), :pad,
+      :rpn (:infix), :word; several on a line, all or none; a bare `:`
+      gives the line that sets them all again. UI-only ones (theme,
+      hints, view, keypad) maybe later.
 
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline

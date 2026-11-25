@@ -12,7 +12,9 @@ using SoftCalc.Logic;
 
 namespace SoftCalc.Engine;
 
-internal sealed record EvalReply(string Kind, string Input, string DisplayInput, string Text, string Note = "");
+// SettingsChanged: a `:` line changed the settings (owner 2026-11-26); Settings already holds them
+internal sealed record EvalReply(string Kind, string Input, string DisplayInput, string Text, string Note = "",
+	bool SettingsChanged = false);
 
 internal sealed record NamedValue(string Name, string Value);
 
@@ -123,7 +125,15 @@ internal sealed class EngineSession : IDisposable
 		}
 		var result = new EvalReply(
 			(string?)reply["kind"] ?? "error", (string?)reply["input"] ?? input,
-			(string?)reply["display_input"] ?? input, (string?)reply["text"] ?? "", (string?)reply["note"] ?? "");
+			(string?)reply["display_input"] ?? input, (string?)reply["text"] ?? "", (string?)reply["note"] ?? "",
+			reply["settings"] is JsonObject);
+		if (reply["settings"] is JsonObject changed)
+		{
+			foreach (var (key, value) in changed)
+			{
+				_settings[key] = value?.DeepClone();
+			}
+		}
 		if (result.Kind == "definition")
 		{
 			await SnapshotDefinitionsAsync();
