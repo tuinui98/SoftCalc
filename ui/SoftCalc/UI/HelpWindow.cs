@@ -32,6 +32,43 @@ internal sealed class HelpWindow : Form
 	// Show `topic` ("graph", "06-conversions"); examples go to `target`'s Input
 	public static void Open(string topic, MainForm? target)
 	{
+		var window = Window(target);
+		window.ShowTopic(HelpTopics.Find(topic));
+		window.Bring();
+	}
+
+	// `?word` in Input (owner 2026-11-26): the best heading for the words (HelpFind), with the
+	// words searched so the list keeps every topic holding them; nothing found, the search alone;
+	// a bare ? opens Help as it was. The page is set once: set two or three times in a row, the
+	// WebBrowser stayed white (owner 2026-11-26)
+	public static void OpenAt(string query, MainForm? target)
+	{
+		var window = Window(target);
+		var spot = HelpFind.Find(HelpTopics.All, query);
+		if (query.Length == 0)
+		{
+			window.ShowTopic(window._current ?? HelpTopics.All[0]);
+		}
+		else
+		{
+			if (spot != null)
+			{
+				(window._current, window._anchor) = (HelpTopics.Find(spot.TopicId), spot.Anchor);
+			}
+			if (window._search.Text != query)
+			{
+				window._search.Text = query;    // FilterTopics shows _current, or the first topic found
+			}
+			else if (spot != null)
+			{
+				window.ShowTopic(window._current!);
+			}
+		}
+		window.Bring();
+	}
+
+	private static HelpWindow Window(MainForm? target)
+	{
 		// A window made before a modal dialog opened is disabled by it; a new one is not
 		if (_open != null && !_open.IsDisposed && !NativeMethods.IsWindowEnabled(_open.Handle))
 		{
@@ -43,30 +80,16 @@ internal sealed class HelpWindow : Form
 			_open.Show();
 		}
 		_open._target = target ?? _open._target;
-		_open.ShowTopic(HelpTopics.Find(topic));
-		if (_open.WindowState == FormWindowState.Minimized)
-		{
-			_open.WindowState = FormWindowState.Normal;
-		}
-		_open.Activate();
+		return _open;
 	}
 
-	// `?word` in Input (owner 2026-11-26): the best heading for the words (HelpFind), with the
-	// words searched so the list keeps every topic holding them; a bare ? opens Help as it was
-	public static void OpenAt(string query, MainForm? target)
+	private void Bring()
 	{
-		var spot = HelpFind.Find(HelpTopics.All, query);
-		Open(spot?.TopicId ?? _open?._current?.Id ?? HelpTopics.All[0].Id, target);
-		if (query.Length == 0)
+		if (WindowState == FormWindowState.Minimized)
 		{
-			return;
+			WindowState = FormWindowState.Normal;
 		}
-		_open!._search.Text = query;    // filters the list and marks the words
-		if (spot != null)
-		{
-			_open._anchor = spot.Anchor;
-			_open.ShowTopic(HelpTopics.Find(spot.TopicId));
-		}
+		Activate();
 	}
 
 	private HelpWindow()
@@ -89,6 +112,14 @@ internal sealed class HelpWindow : Form
 		Load += (_, _) => split.SplitterDistance = LogicalToDeviceUnits(210);
 
 		_page.ObjectForScripting = new HelpBridge(this);
+		_page.DocumentCompleted += (_, _) =>
+		{
+			if (_waiting is { } html)
+			{
+				_waiting = null;
+				_page.DocumentText = html;
+			}
+		};
 		_page.Navigating += (_, e) =>
 		{
 			if (e.Url?.Scheme is not ("about" or "data"))
@@ -158,8 +189,21 @@ internal sealed class HelpWindow : Form
 		{
 			_topics.SelectedIndex = index;
 		}
-		_page.DocumentText = Page(topic, HelpTopics.SearchWords(_search.Text), _anchor);
+		SetPage(Page(topic, HelpTopics.SearchWords(_search.Text), _anchor));
 		_anchor = null;
+	}
+
+	// A page set while the last one still loads waits for it, so the WebBrowser never ends white
+	private string? _waiting;
+
+	private void SetPage(string html)
+	{
+		if (_page.IsBusy)
+		{
+			_waiting = html;
+			return;
+		}
+		_page.DocumentText = html;
 	}
 
 	//==================================================================

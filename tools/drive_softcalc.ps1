@@ -15,7 +15,8 @@ param
 	[string]$DataDir = "",    # SOFTCALC_DATA_DIR for this run, so tests never touch the owner's %APPDATA%
 	[string]$Pending = "",    # left in the Input box without Enter, caret at the end (hint line shots)
 	[string]$Exe = "",    # another SoftCalc.exe, e.g. the published one (build/publish.ps1); default: Debug build
-	[int]$Width = 0    # window width in pixels before the shot (ribbon rows); 0 keeps the saved size
+	[int]$Width = 0,    # window width in pixels before the shot (ribbon rows); 0 keeps the saved size
+	[string]$Window = ""    # also shoot SoftCalc's window with this title (e.g. "SoftCalc Help" after ?det) to spec/raw/softcalc_window.png
 )
 
 if ($DataDir)
@@ -158,6 +159,20 @@ if ($OpenCompound)
 		{
 			"Compound Interest item not found"
 		}
+	}
+}
+if ($Window)
+{
+	Start-Sleep -Seconds 2    # the page renders
+	$other = [Win]::TopWindowsOf([uint32]$proc.Id) | Where-Object { [Win]::Text($_) -eq $Window } | Select-Object -First 1
+	if ($other)
+	{
+		Save-WindowShot $other (Join-Path $root "spec\raw\softcalc_window.png")
+		"saved softcalc_window.png"
+	}
+	else
+	{
+		"window '$Window' not found"
 	}
 }
 $proc.CloseMainWindow() | Out-Null

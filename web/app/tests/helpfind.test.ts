@@ -1,7 +1,7 @@
 // helpfind.test.ts - ?word finds a Help heading, as the desktop's HelpFindTests (owner 2026-11-26)
 
 import { describe, expect, it } from "vitest";
-import { findHelp, helpQuery, isHelpLine, sections, slug } from "../src/lib/helpfind";
+import { findHelp, helpQuery, isHelpLine, searchTopics, searchWords, sections, slug } from "../src/lib/helpfind";
 import { forWeb, makeHelp } from "../make_help.mjs";
 import { readFileSync, existsSync } from "node:fs";
 import path from "node:path";
@@ -38,6 +38,15 @@ describe("?word", () =>
 		expect(findHelp(topics, "nothing")).toBeNull();
 		expect(findHelp(topics, "de")).toBeNull();
 		expect(findHelp(topics, "odd")).toEqual({ topic: "16-errors", anchor: "odd" });
+	});
+
+	it("searches as the desktop: every word, any letter case (owner 2026-11-26)", () =>
+	{
+		const topics = [{ id: "a", markdown: "Rand and Seeds" }, { id: "b", markdown: "rand only" }];
+		expect(searchWords("  Rand  SEEDS ")).toEqual(["rand", "seeds"]);
+		expect(searchTopics(topics, "rand seeds").map(topic => topic.id)).toEqual(["a"]);
+		expect(searchTopics(topics, "RAND").map(topic => topic.id)).toEqual(["a", "b"]);
+		expect(searchTopics(topics, "").length).toBe(2);
 	});
 
 	it("finds the real topics, and every heading has an anchor of its own", () =>

@@ -115,3 +115,66 @@ function scoreOf(section: HelpSection, whole: RegExp): number
 	}
 	return score;
 }
+
+//==================================================================
+//  Search, as the desktop's Help (HelpTopics.Search, the page's marks)
+//==================================================================
+export function searchWords(text: string): string[]
+{
+	return text.toLowerCase().split(" ").filter(word => word.length > 0);
+}
+
+// Topics holding every word of the search, any letter case; an empty search keeps all
+export function searchTopics<T extends { markdown: string }>(topics: T[], text: string): T[]
+{
+	const words = searchWords(text);
+	return topics.filter(topic =>
+	{
+		const markdown = topic.markdown.toLowerCase();
+		return words.every(word => markdown.includes(word));
+	});
+}
+
+// Wraps each word found in the text under root in <mark>; returns the first mark
+export function markWords(root: HTMLElement, words: string[]): HTMLElement | null
+{
+	if (words.length === 0)
+	{
+		return null;
+	}
+	const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+	const texts: Text[] = [];
+	for (let node = walker.nextNode(); node; node = walker.nextNode())
+	{
+		texts.push(node as Text);
+	}
+	let first: HTMLElement | null = null;
+	for (let text of texts)
+	{
+		for (;;)
+		{
+			const low = text.data.toLowerCase();
+			let at = -1, size = 0;
+			for (const word of words)
+			{
+				const found = low.indexOf(word);
+				if (found >= 0 && (at < 0 || found < at))
+				{
+					at = found;
+					size = word.length;
+				}
+			}
+			if (at < 0)
+			{
+				break;
+			}
+			const hit = text.splitText(at);
+			text = hit.splitText(size);
+			const mark = document.createElement("mark");
+			hit.replaceWith(mark);
+			mark.append(hit);
+			first ??= mark;
+		}
+	}
+	return first;
+}
