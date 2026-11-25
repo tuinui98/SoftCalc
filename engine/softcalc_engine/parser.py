@@ -24,7 +24,7 @@ from .units import RNW_NAMES
 
 KEYWORD_MOD = "mod"
 CONTINUE_OPS = ("+", "-", "*", "/")
-EMPTY_CALLS = ("rand", "rands")    # the only calls that may be empty (owner 2026-11-12)
+EMPTY_CALLS = ("rand", "rands", "randnorm")    # the only calls that may be empty (owner 2026-11-12; randnorm 2026-11-26)
 
 
 class Parser:

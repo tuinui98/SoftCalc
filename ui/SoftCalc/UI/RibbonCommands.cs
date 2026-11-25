@@ -80,13 +80,20 @@ internal sealed class RibbonCommands
 			}
 			else if (id.StartsWith(MatrixMenu, StringComparison.Ordinal) && id.IndexOf('/', MatrixMenu.Length) < 0)
 			{
+				// median, stdev, prod...: Functions > Statistics, on top or in a submenu (owner 2026-11-26)
 				string name = id[MatrixMenu.Length..];
-				found = _byId.Values.FirstOrDefault(c => c.Id.StartsWith(MatrixMenu, StringComparison.Ordinal)
-					&& c.Id.EndsWith("/" + name, StringComparison.Ordinal) && c.Id.Count(ch => ch == '/') == 3)
-					?? _byId.GetValueOrDefault(StatisticsMenu + name);    // median, stdev...: Functions > Statistics
+				found = InGroup(MatrixMenu, name) ?? InGroup(StatisticsMenu, name);
 			}
 		}
 		return found;
+	}
+
+	// A function in a group: its own item first, else in one of its submenus
+	private RibbonCommand? InGroup(string group, string name)
+	{
+		return _byId.GetValueOrDefault(group + name)
+			?? _byId.Values.FirstOrDefault(c => c.Id.StartsWith(group, StringComparison.Ordinal)
+				&& c.Id.EndsWith("/" + name, StringComparison.Ordinal) && c.Id.Count(ch => ch == '/') == 3);
 	}
 
 	public IEnumerable<RibbonCommand> All => _byId.Values;

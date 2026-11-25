@@ -31,8 +31,8 @@ SETTING_CHOICES = {
     "angle": ("rad", "deg", "grad"),
     "base": ("dec", "hex", "bin", "oct"),
 }
-STATISTICS = ["sum", "prod", "min", "max", "count", "mean", "median",
-              "stdev", "stdevp", "variance", "variancep"]
+DESCRIPTIVE = ["sum", "prod", "min", "max", "count", "mean", "median", "mode",
+               "stdev", "stdevp", "variance", "variancep", "percentile", "quartile"]
 CATALOG = {
     "functions": {
         "Basic Operations": ["+", "-", "*", "/", "^", "sqrt", "abs", "mod", "!", "%"],
@@ -43,12 +43,12 @@ CATALOG = {
         "Finance Functions": ["fv", "pv", "pmt", "nper"],
         "Two's Complement": ["twos", "signed"],
         "Rounding": ["round", "ceil", "floor"],
-        "Random": ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"],
+        "Random": ["rand", "rands", "randnorm", "randbeta", "randtri", "randexp", "randpeaks", "card"],
         # The ten used most; the rest in "subgroups" below (owner 2026-11-25)
         "Matrix": ["det", "inv", "solve", "transpose", "eig", "identity", "fill", "seq", "sum", "mean"],
-        # Its own group (owner 2026-11-26), no longer a Matrix submenu: they take numbers as well as
-        # lists; submenus come with the functions still to add (design/TODO.md Statistics)
-        "Statistics": STATISTICS,
+        # Its own group (owner 2026-11-26), not a Matrix submenu: they take numbers as well as lists.
+        # The ten used most, then Descriptive, Counting and Distributions (round 1, design/TODO.md)
+        "Statistics": ["sum", "mean", "median", "mode", "stdev", "variance", "percentile", "comb", "normcdf", "norminv"],
     },
     # A function group's submenus, after its own items and a separator; the
     # top items stay in their submenu too, so each submenu is whole (owner 2026-11-25)
@@ -58,6 +58,11 @@ CATALOG = {
             "Size and pick": ["rows", "cols", "len", "at", "row", "col"],
             "Linear algebra": ["transpose", "det", "inv", "trace", "rank", "solve", "eig", "dot", "cross", "norm"],
             "Arrange": ["sort", "reverse", "cumsum"],
+        },
+        "Statistics": {
+            "Descriptive": DESCRIPTIVE,
+            "Counting": ["comb", "perm"],
+            "Distributions": ["normcdf", "norminv", "randnorm"],
         },
     },
     "conversions": {**units.MENU, "Time zone": list(ZONES), "Currency": currency.COMMON},

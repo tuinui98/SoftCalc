@@ -119,7 +119,7 @@ def test_catalog_lists_the_new_groups():
     catalog = Dispatcher().handle({"op": "catalog"})
     groups = catalog["functions"]
     assert groups["Rounding"] == ["round", "ceil", "floor"]
-    assert groups["Random"] == ["rand", "rands", "randbeta", "randtri", "randexp", "randpeaks", "card"]
+    assert groups["Random"] == ["rand", "rands", "randnorm", "randbeta", "randtri", "randexp", "randpeaks", "card"]
 
 
 def test_matrix_menu_has_ten_on_top_and_five_whole_groups():
@@ -131,7 +131,8 @@ def test_matrix_menu_has_ten_on_top_and_five_whole_groups():
     groups = catalog["subgroups"]["Matrix"]
     assert top == ["det", "inv", "solve", "transpose", "eig", "identity", "fill", "seq", "sum", "mean"]
     assert list(groups) == ["Build", "Size and pick", "Linear algebra", "Arrange"]
-    every = [name for names in groups.values() for name in names] + catalog["functions"]["Statistics"]
+    statistics = catalog["subgroups"]["Statistics"]["Descriptive"]
+    every = [name for names in groups.values() for name in names] + [n for n in statistics if n in FUNCTIONS]
     assert len(every) == len(set(every)) == 38
     assert set(top) <= set(every)
     assert set(every) == set(FUNCTIONS) | {"randm"}
