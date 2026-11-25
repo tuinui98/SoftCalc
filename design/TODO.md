@@ -775,8 +775,8 @@ ends 1:1, the drag insert line is visible enough on dark.
       keys (Keypad.svelte with a "numpad" layout). card() stays, with the
       ready-made decks as text only (no pictures, no own decks).
       Chrome Web Store (checked 2026-11-26, not Play's account: its own
-      registration, $5 once, the country must be on its list - check
-      Thailand): Manifest V3, no remote code (Pyodide and the engine in
+      registration, $5 once, Thailand is on its country list,
+      checked 2026-11-26): Manifest V3, no remote code (Pyodide and the engine in
       the package, no loadPackage from a CDN; ECB and CoinGecko are data,
       allowed), a single-purpose description, a privacy policy (the same
       page as Play's), the least permissions each with its reason, a
