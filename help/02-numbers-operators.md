@@ -32,12 +32,14 @@
 
 <!-- desktop -->
 You can mix bases in one line. View > Hexadecimal / Decimal / Binary /
-Octal Output picks how results are written.
+Octal Output picks how results are written, or type `:hex`, `:dec`,
+`:bin` or `:oct` (see *Display and precision*).
 <!-- /desktop -->
 
 <!-- web -->
-You can mix bases in one line. Settings > Output base, or the **dec ▸**
-key, picks how results are written.
+You can mix bases in one line. Settings > Output base, the **dec ▸**
+key, or typing `:hex`, `:dec`, `:bin` or `:oct` picks how results are
+written (see *Display and precision*).
 <!-- /web -->
 
 ## Operators, strongest first
@@ -98,11 +100,12 @@ abs(3+4i)             => 5
 
 <!-- desktop -->
 View > Advanced Options sets the precision: Low (32), Medium (64),
-High (128) or Extreme (512) significant digits.
+High (128) or Extreme (512) significant digits; so does typing
+`:prec 64`.
 <!-- /desktop -->
 
 <!-- web -->
 Settings > Precision sets the precision: 32, 64, 128 or 512 significant
-digits.
+digits; so does typing `:prec 64`.
 <!-- /web --> A result that needs more
 digits than that is written in scientific form, such as `1.5e32`.

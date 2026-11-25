@@ -776,7 +776,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       ready-made decks as text only (no pictures, no own decks).
 
 ## Settings typed in Input (owner 2026-11-26)
-- [x] (built 2026-11-26, engine commands.py; help when the owner is done) Commands typed in Input that change settings (precision, angle,
+- [x] (built 2026-11-26, engine commands.py; help 05, 02, 03, 10) Commands typed in Input that change settings (precision, angle,
       base, number format, ...), desktop, web and the extension. The form
       (a keyword or a symbol) is chosen when the work starts; check it
       cannot clash with names, functions, tags or `?keyword` (Help).
