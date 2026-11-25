@@ -727,7 +727,7 @@ ends 1:1, the drag insert line is visible enough on dark.
         fallback, mpmath docs for what the engine computes (branch cuts).
         Check each site's terms again before use.
 
-## QR codes (owner 2026-11-26; details when the work starts)
+## QR codes (owner 2026-11-26; low priority, owner 2026-11-26)
 - [ ] A QR code from the Input text or a History line (the answer or
       the whole line), desktop and web. Offline; a library rather than
       our own encoder (candidates: QRCoder MIT for C#, qrcode-generator
@@ -738,6 +738,12 @@ ends 1:1, the drag insert line is visible enough on dark.
       themes, Copy image / Save PNG / Share. Tests decode it back
       (ZXing.Net in the test project, jsQR in vitest). Scanning a QR
       into Input is separate work (camera permission).
+      Proposed 2026-11-26, not settled: History menu QR Code... and Input
+      menu QR Code of Input... (web: the History line's menu, More for
+      Input); Result / Expression and Result / Table (a matrix) as the
+      Copy menu, Result first, text as shown; level M, dropping to L when
+      too long, else "Too long for a QR code (N of 2953 bytes)"; UTF-8
+      set explicitly, checked with Thai.
 
 ## Chrome extension (owner 2026-11-26, no hurry)
 - [ ] SoftCalc's engine in a simple Chrome extension: Input and a short
