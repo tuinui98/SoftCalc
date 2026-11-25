@@ -632,12 +632,12 @@ ends 1:1, the drag insert line is visible enough on dark.
   - [x] (built 2026-11-26: catalog "subgroups", ribbon ids kept) Functions > Matrix in groups (owner 2026-11-25): the 38 sit in
         one flat submenu today (server.py CATALOG "Matrix"). On top the
         ten used most: det inv solve transpose eig identity fill seq sum
-        mean; a separator; then five submenus:
+        mean; a separator; then four submenus:
         Build (identity zeros ones diag fill seq reshape randm),
         Size and pick (rows cols len at row col),
         Linear algebra (transpose det inv trace rank solve eig dot cross norm),
-        Statistics (sum prod min max count mean median stdev stdevp
-        variance variancep), Arrange (sort reverse cumsum).
+        Arrange (sort reverse cumsum); the statistics went to Functions >
+        Statistics (owner 2026-11-26).
         The ten stay in their groups too, so each group is whole.
         CATALOG must nest (items and submenus in one group); desktop menu
         and web; ribbon buttons made from the old Matrix menu keep working;
@@ -645,8 +645,9 @@ ends 1:1, the drag insert line is visible enough on dark.
 
 ## Statistics (owner 2026-11-26)
 - [x] (built 2026-11-26) Functions > Statistics, a group of its own after
-      Matrix, with the 11 that Matrix > Statistics has (sum prod min max
-      count mean median stdev stdevp variance variancep; both places).
+      Matrix: sum prod min max count mean median stdev stdevp variance
+      variancep. Matrix > Statistics taken out (owner 2026-11-26); sum and
+      mean stay in Matrix's top ten; old ribbon buttons find them here.
 - [ ] Functions still to add, then submenus (Descriptive, Counting,
       Distributions, Two variables). Names proposed, check each against
       units and names first (range, mode, ...); mpmath has gamma,

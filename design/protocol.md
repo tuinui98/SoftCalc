@@ -85,8 +85,8 @@ deleted).
 
 `subgroups` (owner 2026-11-25): a function group's submenus, shown after
 its own items and a separator. Functions > Matrix holds the ten used most,
-then Build, Size and pick, Linear algebra, Statistics and Arrange; the top
-ten are in their submenus too.
+then Build, Size and pick, Linear algebra and Arrange; the top ten are in
+their submenus too, sum and mean in Functions > Statistics (owner 2026-11-26).
 
 ### `menu_insert`
 `{"kind": "operator", "symbol": "+", "text": "1", "caret": 1}`

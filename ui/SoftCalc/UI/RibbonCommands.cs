@@ -64,7 +64,9 @@ internal sealed class RibbonCommands
 	private static readonly string[] MovedCoins = { "Bitcoin", "Ethereum", "Tron" };
 
 	// Ribbon buttons saved before Functions > Matrix put most of its functions in submenus (owner 2026-11-25)
+	// and the statistics in Functions > Statistics (owner 2026-11-26)
 	private const string MatrixMenu = "Functions/Matrix/";
+	private const string StatisticsMenu = "Functions/Statistics/";
 
 	public RibbonCommand? Find(string id)
 	{
@@ -80,7 +82,8 @@ internal sealed class RibbonCommands
 			{
 				string name = id[MatrixMenu.Length..];
 				found = _byId.Values.FirstOrDefault(c => c.Id.StartsWith(MatrixMenu, StringComparison.Ordinal)
-					&& c.Id.EndsWith("/" + name, StringComparison.Ordinal) && c.Id.Count(ch => ch == '/') == 3);
+					&& c.Id.EndsWith("/" + name, StringComparison.Ordinal) && c.Id.Count(ch => ch == '/') == 3)
+					?? _byId.GetValueOrDefault(StatisticsMenu + name);    // median, stdev...: Functions > Statistics
 			}
 		}
 		return found;
