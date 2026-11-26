@@ -17,7 +17,20 @@ internal static class InputRules
 		{
 			return null;
 		}
-		return "answer" + typed;
+		return AutoAnswerName + typed;
+	}
+
+	public const string AutoAnswerName = "answer";
+	public const string AutoAnswerHint = "answer was put first: Esc or C takes it away";
+
+	// Owner 2026-11-26: Esc or the keypad's C takes the auto-inserted `answer` away again, so
+	// `-5` can start a new line: "answer-5" -> "-5"; null when the text does not start so
+	public static string? DropAutoAnswer(string text)
+	{
+		int length = AutoAnswerName.Length;
+		return text.Length > length && text.StartsWith(AutoAnswerName, StringComparison.Ordinal) && Operators.Contains(text[length])
+			? text[length..]
+			: null;
 	}
 
 	// The definition M+ (subtract: false) or M- (subtract: true) evaluates.

@@ -18,6 +18,8 @@ OVERRIDES = {
     ("A_arith", "3!", "rad"): "6",
     ("A_arith", "7 mod 2", "rad"): "1",
     ("A_arith", "7%2", "rad"): ERROR,
+    ("A_arith", "--2", "rad"): "2",    # two signs in a row (owner 2026-11-26)
+    ("N_errors", "1++2", "rad"): "3",
     ("B_literals", "0b101", "rad"): "5",
     ("B_literals", "1e", "rad"): "2.7182818284590452353602874713527",
     ("B_literals", "0x", "rad"): ERROR,

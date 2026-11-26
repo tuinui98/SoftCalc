@@ -139,7 +139,7 @@ Full original tree: `inventory/menu_tree.txt`.
 | 4 | implicit multiplication | left | `2x`, `2(x+1)`, `(a)(b)`, `2^3x` = `2^(3x)`, `2x^2` = `2*(x^2)` [EXT] |
 | 5 | unary `-` `+` | | `-2^2` = **-4** [FIX], `-2x` = `-(2x)` |
 | 6 | `*` `/` `mod` | left | `1/2x` = `1/(2x)`; `mod` floors: `-7 mod 3` = 2, reals allowed [EXT] |
-| 7 | `+` `-` | left | `--2`, `1++2` stay errors [KEEP] |
+| 7 | `+` `-` | left | two operators in a row, the second a sign on the next value: `2+-3` = -1, `--2` = 2, `2*-3` = -6 (owner 2026-11-26; the original made the first two errors); three (`2*--3`, `2---3`) are an error |
 | 8 | conversion tag `[a->b]` | left | applies to everything left of it (5.9) |
 
 - The right operand of `^` is a signed implicit product, so

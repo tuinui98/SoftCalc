@@ -59,7 +59,9 @@ $2+1                  => 43
   results count; definitions and errors are skipped. After a Delete line
   the numbers close up.
 - An operator key on an empty Input starts with the last result: press
-  `×` and Input reads `answer*`.
+  `×` and Input reads `answer*`. To start a new line with a sign
+  instead (`-5`), press **C** (or Esc on a keyboard) and the `answer`
+  goes; the hint line says so while it is there.
 - **=** on an empty Input repeats the last History line.
 
 ## The hint line

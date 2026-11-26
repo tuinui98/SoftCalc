@@ -27,10 +27,9 @@ internal sealed partial class MainForm : Form
 	private readonly HistoryView _history = new() { Dock = DockStyle.Fill };
 	private readonly TextBox _input = new() { Dock = DockStyle.Top };
 	// Second Input line: help for what is being typed, italic and faint (owner 2026-11-06)
-	private readonly Label _hint = new()
+	private readonly HintLine _hint = new()
 	{
-		Dock = DockStyle.Top, AutoSize = false, AutoEllipsis = true, ForeColor = SystemColors.GrayText,
-		UseMnemonic = false, Padding = new Padding(2, 2, 0, 0),
+		Dock = DockStyle.Top, ForeColor = SystemColors.GrayText, Padding = new Padding(2, 2, 0, 0),
 	};
 	private readonly ToolStripMenuItem _showHintsItem = new("Show Input &Hints") { Checked = true };
 	private readonly TextBox _samples = new()
@@ -132,6 +131,10 @@ internal sealed partial class MainForm : Form
 		_history.DeleteClicked += async (_, entry) => await DeleteHistoryEntryAsync(entry);
 		_history.ClearClicked += async (_, _) => await ClearHistoryAsync();
 		_input.KeyDown += OnInputKeyDown;
+		_input.TextChanged += (_, _) =>
+		{
+			_autoAnswer = _autoAnswer && InputRules.DropAutoAnswer(_input.Text) != null;    // gone once edited away
+		};
 		_input.TextChanged += (_, _) => UpdateHint();
 		_input.TextChanged += (_, _) => InputEdited();
 		_input.KeyUp += (_, _) => UpdateHint();    // caret moves
@@ -441,7 +444,9 @@ internal sealed partial class MainForm : Form
 			string? hint = await _session.HintAsync(text, caret);
 			if (request == _hintRequest && _showHintsItem.Checked && !_busy)
 			{
-				_hint.Text = hint ?? _lineTime ?? "";    // no hint for the text: how long the last line took
+				_hint.Text = _autoAnswer
+					? InputRules.AutoAnswerHint + (hint == null ? "" : "  |  " + hint)
+					: hint ?? _lineTime ?? "";    // no hint for the text: how long the last line took
 			}
 		}
 		catch (EngineException)
@@ -1266,6 +1271,10 @@ internal sealed partial class MainForm : Form
 				ShowRecalled(text);
 			}
 		}
+		else if (e.KeyCode == Keys.Escape && DropAutoAnswer())
+		{
+			e.SuppressKeyPress = true;
+		}
 		else if (e.KeyCode == Keys.Escape && _recall.Position >= 0)
 		{
 			e.SuppressKeyPress = true;    // Esc: the highlight goes, the draft comes back
@@ -1292,6 +1301,25 @@ internal sealed partial class MainForm : Form
 		}
 		_input.Text = replaced;
 		_input.SelectionStart = _input.TextLength;
+		_autoAnswer = true;
+		UpdateHint();    // says Esc or C takes it away
+		return true;
+	}
+
+	// `answer` was put in front by the auto-insert rule, and is still there (owner 2026-11-26)
+	private bool _autoAnswer;
+
+	// Esc or the keypad's C: the auto-inserted `answer` goes, the operator stays; false when there is none
+	private bool DropAutoAnswer()
+	{
+		if (!_autoAnswer || InputRules.DropAutoAnswer(_input.Text) is not { } rest)
+		{
+			return false;
+		}
+		int caret = Math.Max(0, _input.SelectionStart - InputRules.AutoAnswerName.Length);
+		_autoAnswer = false;
+		_input.Text = rest;
+		_input.SelectionStart = caret;
 		return true;
 	}
 
@@ -1316,7 +1344,10 @@ internal sealed partial class MainForm : Form
 				_input.Clear();
 				break;
 			case "C":
-				SetInput(KeypadRules.ClearEntry(_input.Text));
+				if (!DropAutoAnswer())
+				{
+					SetInput(KeypadRules.ClearEntry(_input.Text));
+				}
 				break;
 			case "M+":
 			case "M-":

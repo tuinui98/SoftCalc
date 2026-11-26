@@ -410,7 +410,7 @@
 		if (event.key === "Enter") { event.preventDefault(); calc.submit(); }
 		else if (event.key === "ArrowUp") { event.preventDefault(); calc.walk(true); }
 		else if (event.key === "ArrowDown") { event.preventDefault(); calc.walk(false); }
-		else if (event.key === "Escape") { calc.cancelWalk(); }
+		else if (event.key === "Escape") { if (!calc.dropAutoAnswer()) calc.cancelWalk(); }
 	}
 
 	async function toggleKeyboard()

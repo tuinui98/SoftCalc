@@ -9,6 +9,7 @@
 | Up / Down | earlier lines you typed, highlighted in History; Down past the newest brings back your draft |
 | Esc while stepping | take the highlight off and bring back your draft |
 | an operator on an empty Input | starts with `answer` |
+| Esc after that | takes `answer` away, keeps the operator (C on the keypad too) |
 | right-click | Undo, Cut, Copy, Paste, Delete, Select All, Clear Input |
 
 ## History
