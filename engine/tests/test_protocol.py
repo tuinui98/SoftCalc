@@ -56,7 +56,7 @@ def test_bad_requests(dispatcher, request_obj, fragment):
 def test_eval_reports_kinds(dispatcher):
     assert ask(dispatcher, "eval", input="x=5")["kind"] == "definition"
     response = ask(dispatcher, "eval", input="2x+1")
-    assert (response["kind"], response["display_input"], response["text"]) == ("result", "2*5+1", "11")
+    assert (response["kind"], response["display_input"], response["text"]) == ("result", "(2*5)+1", "11")
     assert ask(dispatcher, "eval", input="1/0")["kind"] == "error"
     assert ask(dispatcher, "eval", input="")["kind"] == "empty"
 

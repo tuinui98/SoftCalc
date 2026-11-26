@@ -65,7 +65,7 @@ def test_today_is_a_date_without_time():
 #----------------------------------------------------------------------
 @pytest.mark.parametrize("lines, want", [
     (["x=5", "x*2"], "5*2"),
-    (["x=5", "2x+x"], "2*5+5"),
+    (["x=5", "2x+x"], "(2*5)+5"),    # implicit products get brackets (owner 2026-11-26)
     (["x=5", "x(2)"], "5*(2)"),
     (["x=-5", "x^2"], "(-5)^2"),
     (["x=5", "1 000 + x"], "1000 + 5"),
@@ -121,7 +121,7 @@ def test_same_base_literals_stay():
 
 
 def test_other_base_literal_next_to_variable():
-    assert run("x=10", "2x+0x10", base="hex").display_input == "0x2*0xA+0x10"    # one `*`
+    assert run("x=10", "2x+0x10", base="hex").display_input == "(0x2*0xA)+0x10"    # one `*`
     assert run("x=10", "x2", base="hex").display_input == "x2"    # x2 is a name, not x*2
 
 

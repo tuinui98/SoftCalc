@@ -743,7 +743,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       shows that result, not the bracketed sum.
 
 ## Implicit multiply in History (owner 2026-11-26)
-- [ ] The faint line on the right turns a number-name product (`3x`) into
+- [x] (built 2026-11-26: engine bracket_implicit; help 02) The faint line on the right turns a number-name product (`3x`) into
       `3*3`, which loses its binding: implicit multiply binds tighter than
       `/`, `^` and `mod`, so the shown line reads as another sum. Bracket
       the product when its value goes in. Found (x=3):
@@ -754,6 +754,10 @@ ends 1:1, the drag insert line is visible enough on dark.
       Already right: `2/3*x`, `2x`, `3x!`, `2x%`, `6/2(x)` (keeps the
       implicit `2(3)`), `x^2` with x<0 (`(-2)^2`). No brackets when
       nothing binds against the product (`2x+1` -> `2*3+1`).
+      Owner 2026-11-26: always bracket a product holding a name, except
+      when it is the whole line (`2x`, `-2x`) or brackets, commas or a
+      sign's brackets already hold it (`sin(2x)`, `2*(-3x)`); so
+      `2x+1` shows `(2*3)+1`.
 
 ## Reference values for inverses (owner 2026-11-26)
 - [ ] `tinv`, `chi2inv`, `finv` are checked only by round trip
