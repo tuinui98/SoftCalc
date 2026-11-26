@@ -123,3 +123,40 @@ def test_the_round_2_menu():
     assert groups["Two variables"] == ["covar", "covarp", "correl", "slope", "intercept", "rsq", "forecast"]
     assert {"range", "iqr", "geomean", "harmean", "zscore"} <= set(groups["Descriptive"])
     assert {"normpdf", "binompdf", "binomcdf", "poisspdf", "poisscdf", "randbinom", "randpois"} <= set(groups["Distributions"])
+
+
+#======================================================================
+#  Round 3 (owner 2026-11-26)
+#======================================================================
+@pytest.mark.parametrize("line, want", [
+    ("skew([3, 4, 5, 2, 3, 4, 5, 6, 4, 7])", "0.35954307140679714325638586263628"),    # Excel's SKEW example
+    ("kurt([3, 4, 5, 2, 3, 4, 5, 6, 4, 7])", "-0.1517996372084142188842567546065"),    # Excel's KURT example
+    ("wmean([90, 80], [3, 1])", "87.5"),
+    ("geometpdf(0.2, 3)", "0.128"),
+    ("geometcdf(0.2, 2, 4)", "0.3904"),
+])
+def test_round_3_values(engine, line, want):
+    assert engine.evaluate(line).text == want
+
+
+@pytest.mark.parametrize("line, table", [
+    ("tinv(0.975, 10)", "2.228139"), ("chi2inv(0.95, 1)", "3.841459"), ("finv(0.95, 5, 10)", "3.325835"),
+])
+def test_inverses_match_the_printed_tables(engine, line, table):
+    assert mpmath.nstr(mpmath.mpf(engine.evaluate(line).text), 7) == table
+
+
+def test_an_inverse_is_quick_and_exact_at_512_digits():
+    dispatcher = Dispatcher()
+    dispatcher.handle({"op": "settings", "precision": 512})
+    text = dispatcher.handle({"op": "eval", "input": "tinv(0.975, 10)"})["text"]
+    back = dispatcher.handle({"op": "eval", "input": f"tcdf({text}, 10)"})["text"]
+    with mpmath.workdps(520):
+        assert abs(mpmath.mpf(back) - mpmath.mpf("0.975")) < mpmath.mpf("1e-500")
+
+
+def test_the_round_3_menu():
+    groups = Dispatcher().handle({"op": "catalog"})["subgroups"]["Statistics"]
+    assert {"skew", "skewp", "kurt", "kurtp", "wmean"} <= set(groups["Descriptive"])
+    assert {"tpdf", "tcdf", "tinv", "chi2pdf", "chi2cdf", "chi2inv", "fpdf", "fcdf", "finv",
+            "geometpdf", "geometcdf", "expcdf"} <= set(groups["Distributions"])

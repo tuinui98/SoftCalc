@@ -181,6 +181,76 @@ def cases():
     add("gamma(-2)", error="gamma is undefined here", group="special")
     add("binompdf(5, 1.5, 2)", error="binompdf: p goes from 0 to 1", group="binomial")
     add("poisscdf(0, 2)", error="poisscdf: the mean must be above 0", group="poisson")
+
+    #==================================================================
+    #  BLOCK 7 - round 3: shape and weights (owner 2026-11-26)
+    #==================================================================
+    for _ in range(50):
+        values = some(4, 14, low=-30, high=30)
+        if len(set(values)) < 2:
+            continue
+        n = len(values)
+        mean = sum(values) / n
+        squares = sum((x - mean) ** 2 for x in values)
+        s, sigma = sqrt(squares / (n - 1)), sqrt(squares / n)
+        add(f"skew({listed(values)})", Rational(n, (n - 1) * (n - 2)) * sum(((x - mean) / s) ** 3 for x in values), group="shape")
+        add(f"skewp({listed(values)})", sum(((x - mean) / sigma) ** 3 for x in values) / n, group="shape")
+        fourth = sum(((x - mean) / s) ** 4 for x in values)
+        add(f"kurt({listed(values)})", Rational(n * (n + 1), (n - 1) * (n - 2) * (n - 3)) * fourth
+            - Rational(3 * (n - 1) ** 2, (n - 2) * (n - 3)), group="shape")
+        add(f"kurtp({listed(values)})", sum(((x - mean) / sigma) ** 4 for x in values) / n - 3, group="shape")
+        weights = [Rational(rng.randint(0, 20), rng.choice((1, 10))) for _ in range(n)]
+        if sum(weights) > 0:
+            add(f"wmean({listed(values)}, {listed(weights)})",
+                sum(v * w for v, w in zip(values, weights)) / sum(weights), group="shape")
+
+    #==================================================================
+    #  BLOCK 8 - round 3: t, chi-square, F from sympy.stats (not the engine's formulas)
+    #==================================================================
+    from sympy.stats import ChiSquared, FDistribution, StudentT, cdf as stats_cdf, density
+
+    # The inverses go back through their cdf, checked against SymPy just above them: the engine's
+    # tcdf(tinv(p, df), df) must give p. (Solving SymPy's cdf for x took over an hour: each step
+    # evaluates a hypergeometric form; the printed tables are checked in test_stats.py.)
+    for _ in range(20):
+        df = rng.randint(1, 30)
+        t = StudentT("T", df)
+        x = decimal(-4, 4, 2)
+        add(f"tpdf({text(x)}, {df})", density(t)(x), group="t")
+        add(f"tcdf({text(x)}, {df})", stats_cdf(t)(x), group="t")
+        a, b = sorted((decimal(-4, 4, 2), decimal(-4, 4, 2)))
+        add(f"tcdf({text(a)}, {text(b)}, {df})", stats_cdf(t)(b) - stats_cdf(t)(a), group="t")
+        p = Rational(rng.randint(5, 995), 1000)
+        add(f"tcdf(tinv({text(p)}, {df}), {df})", p, group="t")
+
+        k = rng.randint(1, 30)
+        c = ChiSquared("C", k)
+        x = decimal(0, 40, 2) + Rational(1, 100)
+        add(f"chi2pdf({text(x)}, {k})", density(c)(x), group="chi2")
+        add(f"chi2cdf({text(x)}, {k})", stats_cdf(c)(x), group="chi2")
+        a, b = sorted((decimal(0, 40, 1), decimal(0, 40, 1)))
+        add(f"chi2cdf({text(a)}, {text(b)}, {k})", stats_cdf(c)(b) - stats_cdf(c)(a), group="chi2")
+        add(f"chi2cdf(chi2inv({text(p)}, {k}), {k})", p, group="chi2")
+
+        d1, d2 = rng.randint(1, 20), rng.randint(1, 30)
+        f = FDistribution("F", d1, d2)
+        x = decimal(0, 6, 2) + Rational(1, 100)
+        add(f"fpdf({text(x)}, {d1}, {d2})", density(f)(x), group="f")
+        add(f"fcdf({text(x)}, {d1}, {d2})", stats_cdf(f)(x), group="f")
+        add(f"fcdf(finv({text(p)}, {d1}, {d2}), {d1}, {d2})", p, group="f")
+
+    #==================================================================
+    #  BLOCK 9 - round 3: geometric and exponential
+    #==================================================================
+    for _ in range(40):
+        p, k = Rational(rng.randint(1, 100), 100), rng.randint(0, 30)
+        add(f"geometpdf({text(p)}, {k})", (1 - p) ** (k - 1) * p if k >= 1 else Rational(0), group="geometric")
+        add(f"geometcdf({text(p)}, {k})", 1 - (1 - p) ** k if k >= 1 else Rational(0), group="geometric")
+        x, rate = decimal(0, 10, 2), decimal(1, 5, 1)
+        add(f"expcdf({text(x)}, {text(rate)})", 1 - sympy.exp(-rate * x), group="exponential")
+    add("tinv(1, 5)", error="tinv: p must be between 0 and 1", group="t")
+    add("chi2cdf(1, 0)", error="chi2cdf: df must be above 0", group="chi2")
+    add("skew([1, 2])", error="skew needs at least 3 numbers", group="shape")
     return out
 
 

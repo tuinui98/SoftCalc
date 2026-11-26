@@ -33,7 +33,7 @@ SETTING_CHOICES = {
 }
 DESCRIPTIVE = ["sum", "prod", "min", "max", "count", "range", "mean", "median", "mode",
                "geomean", "harmean", "stdev", "stdevp", "variance", "variancep",
-               "percentile", "quartile", "iqr", "zscore"]
+               "percentile", "quartile", "iqr", "zscore", "skew", "skewp", "kurt", "kurtp", "wmean"]
 CATALOG = {
     "functions": {
         "Basic Operations": ["+", "-", "*", "/", "^", "sqrt", "abs", "mod", "!", "%"],
@@ -66,7 +66,9 @@ CATALOG = {
             "Descriptive": DESCRIPTIVE,
             "Two variables": ["covar", "covarp", "correl", "slope", "intercept", "rsq", "forecast"],
             "Counting": ["comb", "perm"],
-            "Distributions": ["normpdf", "normcdf", "norminv", "binompdf", "binomcdf", "poisspdf", "poisscdf",
+            "Distributions": ["normpdf", "normcdf", "norminv", "tpdf", "tcdf", "tinv",
+                              "chi2pdf", "chi2cdf", "chi2inv", "fpdf", "fcdf", "finv",
+                              "binompdf", "binomcdf", "poisspdf", "poisscdf", "geometpdf", "geometcdf", "expcdf",
                               "randnorm", "randbinom", "randpois"],
         },
     },

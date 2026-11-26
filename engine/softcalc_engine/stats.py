@@ -332,8 +332,211 @@ def poisscdf(args):
     return poiss_upto(mean, high) - poiss_upto(mean, low - 1)
 
 
+#======================================================================
+#  Round 3 (owner 2026-11-26) - the shape of a list, weights
+#======================================================================
+def standard_moments(key, args, least):
+    """The values' mean, sample sd and population sd, with at least `least` values."""
+    values = numbers_of(args, key, real=True)
+    n = len(values)
+    if n < least:
+        raise CalcError(f"{key} needs at least {least} numbers")
+    mean = mpmath.fsum(values) / n
+    squares = mpmath.fsum((x - mean) ** 2 for x in values)
+    if squares == 0:
+        raise CalcError(f"{key}: the numbers are all the same")
+    return values, n, mean, mpmath.sqrt(squares / (n - 1)), mpmath.sqrt(squares / n)
+
+
+def skew(args):
+    """The sample skewness, as Excel's SKEW."""
+    values, n, mean, sd, _ = standard_moments("skew", args, 3)
+    return n * mpmath.fsum(((x - mean) / sd) ** 3 for x in values) / ((n - 1) * (n - 2))
+
+
+def skewp(args):
+    values, n, mean, _, sd = standard_moments("skewp", args, 1)
+    return mpmath.fsum(((x - mean) / sd) ** 3 for x in values) / n
+
+
+def kurt(args):
+    """The sample excess kurtosis (a normal shape gives 0), as Excel's KURT."""
+    values, n, mean, sd, _ = standard_moments("kurt", args, 4)
+    total = mpmath.fsum(((x - mean) / sd) ** 4 for x in values)
+    return (n * (n + 1) * total / ((n - 1) * (n - 2) * (n - 3))
+            - 3 * mpmath.mpf(n - 1) ** 2 / ((n - 2) * (n - 3)))
+
+
+def kurtp(args):
+    values, n, mean, _, sd = standard_moments("kurtp", args, 1)
+    return mpmath.fsum(((x - mean) / sd) ** 4 for x in values) / n - 3
+
+
+def wmean(args):
+    values, weights = (numbers_of([value], "wmean", real=True) for value in args)
+    if len(values) != len(weights):
+        raise CalcError("wmean: values and weights must be as long as each other")
+    if any(w < 0 for w in weights) or mpmath.fsum(weights) == 0:
+        raise CalcError("wmean: weights must be 0 or more, not all 0")
+    return mpmath.fsum(v * w for v, w in zip(values, weights)) / mpmath.fsum(weights)
+
+
+#======================================================================
+#  Round 3 - t, chi-square and F: pdf, cdf (a value or a range), inv
+#======================================================================
+def degrees(key, value, name="df"):
+    if not isinstance(value, mpmath.mpf) or value <= 0:
+        raise CalcError(f"{key}: {name} must be above 0")
+    return value
+
+
+def real(key, value):
+    if not isinstance(value, mpmath.mpf):
+        raise CalcError(f"{key} needs real numbers")
+    return value
+
+
+def t_cdf(x, df):
+    tail = mpmath.betainc(df / 2, mpmath.mpf("0.5"), 0, df / (df + x * x), regularized=True) / 2
+    return 1 - tail if x > 0 else tail
+
+
+def t_pdf(x, df):
+    return (mpmath.gamma((df + 1) / 2) / (mpmath.sqrt(df * mpmath.pi) * mpmath.gamma(df / 2))
+            * (1 + x * x / df) ** (-(df + 1) / 2))
+
+
+def chi2_cdf(x, df):
+    return mpmath.mpf(0) if x <= 0 else mpmath.gammainc(df / 2, 0, x / 2, regularized=True)
+
+
+def chi2_pdf(x, df):
+    if x < 0 or (x == 0 and df > 2):
+        return mpmath.mpf(0)
+    if x == 0:
+        return mpmath.inf if df < 2 else mpmath.mpf("0.5")
+    return x ** (df / 2 - 1) * mpmath.exp(-x / 2) / (2 ** (df / 2) * mpmath.gamma(df / 2))
+
+
+def f_cdf(x, d1, d2):
+    return mpmath.mpf(0) if x <= 0 else mpmath.betainc(d1 / 2, d2 / 2, 0, d1 * x / (d1 * x + d2), regularized=True)
+
+
+def f_pdf(x, d1, d2):
+    if x <= 0:
+        return mpmath.mpf(0) if x < 0 or d1 > 2 else (mpmath.inf if d1 < 2 else mpmath.mpf(1))
+    return (mpmath.sqrt((d1 * x) ** d1 * d2 ** d2 / (d1 * x + d2) ** (d1 + d2))
+            / (x * mpmath.beta(d1 / 2, d2 / 2)))
+
+
+def inverse(cdf, p, low):
+    """The x with cdf(x) = p: a bracket grown by doubling, then Anderson's bracketed root finder."""
+    high = mpmath.mpf(1)
+    while cdf(high) < p:
+        low, high = high, high * 2
+        if high > mpmath.mpf(10) ** 30:
+            raise CalcError("no x gives this p")
+    return mpmath.findroot(lambda x: cdf(x) - p, (low, high), solver="anderson")
+
+
+def probability(key, p):
+    if not isinstance(p, mpmath.mpf) or not 0 < p < 1:
+        raise CalcError(f"{key}: p must be between 0 and 1")
+    return p
+
+
+def ranged(key, cdf, args, shape):
+    """cdf(x, *shape) after one value, or cdf(b) - cdf(a) after two."""
+    if len(args) == shape + 1:
+        return cdf(real(key, args[0]))
+    low, high = real(key, args[0]), real(key, args[1])
+    if low > high:
+        raise CalcError(f"{key}(a, b, ...): a must not be above b")
+    return cdf(high) - cdf(low)
+
+
+def tcdf(args):
+    df = degrees("tcdf", args[-1])
+    return ranged("tcdf", lambda x: t_cdf(x, df), args, 1)
+
+
+def tinv(args):
+    p, df = probability("tinv", args[0]), degrees("tinv", args[1])
+    if p == mpmath.mpf("0.5"):
+        return mpmath.mpf(0)
+    upper = inverse(lambda x: t_cdf(x, df), max(p, 1 - p), mpmath.mpf(0))
+    return upper if p > mpmath.mpf("0.5") else -upper
+
+
+def chi2cdf(args):
+    df = degrees("chi2cdf", args[-1])
+    return ranged("chi2cdf", lambda x: chi2_cdf(x, df), args, 1)
+
+
+def chi2inv(args):
+    p, df = probability("chi2inv", args[0]), degrees("chi2inv", args[1])
+    return inverse(lambda x: chi2_cdf(x, df), p, mpmath.mpf(0))
+
+
+def fcdf(args):
+    d1, d2 = degrees("fcdf", args[-2], "d1"), degrees("fcdf", args[-1], "d2")
+    return ranged("fcdf", lambda x: f_cdf(x, d1, d2), args, 2)
+
+
+def finv(args):
+    p = probability("finv", args[0])
+    d1, d2 = degrees("finv", args[1], "d1"), degrees("finv", args[2], "d2")
+    return inverse(lambda x: f_cdf(x, d1, d2), p, mpmath.mpf(0))
+
+
+#======================================================================
+#  Round 3 - geometric (TI's geometpdf: tries up to the first success) and exponential
+#======================================================================
+def geometric_args(key, args):
+    p = args[0]
+    if not isinstance(p, mpmath.mpf) or not 0 < p <= 1:
+        raise CalcError(f"{key}: p must be above 0, at most 1")
+    return p
+
+
+def geometric_upto(p, k):
+    return mpmath.mpf(0) if k < 1 else 1 - (1 - p) ** k
+
+
+def geometpdf(args):
+    p = geometric_args("geometpdf", args)
+    k = count_of("geometpdf", args[1])
+    return mpmath.mpf(0) if k < 1 else (1 - p) ** (k - 1) * p
+
+
+def geometcdf(args):
+    """geometcdf(p, k): the first success by try k; geometcdf(p, a, b): at try a to b."""
+    p = geometric_args("geometcdf", args)
+    if len(args) == 2:
+        return geometric_upto(p, count_of("geometcdf", args[1]))
+    low, high = count_of("geometcdf", args[1]), count_of("geometcdf", args[2])
+    if low > high:
+        raise CalcError("geometcdf(p, a, b): a must not be above b")
+    return geometric_upto(p, high) - geometric_upto(p, low - 1)
+
+
+def expcdf(args):
+    """expcdf(x, rate): P(X <= x) for an exponential wait; expcdf(a, b, rate): from a to b."""
+    rate = degrees("expcdf", args[-1], "rate")
+    return ranged("expcdf", lambda x: mpmath.mpf(0) if x <= 0 else -mpmath.expm1(-rate * x), args, 1)
+
+
 # name -> (function, fewest arguments, most arguments), as matrix.FUNCTIONS
 FUNCTIONS = {
+    "skew": (skew, 1, None), "skewp": (skewp, 1, None), "kurt": (kurt, 1, None), "kurtp": (kurtp, 1, None),
+    "wmean": (wmean, 2, 2),
+    "tpdf": (lambda a: t_pdf(real("tpdf", a[0]), degrees("tpdf", a[1])), 2, 2),
+    "tcdf": (tcdf, 2, 3), "tinv": (tinv, 2, 2),
+    "chi2pdf": (lambda a: chi2_pdf(real("chi2pdf", a[0]), degrees("chi2pdf", a[1])), 2, 2),
+    "chi2cdf": (chi2cdf, 2, 3), "chi2inv": (chi2inv, 2, 2),
+    "fpdf": (lambda a: f_pdf(real("fpdf", a[0]), degrees("fpdf", a[1], "d1"), degrees("fpdf", a[2], "d2")), 3, 3),
+    "fcdf": (fcdf, 3, 4), "finv": (finv, 3, 3),
+    "geometpdf": (geometpdf, 2, 2), "geometcdf": (geometcdf, 2, 3), "expcdf": (expcdf, 2, 3),
     "range": (spread_range, 1, None), "iqr": (iqr, 1, None), "geomean": (geomean, 1, None),
     "harmean": (harmean, 1, None), "zscore": (zscore, 1, 3),
     "covar": (covariance("covar", True), 2, 2), "covarp": (covariance("covarp", False), 2, 2),
