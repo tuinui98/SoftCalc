@@ -648,7 +648,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       Matrix: sum prod min max count mean median stdev stdevp variance
       variancep. Matrix > Statistics taken out (owner 2026-11-26); sum and
       mean stay in Matrix's top ten; old ribbon buttons find them here.
-- [ ] (rounds 1 and 2 done 2026-11-26: stats.py, SymPy 2245 cases, help 20 and 03; Special Functions group) Functions still to add, then submenus (Descriptive, Counting,
+- [x] (rounds 1 to 3 done 2026-11-26: stats.py, checked against SymPy, help 20 and 03; Special Functions group) Functions still to add, then submenus (Descriptive, Counting,
       Distributions, Two variables). Names proposed, check each against
       units and names first (range, mode, ...); mpmath has gamma,
       binomial, erf/erfinv, ncdf and the incomplete gamma/beta, so all at
@@ -658,9 +658,11 @@ ends 1:1, the drag insert line is visible enough on dark.
       Round 2: normpdf, binompdf binomcdf, poisspdf poisscdf, covar covarp,
       correl, slope intercept rsq forecast; gamma, erf erfc; range iqr
       geomean harmean zscore; randbinom randpois.
-      Later: tcdf chi2cdf, skew kurt, weighted mean, sumsq; statistics per
-      column of a matrix (colmean or mean(A, 1)) and cov(A). Out of scope:
-      hypothesis tests.
+      Round 3 (owner 2026-11-26): t, chi2, F (pdf, cdf with a range, inv),
+      skew skewp kurt kurtp, wmean, geometpdf geometcdf, expcdf.
+      Left out (owner 2026-11-26, nothing missing): sumsq (sum(list^2)),
+      statistics per column (mean(col(A, 2))), cov(A) and corr(A); hypothesis
+      tests (tcdf / tinv give their p-values and critical values).
 
 ## Conversions (owner 2026-11-24)
 - [x] One Conversions > Cryptocurrency submenu (Bitcoin, Ethereum, Tron,

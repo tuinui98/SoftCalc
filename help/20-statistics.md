@@ -44,6 +44,22 @@ zscore([1, 2, 3])             => [-1, 0, 1]
   STANDARDIZE); `zscore(list)` gives each value's, with the list's own
   mean and sample sd.
 
+## Shape and weights
+
+```calc
+skew([3, 4, 5, 2, 3, 4, 5, 6, 4, 7])  => 0.35954307140679714325638586263628
+kurt([3, 4, 5, 2, 3, 4, 5, 6, 4, 7])  => -0.1517996372084142188842567546065
+wmean([90, 80], [3, 1])       => 87.5
+```
+
+- `skew` says how lopsided a list is: 0 when it is symmetric, above 0
+  when it trails off to the right. `kurt` says how heavy its tails are
+  against the normal shape, which gives 0 (excess kurtosis).
+- `skew` and `kurt` are for a sample, as Excel's SKEW and KURT;
+  `skewp` and `kurtp` for a whole population.
+- `wmean(values, weights)` is the weighted mean: each value counts as
+  often as its weight says.
+
 ## Percentiles and quartiles
 
 ```calc
@@ -118,6 +134,29 @@ normpdf(0)                    => 0.39894228040143267793994605993438
 - sd must be above 0; p in `norminv` is between 0 and 1.
 - They work at the precision set, so `:prec 64` gives 64 digits.
 
+## t, chi-square and F
+
+```calc
+tcdf(2.1, 15)                 => 0.97347237192397863262399646449103
+tinv(0.975, 10)               => 2.2281388519862747483954906632018
+chi2cdf(3.84, 1)              => 0.94995647875129490105233633583759
+chi2inv(0.95, 1)              => 3.8414588206941259583613754373626
+fcdf(3.33, 5, 10)             => 0.95016872420277869568067559396988
+finv(0.95, 5, 10)             => 3.3258345304130120113024637451587
+```
+
+| you type | you get |
+|---|---|
+| `tcdf(x, df)`, `tcdf(a, b, df)` | Student's t: up to x, or from a to b |
+| `chi2cdf(x, df)`, `chi2cdf(a, b, df)` | chi-square, the same way |
+| `fcdf(x, d1, d2)`, `fcdf(a, b, d1, d2)` | F, with d1 and d2 degrees of freedom |
+| `tinv(p, df)`, `chi2inv(p, df)`, `finv(p, d1, d2)` | the x their cdf gives p for |
+| `tpdf`, `chi2pdf`, `fpdf` | the height of the curve at x |
+
+These give the critical values and p-values a test needs: a two-sided
+t-test's p-value is `2*(1 - tcdf(abs(t), df))`, its 95% critical value
+`tinv(0.975, df)`.
+
 ## Binomial and Poisson
 
 In the TI calculators' order, n and p (or the mean) first:
@@ -136,6 +175,17 @@ poisscdf(3, 1, 4)             => 0.7654761761559081233073896406197
   of a to b.
 - `poisspdf(mean, k)`: the chance of exactly k events when mean are
   expected; `poisscdf(mean, k)` and `poisscdf(mean, a, b)` as above.
+
+```calc
+geometpdf(0.2, 3)             => 0.128
+geometcdf(0.2, 3)             => 0.488
+expcdf(1, 2)                  => 0.86466471676338730810600050502752
+```
+
+- `geometpdf(p, k)`: the chance that the first success comes at try k;
+  `geometcdf(p, k)`: by try k; `geometcdf(p, a, b)`: at try a to b.
+- `expcdf(x, rate)`: the chance an exponential wait (rate events per
+  unit) is over by x; `expcdf(a, b, rate)`: that it ends from a to b.
 
 ## Random draws
 
@@ -157,6 +207,10 @@ fill(2, 3, randnorm())
 More: [NIST: Normal Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm),
 [Binomial Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda366i.htm),
 [Poisson Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda366j.htm),
+[t Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda3664.htm),
+[Chi-Square Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda3666.htm),
+[F Distribution](https://www.itl.nist.gov/div898/handbook/eda/section3/eda3665.htm),
+[Measures of Skewness and Kurtosis](https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm),
 [Percentiles](https://www.itl.nist.gov/div898/handbook/prc/section2/prc262.htm),
 [Measures of Location](https://www.itl.nist.gov/div898/handbook/eda/section3/eda351.htm),
 [Measures of Scale](https://www.itl.nist.gov/div898/handbook/eda/section3/eda356.htm)
