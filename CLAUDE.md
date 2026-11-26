@@ -60,6 +60,8 @@ they go into the GitHub release notes (owner 2026-11-11).
 Before every release, check the help's links out (the More: lines):
 `engine/.venv/Scripts/python tools/check_help_links.py` must end with
 `0 failed`, and each title must still name the page (owner 2026-11-26).
+To see every calculation check one by one: `.\tools\check_calc.ps1` (golden, matrix,
+stats, help; `-Filter text`, `-Fails`, `-Open`), which also writes `logs\check-<date-time>.txt`.
 UI (run from `ui/`; .NET SDK at `C:\Program Files\dotnet\dotnet.exe`, 10.0.x,
 may not be on the PATH of an already-open shell):
 ```

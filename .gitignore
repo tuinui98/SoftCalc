@@ -32,3 +32,6 @@ tools/**/obj/
 
 # M9 published exe (build/publish.ps1)
 /dist/
+
+# tools/check_calc output (owner 2026-11-26)
+logs/
