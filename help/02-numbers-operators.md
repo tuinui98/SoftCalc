@@ -74,7 +74,9 @@ written (see *Display and precision*).
 - A sign may follow an operator: `2*-3` is `2*(-3)`, `2+-3` is
   `2+(-3)`, `2--3` is `2-(-3)`. Two operators in a row at most: `2*--3`
   and `2---3` are errors. The hint line says how two signs read while
-  you type, since a doubled sign is often a slip.
+  you type, since a doubled sign is often a slip, and History shows the
+  line faint on the right with the signed value in brackets: `2*-3`
+  shows `2*(-3)`, and `x*-y` with x = 2, y = 3 shows `2*(-3)`.
 
 More: [MathWorld: Mod](https://mathworld.wolfram.com/Mod.html); n! is Γ(n+1),
 [DLMF §5.4](https://dlmf.nist.gov/5.4), and its values are [OEIS A000142](https://oeis.org/A000142).

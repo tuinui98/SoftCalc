@@ -31,7 +31,7 @@ def test_a_variable_holding_a_negative_still_shows_in_brackets():
     engine = Engine()
     engine.evaluate("x=-3")
     result = engine.evaluate("5--x")
-    assert (result.text, result.display_input) == ("2", "5--(-3)")
+    assert (result.text, result.display_input) == ("2", "5-(-(-3))")
 
 
 @pytest.mark.parametrize("text, warned", [
@@ -41,3 +41,29 @@ def test_a_variable_holding_a_negative_still_shows_in_brackets():
 def test_the_hint_line_warns_of_two_signs(text, warned):
     hint = hints.hint_for(text, len(text), lambda name: None) or ""
     assert hint.startswith(hints.TWO_SIGNS_HINT) == warned
+
+
+#======================================================================
+#  How two operators were read, faint on the right of History (owner 2026-11-26)
+#======================================================================
+@pytest.mark.parametrize("line, shown", [
+    ("2+-3", "2+(-3)"), ("--2", "-(-2)"), ("2*-3", "2*(-3)"), ("2^-2*3", "2^(-2)*3"),
+    ("5 mod -3", "5 mod (-3)"), ("2--3^2", "2-(-3^2)"), ("sqrt(2*-4)", "sqrt(2*(-4))"),
+    ("2*-(3+1)", "2*(-(3+1))"), ("2*-3 [ft->in]", "2*(-3) [ft->in]"),
+    ("-2", "-2"), ("2-3", "2-3"), ("2e-3", "2e-3"), ("max(1, -2)", "max(1, -2)"),
+])
+def test_history_shows_the_signed_value_in_brackets(line, shown):
+    assert Engine().evaluate(line).display_input == shown
+
+
+def test_brackets_come_first_then_values():
+    engine = Engine()
+    engine.evaluate("x=2")
+    engine.evaluate("y=-3")
+    assert engine.evaluate("x*-y").display_input == "2*(-(-3))"
+    engine.evaluate("rands(1)")
+    assert engine.evaluate("rand(1, 6)*-2").display_input == "4*(-2)"
+
+
+def test_a_result_on_the_right_stays_the_result():
+    assert Engine().evaluate("mode([1, 1, 2, 2])+-1").display_input == "[1, 2]"

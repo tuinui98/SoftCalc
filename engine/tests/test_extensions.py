@@ -98,7 +98,7 @@ def test_definitions_and_errors_display_as_typed():
     ("101b*2", "dec", "5*2"),
     ("0o17", "dec", "15"),
     ("-0x1F", "dec", "-31"),            # the minus stays an operator
-    ("2*-0x1F", "dec", "2*-31"),
+    ("2*-0x1F", "dec", "2*(-31)"),    # the signed value in brackets (owner 2026-11-26)
     ("0x" + "F" * 34, "dec", "0x" + "F" * 34),    # past 32 digits: rounded, so kept
     ("255+1", "hex", "0xFF+0x1"),
     ("0.5", "hex", "0x0.8"),
