@@ -60,7 +60,7 @@ det([[0.316, 1.2], [0.632, 2.4]])    => 0
 | `The matrix has no inverse (its det is 0)` | `inv`, `A^-1` and `solve` of a matrix whose det is 0 (see below) |
 | `solve: A has 2 rows, b has 3` | b needs one number per row of A |
 | `at: row 3 is past the end (2)` | `at`, `row`, `col` count from 1 up to the size |
-| `dot needs two lists of the same length` / `cross needs two lists of 3 numbers` | the lists do not match |
+| `dot needs two lists of the same length` (`vdot` too) / `cross needs two lists of 3 numbers` | the lists do not match |
 | `sort takes a list` / `min needs real numbers` | `sort` works on one list; `min`, `max` and `sort` need real numbers |
 | `A list may have at most 10000 numbers` / `... 10000 cells` | the size limit; `det`, `inv`, `solve` and `^` take at most 50x50 |
 | `[longdate] takes one date, not a list` | a unit, currency or coin tag converts every cell (`[1, 2] [m->cm]`); date formats and time zones take one date |

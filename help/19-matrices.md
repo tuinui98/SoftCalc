@@ -163,6 +163,7 @@ More (MathWorld): [Transpose](https://mathworld.wolfram.com/Transpose.html),
 [Matrix Trace](https://mathworld.wolfram.com/MatrixTrace.html), [Matrix Rank](https://mathworld.wolfram.com/MatrixRank.html),
 [Linear System of Equations](https://mathworld.wolfram.com/LinearSystemofEquations.html),
 [Eigenvalue](https://mathworld.wolfram.com/Eigenvalue.html), [Dot Product](https://mathworld.wolfram.com/DotProduct.html),
+[Inner Product](https://mathworld.wolfram.com/InnerProduct.html) (vdot),
 [Cross Product](https://mathworld.wolfram.com/CrossProduct.html), [Vector Norm](https://mathworld.wolfram.com/VectorNorm.html),
 [Frobenius Norm](https://mathworld.wolfram.com/FrobeniusNorm.html) (norm of a matrix).
 
@@ -257,6 +258,6 @@ Statistics.
 |---|---|
 | Build | `identity` `zeros` `ones` `diag` `fill` `seq` `reshape` `randm` |
 | Size and pick | `rows` `cols` `len` `at` `row` `col` |
-| Linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `cross` `norm` |
+| Linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `vdot` `cross` `norm` |
 | Arrange | `sort` `reverse` `cumsum` |
 | Statistics (its own menu, see *Statistics*) | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep` and more |
