@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-26: version 1.11.1 released (History shows how two operators were read; help for `?word`, typed settings and the hint line). Everything below is committed on `main` and
+Updated 2026-11-27: version 1.11.2 released (implicit products bracketed in History, "Finished in", vdot, direct references for the inverses). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -208,6 +208,13 @@ Input says how long each line took ("Took 0.23 s", "Working... 1.4 s").
 Help 01, 14, 17.
 
 Tests: UI `dotnet test` 489 passed; web 140.
+
+Version 1.11.2 (2026-11-27): History brackets an implicit product that
+holds a name (`1/2x` as `1/(2*3)`; not when it is the whole line or
+already in brackets), engine bracket_implicit. The line time reads
+"Finished in 0.23 s". Matrix > Linear algebra `vdot` (first list
+conjugated). Stats reference: 62 direct values for tinv, chi2inv, finv
+(closed forms and bisection on SymPy's cdf). Help 01, 02, 16, 19.
 
 Version 1.11.1 (2026-11-26): a line with two operators in a row shows,
 faint on the right of History, the signed value in brackets (`2*-3` as
