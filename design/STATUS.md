@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-26: version 1.11.0 released (statistics; Special Functions; settings typed with `:`; `?word` Help; links out; two operators in a row). Everything below is committed on `main` and
+Updated 2026-11-26: version 1.11.1 released (History shows how two operators were read; help for `?word`, typed settings and the hint line). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -208,6 +208,12 @@ Input says how long each line took ("Took 0.23 s", "Working... 1.4 s").
 Help 01, 14, 17.
 
 Tests: UI `dotnet test` 489 passed; web 140.
+
+Version 1.11.1 (2026-11-26): a line with two operators in a row shows,
+faint on the right of History, the signed value in brackets (`2*-3` as
+`2*(-3)`, `x*-y` as `2*(-3)`), engine bracket_signs. Help 01 (desktop
+and web) now tells of `?word`, typed settings, the hint line's warnings
+and its two lines.
 
 Version 1.11.0 (2026-11-26): statistics and typed commands.
 Functions > Matrix has the ten used most and four submenus; Functions >
