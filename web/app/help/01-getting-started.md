@@ -75,7 +75,11 @@ The faint line under Input explains what is left of the caret:
 - a number typed in another base, shown in the output base: `0xFF`
   shows `255` when the output is decimal
 
-A long hint ends in `...`: tap it to read all of it. Settings > Input
+- warnings first: two signs in a row (`2+-3`), an `answer` put in front
+  by an operator (C takes it away), every cell drawn in `fill`
+
+On a screen too narrow for about 80 characters the hint takes two lines.
+A longer hint ends in `...`: tap it to read all of it. Settings > Input
 hints turns it off.
 
 ## The menu and Settings
@@ -87,7 +91,14 @@ second Back within two seconds leaves. In a browser this works only after a
 tap on the page: Chrome lets a page hold Back only then.
 
 Settings: precision, angle, output base, decimals, pad zeros, word size,
-text size, input hints and theme.
+text size, input hints and theme. They can be typed in Input too:
+`:deg`, `:prec 64` (see *Display and precision*).
+
+Help has a Search box above its topics. Type `?` and a word in Input,
+then =, to open Help at the heading that fits it best: `?det`,
+`?seeds`; when none fits, the topics holding the word are listed. A
+More: line under a function links to a reference page outside SoftCalc,
+in a new tab.
 
 ## Export and Import
 

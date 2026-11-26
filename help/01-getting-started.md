@@ -71,8 +71,12 @@ The faint line under Input explains what is left of the caret:
   shows `255` when the output is decimal
 - with nothing to explain, how long the last line took: `Took 0.23 s`;
   a line that runs past a second counts while it runs, `Working... 1.4 s`
+- warnings first: two signs in a row (`2+-3`), an `answer` put in front
+  by an operator (Esc takes it away), every cell drawn in `fill`
 
-Turn it off with View > Show Input Hints.
+In a window too narrow for about 80 characters the hint line takes two
+lines, and keeps them while the width stays. Turn it off with View >
+Show Input Hints.
 
 ## Views
 
@@ -87,6 +91,13 @@ File > Help or **F1** opens this Help; F1 in the Graph, Compound
 Interest, Functions or Customize Ribbon window opens its own topic.
 Click an example line to put it in Input. Search finds the topics that
 hold every word you type.
+
+Type `?` and a word in Input, then Enter, to open Help at the heading
+that fits it best: `?det`, `?seeds`, `?compound interest`. The words are
+searched too, so the list keeps every topic that holds them; when no
+heading fits, the search alone shows. `?` alone opens Help. A More:
+line under a function links to a reference page outside SoftCalc; it
+opens in your browser.
 
 The title bar shows the version, such as `SoftCalc [v1.4.0]`; File >
 About SoftCalc... shows it too, with the data folder and the licences.
