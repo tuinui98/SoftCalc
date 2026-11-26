@@ -844,6 +844,14 @@ ends 1:1, the drag insert line is visible enough on dark.
       gives the line that sets them all again. UI-only ones (theme,
       hints, view, keypad) maybe later.
 
+## Enter on the sci pad (owner 2026-11-27, web and APK)
+- [ ] When the sci pad shows alone (the narrow layout, swiped to sci), a
+      small `=` spot in the top right corner, above the `log` key and
+      across from the `< Num` side, runs the line (Enter), so a line
+      ends without swiping back to the num pad. Not a full key: a tap
+      target only, kept light so it does not crowd the pad. Not shown
+      when sci and num pads stand side by side (that one has `=`).
+
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
       large-screen / foldable quality from April 2027 and wants foldable
