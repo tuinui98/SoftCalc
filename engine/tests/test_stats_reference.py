@@ -48,4 +48,4 @@ def test_the_reference_covers_every_function():
     assert {case["group"] for case in DATA} == {"comb", "perm", "percentile", "quartile", "normcdf", "norminv",
                                                "range", "iqr", "geomean", "harmean", "zscore", "covar", "correl",
                                                "line", "normpdf", "binomial", "poisson", "special", "shape", "t",
-                                               "chi2", "f", "geometric", "exponential"}
+                                               "chi2", "f", "geometric", "exponential", "tinv", "chi2inv", "finv"}

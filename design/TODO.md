@@ -760,7 +760,8 @@ ends 1:1, the drag insert line is visible enough on dark.
       `2x+1` shows `(2*3)+1`.
 
 ## Reference values for inverses (owner 2026-11-26)
-- [ ] `tinv`, `chi2inv`, `finv` are checked only by round trip
+- [x] (built 2026-11-27: make_stats_reference BLOCK 10, 62 cases; closed forms
+      plus bisection on SymPy's cdf, since the engine itself uses mpmath) `tinv`, `chi2inv`, `finv` are checked only by round trip
       (`tcdf(tinv(p, df), df)` = p), with one direct `tinv` case. Add
       10-20 direct reference values each, found with mpmath at 60 digits
       (findroot on the cdf), not SymPy (its nsolve hung for 57 min);
