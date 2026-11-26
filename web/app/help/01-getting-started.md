@@ -43,7 +43,7 @@ An error keeps your text in Input, so you can fix it. The History line
 shows what went wrong, for example `ERROR:Expected ')'`.
 
 The faint line just above Input says how long the last line took, such
-as `Took 0.23 s`; a line that runs past a second counts while it runs,
+as `Finished in 0.23 s`; a line that runs past a second counts while it runs,
 `Working... 1.4 s`.
 
 ## Earlier results

@@ -69,7 +69,7 @@ The faint line under Input explains what is left of the caret:
 - tag examples inside an open `[`
 - a number typed in another base, shown in the output base: `0xFF`
   shows `255` when the output is decimal
-- with nothing to explain, how long the last line took: `Took 0.23 s`;
+- with nothing to explain, how long the last line took: `Finished in 0.23 s`;
   a line that runs past a second counts while it runs, `Working... 1.4 s`
 - warnings first: two signs in a row (`2+-3`), an `answer` put in front
   by an operator (Esc takes it away), every cell drawn in `fill`

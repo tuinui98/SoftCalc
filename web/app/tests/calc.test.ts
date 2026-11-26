@@ -349,7 +349,7 @@ describe("saving between visits", () =>
 			const slow = new FakeEngine();
 			const { calc } = await started(new MemoryStore(), slow);
 			await press(calc, "6", "*", "7", "=");
-			expect(calc.status).toMatch(/^Took 0\.\d\d s$/);
+			expect(calc.status).toMatch(/^Finished in 0\.\d\d s$/);
 			const quick = calc.status;
 			let finish!: () => void;
 			const send = slow.send.bind(slow);
@@ -369,12 +369,12 @@ describe("saving between visits", () =>
 			expect(calc.status).toMatch(/^Working\.\.\. 3\.\d s$/);
 			finish();
 			await equals;
-			expect(calc.status).toMatch(/^Took 3\.\d\d s$/);
+			expect(calc.status).toMatch(/^Finished in 3\.\d\d s$/);
 			expect(calc.entries.at(-1)?.text).toBe("3");
 
 			slow.send = send;
 			await press(calc, "2", "+", "2", "=");
-			expect(calc.status).toMatch(/^Took 0\.\d\d s$/);
+			expect(calc.status).toMatch(/^Finished in 0\.\d\d s$/);
 		}
 		finally
 		{

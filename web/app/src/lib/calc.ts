@@ -41,10 +41,10 @@ const LOADING: Record<string, string> = { worker: "Loading Python...", python: "
 
 const WORKING_AFTER = 1000;    // ms before "Working..." shows
 
-// "Took 0.23 s" after every line (owner 2026-11-24: time each line); 2 places under 10 s
+// "Finished in 0.23 s" after every line (owner 2026-11-24: time each line); 2 places under 10 s
 export function tookText(seconds: number): string
 {
-	return `Took ${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
+	return `Finished in ${seconds.toFixed(seconds < 10 ? 2 : 1)} s`;
 }
 
 export interface Entry
