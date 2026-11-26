@@ -8,6 +8,7 @@ found before a release, not by a user.
     python tools/check_help_links.py
 """
 
+import http.client
 import pathlib
 import re
 import sys
@@ -37,7 +38,10 @@ def check(url):
     request = urllib.request.Request(url, headers={"User-Agent": AGENT})
     try:
         with urllib.request.urlopen(request, timeout=TIMEOUT_S) as answer:
-            page = answer.read(200_000).decode("utf-8", "replace")
+            try:
+                page = answer.read(200_000).decode("utf-8", "replace")
+            except http.client.IncompleteRead as cut:    # a page cut short still has its title
+                page = cut.partial.decode("utf-8", "replace")
             title = TITLE.search(page)
             return answer.status, " ".join(title.group(1).split()) if title else ""
     except urllib.error.HTTPError as error:

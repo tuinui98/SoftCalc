@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-24: version 1.10.0 released (deck covers; card pictures; playing cards and flags; drawn cards with pictures; desktop line times). Everything below is committed on `main` and
+Updated 2026-11-26: version 1.11.0 released (statistics; Special Functions; settings typed with `:`; `?word` Help; links out; two operators in a row). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -208,6 +208,26 @@ Input says how long each line took ("Took 0.23 s", "Working... 1.4 s").
 Help 01, 14, 17.
 
 Tests: UI `dotnet test` 489 passed; web 140.
+
+Version 1.11.0 (2026-11-26): statistics and typed commands.
+Functions > Matrix has the ten used most and four submenus; Functions >
+Statistics (stats.py, about 50 functions: mode, percentile, quartile,
+iqr, geomean, harmean, zscore, skew, kurt, wmean; covar, correl, slope,
+intercept, rsq, forecast with xs first; comb, perm; normal, t, chi-square,
+F, binomial, Poisson, geometric and exponential pdf/cdf/inv in the TI
+order, cdf with a range; randnorm, randbinom, randpois) and Functions >
+Special Functions (gamma, erf, erfc), checked against SymPy (2838 cases).
+Typed in Input: `:deg :prec 64 ...` sets settings (commands.py), `?word`
+opens Help at its best heading (HelpFind / helpfind.ts; web Help gets a
+search box), two operators in a row read the second as a sign (`2+-3`,
+`2*-3`; three are an error). Esc or C takes an auto-inserted `answer`
+away. The hint line takes two lines when too narrow for 80 characters
+(HintLine draws it whole); rands() has its own hint. Help: topic 20
+Statistics, More: links to DLMF, NIST, MathWorld, OEIS, mpmath (checked
+before each release by tools/check_help_links.py). tools/check_calc.ps1
+runs every calculation check verbose with a log.
+
+Tests: engine `pytest` 5458 passed; UI `dotnet test` 523 passed; web 152.
 
 ## M8 result (design/m8_plan.md)
 - Currency tags `100 [usd->thb]` with ECB rates. The engine asks for
