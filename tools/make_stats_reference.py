@@ -209,9 +209,9 @@ def cases():
     #==================================================================
     from sympy.stats import ChiSquared, FDistribution, StudentT, cdf as stats_cdf, density
 
-    # The inverses go back through their cdf, checked against SymPy just above them: the engine's
-    # tcdf(tinv(p, df), df) must give p. (Solving SymPy's cdf for x took over an hour: each step
-    # evaluates a hypergeometric form; the printed tables are checked in test_stats.py.)
+    # The inverses also go back through their cdf: the engine's tcdf(tinv(p, df), df) must give p.
+    # Direct values are in BLOCK 10 (sympy.nsolve on the symbolic cdf took over an hour, so
+    # BLOCK 10 uses closed forms and a numeric bisection instead).
     for _ in range(20):
         df = rng.randint(1, 30)
         t = StudentT("T", df)
@@ -251,7 +251,96 @@ def cases():
     add("tinv(1, 5)", error="tinv: p must be between 0 and 1", group="t")
     add("chi2cdf(1, 0)", error="chi2cdf: df must be above 0", group="chi2")
     add("skew([1, 2])", error="skew needs at least 3 numbers", group="shape")
+    inverses(rng, add)
     return out
+
+
+#==================================================================
+#  BLOCK 10 - tinv, chi2inv, finv straight (owner 2026-11-27)
+#==================================================================
+def inverses(rng, add):
+    """Direct reference values for the inverses, by two routes that do not share the
+    engine's (findroot on betainc/gammainc): closed forms worked out by SymPy, and a
+    bisection on SymPy's own cdf (t: hypergeometric; chi-square: erf and exp; F with even
+    dfs: the incomplete beta's finite binomial sum). Added last, so earlier cases keep
+    their numbers."""
+    import mpmath
+    from sympy import acos, cos, log, pi, sign, tan
+    from sympy.stats import ChiSquared, StudentT, cdf as stats_cdf
+
+    x = sympy.Symbol("x", positive=True)
+    u = sympy.Symbol("u", real=True)
+
+    def probability():
+        return Rational(rng.randint(5, 995), 1000)
+
+    def t_closed(p, df):
+        if df == 1:
+            return tan(pi * (p - Rational(1, 2)))
+        if df == 2:
+            return (2 * p - 1) / sqrt(2 * p * (1 - p))
+        alpha = 4 * p * (1 - p)    # df 4
+        q = cos(acos(sqrt(alpha)) / 3) / sqrt(alpha)
+        return sign(p - Rational(1, 2)) * 2 * sqrt(q - 1)
+
+    def f_even_cdf(d1, d2):
+        a, b = d1 // 2, d2 // 2
+        z = d1 * x / (d1 * x + d2)
+        n = a + b - 1
+        return sum(sympy.binomial(n, j) * z ** j * (1 - z) ** (n - j) for j in range(a, n + 1))
+
+    def bisect(function, p, low, high):
+        """x with function(x) = p, function rising, to 60 digits."""
+        with mpmath.workdps(70):
+            p = mpmath.mpf(p.p) / p.q
+            while function(low) > p:
+                low = low * 2 if low < 0 else low / 2
+            while function(high) < p:
+                high *= 2
+            for _ in range(260):
+                middle = (low + high) / 2
+                if function(middle) < p:
+                    low = middle
+                else:
+                    high = middle
+            return sympy.Float(mpmath.nstr((low + high) / 2, 60), 60)
+
+    def checked(value, cdf_expr, symbol, p):
+        """A closed form goes back through SymPy's cdf before it is kept."""
+        back = sympy.N(cdf_expr.subs(symbol, value), 50)
+        assert abs(back - p) < sympy.Float("1e-40"), (value, p, back)
+        return value
+
+    # Closed forms: t with df 1, 2, 4; chi-square with k 1, 2; F (2, d2), (d1, 2), (1, d2) with d2 in 1, 2, 4
+    for _ in range(3):
+        for df in (1, 2, 4):
+            p = probability()
+            value = checked(t_closed(p, df), stats_cdf(StudentT("T", df))(u), u, p)
+            add(f"tinv({text(p)}, {df})", value, group="tinv")
+    for _ in range(4):
+        p = probability()
+        add(f"chi2inv({text(p)}, 1)", checked(2 * erfinv(p) ** 2, stats_cdf(ChiSquared("C", 1))(x), x, p), group="chi2inv")
+        p = probability()
+        add(f"chi2inv({text(p)}, 2)", checked(-2 * log(1 - p), stats_cdf(ChiSquared("C", 2))(x), x, p), group="chi2inv")
+    for _ in range(3):
+        p, d2 = probability(), rng.randint(1, 30)
+        add(f"finv({text(p)}, 2, {d2})", Rational(d2, 2) * ((1 - p) ** Rational(-2, d2) - 1), group="finv")
+        p, d1 = probability(), rng.randint(1, 30)
+        add(f"finv({text(p)}, {d1}, 2)", 1 / (Rational(d1, 2) * (p ** Rational(-2, d1) - 1)), group="finv")
+        p, d2 = probability(), rng.choice((1, 2, 4))
+        add(f"finv({text(p)}, 1, {d2})", t_closed((1 + p) / 2, d2) ** 2, group="finv")
+
+    # Any df: bisection on SymPy's cdf
+    for _ in range(12):
+        p, df = probability(), rng.randint(3, 40)
+        function = sympy.lambdify(u, stats_cdf(StudentT("T", df))(u), "mpmath")
+        add(f"tinv({text(p)}, {df})", bisect(function, p, mpmath.mpf(-1), mpmath.mpf(1)), group="tinv")
+        p, k = probability(), rng.randint(3, 40)
+        function = sympy.lambdify(x, stats_cdf(ChiSquared("C", k))(x), "mpmath")
+        add(f"chi2inv({text(p)}, {k})", bisect(function, p, mpmath.mpf(k) / 4, mpmath.mpf(k)), group="chi2inv")
+        p, d1, d2 = probability(), 2 * rng.randint(2, 10), 2 * rng.randint(2, 15)
+        function = sympy.lambdify(x, f_even_cdf(d1, d2), "mpmath")
+        add(f"finv({text(p)}, {d1}, {d2})", bisect(function, p, mpmath.mpf("0.25"), mpmath.mpf(1)), group="finv")
 
 
 if __name__ == "__main__":
