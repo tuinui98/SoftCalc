@@ -734,10 +734,13 @@ ends 1:1, the drag insert line is visible enough on dark.
       shows, after it is calculated, how the engine read it: faint on the
       right of History, with brackets: `2+(-3)`, `-(-2)`, `2*(-3)`. The
       display line (engine display_line, as `5-(-3)` for a negative
-      variable) adds the brackets around the signed value. To settle when
-      the work starts: also for `2*-3` (always allowed) or only + and -
-      pairs; how it sits with other right-hand texts (values for names,
-      drawn values, mode ties).
+      variable) adds the brackets around the signed value.
+      Owner 2026-11-26: every case of two operators in a row (`2*-3`,
+      `2^-2`, `5 mod -3` too). Order: the signed value gets its brackets
+      first, then names and draws take their values in the same line
+      (`x*-y` -> `2*(-(3))`-style, to settle the exact look); a line whose
+      right-hand text is a result rather than the sum (mode ties `[3, 1]`)
+      shows that result, not the bracketed sum.
 
 ## QR codes (owner 2026-11-26; low priority, owner 2026-11-26)
 - [ ] A QR code from the Input text or a History line (the answer or
