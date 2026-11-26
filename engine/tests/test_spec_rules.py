@@ -59,7 +59,7 @@ def test_values(text, want):
 
 
 @pytest.mark.parametrize("text", [
-    "--2", "1++2", "0x", "0b", "0o9", "2x", "a b", "sin 1",
+    "---2", "1+-+2", "0x", "0b", "0o9", "2x", "a b", "sin 1",
     "(-3)!", "1 mod 0", "i mod 2", "7%2", "1.2.3", "tan(pi/2)",
     "   ", "$1", "ln(0)",
 ])

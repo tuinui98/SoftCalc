@@ -13,6 +13,8 @@ the original's help (owner 2026-11-06).
 import re
 
 from . import commands
+from .errors import CalcError
+from .lexer import tokenize
 
 BUILTINS = {
     "sqrt": "sqrt(x) - square root",
@@ -152,6 +154,8 @@ BUILTINS = {
 # rands() with empty brackets: a hint of its own, so it is not cut off at the end of rands( (owner 2026-11-26)
 RANDS_EMPTY_HINT = "rands() - a new seed from the system: the draws after it are unpredictable again"
 RANDS_EMPTY = re.compile(r"(?<![A-Za-z0-9_])rands\(\s*(\)\s*)?\Z", re.IGNORECASE)
+# Two + or - in a row are allowed, two at most (owner 2026-11-26): the hint line says how they read
+TWO_SIGNS_HINT = "two signs in a row: 2+-3 reads as 2+(-3), 2--3 as 2-(-3)"
 # ?word in Input opens Help at it (owner 2026-11-26; desktop HelpFind.cs, web helpfind.ts)
 HELP_HINT = "?word opens Help at it: ?det  ?fill  ?seeds  ?rpn  (? alone opens Help)"
 FILL_DRAW_HINT = "fill draws again for every cell: fill(2, 3, rand(1, 6)) gives 6 rolls"
@@ -204,7 +208,19 @@ def hint_for(text, caret, lookup_user):
     plain = rands_empty(text, caret) or plain_hint(text, caret, lookup_user)
     if drawing_fill(left_of(text, caret)):
         return FILL_DRAW_HINT if plain is None else FILL_DRAW_HINT + "  |  " + plain
+    if two_signs(left_of(text, caret)):
+        return TWO_SIGNS_HINT if plain is None else TWO_SIGNS_HINT + "  |  " + plain
     return plain
+
+
+def two_signs(left):
+    """Two + or - in a row before the caret (`2+-3`, `2- -3`); not `2e-3`, a date or a tag."""
+    try:
+        tokens = tokenize(left)
+    except CalcError:
+        return False
+    signs = [token.kind == "op" and token.text in ("+", "-") for token in tokens]
+    return any(a and b for a, b in zip(signs, signs[1:]))
 
 
 def rands_empty(text, caret):

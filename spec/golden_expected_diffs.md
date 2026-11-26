@@ -12,6 +12,8 @@ golden row's settings. Everything not listed must match the golden file.
 | A_arith | `3!` | error | 6 | EXT factorial |
 | A_arith | `7 mod 2` | error | 1 | EXT mod |
 | A_arith | `7%2` | error | error | `7%` then `2`: no implicit multiply after a number |
+| A_arith | `--2` | error | 2 | EXT two signs in a row (owner 2026-11-26) |
+| N_errors | `1++2` | error | 3 | EXT two signs in a row (owner 2026-11-26) |
 | B_literals | `0b101` | error | 5 | EXT prefix |
 | B_literals | `1e` | 1 | 2.7182818284590452353602874713527 | DEF `e` needs digits; else constant |
 | B_literals | `0x` | crash | error | FIX |

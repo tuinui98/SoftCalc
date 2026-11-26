@@ -50,7 +50,8 @@ goes back. SoftCalc remembers the choice.
   after what is there; **ʸ√x** types `^(1/` (add the root, then `)`),
   **∛** types `^(1/3)`.
 - **EE** types `E` for powers of ten: `2`, EE, `3` is `2E3` = 2000.
-  **(−)** types a minus sign for a negative number.
+  **(−)** types a minus sign for a negative number, also after an
+  operator: `5`, **−**, **(−)**, `3` is `5--3` = 8.
 - **x** and **y** type the names; with 2nd, **=** and **f(** help define
   a function: `f(x)=x^2`.
 - **[** and **]** (2nd `(` and `)`) and **->** (2nd **ans**) write a

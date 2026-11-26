@@ -24,6 +24,7 @@ from .units import RNW_NAMES
 
 KEYWORD_MOD = "mod"
 CONTINUE_OPS = ("+", "-", "*", "/")
+MAX_SIGNS = 2    # + and - in a row, `2+-3` (owner 2026-11-26)
 EMPTY_CALLS = ("rand", "rands", "randnorm")    # the only calls that may be empty (owner 2026-11-12; randnorm 2026-11-26)
 
 
@@ -165,17 +166,28 @@ class Parser:
         return node
 
     def signed(self):
-        """Optional single sign. A sign may not follow + or -: `--2`, `1++2` [KEEP]."""
+        """Optional sign. Owner 2026-11-26: two + or - in a row are allowed, `2+-3` is
+        2+(-3) and `--2` is 2 (the original made both errors), three are not."""
         if self.at_op("-") or self.at_op("+"):
-            previous = self.tokens[self.pos - 1] if self.pos > 0 else None
-            if previous is not None and previous.kind == "op" and previous.text in "+-":
-                raise CalcError("Two signs in a row")
+            if self.sign_run() > MAX_SIGNS:
+                raise CalcError("Three signs in a row: two at most, as 2+-3")
             op = self.advance().text
-            if self.at_op("-") or self.at_op("+"):
-                raise CalcError("Two signs in a row")
-            inner = self.implicit_product()
+            inner = self.signed() if self.at_op("-") or self.at_op("+") else self.implicit_product()
             return ("neg", inner) if op == "-" else ("pos", inner)
         return self.implicit_product()
+
+    def sign_run(self):
+        """How many + and - stand in a row around the current token."""
+        def is_sign(index):
+            token = self.tokens[index] if 0 <= index < len(self.tokens) else None
+            return token is not None and token.kind == "op" and token.text in ("+", "-")
+        start = self.pos
+        while is_sign(start - 1):
+            start -= 1
+        end = self.pos
+        while is_sign(end):
+            end += 1
+        return end - start
 
     def implicit_product(self):
         node = self.power()
@@ -202,15 +214,9 @@ class Parser:
         base = self.postfix()
         if self.at_op("^"):
             self.advance()
-            # Right operand is a signed implicit product: 2^-1, 2^3x, 2^3^2 [FIX]
-            if self.at_op("-") or self.at_op("+"):
-                op = self.advance().text
-                exponent = self.implicit_product()
-                if op == "-":
-                    exponent = ("neg", exponent)
-            else:
-                exponent = self.implicit_product()
-            return ("bin", "^", base, exponent)
+            # Right operand is a signed implicit product: 2^-1, 2^3x, 2^3^2 [FIX]; two signs at
+            # most, as elsewhere (owner 2026-11-26)
+            return ("bin", "^", base, self.signed())
         return base
 
     def postfix(self):

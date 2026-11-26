@@ -60,6 +60,9 @@ written (see *Display and precision*).
 200*10%               => 20
 -7 mod 3              => 2
 2.5!                  => 3.3233509704478425511840640312646
+2*-3                  => -6
+2+-3                  => -1
+2--3                  => 5
 ```
 
 - `^` groups from the right, and `-2^2` is `-(2^2)`.
@@ -68,6 +71,11 @@ written (see *Display and precision*).
 - `!` of a non-integer uses the gamma function; negative integers are an
   error.
 - `%` divides by 100 and nothing more: `200*10%` is `200*0.1`.
+- A sign may follow any operator: `2*-3` is `2*(-3)`, and two signs in a
+  row read the second as the sign of the next value: `2+-3` is
+  `2+(-3)`, `2--3` is `2-(-3)`. The hint line says so while you type,
+  since a doubled sign is often a slip. Three in a row (`2---3`) are an
+  error.
 
 More: [MathWorld: Mod](https://mathworld.wolfram.com/Mod.html); n! is Γ(n+1),
 [DLMF §5.4](https://dlmf.nist.gov/5.4), and its values are [OEIS A000142](https://oeis.org/A000142).
