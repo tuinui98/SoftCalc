@@ -95,7 +95,11 @@ x=3                   => Variable Added
 ```
 
 - `2x^2` is `2*(x^2)`: the power binds first.
-- `1/2x` is `1/(2x)`: the implicit product binds before `/`.
+- `1/2x` is `1/(2x)`: the implicit product binds before `/`, `^` and
+  `mod`. History shows it faint on the right in brackets, with the values
+  put in: `1/2x` shows `1/(2*3)`, `2^3x` shows `2^(3*3)`. The brackets
+  are left out when the product is the whole line or brackets already
+  hold it: `2x` shows `2*3`, `sin(2x)` shows `sin(2*3)`.
 - Two names never multiply by being side by side: `a b` is an error;
   write `a*b`.
 

@@ -27,7 +27,7 @@ from .functions import CARD_FUNCTION, RANDOM_FUNCTIONS, WORD_FUNCTIONS, Function
 from .random_shapes import SHAPE_FUNCTIONS, below, normal, shaped, uniform
 from . import stats
 from .lexer import join_digit_spaces, tokenize
-from .parser import KEYWORD_MOD, RUN_OPS, parse, parse_line
+from .parser import KEYWORD_MOD, RUN_OPS, implicit_spans, parse, parse_line
 from .rpn import parse_rpn
 from .units import RNW_NAMES, canonical, convert, rnw_text, rnw_value
 from . import crypto
@@ -313,7 +313,8 @@ class Engine:
         if self.settings.rpn:
             return re.sub(r"\S+", lambda m: self.display_rpn_item(m.group(), builtins), text)
         texts = [self.format_value(value) for value in drawn if isinstance(value, TextValue)]
-        source = self.fill_draws(self.fill_word_size(bracket_signs(join_digit_spaces(text))), drawn)
+        signed = bracket_signs(join_digit_spaces(text))
+        source = self.fill_draws(self.fill_word_size(self.bracket_implicit(signed, builtins)), drawn)
         tokens = tokenize(source)
         out = []
         cursor = 0
@@ -334,6 +335,43 @@ class Engine:
         out.append(source[cursor:])
         # a drawn card's name stood in quotes, so it is not read as a variable
         return re.sub(r'"\x01(\d+)"', lambda m: texts[int(m.group(1))], "".join(out))
+
+    def bracket_implicit(self, text, builtins):
+        """`1/2x^2` -> `1/(2x^2)`: an implicit product holding a name gets brackets, so it
+        still reads as one value once the name shows its value (`1/(2*3^2)`, owner
+        2026-11-26). Not when the product is the whole line (a sign before it allowed:
+        `2x`, `-2x`), and not when brackets, a list or call's commas, or a sign's
+        brackets already enclose it (`sin(2x)`, `2*(-3x)`).
+        """
+        tokens, spans = implicit_spans(text, lambda name: self.is_function(name, builtins))
+
+        def is_open(index):
+            return index >= 0 and tokens[index].kind == "op" and tokens[index].text in ("(", "[", ",")
+
+        def is_close(index):
+            token = tokens[index]
+            return token.kind in ("end", "tag") or (token.kind == "op" and token.text in (")", "]", ","))
+
+        def is_sign(index):
+            return index >= 0 and tokens[index].kind == "op" and tokens[index].text in ("+", "-")
+
+        inserts = []
+        for first, after in spans:
+            if not any(t.kind == "name" for t in tokens[first:after]):
+                continue    # `2(3)`: no value goes in
+            before = first - 1
+            if is_sign(before) and (before == 0 or is_open(before - 1)):
+                before -= 1    # `-2x`, `(-3x)`: the sign goes with it
+            whole = before < 0 and all(t.kind in ("end", "tag") for t in tokens[after:])
+            enclosed = is_open(before) and is_close(after)
+            if whole or enclosed:
+                continue
+            last = tokens[after - 1]
+            end = last.end if last.end >= 0 else last.pos + len(last.text) + (1 if last.kind == "ref" else 0)
+            inserts += [(tokens[first].pos, "("), (end, ")")]
+        for position, mark in sorted(inserts, key=lambda pair: pair[0], reverse=True):
+            text = text[:position] + mark + text[position:]
+        return text
 
     def fill_word_size(self, source):
         """`twos(-1)` -> `twos(-1, 32)`: the bits used, so the line still

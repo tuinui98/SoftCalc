@@ -36,6 +36,7 @@ class Parser:
         self.tokens = tokenize(text)
         self.pos = 0
         self.is_function = is_function or (lambda name: True)
+        self.products = []    # (first, after) token indexes of each implicit product, for display
 
     #------------------------------------------------------------------
     #  Token helpers
@@ -195,9 +196,12 @@ class Parser:
         return end - start
 
     def implicit_product(self):
+        start = self.pos
         node = self.power()
         while self.implicit_follows():
             node = ("mul", node, self.power())
+        if node[0] == "mul":
+            self.products.append((start, self.pos))
         return node
 
     def implicit_follows(self):
@@ -302,6 +306,17 @@ def parse(text, is_function=None):
     implicit multiplication (`a(2)` with variable a is `a*2`).
     """
     return Parser(text, is_function).parse_expression()
+
+
+def implicit_spans(text, is_function=None):
+    """Token lists and (first, after) indexes of the implicit products in a line:
+    `1/2x^2` gives the span of `2x^2`. Empty when the line does not parse."""
+    parser = Parser(text, is_function)
+    try:
+        parser.parse_line()
+    except CalcError:
+        return parser.tokens, []
+    return parser.tokens, parser.products
 
 
 def parse_line(text, is_function=None):

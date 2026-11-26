@@ -32,7 +32,7 @@ public sealed class EngineSessionTests : IAsyncLifetime
 	{
 		await Session.EvalAsync("x=5");
 		var reply = await Session.EvalAsync("2x+1");
-		Assert.Equal(("result", "2x+1", "2*5+1", "11"), (reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
+		Assert.Equal(("result", "2x+1", "(2*5)+1", "11"), (reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
 	}
 
 	// card() (owner 2026-11-24): the decks go to the engine before a line when they changed
