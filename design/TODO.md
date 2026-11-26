@@ -729,6 +729,16 @@ ends 1:1, the drag insert line is visible enough on dark.
         fallback, mpmath docs for what the engine computes (branch cuts).
         Check each site's terms again before use.
 
+## Two signs in History (owner 2026-11-26)
+- [ ] A line with two operators in a row (`2+-3`, `--2`, maybe `2*-3`)
+      shows, after it is calculated, how the engine read it: faint on the
+      right of History, with brackets: `2+(-3)`, `-(-2)`, `2*(-3)`. The
+      display line (engine display_line, as `5-(-3)` for a negative
+      variable) adds the brackets around the signed value. To settle when
+      the work starts: also for `2*-3` (always allowed) or only + and -
+      pairs; how it sits with other right-hand texts (values for names,
+      drawn values, mode ties).
+
 ## QR codes (owner 2026-11-26; low priority, owner 2026-11-26)
 - [ ] A QR code from the Input text or a History line (the answer or
       the whole line), desktop and web. Offline; a library rather than
