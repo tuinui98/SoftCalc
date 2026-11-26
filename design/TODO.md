@@ -742,6 +742,31 @@ ends 1:1, the drag insert line is visible enough on dark.
       right-hand text is a result rather than the sum (mode ties `[3, 1]`)
       shows that result, not the bracketed sum.
 
+## Implicit multiply in History (owner 2026-11-26)
+- [ ] The faint line on the right turns a number-name product (`3x`) into
+      `3*3`, which loses its binding: implicit multiply binds tighter than
+      `/`, `^` and `mod`, so the shown line reads as another sum. Bracket
+      the product when its value goes in. Found (x=3):
+      `2/3x` = 0.222 shows `2/3*3` (want `2/(3*3)`);
+      `2^3x` = 512 shows `2^3*3` (want `2^(3*3)`);
+      `1/2x^2` = 1/18 shows `1/2*3^2` (want `1/(2*3^2)`);
+      `2 mod 3x` = 2 shows `2 mod 3*3` (want `2 mod (3*3)`).
+      Already right: `2/3*x`, `2x`, `3x!`, `2x%`, `6/2(x)` (keeps the
+      implicit `2(3)`), `x^2` with x<0 (`(-2)^2`). No brackets when
+      nothing binds against the product (`2x+1` -> `2*3+1`).
+
+## Reference values for inverses (owner 2026-11-26)
+- [ ] `tinv`, `chi2inv`, `finv` are checked only by round trip
+      (`tcdf(tinv(p, df), df)` = p), with one direct `tinv` case. Add
+      10-20 direct reference values each, found with mpmath at 60 digits
+      (findroot on the cdf), not SymPy (its nsolve hung for 57 min);
+      into data/stats_reference.json, so check_calc stats shows them.
+
+## vdot (owner 2026-11-26)
+- [ ] `vdot(a, b)`: conjugates the first list, sum of conj(a_k)*b_k
+      (numpy.vdot), for complex vectors; `dot` stays bilinear. Matrix >
+      Linear algebra, hint, help 19, SymPy reference cases.
+
 ## QR codes (owner 2026-11-26; low priority, owner 2026-11-26)
 - [ ] A QR code from the Input text or a History line (the answer or
       the whole line), desktop and web. Offline; a library rather than
