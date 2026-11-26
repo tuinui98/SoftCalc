@@ -24,7 +24,8 @@ from .units import RNW_NAMES
 
 KEYWORD_MOD = "mod"
 CONTINUE_OPS = ("+", "-", "*", "/")
-MAX_SIGNS = 2    # + and - in a row, `2+-3` (owner 2026-11-26)
+MAX_SIGNS = 2    # operators in a row, the last a sign: `2+-3`, `2*-3` (owner 2026-11-26)
+RUN_OPS = ("+", "-", "*", "/", "^")    # mod counts too (a name token)
 EMPTY_CALLS = ("rand", "rands", "randnorm")    # the only calls that may be empty (owner 2026-11-12; randnorm 2026-11-26)
 
 
@@ -166,26 +167,30 @@ class Parser:
         return node
 
     def signed(self):
-        """Optional sign. Owner 2026-11-26: two + or - in a row are allowed, `2+-3` is
-        2+(-3) and `--2` is 2 (the original made both errors), three are not."""
+        """Optional sign. Owner 2026-11-26: two operators in a row are allowed, the second a
+        sign: `2+-3` is 2+(-3), `--2` is 2, `2*-3` is -6 (the original made the first two
+        errors); three are not: `2*--3`, `2---3`."""
         if self.at_op("-") or self.at_op("+"):
             if self.sign_run() > MAX_SIGNS:
-                raise CalcError("Three signs in a row: two at most, as 2+-3")
+                raise CalcError("Three operators in a row: two at most, as 2+-3 or 2*-3")
             op = self.advance().text
             inner = self.signed() if self.at_op("-") or self.at_op("+") else self.implicit_product()
             return ("neg", inner) if op == "-" else ("pos", inner)
         return self.implicit_product()
 
     def sign_run(self):
-        """How many + and - stand in a row around the current token."""
-        def is_sign(index):
+        """How many operators (+ - * / ^ mod) stand in a row around the current sign:
+        `2*-3` is two, `2*--3` three (owner 2026-11-26: a doubled sign after * makes no sense)."""
+        def is_operator(index):
             token = self.tokens[index] if 0 <= index < len(self.tokens) else None
-            return token is not None and token.kind == "op" and token.text in ("+", "-")
+            if token is None:
+                return False
+            return (token.kind == "op" and token.text in RUN_OPS) or (token.kind == "name" and token.text.lower() == KEYWORD_MOD)
         start = self.pos
-        while is_sign(start - 1):
+        while is_operator(start - 1):
             start -= 1
         end = self.pos
-        while is_sign(end):
+        while is_operator(end):
             end += 1
         return end - start
 

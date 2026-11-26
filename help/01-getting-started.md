@@ -45,7 +45,9 @@ $2+1                  => 43
   results count; definitions and errors are skipped. After a Delete the
   numbers close up.
 - Typing an operator into an empty Input starts with the last result:
-  press `*` and Input reads `answer*`.
+  press `*` and Input reads `answer*`. To start a new line with a sign
+  instead (`-5`), press Esc, or C on the keypad, and the `answer` goes;
+  the hint line says so while it is there.
 
 ## Keys in the Input box
 
@@ -55,6 +57,7 @@ $2+1                  => 43
 | Enter on an empty Input | repeat the last History line (`answer*2` doubles again) |
 | Up / Down | step through lines typed before (the History line is highlighted); Down past the newest brings back your draft |
 | Esc while stepping | take the highlight off and bring back your draft |
+| Esc after an operator started the line with `answer` | take `answer` away, keep the operator |
 
 ## The hint line
 

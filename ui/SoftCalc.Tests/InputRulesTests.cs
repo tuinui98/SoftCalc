@@ -91,4 +91,16 @@ public class InputRulesTests
 	{
 		Assert.Equal((want, caret), InputRules.InsertResult(text, start, length, "42", rpn));
 	}
+
+	[Theory]
+	[InlineData("answer-", "-")]
+	[InlineData("answer-5", "-5")]
+	[InlineData("answer*2", "*2")]
+	[InlineData("answer", null)]
+	[InlineData("answers-1", null)]
+	[InlineData("2-answer", null)]
+	public void EscOrCTakesTheAutoAnswerAway(string text, string? want)
+	{
+		Assert.Equal(want, InputRules.DropAutoAnswer(text));    // owner 2026-11-26
+	}
 }

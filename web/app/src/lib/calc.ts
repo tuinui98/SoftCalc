@@ -263,8 +263,27 @@ export class Calculator
 
 	private changed()
 	{
+		this.autoAnswer = this.autoAnswer && dropAutoAnswer(this.text) !== null;    // gone once edited away
 		this.notify();
 		void this.updateHint();
+	}
+
+	// `answer` put in front by the auto-insert rule and still there (owner 2026-11-26, InputRules.cs)
+	private autoAnswer = false;
+
+	// Esc or the keypad's C: the auto-inserted `answer` goes, the operator stays; false when there is none
+	dropAutoAnswer(): boolean
+	{
+		const rest = this.autoAnswer ? dropAutoAnswer(this.text) : null;
+		if (rest === null)
+		{
+			return false;
+		}
+		this.autoAnswer = false;
+		this.setText(rest, Math.max(0, this.caret - AUTO_ANSWER.length));
+		this.highlight = -1;
+		void this.updateHint(true);
+		return true;
 	}
 
 	private notify()
@@ -298,6 +317,10 @@ export class Calculator
 		{
 			const answer = await this.engine.send("hint", { text: this.text, caret: this.caret });
 			next = answer.ok && typeof answer.text === "string" ? answer.text : "";
+		}
+		if (this.autoAnswer)
+		{
+			next = AUTO_ANSWER_HINT + (next ? "  |  " + next : "");
 		}
 		if (asked === this.hintAsked && next !== this.hint)
 		{
@@ -359,8 +382,10 @@ export class Calculator
 	{
 		if (this.text.length === 0 && this.lastWasResult && piece.length > 0 && OPERATORS.includes(piece[0]))
 		{
-			this.setText("answer" + piece);
+			this.setText(AUTO_ANSWER + piece);
+			this.autoAnswer = true;
 			this.highlight = -1;
+			void this.updateHint(true);    // says Esc or C takes it away
 			return;
 		}
 		this.insert(piece);
@@ -1015,8 +1040,11 @@ export class Calculator
 				this.highlight = -1;
 				break;
 			case "C":
-				this.setText(clearEntry(this.text));
-				this.highlight = -1;
+				if (!this.dropAutoAnswer())
+				{
+					this.setText(clearEntry(this.text));
+					this.highlight = -1;
+				}
 				break;
 			case "M+":
 			case "M-":
@@ -1097,6 +1125,17 @@ export function stepDecimals(current: number | null | undefined, delta: number):
 }
 
 // C: the last number or name (or the last other character) goes, with spaces before it (KeypadRules.ClearEntry)
+export const AUTO_ANSWER = "answer";
+export const AUTO_ANSWER_HINT = "answer was put first: Esc or C takes it away";
+
+// "answer-5" -> "-5": the text without the auto-inserted answer, or null (InputRules.DropAutoAnswer)
+export function dropAutoAnswer(text: string): string | null
+{
+	return text.length > AUTO_ANSWER.length && text.startsWith(AUTO_ANSWER) && "+-*/^".includes(text[AUTO_ANSWER.length])
+		? text.slice(AUTO_ANSWER.length)
+		: null;
+}
+
 export function clearEntry(text: string): string
 {
 	const trimmed = text.trimEnd();

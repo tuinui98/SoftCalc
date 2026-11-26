@@ -4,7 +4,7 @@
 // Pyodide; the real engine has its own tests (test_engine.mjs).
 
 import { describe, expect, it, vi } from "vitest";
-import { Calculator, clearEntry, cryptoTargets, functionItems, memoryAdd, stepDecimals, submenuItems, type EngineLike } from "../src/lib/calc";
+import { AUTO_ANSWER_HINT, Calculator, clearEntry, dropAutoAnswer, cryptoTargets, functionItems, memoryAdd, stepDecimals, submenuItems, type EngineLike } from "../src/lib/calc";
 import type { Answer } from "../src/lib/engine";
 import { MemoryStore } from "../src/lib/store";
 import { pcfBytes } from "../src/lib/transfer";
@@ -137,6 +137,23 @@ describe("keys", () =>
 		const { calc } = await started();
 		await press(calc, "2", "=", "*");
 		expect(calc.text).toBe("answer*");
+	});
+
+	it("C or Esc takes the auto-inserted answer away, and the hint says so (owner 2026-11-26)", async () =>
+	{
+		const { calc } = await started();
+		await press(calc, "2", "=", "-", "5");
+		expect(calc.text).toBe("answer-5");
+		await new Promise(resolve => setTimeout(resolve, 0));
+		expect(calc.hint.startsWith(AUTO_ANSWER_HINT)).toBe(true);
+		await press(calc, "C");
+		expect(calc.text).toBe("-5");
+		await press(calc, "C");
+		expect(calc.text).toBe("-");    // the next C is the usual clear entry
+		await press(calc, "AC", "3", "=", "+");
+		expect(calc.dropAutoAnswer()).toBe(true);    // Esc
+		expect(calc.text).toBe("+");
+		expect(dropAutoAnswer("2-answer")).toBeNull();
 	});
 
 	it("= on an empty Input repeats the last line", async () =>
