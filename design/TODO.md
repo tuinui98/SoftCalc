@@ -730,7 +730,7 @@ ends 1:1, the drag insert line is visible enough on dark.
         Check each site's terms again before use.
 
 ## Two signs in History (owner 2026-11-26)
-- [ ] A line with two operators in a row (`2+-3`, `--2`, maybe `2*-3`)
+- [x] (built 2026-11-26: engine bracket_signs in display_line; help 02) A line with two operators in a row (`2+-3`, `--2`, maybe `2*-3`)
       shows, after it is calculated, how the engine read it: faint on the
       right of History, with brackets: `2+(-3)`, `-(-2)`, `2*(-3)`. The
       display line (engine display_line, as `5-(-3)` for a negative

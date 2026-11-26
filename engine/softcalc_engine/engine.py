@@ -27,7 +27,7 @@ from .functions import CARD_FUNCTION, RANDOM_FUNCTIONS, WORD_FUNCTIONS, Function
 from .random_shapes import SHAPE_FUNCTIONS, below, normal, shaped, uniform
 from . import stats
 from .lexer import join_digit_spaces, tokenize
-from .parser import parse, parse_line
+from .parser import KEYWORD_MOD, RUN_OPS, parse, parse_line
 from .rpn import parse_rpn
 from .units import RNW_NAMES, canonical, convert, rnw_text, rnw_value
 from . import crypto
@@ -66,6 +66,50 @@ class Settings:
     decimals: int = None
     pad_zeros: bool = False
     word_size: int = 32
+
+
+def bracket_signs(text):
+    """`2+-3` -> `2+(-3)`, `--2` -> `-(-2)`, `2*-3x` -> `2*(-3x)`: a sign right after an
+    operator gets brackets around the value it signs, so History shows how two operators
+    in a row were read (owner 2026-11-26). The value runs to the next + - * / mod , ) ]
+    or tag outside brackets, as the parser's signed implicit product does.
+    """
+    try:
+        tokens = tokenize(text)
+    except CalcError:
+        return text
+
+    def operator(token):
+        return (token.kind == "op" and token.text in RUN_OPS) or (token.kind == "name" and token.text.lower() == KEYWORD_MOD)
+
+    inserts = []
+    for index in range(1, len(tokens) - 1):
+        token = tokens[index]
+        if not (token.kind == "op" and token.text in ("+", "-") and operator(tokens[index - 1])):
+            continue
+        depth, stop = 0, len(tokens) - 1
+        for later in range(index + 1, len(tokens)):
+            other = tokens[later]
+            if other.kind == "end" or other.kind == "tag":
+                stop = later
+                break
+            if other.kind == "op" and other.text in ("(", "["):
+                depth += 1
+            elif other.kind == "op" and other.text in (")", "]", ","):
+                if depth == 0:
+                    stop = later
+                    break
+                depth -= 1 if other.text != "," else 0
+            elif depth == 0 and later > index + 1 and (
+                    (other.kind == "op" and other.text in ("+", "-", "*", "/")) or
+                    (other.kind == "name" and other.text.lower() == KEYWORD_MOD)):
+                stop = later
+                break
+        end = len(text[:tokens[stop].pos].rstrip())
+        inserts += [(token.pos, "("), (end, ")")]
+    for position, mark in sorted(inserts, key=lambda pair: pair[0], reverse=True):
+        text = text[:position] + mark + text[position:]
+    return text
 
 
 @dataclass
@@ -269,7 +313,7 @@ class Engine:
         if self.settings.rpn:
             return re.sub(r"\S+", lambda m: self.display_rpn_item(m.group(), builtins), text)
         texts = [self.format_value(value) for value in drawn if isinstance(value, TextValue)]
-        source = self.fill_draws(self.fill_word_size(join_digit_spaces(text)), drawn)
+        source = self.fill_draws(self.fill_word_size(bracket_signs(join_digit_spaces(text))), drawn)
         tokens = tokenize(source)
         out = []
         cursor = 0
