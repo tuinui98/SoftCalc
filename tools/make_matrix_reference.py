@@ -258,6 +258,14 @@ def cases():
         add(f"ln({text})", as_list([sympy.log(x) for x in positive]), flat=True, group="cell ln")
         add(f"sin({text})", as_list([sympy.sin(x) for x in positive]), flat=True, group="cell sin")
         add(f"exp({text})", as_list([sympy.exp(x) for x in positive]), flat=True, group="cell exp")
+
+    for _ in range(40):    # vdot (owner 2026-11-26): the first list conjugated; last, so earlier cases keep their numbers
+        n = rng.randint(1, 8)
+        share = rng.choice((0.5, 0.5, 0.0))
+        a = [make.cell(share) for _ in range(n)]
+        b = [make.cell(share) for _ in range(n)]
+        ta, tb = matrix_text(a, flat=True), matrix_text(b, flat=True)
+        add(f"vdot({ta}, {tb})", sum(sympy.conjugate(x) * y for x, y in zip(a, b)), group="vdot")
     return out
 
 

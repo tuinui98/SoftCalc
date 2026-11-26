@@ -372,6 +372,15 @@ def dot(args):
     return mpmath.fsum(x * y for x, y in zip(a, b))
 
 
+def vdot(args):
+    """Sum of conj(a_k)*b_k, as numpy.vdot: the inner product of complex lists (owner
+    2026-11-26); dot does not conjugate."""
+    a, b = vector(args[0], "vdot"), vector(args[1], "vdot")
+    if len(a) != len(b):
+        raise CalcError(f"vdot needs two lists of the same length ({len(a)} and {len(b)})")
+    return mpmath.fsum(mpmath.conj(x) * y for x, y in zip(a, b))
+
+
 def cross(args):
     a, b = vector(args[0], "cross"), vector(args[1], "cross")
     if len(a) != 3 or len(b) != 3:
@@ -596,7 +605,7 @@ FUNCTIONS = {
     "cols": (lambda a: mpmath.mpf(as_matrix(a[0], "cols").shape[1]), 1, 1),
     "len": (lambda a: mpmath.mpf(len(cells(as_matrix(a[0], "len")))), 1, 1),
     "at": (at, 2, 3), "row": (row, 2, 2), "col": (col, 2, 2),
-    "dot": (dot, 2, 2), "cross": (cross, 2, 2), "transpose": (transpose, 1, 1),
+    "dot": (dot, 2, 2), "vdot": (vdot, 2, 2), "cross": (cross, 2, 2), "transpose": (transpose, 1, 1),
     "det": (det, 1, 1), "inv": (inv, 1, 1), "trace": (trace, 1, 1), "solve": (solve, 2, 2),
     "sum": (total, 1, None), "mean": (mean, 1, None), "prod": (prod, 1, None),
     "min": (lambda a: min(numbers_of(a, "min", real=True)), 1, None),

@@ -125,7 +125,7 @@ def test_catalog_lists_the_new_groups():
 
 def test_matrix_menu_has_ten_on_top_and_five_whole_groups():
     """Functions > Matrix (owner 2026-11-25): the ten used most, then four submenus; the statistics
-    are a group of their own (owner 2026-11-26). Together they hold all 38."""
+    are a group of their own (owner 2026-11-26). Together they hold all 39 (vdot 2026-11-27)."""
     from softcalc_engine.matrix import FUNCTIONS
     catalog = Dispatcher().handle({"op": "catalog"})
     top = catalog["functions"]["Matrix"]
@@ -134,7 +134,7 @@ def test_matrix_menu_has_ten_on_top_and_five_whole_groups():
     assert list(groups) == ["Build", "Size and pick", "Linear algebra", "Arrange"]
     statistics = catalog["subgroups"]["Statistics"]["Descriptive"]
     every = [name for names in groups.values() for name in names] + [n for n in statistics if n in FUNCTIONS]
-    assert len(every) == len(set(every)) == 38
+    assert len(every) == len(set(every)) == 39
     assert set(top) <= set(every)
     assert set(every) == set(FUNCTIONS) | {"randm"}
     assert list(catalog["functions"]).index("Statistics") == list(catalog["functions"]).index("Matrix") + 1    # randm draws, so the Engine keeps it (functions.py)

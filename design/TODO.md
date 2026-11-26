@@ -768,7 +768,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       into data/stats_reference.json, so check_calc stats shows them.
 
 ## vdot (owner 2026-11-26)
-- [ ] `vdot(a, b)`: conjugates the first list, sum of conj(a_k)*b_k
+- [x] (built 2026-11-27: matrix.vdot, 40 SymPy cases) `vdot(a, b)`: conjugates the first list, sum of conj(a_k)*b_k
       (numpy.vdot), for complex vectors; `dot` stays bilinear. Matrix >
       Linear algebra, hint, help 19, SymPy reference cases.
 
