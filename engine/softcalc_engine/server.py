@@ -59,7 +59,7 @@ CATALOG = {
         "Matrix": {
             "Build": ["identity", "zeros", "ones", "diag", "fill", "seq", "reshape", "randm"],
             "Size and pick": ["rows", "cols", "len", "at", "row", "col"],
-            "Linear algebra": ["transpose", "det", "inv", "trace", "rank", "solve", "eig", "dot", "cross", "norm"],
+            "Linear algebra": ["transpose", "det", "inv", "trace", "rank", "solve", "eig", "dot", "vdot", "cross", "norm"],
             "Arrange": ["sort", "reverse", "cumsum"],
         },
         "Statistics": {

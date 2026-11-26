@@ -80,6 +80,7 @@ BUILTINS = {
     "trace": "trace(m) - sum of the diagonal",
     "solve": "solve(A, b) - x with A*x = b: solve([[2, 1], [1, -1]], [5, 1]) = [2, 1]",
     "dot": "dot(a, b) - dot product of two lists: dot([1, 2, 3], [4, 5, 6]) = 32",
+    "vdot": "vdot(a, b) - dot product, the first list conjugated: vdot([1i], [1i]) = 1",
     "cross": "cross(a, b) - cross product of two lists of 3",
     "sum": "sum(...) - total of numbers and lists: sum([1, 2, 3]), sum(card(\"Dice\", 3))",
     "mean": "mean(...) - average of numbers and lists: mean([1, 2, 3, 4]) = 2.5",

@@ -67,6 +67,9 @@ def engine():
     ("solve([[2, 1], [1, -1]], [5, 1])", "[2, 1]"),
     ("solve(A, [[5], [6]])", "[[-4], [4.5]]"),
     ("dot([1, 2, 3], [4, 5, 6])", "32"),
+    ("vdot([1i, 2], [1i, 3])", "7"),
+    ("vdot([1+2i, 3], [1+2i, 3])", "14"),
+    ("dot([1i], [1i])", "-1"),
     ("cross([1, 0, 0], [0, 1, 0])", "[0, 0, 1]"),
     # lists
     ("sum(A)", "10"),
@@ -104,6 +107,7 @@ def test_values(line, text):
     ("at(A, 1)", "at(matrix, row, column) takes a row and a column"),
     ("at([1, 2], 0)", "at needs a whole number from 1"),
     ("dot([1, 2], [1, 2, 3])", "dot needs two lists of the same length (2 and 3)"),
+    ("vdot([1, 2], [1, 2, 3])", "vdot needs two lists of the same length (2 and 3)"),
     ("cross([1, 2], [3, 4])", "cross needs two lists of 3 numbers"),
     ("sort(A)", "sort takes a list"),
     ("det(5)", "det needs a list or a matrix"),

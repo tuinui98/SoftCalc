@@ -142,6 +142,7 @@ rank([[1, 2], [2, 4]])        => 1
 solve(A, [9, 8])              => [1.9, 1.4]
 eig(A)                        => [5, 2]
 dot([1, 2, 3], [4, 5, 6])     => 32
+vdot([1i, 2], [1i, 3])        => 7
 cross([1, 0, 0], [0, 1, 0])   => [0, 0, 1]
 norm([3, 4])                  => 5
 ```
@@ -150,6 +151,10 @@ norm([3, 4])                  => 5
   list) or a matrix of columns.
 - `eig` gives the eigenvalues, largest real part first; they may be
   complex (`eig([[0, -1], [1, 0]])` is `[1i, -1i]`).
+- `dot` multiplies the items as they are, complex ones too
+  (`dot([1i], [1i])` is -1). `vdot` takes the conjugate of the first
+  list's items first, as numpy's vdot: for complex lists that is the
+  inner product, and `vdot(a, a)` is the length squared.
 - `norm` of a list is its length; of a matrix, the same over every cell.
 - `det`, `inv`, `solve` and `^` take at most 50 x 50, `eig` 20 x 20.
 
@@ -158,6 +163,7 @@ More (MathWorld): [Transpose](https://mathworld.wolfram.com/Transpose.html),
 [Matrix Trace](https://mathworld.wolfram.com/MatrixTrace.html), [Matrix Rank](https://mathworld.wolfram.com/MatrixRank.html),
 [Linear System of Equations](https://mathworld.wolfram.com/LinearSystemofEquations.html),
 [Eigenvalue](https://mathworld.wolfram.com/Eigenvalue.html), [Dot Product](https://mathworld.wolfram.com/DotProduct.html),
+[Inner Product](https://mathworld.wolfram.com/InnerProduct.html) (vdot),
 [Cross Product](https://mathworld.wolfram.com/CrossProduct.html), [Vector Norm](https://mathworld.wolfram.com/VectorNorm.html),
 [Frobenius Norm](https://mathworld.wolfram.com/FrobeniusNorm.html) (norm of a matrix).
 
@@ -252,6 +258,6 @@ Statistics.
 |---|---|
 | Build | `identity` `zeros` `ones` `diag` `fill` `seq` `reshape` `randm` |
 | Size and pick | `rows` `cols` `len` `at` `row` `col` |
-| Linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `cross` `norm` |
+| Linear algebra | `transpose` `det` `inv` `trace` `rank` `solve` `eig` `dot` `vdot` `cross` `norm` |
 | Arrange | `sort` `reverse` `cumsum` |
 | Statistics (its own menu, see *Statistics*) | `sum` `prod` `min` `max` `count` `mean` `median` `stdev` `stdevp` `variance` `variancep` and more |
