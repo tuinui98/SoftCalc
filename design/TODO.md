@@ -865,7 +865,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       the TextBox keeps SelectionStart/Length, check it still does.)
 
 ## Themed launcher icon (owner 2026-11-27, APK)
-- [ ] Android 13+ themed icon: add a `<monochrome>` layer to
+- [-] (dropped 2026-11-28: built on branch themed-icon, not merged; the
+      owner's iQOO and Lenovo launchers showed no change, owner: not
+      needed) Android 13+ themed icon: add a `<monochrome>` layer to
       `web/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
       (and `ic_launcher_round.xml` if added), a one-colour silhouette of
       the icon, so a launcher with "Themed icons" on tints it with the
