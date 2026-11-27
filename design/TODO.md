@@ -894,8 +894,22 @@ duration (`0:01:23.4`, already a value: `answer/12`, `answer*3` work).
   survives closing SoftCalc.
 - Help 15 (keys), 08 (dates and time) or a new topic; hints for the
   commands.
+- Split (proposed 2026-11-27): the engine reads the commands, the UI
+  keeps the clock.
+  - Engine (`commands.py`, with the other `:` commands): parses `:sw`,
+    `:lap`, `:timer 5m` and answers with an action for the UI, as it
+    answers `settings` today (`{"timer": "start", "seconds": 300}`); one
+    parser for desktop and web.
+  - UI: the clock (`Stopwatch` / `performance.now`, not the wall
+    clock), the readout, sound, flash, vibration, notification; the
+    start time (wall clock) in the settings to survive a restart.
+  - Stop and Lap: the UI sends the value (`0:01:23.4`) to the engine as
+    a line, so History and `answer` work as for a typed line.
+  - Why not the engine's clock: the protocol only answers, it cannot
+    tick a readout; a long calculation (`Working...`) would freeze it;
+    an engine restart would lose it; sound and notifications are UI.
 Open: the F9 keys, the names (`:sw` or `:watch`), whether the APK
-notification is worth the plugin.
+notification is worth the plugin, and the details of the split.
 
 ## Widgets (owner 2026-11-27; to think about later, nothing chosen)
 A widget cannot run the engine (Pyodide in a WebView; desktop engine in
