@@ -852,6 +852,19 @@ ends 1:1, the drag insert line is visible enough on dark.
       target only, kept light so it does not crowd the pad. Not shown
       when sci and num pads stand side by side (that one has `=`).
 
+## Themed launcher icon (owner 2026-11-27, APK)
+- [ ] Android 13+ themed icon: add a `<monochrome>` layer to
+      `web/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
+      (and `ic_launcher_round.xml` if added), a one-colour silhouette of
+      the icon, so a launcher with "Themed icons" on tints it with the
+      wallpaper and dark mode. Older Android and launchers without it
+      keep today's icon. Draw the silhouette first (from the SVG
+      `tools/IconMaker` uses, as a vector drawable) and test it on the
+      phone; the owner decides after seeing it. Not pursued: a
+      `mipmap-night` set (launchers cache icons) and switching icons by
+      the app's own Theme setting (`activity-alias`: kills the app,
+      shortcuts may go).
+
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
       large-screen / foldable quality from April 2027 and wants foldable
