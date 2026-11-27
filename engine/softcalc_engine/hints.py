@@ -13,6 +13,7 @@ the original's help (owner 2026-11-06).
 import re
 
 from . import commands
+from . import timers
 from .errors import CalcError
 from .lexer import tokenize
 
@@ -202,6 +203,8 @@ def hint_for(text, caret, lookup_user):
     Inside an open fill( holding rand/card, the hint first says each cell
     is drawn again (owner 2026-11-24).
     """
+    if commands.is_command(text) and timers.is_timer(left_of(text, caret)):
+        return timers.hint(left_of(text, caret))    # stopwatch, timer, alarm (owner 2026-11-28)
     if commands.is_command(text):
         return commands.hint(left_of(text, caret))    # a settings line (owner 2026-11-26)
     if text.lstrip().startswith("?"):

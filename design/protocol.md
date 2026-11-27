@@ -47,9 +47,25 @@ by the engine. Only `plot` and the `schedule` graph series send floats.
   lists them as the line that sets them again (`:prec 32 :rad :dec
   :rpn off :digits all :pad off :word 32`) and sends no `settings`. A wrong one is an error and changes
   nothing. No `$n`, no answer.
+- `:sw`, `:lap`, `:timer`, `:alarm` lines (owner 2026-11-28,
+  `timers.py`) answer `kind: "definition"`, a message, and `timer`, the
+  action for the UI, which keeps the clock:
+  `{"kind": "stopwatch", "do": "toggle"|"start"|"stop"|"pause"|"go"|"reset"|"lap"}`,
+  `{"kind": "timer"|"alarm", "do": "start", "seconds": 900.0,
+  "at": "28.11.2026 05:07:29", "label": "15m", "name": "tea"|null}`,
+  `{"kind": ..., "do": "show"|"off", "name": ...}`. The length or time
+  may be a calculation (`:timer 0:05*3`, `:alarm now+0:15`); `seconds` is
+  from the engine's now, so the UI adds it to its own clock. No `$n`, no
+  answer; the stopwatch's message is a stand-in the UI replaces.
 - `display_input` is the History expression line (extensions.md E10);
   `input` is what to put back in the Input box when the line is
   clicked; `text` is the result line (`ERROR:...` for errors).
+
+### `record`
+`{"label": "Lap 2", "value": "0:00:41.2", "note": "total 0:01:23.4"}` ->
+the `eval` reply with `input` = label, `display_input` = note. The
+stopwatch's measure (owner 2026-11-28): `value` is evaluated and kept as
+`answer` and `$n`, as a typed line is.
 
 ### `clear_history`
 `{}` -> `{}`. Forgets `$n` results; `answer` survives.
