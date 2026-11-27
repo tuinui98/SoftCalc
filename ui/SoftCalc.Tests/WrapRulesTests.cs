@@ -53,6 +53,22 @@ public class WrapRulesTests
 		Assert.Null(WrapRules.Wrap("2+3", 0, 3, id));
 	}
 
+	[Theory]
+	[InlineData("256", 2, 3, "ins:^2", "25(6)^2")]
+	[InlineData("256", 1, 2, "ins:^2", "2(5)^2*6")]
+	[InlineData("256", 2, 3, "fn:sin", "25sin(6)")]
+	[InlineData("256", 2, 3, "ins:10^", "25(10^6)")]
+	[InlineData("256", 2, 3, "ins:-", "25(-6)")]
+	[InlineData("256", 2, 3, "ins:(", "25(6)")]
+	[InlineData("x6", 1, 2, "ins:^2", "x*(6)^2")]
+	[InlineData("x6", 1, 2, "fn:sqrt", "x*sqrt(6)")]
+	[InlineData("256", 0, 1, "ins:!", "(2)!*56")]
+	[InlineData("2+56", 2, 4, "ins:^2", "2+56^2")]
+	public void PartOfANumberOrName(string text, int start, int end, string id, string want)    // owner 2026-11-28
+	{
+		Assert.Equal(want, WrapRules.Wrap(text, start, end - start, id)?.Text);
+	}
+
 	[Fact]
 	public void NoSelectionNoWrap()
 	{

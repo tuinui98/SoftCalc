@@ -4,7 +4,8 @@
 // makes it the argument (sin(2+3)), a power or postfix key brackets it first
 // ((2+3)^2, (2+3)!), 10^x and (-) take it as their operand (10^(2+3), -(2+3)).
 // A lone number or name, or a selection already in brackets, gets no second
-// pair. Without a selection the keys type as before. web/app/src/lib/wrap.ts
+// pair; part of a number or name always does, apart from its neighbours
+// (6 of 256 with x² gives 25(6)^2). Without a selection the keys type as before. web/app/src/lib/wrap.ts
 // is the same rule.
 
 using System.Text.RegularExpressions;
@@ -27,15 +28,47 @@ internal static partial class WrapRules
 			return null;
 		}
 		string selected = text.Substring(start, length);
-		string? put = Wrapped(selected, id);
+		string left = LeftKind(text, start);
+		bool right = start + length < text.Length && IsWord(text[start + length]);
+		string? put = Wrapped(selected, id, left != "" || right);
 		if (put == null)
 		{
 			return null;
 		}
+		// Part of a number or name (owner 2026-11-28: 6 of 256 with x² is 25(6)^2): keep it apart from its neighbours
+		if (left == "name")
+		{
+			put = "*" + put;                 // x6 -> x*(6)^2, not a longer name or a call
+		}
+		else if (left == "number" && !LeadRegex().IsMatch(put))
+		{
+			put = "(" + put + ")";           // 25 then 10^6 or -6 -> 25(10^6), 25(-6)
+		}
+		if (right)
+		{
+			put += "*";                      // 5 of 256 -> 2(5)^2*6: nothing multiplies a number after )
+		}
 		return (text[..start] + put + text[(start + length)..], start + put.Length);
 	}
 
-	private static string? Wrapped(string selected, string id)
+	private static bool IsWord(char c) => char.IsAsciiLetterOrDigit(c) || c == '_' || c == '.';
+
+	// What the selection is glued to on its left: part of a name, of a number, or nothing
+	private static string LeftKind(string text, int start)
+	{
+		int i = start;
+		while (i > 0 && IsWord(text[i - 1]))
+		{
+			i--;
+		}
+		if (i == start)
+		{
+			return "";
+		}
+		return char.IsAsciiLetter(text[i]) || text[i] == '_' ? "name" : "number";
+	}
+
+	private static string? Wrapped(string selected, string id, bool glued)
 	{
 		if (id.StartsWith("fn:", StringComparison.Ordinal))
 		{
@@ -62,17 +95,17 @@ internal static partial class WrapRules
 		}
 		if (After.Contains(piece))
 		{
-			return Operand(selected) + piece;
+			return Operand(selected, glued) + piece;
 		}
 		if (Before.Contains(piece))
 		{
-			return piece + Operand(selected);
+			return piece + Operand(selected, false);    // 10^ or - stands before it already
 		}
 		return null;
 	}
 
-	// The selection as one operand: brackets unless it already is one
-	private static string Operand(string selected) => Simple(selected) ? selected : "(" + selected + ")";
+	// The selection as one operand: brackets unless it already is one and stands alone
+	private static string Operand(string selected, bool glued) => Simple(selected) && !glued ? selected : "(" + selected + ")";
 
 	/// <summary>A number, a name, a call, or a whole bracketed or listed part: needs no brackets.</summary>
 	public static bool Simple(string selected)
@@ -114,6 +147,9 @@ internal static partial class WrapRules
 
 	[GeneratedRegex(@"^[A-Za-z_][A-Za-z0-9_]*$")]
 	private static partial Regex NameRegex();
+
+	[GeneratedRegex(@"^[A-Za-z(\[]")]
+	private static partial Regex LeadRegex();
 
 	[GeneratedRegex(@"^([A-Za-z_][A-Za-z0-9_]*|\d+(\.\d*)?|\.\d+|0x[0-9A-Fa-f]+|0b[01]+|0o[0-7]+)$")]
 	private static partial Regex AtomRegex();

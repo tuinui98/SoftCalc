@@ -68,7 +68,9 @@ goes back. SoftCalc remembers the choice.
   function `sin(2+3)` (from **func** too), **x²**, **xʸ**, **1/x**,
   **n!**, **∛** and **ʸ√x** `(2+3)^2`..., **10ˣ** `10^(2+3)` and
   **(−)** `-(2+3)`. A lone number or name, or a part already in
-  brackets, gets no second pair: `x` with **x²** is `x^2`. Keys typed
+  brackets, gets no second pair: `x` with **x²** is `x^2`. Part of a
+  number keeps apart from the rest: `6` of `256` with **x²** gives
+  `25(6)^2`, which is 25·6². Keys typed
   on the keyboard type as always; so does every key with nothing
   selected.
 

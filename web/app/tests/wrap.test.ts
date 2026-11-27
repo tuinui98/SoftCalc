@@ -32,3 +32,16 @@ describe("keys around the selection", () =>
 		expect(wrapSelection("2+3", 1, 1, "ins:(")).toBeNull();
 	});
 });
+
+describe("part of a number or name (owner 2026-11-28)", () =>
+{
+	it.each([
+		["256", 2, 3, "ins:^2", "25(6)^2"], ["256", 1, 2, "ins:^2", "2(5)^2*6"], ["256", 2, 3, "fn:sin", "25sin(6)"],
+		["256", 2, 3, "ins:10^", "25(10^6)"], ["256", 2, 3, "ins:-", "25(-6)"], ["256", 2, 3, "ins:(", "25(6)"],
+		["x6", 1, 2, "ins:^2", "x*(6)^2"], ["x6", 1, 2, "fn:sqrt", "x*sqrt(6)"], ["256", 0, 1, "ins:!", "(2)!*56"],
+		["2+56", 2, 4, "ins:^2", "2+56^2"],
+	])("%s, %i to %i, %s gives %s", (text, start, end, id, want) =>
+	{
+		expect(wrapSelection(text as string, start as number, end as number, id as string)?.text).toBe(want);
+	});
+});
