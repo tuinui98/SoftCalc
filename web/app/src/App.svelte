@@ -338,7 +338,7 @@
 			view = snap();
 			await tick();
 			input.value = calc.text;
-			input.setSelectionRange(calc.caret, calc.caret);
+			input.setSelectionRange(calc.caret, calc.selectedTo);    // 2nd keeps a selection (owner 2026-11-28)
 			if (view.entries.length !== before)
 			{
 				historyBox.scrollTo({ top: historyBox.scrollHeight });
@@ -402,7 +402,10 @@
 		}
 		finally
 		{
-			calc.clearSelection();
+			if (key.id !== "2nd")
+			{
+				calc.clearSelection();    // 2nd keeps it for the key after (owner 2026-11-28)
+			}
 		}
 		focusInput();
 	}

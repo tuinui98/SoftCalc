@@ -345,6 +345,7 @@ export class Calculator
 	{
 		this.text = text;
 		this.caret = caret;
+		this.selectionEnd = -1;
 		this.highlight = -1;
 		this.changed();
 	}
@@ -373,6 +374,12 @@ export class Calculator
 		this.selectionEnd = -1;
 	}
 
+	// Where Input's selection ends after a change: past the caret only while a press keeps it (2nd)
+	get selectedTo(): number
+	{
+		return this.selectionEnd > this.caret ? this.selectionEnd : this.caret;
+	}
+
 	// The key went around the selection; false when there was none or the key does not wrap
 	private wrapSelected(id: string): boolean
 	{
@@ -391,6 +398,7 @@ export class Calculator
 	moveCaret(caret: number)
 	{
 		this.caret = Math.max(0, Math.min(caret, this.text.length));
+		this.selectionEnd = -1;
 		void this.updateHint();
 	}
 
