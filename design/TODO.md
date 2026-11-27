@@ -865,6 +865,28 @@ ends 1:1, the drag insert line is visible enough on dark.
       the app's own Theme setting (`activity-alias`: kills the app,
       shortcuts may go).
 
+## Widgets (owner 2026-11-27; to think about later, nothing chosen)
+A widget cannot run the engine (Pyodide in a WebView; desktop engine in
+its own process), so it can show a value or open the app, not calculate.
+- Android, ways found:
+  - A. App shortcuts (long press on the icon: Input, Graph, Random,
+    Convert): one XML file and routes in the app. Cheap. Proposed first.
+  - B. Widget showing the last `answer` or a pinned value (variable,
+    rate); a tap opens Input. The app writes it to SharedPreferences
+    (`@capacitor/preferences`), a Kotlin widget reads it. Medium.
+  - C. A keypad widget that calculates: a Kotlin parser in doubles
+    (~16 digits, answers unlike the engine), each key a PendingIntent.
+    Expensive; not proposed.
+- Windows, ways found:
+  - Windows 11 Widgets board: needs a signed MSIX, a COM widget
+    provider and Adaptive Cards; none on Windows 10. Expensive; not
+    proposed.
+  - Mini mode (a small always-on-top window, Input and answer only) and
+    a global hotkey that brings SoftCalc up at Input: cheap, proposed.
+  - Jump List (taskbar right click: Graph, Random, Convert): cheap.
+  - PowerToys Command Palette extension (type a sum, the engine
+    answers): medium, needs PowerToys installed.
+
 ## Before the APK goes on Google Play (owner 2026-11-22)
 - [ ] Foldables: Play blocks new apps and updates that miss its baseline
       large-screen / foldable quality from April 2027 and wants foldable
