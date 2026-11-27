@@ -24,6 +24,13 @@ Input.
 - **C** takes the last number, **AC** clears Input.
 - **2nd** gives the yellow meaning of the next key (`asin` on `sin`).
 - A function key types its name and a bracket at the caret: `sin(`.
+- With part of Input selected, **(**, **)**, **[**, **]**, a function
+  (from **func** too), **x²**, **xʸ**, **1/x**, **n!**, **∛**, **ʸ√x**,
+  **10ˣ** and **(−)** go around it: `(2+3)`, `sin(2+3)`, `(2+3)^2`,
+  `10^(2+3)`, `-(2+3)`. A lone number or name gets no brackets: `x^2`;
+  part of a number does: `6` of `256` with **x²** gives `25(6)^2`.
+- On the Sci keys alone, **=** at the top right (over **log**)
+  calculates the line without swiping back.
 - **M+**, **M−**, **MR** and **MC** work with `memory`.
 - **⌨** opens the phone's own keyboard as well, for letters and names.
 

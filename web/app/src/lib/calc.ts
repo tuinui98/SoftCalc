@@ -25,6 +25,7 @@ import { FIRST_EQUATIONS, functionHead, same, stateFrom, type GraphState } from 
 import { HISTORY_LIMIT, type Store } from "./store";
 import { helpQuery, isHelpLine } from "./helpfind";
 import { isZip } from "./zip";
+import { wrapSelection } from "./wrap";
 import { addGraph, fileText, mergeHistory, newId, parseHistory, splitGraph, withIds } from "./transfer";
 
 export interface EngineLike
@@ -114,6 +115,7 @@ export class Calculator
 	readonly started: Promise<void>;    // resolves once the saved state is back (or failed)
 	text = "";
 	caret = 0;
+	private selectionEnd = -1;    // a keypad press with text selected: [caret, selectionEnd) (owner 2026-11-27)
 	entries: Entry[] = [];
 	highlight = -1;            // History index shown by the walk, -1 when not walking
 	settings: Settings = { precision: 64, angle: "deg", base: "dec" };
@@ -343,6 +345,7 @@ export class Calculator
 	{
 		this.text = text;
 		this.caret = caret;
+		this.selectionEnd = -1;
 		this.highlight = -1;
 		this.changed();
 	}
@@ -358,10 +361,44 @@ export class Calculator
 		}
 	}
 
+	// The selection in Input as a keypad key is pressed: a bracket, function or power key goes
+	// around it (wrap.ts); clearSelection() after the press and its menu
+	select(start: number, end: number)
+	{
+		this.caret = Math.max(0, Math.min(start, this.text.length));
+		this.selectionEnd = end > start && !this.settings.rpn ? Math.min(end, this.text.length) : -1;
+	}
+
+	clearSelection()
+	{
+		this.selectionEnd = -1;
+	}
+
+	// Where Input's selection ends after a change: past the caret only while a press keeps it (2nd)
+	get selectedTo(): number
+	{
+		return this.selectionEnd > this.caret ? this.selectionEnd : this.caret;
+	}
+
+	// The key went around the selection; false when there was none or the key does not wrap
+	private wrapSelected(id: string): boolean
+	{
+		const done = this.selectionEnd > this.caret ? wrapSelection(this.text, this.caret, this.selectionEnd, id) : null;
+		if (done === null)
+		{
+			return false;
+		}
+		this.setText(done.text, done.caret);
+		this.selectionEnd = -1;
+		this.highlight = -1;
+		return true;
+	}
+
 	// A tap or an arrow key in Input moved the caret: the hint follows it
 	moveCaret(caret: number)
 	{
 		this.caret = Math.max(0, Math.min(caret, this.text.length));
+		this.selectionEnd = -1;
 		void this.updateHint();
 	}
 
@@ -405,6 +442,11 @@ export class Calculator
 	// whole line was awkward on a phone); an operator goes through the engine's menu rule
 	async insertFunction(name: string)
 	{
+		if (this.wrapSelected(`fn:${name}`))
+		{
+			this.changed();
+			return;
+		}
 		if (name === "mod" || (name.length === 1 && OPERATORS.includes(name)))
 		{
 			await this.menuInsert({ kind: "operator", symbol: name === "mod" ? " mod " : name });
@@ -1076,6 +1118,10 @@ export class Calculator
 				menu = id;
 				break;
 			default:
+				if (this.wrapSelected(id))
+				{
+					break;
+				}
 				if (id.startsWith("fn:"))
 				{
 					await this.insertFunction(id.slice(3));

@@ -205,6 +205,31 @@ describe("keys", () =>
 		expect([calc.text, calc.caret]).toEqual(["2*sin(cos(+1", 10]);
 	});
 
+	it("a key goes around the selection; without one it types (owner 2026-11-27)", async () =>
+	{
+		const { calc } = await started();
+		calc.typed("1*2+3", 5);
+		calc.select(2, 5);
+		await calc.press("ins:(");
+		expect([calc.text, calc.caret]).toEqual(["1*(2+3)", 7]);
+		calc.select(2, 7);
+		await calc.press("fn:sqrt");
+		expect([calc.text, calc.caret]).toEqual(["1*sqrt(2+3)", 11]);
+		calc.select(11, 11);
+		await calc.press("ins:(");
+		expect(calc.text).toBe("1*sqrt(2+3)(");
+		calc.select(2, 11);
+		await calc.press("2nd");    // 2nd keeps the selection for the next key (owner 2026-11-28)
+		expect([calc.caret, calc.selectedTo]).toEqual([2, 11]);
+		await calc.press(calc.resolve({ id: "ins:(", second: "ins:[" }));
+		expect([calc.text, calc.selectedTo]).toEqual(["1*[sqrt(2+3)](", 13]);
+		calc.typed("x+1", 3);
+		calc.select(0, 3);
+		calc.clearSelection();    // after the press: a later function pick does not wrap
+		await calc.insertFunction("gamma");
+		expect(calc.text).toBe("gamma(x+1");    // at the caret, as before
+	});
+
 	it("2nd ( ) and ans type [ ] and -> for a conversion", async () =>
 	{
 		const { calc } = await started();
