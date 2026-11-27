@@ -52,6 +52,7 @@ internal sealed partial class MainForm : Form
 	private readonly InputRecall _recall;
 	private readonly MenuStrip _menu = new();
 	private readonly ToolStripMenuItem _functionsMenu = new("F&unctions");
+	private bool _functionsFromKeypad;    // Functions opened by the keypad's func key: a pick wraps the selection
 	private readonly ToolStripMenuItem _conversionsMenu = new("&Conversions");
 	private readonly ToolStripMenuItem _userFunctionsMenu = new("&User Functions");
 	private readonly ToolStripMenuItem _showSamplesItem = new("&Show Samples") { Checked = true };
@@ -1113,7 +1114,10 @@ internal sealed partial class MainForm : Form
 		}
 		else
 		{
-			_input.SelectedText = name + "(";    // at the caret (owner 2026-11-19: not around the line)
+			if (!(_functionsFromKeypad && WrapSelection("fn:" + name)))    // the keypad's func key: around a selection
+			{
+				_input.SelectedText = name + "(";    // at the caret (owner 2026-11-19: not around the line)
+			}
 			_input.Focus();
 		}
 	}
@@ -1372,6 +1376,10 @@ internal sealed partial class MainForm : Form
 				ShowMenuAt(_conversionsMenu, where);
 				break;
 			default:
+				if (WrapSelection(id))
+				{
+					break;
+				}
 				if (id.StartsWith("fn:", StringComparison.Ordinal))
 				{
 					await InsertFunctionOrOperatorAsync(id[3..]);
@@ -1386,6 +1394,24 @@ internal sealed partial class MainForm : Form
 				_input.SelectedText = text;
 				break;
 		}
+	}
+
+	// A keypad key with text selected in Input goes around it (owner 2026-11-27: keypad clicks only, not typed keys)
+	private bool WrapSelection(string id)
+	{
+		if ((bool?)_session.Settings["rpn"] == true)
+		{
+			return false;
+		}
+		var wrapped = WrapRules.Wrap(_input.Text, _input.SelectionStart, _input.SelectionLength, id);
+		if (wrapped == null)
+		{
+			return false;
+		}
+		_input.Text = wrapped.Value.Text;
+		_input.SelectionStart = wrapped.Value.Caret;
+		_input.SelectionLength = 0;
+		return true;
 	}
 
 	private void SetInput(string text)
@@ -1417,10 +1443,12 @@ internal sealed partial class MainForm : Form
 	private void ShowMenuAt(ToolStripMenuItem menu, Rectangle where)
 	{
 		var popup = new ContextMenuStrip();
+		_functionsFromKeypad = menu == _functionsMenu;
 		var items = menu.DropDownItems.Cast<ToolStripItem>().ToList();
 		popup.Items.AddRange(items.ToArray());    // moved for now: an item has one owner
 		popup.Closed += (_, _) => BeginInvoke(() =>
 		{
+			_functionsFromKeypad = false;
 			menu.DropDownItems.AddRange(popup.Items.Cast<ToolStripItem>().ToArray());
 			popup.Dispose();
 		});

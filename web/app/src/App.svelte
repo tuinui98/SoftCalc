@@ -393,9 +393,17 @@
 	async function press(key: Key)
 	{
 		focusInput();
-		const menu = await calc.press(calc.resolve(key));
-		if (menu === "func") await openFunctions();
-		else if (menu === "units") await openConversions();
+		calc.select(input.selectionStart ?? calc.caret, input.selectionEnd ?? calc.caret);    // a key may go around it (wrap.ts)
+		try
+		{
+			const menu = await calc.press(calc.resolve(key));
+			if (menu === "func") await openFunctions();
+			else if (menu === "units") await openConversions();
+		}
+		finally
+		{
+			calc.clearSelection();
+		}
 		focusInput();
 	}
 
@@ -656,6 +664,9 @@
 {#snippet sciPage()}
 	<button class="sci-tab" onpointerdown={event => event.preventDefault()}
 		onclick={() => { focusInput(); flipTo(false); }}>◂ Basic</button>
+	<!-- Enter without swiping back (owner 2026-11-27): over log, as wide as its column; the side-by-side pads have = -->
+	<button class="sci-enter" aria-label="Calculate" onpointerdown={event => event.preventDefault()}
+		onclick={() => { focusInput(); void calc.press("="); }}>=</button>
 	<Keypad keys={SCIENTIFIC} sci second={view.second} base={view.settings.base}
 		angle={view.settings.angle} onpress={press} />
 {/snippet}

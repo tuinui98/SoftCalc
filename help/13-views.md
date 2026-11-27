@@ -63,6 +63,14 @@ goes back. SoftCalc remembers the choice.
 - **deg ▸** / **rad ▸** shows the angle unit and switches it.
 - **func** opens the Functions menu, **units** the Conversions menu,
   under the key.
+- With part of Input selected, a click on a key puts it around the
+  selection: **(** or **)** gives `(2+3)`, **[** or **]** `[2+3]`, a
+  function `sin(2+3)` (from **func** too), **x²**, **xʸ**, **1/x**,
+  **n!**, **∛** and **ʸ√x** `(2+3)^2`..., **10ˣ** `10^(2+3)` and
+  **(−)** `-(2+3)`. A lone number or name, or a part already in
+  brackets, gets no second pair: `x` with **x²** is `x^2`. Keys typed
+  on the keyboard type as always; so does every key with nothing
+  selected.
 
 ## Look
 

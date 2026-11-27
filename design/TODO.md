@@ -845,7 +845,7 @@ ends 1:1, the drag insert line is visible enough on dark.
       hints, view, keypad) maybe later.
 
 ## Enter on the sci pad (owner 2026-11-27, web and APK)
-- [ ] When the sci pad shows alone (the narrow layout, swiped to sci), a
+- [x] (built 2026-11-28: App.svelte .sci-enter, as wide as the log column; help web 01) When the sci pad shows alone (the narrow layout, swiped to sci), a
       small `=` spot in the top right corner, above the `log` key and
       across from the `< Num` side, runs the line (Enter), so a line
       ends without swiping back to the num pad. Not a full key: a tap
@@ -853,7 +853,9 @@ ends 1:1, the drag insert line is visible enough on dark.
       when sci and num pads stand side by side (that one has `=`).
 
 ## Brackets around a selection (owner 2026-11-27, sci pad / num pad)
-- [ ] On the sci pad and num pad, `(` `)` `[` `]` with a selection in
+- [x] (built 2026-11-28: WrapRules.cs / wrap.ts; owner 2026-11-28: function keys,
+      func menu, powers, 10^x and (-) too; no second pair on a lone number,
+      name or bracketed part; caret after; help 13, web 01) On the sci pad and num pad, `(` `)` `[` `]` with a selection in
       Input put the pair around it: select `2+3`, tap `(` (or `)`):
       `(2+3)`; `[` or `]`: `[2+3]`. The caret goes after the closing
       bracket. With no selection the key types its one character as
