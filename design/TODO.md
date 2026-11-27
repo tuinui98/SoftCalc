@@ -857,8 +857,10 @@ ends 1:1, the drag insert line is visible enough on dark.
       Input put the pair around it: select `2+3`, tap `(` (or `)`):
       `(2+3)`; `[` or `]`: `[2+3]`. The caret goes after the closing
       bracket. With no selection the key types its one character as
-      today. Web and APK; the desktop keypad too if the owner wants
-      (ask; the typed keyboard keys stay as they are).
+      today. Web and APK; desktop too (owner 2026-11-27), only when the
+      bracket button on the keypad is clicked: the typed keyboard keys
+      stay as they are. (Desktop: a click moves focus to the button;
+      the TextBox keeps SelectionStart/Length, check it still does.)
 
 ## Themed launcher icon (owner 2026-11-27, APK)
 - [ ] Android 13+ themed icon: add a `<monochrome>` layer to
