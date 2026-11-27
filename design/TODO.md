@@ -852,6 +852,14 @@ ends 1:1, the drag insert line is visible enough on dark.
       target only, kept light so it does not crowd the pad. Not shown
       when sci and num pads stand side by side (that one has `=`).
 
+## Brackets around a selection (owner 2026-11-27, sci pad / num pad)
+- [ ] On the sci pad and num pad, `(` `)` `[` `]` with a selection in
+      Input put the pair around it: select `2+3`, tap `(` (or `)`):
+      `(2+3)`; `[` or `]`: `[2+3]`. The caret goes after the closing
+      bracket. With no selection the key types its one character as
+      today. Web and APK; the desktop keypad too if the owner wants
+      (ask; the typed keyboard keys stay as they are).
+
 ## Themed launcher icon (owner 2026-11-27, APK)
 - [ ] Android 13+ themed icon: add a `<monochrome>` layer to
       `web/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
