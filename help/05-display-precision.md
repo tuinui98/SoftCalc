@@ -74,6 +74,11 @@ bin):
 The same `255` reads `0xFF` in hex, `0o377` in octal and `11111111b` in
 binary. Fractions work too: `3.5` in hex is `0x3.8`.
 
+The output base changes only how answers are written. What you type is
+read the same in every base: `10` is ten, and a hex number needs its
+prefix, `0xCF` (`CF` alone is a name). So a line means the same thing
+whichever base shows its answer.
+
 When you type a number in another base than the output, History shows
 it converted on the right, faint (`0x1F+1` shows `31+1`), and so does
 the hint line while you type.
