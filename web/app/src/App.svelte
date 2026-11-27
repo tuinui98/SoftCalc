@@ -6,6 +6,8 @@
 <script lang="ts">
 	import { onMount, tick } from "svelte";
 	import Keypad from "./components/Keypad.svelte";
+	import TimersView from "./components/TimersView.svelte";
+	import * as clocks from "./lib/timers";
 	import CompoundView from "./components/CompoundView.svelte";
 	import RandomView from "./components/RandomView.svelte";
 	import GraphView from "./components/GraphView.svelte";
@@ -39,6 +41,70 @@
 			helpTopic = null;
 		helpOpen = true;
 	};
+	// A timer or alarm is done: the sound as Timers' option says (owner 2026-11-28), and a buzz on a phone
+	calc.ondone = (countdown, late) =>
+	{
+		if (late)
+			return;
+		if (calc.timers.sound === "once")
+			beep();
+		else if (calc.timers.sound === "repeat")
+		{
+			soundUntil = Date.now() + 60_000;
+			sounding = true;
+		}
+		navigator.vibrate?.([300, 150, 300]);
+	};
+	let audio: AudioContext | null = null;
+	let nextBeep = 0;
+	function beep()
+	{
+		try
+		{
+			audio ??= new AudioContext();
+			const tone = audio.createOscillator();
+			const gain = audio.createGain();
+			tone.frequency.value = 880;
+			gain.gain.setValueAtTime(0.25, audio.currentTime);
+			gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.4);
+			tone.connect(gain).connect(audio.destination);
+			tone.start();
+			tone.stop(audio.currentTime + 0.4);
+		}
+		catch
+		{
+			// no audio here: the History line and the buzz still tell
+		}
+	}
+	function quiet()
+	{
+		soundUntil = 0;
+		sounding = false;
+	}
+	function timerTick()
+	{
+		const now = Date.now();
+		calc.tick(now);
+		readout = clocks.readout(calc.timers, now);
+		if (sounding && now >= soundUntil)
+			sounding = false;
+		if (sounding && now >= nextBeep)
+		{
+			beep();
+			nextBeep = now + 2000;
+		}
+	}
+	// F8 start / stop, Shift+F8 lap, Ctrl+F8 pause / go on, Ctrl+Shift+F8 reset (the desktop's keys)
+	function timerKey(event: KeyboardEvent)
+	{
+		quiet();
+		if (event.key !== "F8")
+			return;
+		const does = event.ctrlKey && event.shiftKey ? "reset" : event.ctrlKey ? (clocks.running(calc.timers) ? "pause" : "go")
+			: event.shiftKey ? "lap" : "toggle";
+		event.preventDefault();
+		void calc.stopwatch(does);
+	}
 	calc.showHints = loadHints();
 	const snap = () => ({
 		text: calc.text, hint: calc.hint, entries: [...calc.entries], highlight: calc.highlight, settings: { ...calc.settings },
@@ -60,6 +126,10 @@
 	let helpOpen = $state(false);
 	let graphOpen = $state(false);
 	let compoundOpen = $state(false);
+	let timersOpen = $state(false);
+	let readout = $state("");    // stopwatch, timers, alarms at the right of the hint line (owner 2026-11-28)
+	let soundUntil = 0;          // a repeating sound goes on until then (or a key, a tap)
+	let sounding = $state(false);
 	let randomOpen = $state(false);
 	let randomInner = $state(false);    // a menu open on the Random page
 	let randomView: RandomView | undefined = $state();
@@ -241,7 +311,7 @@
 
 	async function openMore()
 	{
-		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Compound", "Random", "Settings", "Export", "Import", "Help", "Clear History"]);
+		const choice = await pick("SoftCalc", ["Functions", "Conversions", "Variables", "Graph", "Compound", "Random", "Timers", "Settings", "Export", "Import", "Help", "Clear History"]);
 		if (choice === "Functions") await openFunctions();
 		else if (choice === "Conversions") await openConversions();
 		else if (choice === "Variables") namesOpen = true;
@@ -249,6 +319,7 @@
 		else if (choice === "Graph") graphOpen = true;
 		else if (choice === "Compound") compoundOpen = true;
 		else if (choice === "Random") randomOpen = true;
+		else if (choice === "Timers") timersOpen = true;
 		else if (choice === "Help") { helpTopic = null; helpOpen = true; }
 		else if (choice === "Export") await exportFiles();
 		else if (choice === "Import") await importFiles();
@@ -358,8 +429,10 @@
 			id => { const key = [...BASIC, ...SCIENTIFIC].find(item => item.id === id); if (key) void press(key); });
 		const sizer = new ResizeObserver(() => { pageWidth = pagesBox.clientWidth || 1; });
 		sizer.observe(pagesBox);
+		const ticker = setInterval(timerTick, 100);
 		return () =>
 		{
+			clearInterval(ticker);
 			unsubscribe(); unswipe(); unhold(); untap(); sizer.disconnect();
 			media.removeEventListener("change", onWide);
 		};
@@ -550,7 +623,7 @@
 		{
 			return randomInner ? 3 : 2;
 		}
-		if (settingsOpen || namesOpen || compoundOpen)
+		if (settingsOpen || namesOpen || compoundOpen || timersOpen)
 		{
 			return 2;
 		}
@@ -621,8 +694,9 @@
 		else if (helpOpen && helpTopic) helpTopic = null;
 		else if (graphOpen && graphInner) graphView?.closeInner();
 		else if (randomOpen && randomInner) randomView?.closeInner();
-		else if (helpOpen || namesOpen || settingsOpen || graphOpen || compoundOpen || randomOpen)
+		else if (helpOpen || namesOpen || settingsOpen || graphOpen || compoundOpen || randomOpen || timersOpen)
 		{
+			timersOpen = false;
 			randomOpen = false;
 			helpOpen = false;
 			namesOpen = false;
@@ -674,7 +748,8 @@
 		angle={view.settings.angle} onpress={press} />
 {/snippet}
 
-<svelte:window onpopstate={onBack} onpointerup={guardExit} onkeydown={guardExit} />
+<svelte:window onpopstate={onBack} onpointerup={guardExit} onkeydown={event => { guardExit(); timerKey(event); }}
+	onpointerdown={quiet} />
 
 {#if exitNote}
 	<div class="exit-note" role="status">Press Back again to exit</div>
@@ -726,9 +801,15 @@
 				onkeyup={event => calc.moveCaret(event.currentTarget.selectionStart ?? 0)} />
 			<button bind:this={backBox} class="backspace" aria-label="Delete one character">⌫</button>
 		</div>
-		{#if showHints}
-			<div bind:this={hintBox} class="input-hint" class:open={hintOpen} class:two={hintTwo} role="button" tabindex="-1"
-				onclick={() => { hintOpen = !hintOpen; focusInput(); }} onkeydown={() => {}}>{view.hint}</div>
+		{#if showHints || readout}
+			<div class="hint-row">
+				<div bind:this={hintBox} class="input-hint" class:open={hintOpen} class:two={hintTwo} role="button" tabindex="-1"
+					onclick={() => { hintOpen = !hintOpen; focusInput(); }} onkeydown={() => {}}>{showHints ? view.hint : ""}</div>
+				{#if readout}
+					<!-- the running stopwatch, the nearest timer or alarm; a tap opens Timers (owner 2026-11-28) -->
+					<button class="readout" onpointerdown={event => event.preventDefault()} onclick={() => { timersOpen = true; }}>{readout}</button>
+				{/if}
+			</div>
 		{/if}
 		<div bind:this={pagesBox} class="keys pages" class:wide>
 			{#if wide}
@@ -760,6 +841,9 @@
 	{#if randomOpen}
 		<RandomView bind:this={randomView} bind:inner={randomInner} {calc} onclose={() => { randomOpen = false; focusInput(); }}
 			oninsert={text => { randomOpen = false; calc.insertText(text, false); focusInput(); }} />
+	{/if}
+	{#if timersOpen}
+		<TimersView {calc} {sounding} onquiet={quiet} onclose={() => { timersOpen = false; focusInput(); }} />
 	{/if}
 	{#if compoundOpen}
 		<CompoundView {calc} onclose={() => { compoundOpen = false; focusInput(); }}

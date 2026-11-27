@@ -42,6 +42,13 @@
 .history { grid-area: history; overflow-y: auto; overscroll-behavior: contain; }
 .hint { grid-area: hint; padding: 2px 14px; color: var(--faint); font-size: 13px; font-style: italic; min-height: 1.4em; }
 /* The hint line under Input: one line, cut with ..., so the keys do not move; a tap shows all of it */
+.hint-row { grid-area: help; display: flex; align-items: flex-start; min-width: 0; }
+.hint-row > .input-hint { flex: 1; min-width: 0; }
+.readout
+{
+	flex: none; border: none; background: none; color: var(--faint); font: inherit; font-size: 13px; padding: 0 14px 4px 6px;
+	font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
 .input-hint
 {
 	grid-area: help; padding: 0 14px 4px; min-height: 1.4em; color: var(--faint); font-size: 13px;
