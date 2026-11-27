@@ -865,6 +865,38 @@ ends 1:1, the drag insert line is visible enough on dark.
       the app's own Theme setting (`activity-alias`: kills the app,
       shortcuts may go).
 
+## Stopwatch and timer (owner 2026-11-27; design proposed, to confirm)
+For now and then: a stopwatch and a countdown kept by the UI (the engine
+does no clock of its own); what they measure goes into History as a
+duration (`0:01:23.4`, already a value: `answer/12`, `answer*3` work).
+- Typed in Input (as `:` settings and `?word`), short and full names:
+  - `:sw` / `:stopwatch`: start; again: stop. The stop adds a History
+    line `Stopwatch` = `0:01:23.4`, which becomes `answer`.
+  - `:lap`: a History line `Lap 2` = `0:00:41.2`, faint on the right
+    `total 0:01:23.4`; the watch runs on.
+  - `:timer 5m`, `:timer 90s`, `:timer 1h30m`, `:timer 0:05:00`
+    (units spelled out, since `5:00` is five hours as a duration);
+    `:timer` alone: time left; `:timer off`: cancel.
+- Where it shows: faint at the right end of the hint line under Input,
+  `⏱ 0:01:23.4` counting (tenths), `⌛ 4:12` left; a hint while typing
+  keeps the left part. Click or tap it: a small menu (Lap, Stop,
+  Reset / Cancel).
+- Keys (desktop; F5-F12 are free today, F10 stays Windows' menu key):
+  F9 start / stop, Shift+F9 lap, Ctrl+F9 reset. Ribbon commands
+  Stopwatch, Lap, Timer... (the Ribbon can then hold them).
+  Web/APK: the tap on the readout; the ribbon commands too.
+- Timer done: a History line `Timer 5m done`; desktop: a system sound
+  and the taskbar button flashes; web: a short beep and a vibration
+  (phone). APK in the background: the WebView sleeps, so the end needs
+  `@capacitor/local-notifications` scheduled at the end time (a new
+  plugin and the notification permission: the expensive part).
+- A running watch or timer keeps its start time in the settings, so it
+  survives closing SoftCalc.
+- Help 15 (keys), 08 (dates and time) or a new topic; hints for the
+  commands.
+Open: the F9 keys, the names (`:sw` or `:watch`), whether the APK
+notification is worth the plugin.
+
 ## Widgets (owner 2026-11-27; to think about later, nothing chosen)
 A widget cannot run the engine (Pyodide in a WebView; desktop engine in
 its own process), so it can show a value or open the app, not calculate.
