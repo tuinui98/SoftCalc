@@ -185,6 +185,7 @@ internal sealed class AppSettings
 	public CompoundPrefs Compound { get; set; } = new();
 	public RandomPrefs Random { get; set; } = new();
 	public CryptoPrefs Crypto { get; set; } = new();
+	public TimerState Timers { get; set; } = new();    // stopwatch, timers, alarms (owner 2026-11-28)
 
 	// Customize Ribbon layout; null = the default (design/ribbon_plan.md)
 	public List<RibbonGroup>? Ribbon { get; set; }
@@ -327,6 +328,14 @@ internal static class SettingsStore
 		s.Random ??= new RandomPrefs();
 		s.KeypadHeight = Math.Clamp(s.KeypadHeight, AppSettings.KeypadLeast, 1000);
 		s.Crypto ??= new CryptoPrefs();
+		s.Timers ??= new TimerState();
+		s.Timers.Laps ??= new List<Lap>();
+		s.Timers.Countdowns ??= new List<Countdown>();
+		s.Timers.Countdowns.RemoveAll(c => c == null);
+		if (!TimerState.Sounds.Contains(s.Timers.Sound))
+		{
+			s.Timers.Sound = "once";
+		}
 		if (s.Crypto.Tab is not ("address" or "balance" or "watch" or "fees"))
 		{
 			s.Crypto.Tab = "address";

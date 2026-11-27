@@ -120,6 +120,7 @@ internal sealed partial class MainForm : Form
 		KeyPreview = true;
 		BuildLayout();
 		BuildMenus();
+		InitTimers();
 		_ribbonLayout = _prefs.Ribbon != null ? RibbonLayout.Clone(_prefs.Ribbon) : RibbonLayout.Default();
 		RebuildRibbon();
 		_history.EntryClicked += (_, entry) => RecallEntry(entry);
@@ -703,6 +704,7 @@ internal sealed partial class MainForm : Form
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Compound Interest...", null, (_, _) => OpenCompoundWindow()));
 		tools.DropDownItems.Add(new ToolStripMenuItem("&Random...", null, (_, _) => OpenRandomWindow()));
 		tools.DropDownItems.Add(new ToolStripMenuItem("Cr&yptocurrency...", null, (_, _) => OpenCryptoWindow()));
+		tools.DropDownItems.Add(new ToolStripMenuItem("S&topwatch && Timers...", null, (_, _) => OpenTimersWindow()));
 
 		_menu.Items.AddRange(new ToolStripItem[] { file, view, _functionsMenu, _conversionsMenu, tools });
 	}
@@ -980,6 +982,14 @@ internal sealed partial class MainForm : Form
 			_lineTime = LineTime.Took(clock.Elapsed);
 			if (reply.Kind == "empty")
 			{
+				return;
+			}
+			if (reply.Timer != null)
+			{
+				await TimerLineAsync(line, reply);    // :sw, :lap, :timer, :alarm (MainForm.Timers.cs)
+				_recall.Reset();
+				_history.SelectedIndex = -1;
+				_input.Clear();
 				return;
 			}
 			_history.Append(Stamp(new HistoryEntry(reply.Kind, reply.Input, reply.DisplayInput, reply.Text) { Note = reply.Note }));

@@ -63,9 +63,10 @@ by the engine. Only `plot` and the `schedule` graph series send floats.
 
 ### `record`
 `{"label": "Lap 2", "value": "0:00:41.2", "note": "total 0:01:23.4"}` ->
-the `eval` reply with `input` = label, `display_input` = note. The
-stopwatch's measure (owner 2026-11-28): `value` is evaluated and kept as
-`answer` and `$n`, as a typed line is.
+the `eval` reply with `input` = the value (a click in History brings back
+a line that calculates) and `display_input` = `Lap 2, total 0:01:23.4`.
+The stopwatch's measure (owner 2026-11-28): `value` is evaluated and
+kept as `answer` and `$n`, as a typed line is.
 
 ### `clear_history`
 `{}` -> `{}`. Forgets `$n` results; `answer` survives.

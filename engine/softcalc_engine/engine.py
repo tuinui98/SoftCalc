@@ -262,14 +262,16 @@ class Engine:
 
     def record(self, label, value_text, note=""):
         """What the stopwatch measured (protocol `record`): `Lap 2` = 0:00:41.2, kept as answer
-        and $n as a typed line is, History showing the label (owner 2026-11-28)."""
+        and $n as a typed line is (owner 2026-11-28). The line is the value, so a click on it in
+        History brings back a number that calculates; the label and note show faint on the right."""
+        shown = f"{label}, {note}" if note else label
         try:
             value = self.value_of(value_text)
         except CalcError as exc:
-            return EvalResult("error", label, f"ERROR:{exc}", note)
+            return EvalResult("error", value_text, f"ERROR:{exc}", shown)
         self.answer = value
         self.results.append(value)
-        return EvalResult("result", label, self.format_value(value), note, value)
+        return EvalResult("result", value_text, self.format_value(value), shown, value)
 
     def repeat(self, text, count, unique, give_up):
         """The Random window's Seed draws (server `draws`): the line parsed

@@ -161,7 +161,8 @@ class Dispatcher:
         return reply
 
     def op_record(self, request):
-        """A stopwatch's measure into History: {label, value, note}, kept as answer and $n."""
+        """A stopwatch's measure into History: {label, value, note}, kept as answer and $n;
+        input is the value, display_input the label and note."""
         result = self.engine.record(argument(request, "label", str), argument(request, "value", str),
                                     argument(request, "note", str, "", required=False))
         return {"kind": result.kind, "input": result.input, "display_input": result.display_input,

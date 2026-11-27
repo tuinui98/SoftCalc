@@ -98,7 +98,7 @@ def test_record_keeps_answer_and_shows_the_label():
     dispatcher = Dispatcher()
     reply = dispatcher.handle({"op": "record", "label": "Lap 2", "value": "0:00:41.2", "note": "total 0:01:23.4"})
     assert (reply["kind"], reply["input"], reply["text"], reply["display_input"]) == \
-        ("result", "Lap 2", "0:00:41.2", "total 0:01:23.4")
+        ("result", "0:00:41.2", "0:00:41.2", "Lap 2, total 0:01:23.4")
     assert dispatcher.handle({"op": "eval", "input": "answer*2"})["text"] == "0:01:22.4"
     assert dispatcher.handle({"op": "eval", "input": "$1/2"})["text"] == "0:00:41.2"
 
