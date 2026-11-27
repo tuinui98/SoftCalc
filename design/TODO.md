@@ -879,51 +879,49 @@ ends 1:1, the drag insert line is visible enough on dark.
       the app's own Theme setting (`activity-alias`: kills the app,
       shortcuts may go).
 
-## Stopwatch and timer (owner 2026-11-27; design proposed, to confirm)
-For now and then: a stopwatch and a countdown kept by the UI (the engine
-does no clock of its own); what they measure goes into History as a
-duration (`0:01:23.4`, already a value: `answer/12`, `answer*3` work).
-- Typed in Input (as `:` settings and `?word`), short and full names:
-  - `:sw` / `:stopwatch`: start; again: stop. The stop adds a History
-    line `Stopwatch` = `0:01:23.4`, which becomes `answer`.
-  - `:lap`: a History line `Lap 2` = `0:00:41.2`, faint on the right
-    `total 0:01:23.4`; the watch runs on.
-  - `:timer 5m`, `:timer 90s`, `:timer 1h30m`, `:timer 0:05:00`
-    (units spelled out, since `5:00` is five hours as a duration);
-    `:timer` alone: time left; `:timer off`: cancel.
-- Where it shows: faint at the right end of the hint line under Input,
-  `⏱ 0:01:23.4` counting (tenths), `⌛ 4:12` left; a hint while typing
-  keeps the left part. Click or tap it: a small menu (Lap, Stop,
-  Reset / Cancel).
-- Keys (desktop; F5-F12 are free today, F10 stays Windows' menu key):
-  F9 start / stop, Shift+F9 lap, Ctrl+F9 reset. Ribbon commands
-  Stopwatch, Lap, Timer... (the Ribbon can then hold them).
-  Web/APK: the tap on the readout; the ribbon commands too.
-- Timer done: a History line `Timer 5m done`; desktop: a system sound
-  and the taskbar button flashes; web: a short beep and a vibration
-  (phone). APK in the background: the WebView sleeps, so the end needs
-  `@capacitor/local-notifications` scheduled at the end time (a new
-  plugin and the notification permission: the expensive part).
-- A running watch or timer keeps its start time in the settings, so it
-  survives closing SoftCalc.
-- Help 15 (keys), 08 (dates and time) or a new topic; hints for the
-  commands.
-- Split (proposed 2026-11-27): the engine reads the commands, the UI
-  keeps the clock.
-  - Engine (`commands.py`, with the other `:` commands): parses `:sw`,
-    `:lap`, `:timer 5m` and answers with an action for the UI, as it
-    answers `settings` today (`{"timer": "start", "seconds": 300}`); one
-    parser for desktop and web.
-  - UI: the clock (`Stopwatch` / `performance.now`, not the wall
-    clock), the readout, sound, flash, vibration, notification; the
-    start time (wall clock) in the settings to survive a restart.
-  - Stop and Lap: the UI sends the value (`0:01:23.4`) to the engine as
-    a line, so History and `answer` work as for a typed line.
-  - Why not the engine's clock: the protocol only answers, it cannot
-    tick a readout; a long calculation (`Working...`) would freeze it;
-    an engine restart would lose it; sound and notifications are UI.
-Open: the F9 keys, the names (`:sw` or `:watch`), whether the APK
-notification is worth the plugin, and the details of the split.
+## Stopwatch, timer and alarm (owner 2026-11-27, plan 2026-11-28; to confirm before building)
+Three kinds: a stopwatch, a countdown timer, an alarm at a clock time.
+Everything works typed in Input in every view (History mode included);
+a separate window shows the running numbers, the laps and buttons.
+- Split: the engine reads the commands (`commands.py`, beside the `:`
+  settings) and answers with an action for the UI (as it answers
+  `settings`); the UI keeps the clock (monotonic: `Stopwatch` /
+  `performance.now`) and the start times (wall clock, in the settings,
+  to survive a restart). Why not the engine's clock: the protocol only
+  answers, a long calculation would freeze it, a restart would lose it.
+- A protocol op `record` {label, value, note}: the engine evaluates the
+  value, keeps it as `answer` and `$n`, History shows the label
+  (`Lap 2` = `0:00:41.20`, faint `total 0:01:23.45`).
+- Commands (owner 2026-11-28: stopwatch/sw, timer, alarm):
+  - `:sw` / `:stopwatch`: start; again: stop, History `Stopwatch` =
+    `0:01:23.45` (becomes `answer`). `:sw pause`, `:sw go` (owner:
+    pause as a command too), `:sw reset` (no record), `:lap` (`:sw lap`).
+  - `:timer 5m` / `90s` / `1h30m` / `0:05:00` (units spelled out: `5:00`
+    is five hours as a duration), an optional name (`:timer 5m tea`);
+    `:timer`: what is left; `:timer off [name]`. Start: a message line
+    in History (owner); done: `Timer 5m tea done`.
+  - `:alarm 14:30` (the next 14:30), `:alarm 2026-11-29 7:00`, optional
+    name; `:alarm`: the list; `:alarm off [name]`. Done: `Alarm 14:30
+    done`.
+- Several timers and alarms at once (a list); one stopwatch.
+- Readout: faint at the right of the hint line (`⏱ 0:01:23.4`, `⌛ 4:12`,
+  the nearest one and `+2` for more); click or tap it: open the window.
+- Window (desktop: an owned window like Graph; web: a full sheet like
+  Random), tabs Stopwatch / Timer / Alarm: big numbers, Start, Pause,
+  Lap, Stop, Reset; the laps; the timers and alarms with their time
+  left, Cancel each; a field to add one. Opened from Tools, the
+  Ribbon, the readout.
+- Keys (owner: F9-F12 are taken by his macros): F8 start / stop,
+  Shift+F8 lap, Ctrl+F8 reset (or pause). F6 moves between panes in
+  many programs and focuses the address bar in a browser, F7 turns on
+  caret browsing in Chrome/Edge; F8 has no common meaning.
+- Done: History line; sound an option (once / repeat until dismissed,
+  owner 2026-11-28), desktop also flashes the taskbar button, web
+  vibrates. Missed while closed: shown on the next start, late.
+- Later (owner 2026-11-28): APK notifications in the background
+  (`@capacitor/local-notifications`, notification permission).
+- Help: a new section in help 08 (or its own topic), keys in help 15,
+  hints for the commands.
 
 ## Widgets (owner 2026-11-27; to think about later, nothing chosen)
 A widget cannot run the engine (Pyodide in a WebView; desktop engine in
