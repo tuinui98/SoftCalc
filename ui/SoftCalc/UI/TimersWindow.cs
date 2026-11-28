@@ -18,6 +18,8 @@ internal sealed class TimersWindow : Form
 	private readonly Action<string> _runLine;
 	private readonly Action<Countdown> _cancel;
 	private readonly Action _quiet;
+	private readonly TabControl _tabs = new() { Dock = DockStyle.Fill };
+	private readonly CountdownPage _page;
 	private readonly Label _clock = new() { AutoSize = false, Dock = DockStyle.Top, Height = 70, TextAlign = ContentAlignment.MiddleCenter };
 	private readonly Button _startStop = new() { AutoSize = true };
 	private readonly Button _pause = new() { AutoSize = true };
@@ -28,9 +30,11 @@ internal sealed class TimersWindow : Form
 	private readonly Button _quietButton = new() { Text = "&Quiet", AutoSize = true, Enabled = false };
 	private int _shownLaps = -1;
 
-	public TimersWindow(TimerState state, Action<string> stopwatch, Action<string> runLine, Action<Countdown> cancel, Action quiet)
+	public TimersWindow(TimerState state, Action<string> stopwatch, Action<string> runLine, Action<Countdown> cancel, Action quiet,
+		Func<Countdown, string, bool, Task<string?>> change)
 	{
 		(_state, _stopwatch, _runLine, _cancel, _quiet) = (state, stopwatch, runLine, cancel, quiet);
+		_page = new CountdownPage(state, CloseCountdown, cancel, change) { Visible = false };
 		Text = "Stopwatch & Timers";
 		Size = new Size(460, 440);
 		MinimumSize = new Size(380, 340);
@@ -39,7 +43,7 @@ internal sealed class TimersWindow : Form
 		Icon = SvgIcon.ProgramIcon();
 		KeyPreview = true;
 
-		var tabs = new TabControl { Dock = DockStyle.Fill };
+		var tabs = _tabs;
 		tabs.TabPages.Add(StopwatchPage());
 		tabs.TabPages.Add(CountdownPage("timer", "Timer", "5m, 90s, 1h30m, 0:05*3"));
 		tabs.TabPages.Add(CountdownPage("alarm", "Alarm", "14:30, 30.11.2026 7:00, now+0:15"));
@@ -53,7 +57,23 @@ internal sealed class TimersWindow : Form
 		_quietButton.Click += (_, _) => _quiet();
 		bottom.Controls.Add(_quietButton);
 		Controls.Add(tabs);
+		Controls.Add(_page);
 		Controls.Add(bottom);
+	}
+
+	// A timer or alarm on its own page (owner 2026-11-28), from a double-click or Enter in its list
+	private void OpenCountdown(Countdown countdown)
+	{
+		_page.Open(countdown);
+		_tabs.Visible = false;
+		_page.Visible = true;
+		_page.ShowState(DateTime.UtcNow);
+	}
+
+	private void CloseCountdown()
+	{
+		_page.Visible = false;
+		_tabs.Visible = true;
 	}
 
 	protected override void OnFontChanged(EventArgs e)
@@ -111,6 +131,13 @@ internal sealed class TimersWindow : Form
 		var list = Table(("Name", 110), ("Left", 80), (kind == "alarm" ? "At" : "Done at", 150));
 		list.MultiSelect = false;
 		_lists[kind] = list;
+		list.ItemActivate += (_, _) =>    // double-click or Enter
+		{
+			if (list.SelectedItems.Count > 0 && list.SelectedItems[0].Tag is Countdown countdown)
+			{
+				OpenCountdown(countdown);
+			}
+		};
 		var entry = new TextBox { Width = 170, PlaceholderText = examples };
 		var name = new TextBox { Width = 80, PlaceholderText = "name" };
 		var start = new Button { Text = "&Start", AutoSize = true };
@@ -186,6 +213,10 @@ internal sealed class TimersWindow : Form
 	//==================================================================
 	public void ShowState(TimerState state, DateTime now, bool sounding)
 	{
+		if (_page.Visible)
+		{
+			_page.ShowState(now);
+		}
 		_clock.Text = TimerState.Clock(state.Elapsed(now), 1);
 		_startStop.Text = state.Running ? "St&op" : "&Start";
 		_pause.Text = state.Running ? "&Pause" : "&Go on";

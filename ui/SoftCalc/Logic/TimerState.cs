@@ -50,6 +50,23 @@ internal sealed class TimerState
 	public List<Countdown> Countdowns { get; set; } = new();
 	public string Sound { get; set; } = "once";    // when one is done (owner 2026-11-28: an option)
 
+	// The countdown page's three numbers, [show, format] each, kept once for timers and once for alarms (owner 2026-11-28)
+	public List<string[]> TimerSlots { get; set; } = DefaultSlots("timer");
+	public List<string[]> AlarmSlots { get; set; } = DefaultSlots("alarm");
+	public bool QuietCountdown { get; set; }    // no ticks in the last 10 seconds
+
+	public static readonly string[] Shows = { "left", "since", "done", "remain", "set" };
+	public static readonly string[] ShowNames = { "Time left", "Since start", "% done", "% left", "Set length" };
+	public static readonly string[] Formats = { "ddd hh:mm:ss.s", "hhh:mm:ss.s", "mmm:ss.s", "ssss.s" };
+
+	public static List<string[]> DefaultSlots(string kind)
+	{
+		string format = kind == "alarm" ? "ddd hh:mm:ss.s" : "hhh:mm:ss.s";
+		return new List<string[]> { new[] { "left", format }, new[] { "since", format }, new[] { "done", format } };
+	}
+
+	public List<string[]> Slots(string kind) => kind == "alarm" ? AlarmSlots : TimerSlots;
+
 	[JsonIgnore]
 	public bool Running => RunningSince != null;
 
@@ -211,6 +228,62 @@ internal sealed class TimerState
 			return $"{kind} names: none{(typed.Length > 0 ? " like that" : " yet")}; a new name starts a new {kind}";
 		}
 		return $"{kind} names: {string.Join(", ", names)}  (one of them sets its time again)";
+	}
+
+	//==================================================================
+	//  The countdown page (owner 2026-11-28): its numbers and lines
+	//==================================================================
+	/// <summary>A length in one of Formats; up rounds tenths down, a countdown rounds them up (it never shows 0 early).</summary>
+	public static string Span(double seconds, string format, bool roundUp)
+	{
+		double tenths = roundUp ? Math.Ceiling(Math.Max(0, seconds) * 10 - 1e-9) : Math.Floor(Math.Max(0, seconds) * 10 + 1e-9);
+		long whole = (long)(tenths / 10);
+		int tenth = (int)(tenths % 10);
+		long s = whole % 60, m = whole / 60 % 60, h = whole / 3600, d = whole / 86400;
+		return format switch
+		{
+			"ddd hh:mm:ss.s" => $"{d} {h % 24:00}:{m:00}:{s:00}.{tenth}",
+			"hhh:mm:ss.s" => $"{h}:{m:00}:{s:00}.{tenth}",
+			"mmm:ss.s" => $"{whole / 60}:{s:00}.{tenth}",
+			_ => $"{whole}.{tenth}",
+		};
+	}
+
+	/// <summary>The Set line: no days or hours when they are 0, at least mm:ss.ss (owner 2026-11-28).</summary>
+	public static string Length(double seconds)
+	{
+		long hundredths = (long)Math.Round(Math.Max(0, seconds) * 100);
+		long whole = hundredths / 100;
+		string hund = (hundredths % 100).ToString("00");
+		long s = whole % 60, m = whole / 60 % 60, h = whole / 3600 % 24, d = whole / 86400;
+		if (d > 0)
+		{
+			return $"{d} {h:00}:{m:00}:{s:00}.{hund}";
+		}
+		return h > 0 ? $"{h}:{m:00}:{s:00}.{hund}" : $"{m:00}:{s:00}.{hund}";
+	}
+
+	/// <summary>Local date and time to a tenth: 28.11.2026 14:03:12.4.</summary>
+	public static string Stamp(DateTime utc)
+	{
+		var local = utc.ToLocalTime();
+		return local.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture) + "." + local.Millisecond / 100;
+	}
+
+	/// <summary>One number of the countdown page: T- 0:04:12.3, then T+ once it is past; 15.9 %.</summary>
+	public static string Slot(Countdown countdown, string show, string format, DateTime now)
+	{
+		double total = Math.Max(0.001, (countdown.Due - countdown.Set).TotalSeconds);
+		double since = (now - countdown.Set).TotalSeconds, left = (countdown.Due - now).TotalSeconds;
+		double done = Math.Clamp(since / total * 100, 0, 100);
+		return show switch
+		{
+			"left" => left > 0 ? "T- " + Span(left, format, true) : "T+ " + Span(-left, format, false),
+			"since" => Span(since, format, false),
+			"done" => done.ToString("0.0", CultureInfo.InvariantCulture) + " %",
+			"remain" => (100 - done).ToString("0.0", CultureInfo.InvariantCulture) + " %",
+			_ => Span(total, format, false),
+		};
 	}
 
 	/// <summary>What a countdown is called in History: Timer 5m "tea".</summary>

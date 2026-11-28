@@ -266,6 +266,39 @@ internal sealed partial class MainForm
 		_lastWasResult = reply.Kind == "result";
 	}
 
+	// The countdown page's Change time (owner 2026-11-28): the new length or time read by the engine as its
+	// :timer / :alarm line; a timer counts from now or from its start. Null, or the error to show.
+	private async Task<string?> ChangeTimeAsync(Countdown countdown, string text, bool fromStart)
+	{
+		if (!_engineReady)
+		{
+			return "The engine is not ready";
+		}
+		var reply = await _session.EvalAsync($":{countdown.Kind} {text}");
+		if (reply.Kind == "error" || reply.Timer is not { } action || (double?)action["seconds"] is not double seconds)
+		{
+			return reply.Text.StartsWith("ERROR:", StringComparison.Ordinal) ? reply.Text[6..] : "Write a length or a time";
+		}
+		var now = DateTime.UtcNow;
+		var start = countdown.Kind == "timer" && fromStart ? countdown.Set : now;
+		if (start.AddSeconds(seconds) <= now)
+		{
+			return "That time is already past";
+		}
+		countdown.Set = start;
+		countdown.Due = start.AddSeconds(seconds);
+		countdown.Label = (string?)action["label"] ?? text;
+		if (!Timers.Countdowns.Contains(countdown))
+		{
+			Timers.Countdowns.Add(countdown);    // done already: it runs again
+		}
+		Timers.Countdowns.Sort((a, b) => a.Due.CompareTo(b.Due));
+		string due = TimerState.Stamp(countdown.Due);
+		Notice($"{TimerState.Title(countdown)}, time changed", $"ends {due}");
+		WakeTimers();
+		return null;
+	}
+
 	// A line from the Timers window (Start a timer or an alarm): evaluated as if typed
 	private async Task RunTimerLineAsync(string line)
 	{
@@ -319,7 +352,7 @@ internal sealed partial class MainForm
 					Timers.Cancel(countdown);
 					_history.Append(new HistoryEntry("notice", "", TimerState.Title(countdown) + " off", ""));
 				},
-				QuietTimers);
+				QuietTimers, ChangeTimeAsync);
 			_timersWindow.Show(this);
 		}
 		else

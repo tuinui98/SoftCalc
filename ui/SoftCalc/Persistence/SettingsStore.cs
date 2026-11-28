@@ -333,6 +333,23 @@ internal static class SettingsStore
 		s.Timers.Pauses ??= new List<double>();
 		s.Timers.Countdowns ??= new List<Countdown>();
 		s.Timers.Countdowns.RemoveAll(c => c == null);
+		foreach (string kind in new[] { "timer", "alarm" })
+		{
+			var slots = s.Timers.Slots(kind);
+			bool good = slots is { Count: 3 } && slots.All(slot => slot is { Length: 2 }
+				&& TimerState.Shows.Contains(slot[0]) && TimerState.Formats.Contains(slot[1]));
+			if (!good)
+			{
+				if (kind == "alarm")
+				{
+					s.Timers.AlarmSlots = TimerState.DefaultSlots(kind);
+				}
+				else
+				{
+					s.Timers.TimerSlots = TimerState.DefaultSlots(kind);
+				}
+			}
+		}
 		if (!TimerState.Sounds.Contains(s.Timers.Sound))
 		{
 			s.Timers.Sound = "once";

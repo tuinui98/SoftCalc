@@ -35,6 +35,25 @@ export interface StopwatchRun
 
 export const SOUNDS = ["once", "repeat", "off"] as const;
 
+// The countdown page's three numbers (owner 2026-11-28): what each shows and its format, kept per kind
+export const SHOWS = ["left", "since", "done", "remain", "set"] as const;
+export const SHOW_NAMES: Record<string, string> = { left: "Time left", since: "Since start", done: "% done", remain: "% left", set: "Set length" };
+export const FORMATS = ["ddd hh:mm:ss.s", "hhh:mm:ss.s", "mmm:ss.s", "ssss.s"] as const;
+export type Slot = [string, string];
+
+export function defaultSlots(kind: string): Slot[]
+{
+	const format = kind === "alarm" ? "ddd hh:mm:ss.s" : "hhh:mm:ss.s";
+	return [["left", format], ["since", format], ["done", format]];
+}
+
+function slotsFrom(stored: unknown, kind: string): Slot[]
+{
+	const good = Array.isArray(stored) && stored.length === 3 && stored.every(slot => Array.isArray(slot) && slot.length === 2
+		&& (SHOWS as readonly string[]).includes(slot[0]) && (FORMATS as readonly string[]).includes(slot[1]));
+	return good ? (stored as Slot[]).map(([a, b]) => [a, b] as Slot) : defaultSlots(kind);
+}
+
 export interface TimerState
 {
 	before: number;               // seconds measured before the current run
@@ -44,11 +63,15 @@ export interface TimerState
 	lastRun: StopwatchRun | null;
 	countdowns: Countdown[];
 	sound: string;                // when one is done (owner 2026-11-28: an option)
+	timerSlots: Slot[];
+	alarmSlots: Slot[];
+	quietCountdown: boolean;      // no ticks in the last 10 seconds
 }
 
 export function newTimers(): TimerState
 {
-	return { before: 0, runningSince: null, laps: [], pauses: [], lastRun: null, countdowns: [], sound: "once" };
+	return { before: 0, runningSince: null, laps: [], pauses: [], lastRun: null, countdowns: [], sound: "once",
+		timerSlots: defaultSlots("timer"), alarmSlots: defaultSlots("alarm"), quietCountdown: false };
 }
 
 // A stored state, checked: anything odd starts afresh
@@ -72,6 +95,9 @@ export function timersFrom(stored: unknown): TimerState
 		countdowns: Array.isArray(s.countdowns)
 			? s.countdowns.filter(c => typeof c?.due === "number" && (c.kind === "timer" || c.kind === "alarm")) : [],
 		sound: SOUNDS.includes(s.sound as typeof SOUNDS[number]) ? s.sound! : "once",
+		timerSlots: slotsFrom(s.timerSlots, "timer"),
+		alarmSlots: slotsFrom(s.alarmSlots, "alarm"),
+		quietCountdown: s.quietCountdown === true,
 	};
 }
 
@@ -248,4 +274,57 @@ export function at(ms: number, withDate: boolean): string
 	const two = (n: number) => String(n).padStart(2, "0");
 	const time = `${two(d.getHours())}:${two(d.getMinutes())}:${two(d.getSeconds())}`;
 	return withDate ? `${two(d.getDate())}.${two(d.getMonth() + 1)}.${d.getFullYear()} ${time}` : time;
+}
+
+//==================================================================
+//  The countdown page (owner 2026-11-28): its numbers and lines, as TimerState.cs
+//==================================================================
+const pad = (n: number) => String(n).padStart(2, "0");
+
+// A length in one of FORMATS; up rounds tenths down, a countdown rounds them up (it never shows 0 early)
+export function span(seconds: number, format: string, roundUp: boolean): string
+{
+	const tenths = roundUp ? Math.ceil(Math.max(0, seconds) * 10 - 1e-9) : Math.floor(Math.max(0, seconds) * 10 + 1e-9);
+	const whole = Math.floor(tenths / 10), tenth = tenths % 10;
+	const s = whole % 60, m = Math.floor(whole / 60) % 60, h = Math.floor(whole / 3600), d = Math.floor(whole / 86400);
+	switch (format)
+	{
+		case "ddd hh:mm:ss.s": return `${d} ${pad(h % 24)}:${pad(m)}:${pad(s)}.${tenth}`;
+		case "hhh:mm:ss.s": return `${h}:${pad(m)}:${pad(s)}.${tenth}`;
+		case "mmm:ss.s": return `${Math.floor(whole / 60)}:${pad(s)}.${tenth}`;
+		default: return `${whole}.${tenth}`;
+	}
+}
+
+// The Set line: no days or hours when they are 0, at least mm:ss.ss
+export function length(seconds: number): string
+{
+	const hundredths = Math.round(Math.max(0, seconds) * 100);
+	const whole = Math.floor(hundredths / 100), hund = pad(hundredths % 100);
+	const s = whole % 60, m = Math.floor(whole / 60) % 60, h = Math.floor(whole / 3600) % 24, d = Math.floor(whole / 86400);
+	if (d > 0)
+		return `${d} ${pad(h)}:${pad(m)}:${pad(s)}.${hund}`;
+	return h > 0 ? `${h}:${pad(m)}:${pad(s)}.${hund}` : `${pad(m)}:${pad(s)}.${hund}`;
+}
+
+// Local date and time to a tenth: 28.11.2026 14:03:12.4
+export function stamp(ms: number): string
+{
+	return `${at(ms, true)}.${Math.floor(new Date(ms).getMilliseconds() / 100)}`;
+}
+
+// One number of the countdown page: T- 0:04:12.3, then T+ once it is past; 15.9 %
+export function slot(countdown: Countdown, show: string, format: string, now: number): string
+{
+	const total = Math.max(0.001, (countdown.due - countdown.set) / 1000);
+	const since = (now - countdown.set) / 1000, left = (countdown.due - now) / 1000;
+	const done = Math.min(100, Math.max(0, since / total * 100));
+	switch (show)
+	{
+		case "left": return left > 0 ? `T- ${span(left, format, true)}` : `T+ ${span(-left, format, false)}`;
+		case "since": return span(since, format, false);
+		case "done": return `${done.toFixed(1)} %`;
+		case "remain": return `${(100 - done).toFixed(1)} %`;
+		default: return span(total, format, false);
+	}
 }

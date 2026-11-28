@@ -121,6 +121,39 @@ public class TimerStateTests
 		Assert.Null(state.NameHint(":sw \""));
 	}
 
+	[Theory]    // the countdown page's formats (owner 2026-11-28); web timers.test.ts has the same
+	[InlineData(93784.56, "ddd hh:mm:ss.s", false, "1 02:03:04.5")]
+	[InlineData(93784.56, "hhh:mm:ss.s", false, "26:03:04.5")]
+	[InlineData(93784.56, "mmm:ss.s", false, "1563:04.5")]
+	[InlineData(93784.56, "ssss.s", false, "93784.5")]
+	[InlineData(252.21, "hhh:mm:ss.s", true, "0:04:12.3")]    // a countdown rounds up
+	[InlineData(0, "mmm:ss.s", false, "0:00.0")]
+	public void SpanFormats(double seconds, string format, bool roundUp, string want)
+	{
+		Assert.Equal(want, TimerState.Span(seconds, format, roundUp));
+	}
+
+	[Theory]
+	[InlineData(25, "00:25.00")]
+	[InlineData(7500.5, "2:05:00.50")]
+	[InlineData(93900, "1 02:05:00.00")]
+	public void LengthDropsZeroDaysAndHours(double seconds, string want)
+	{
+		Assert.Equal(want, TimerState.Length(seconds));
+	}
+
+	[Fact]
+	public void SlotsCountDownThenOn()
+	{
+		var countdown = new Countdown { Set = T0, Due = T0.AddSeconds(100) };
+		Assert.Equal("T- 0:01:30.0", TimerState.Slot(countdown, "left", "hhh:mm:ss.s", T0.AddSeconds(10)));
+		Assert.Equal("T+ 0:00:05.2", TimerState.Slot(countdown, "left", "hhh:mm:ss.s", T0.AddSeconds(105.25)));
+		Assert.Equal("0:00:10.0", TimerState.Slot(countdown, "since", "hhh:mm:ss.s", T0.AddSeconds(10)));
+		Assert.Equal("25.0 %", TimerState.Slot(countdown, "done", "", T0.AddSeconds(25)));
+		Assert.Equal("75.0 %", TimerState.Slot(countdown, "remain", "", T0.AddSeconds(25)));
+		Assert.Equal("1:40.0", TimerState.Slot(countdown, "set", "mmm:ss.s", T0.AddSeconds(25)));
+	}
+
 	[Fact]
 	public void SurvivesSettingsJson()
 	{

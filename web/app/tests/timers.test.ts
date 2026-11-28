@@ -2,7 +2,8 @@
 
 import { describe, expect, it } from "vitest";
 import {
-	add, addLap, cancel, clock, elapsed, left, marks, nameHint, newTimers, pause, readout, start, started, stop, takeDue, timersFrom,
+	add, addLap, cancel, clock, elapsed, left, length, marks, nameHint, newTimers, pause, readout, slot, span, start, started, stop,
+	takeDue, timersFrom,
 } from "../src/lib/timers";
 
 const T0 = Date.UTC(2026, 10, 28, 7, 0, 0);
@@ -117,5 +118,38 @@ describe("names, runs and the name hint (owner 2026-11-28)", () =>
 		expect(nameHint(s, ':alarm 7:00 "')).toBe("alarm names: none yet; a new name starts a new alarm");
 		expect(nameHint(s, ':timer 10m "tea" ')).toBeNull();
 		expect(nameHint(s, ':sw "')).toBeNull();
+	});
+});
+
+describe("the countdown page (owner 2026-11-28), as the desktop's", () =>
+{
+	it.each([
+		[93784.56, "ddd hh:mm:ss.s", false, "1 02:03:04.5"], [93784.56, "hhh:mm:ss.s", false, "26:03:04.5"],
+		[93784.56, "mmm:ss.s", false, "1563:04.5"], [93784.56, "ssss.s", false, "93784.5"],
+		[252.21, "hhh:mm:ss.s", true, "0:04:12.3"], [0, "mmm:ss.s", false, "0:00.0"],
+	])("span(%f, %s)", (seconds, format, roundUp, want) =>
+	{
+		expect(span(seconds as number, format as string, roundUp as boolean)).toBe(want);
+	});
+
+	it("the Set line drops zero days and hours", () =>
+	{
+		expect([length(25), length(7500.5), length(93900)]).toEqual(["00:25.00", "2:05:00.50", "1 02:05:00.00"]);
+	});
+
+	it("slots count down, then on", () =>
+	{
+		const countdown = { kind: "timer" as const, label: "", name: null, set: T0, due: at(100) };
+		expect(slot(countdown, "left", "hhh:mm:ss.s", at(10))).toBe("T- 0:01:30.0");
+		expect(slot(countdown, "left", "hhh:mm:ss.s", at(105.25))).toBe("T+ 0:00:05.2");
+		expect(slot(countdown, "since", "hhh:mm:ss.s", at(10))).toBe("0:00:10.0");
+		expect([slot(countdown, "done", "", at(25)), slot(countdown, "remain", "", at(25))]).toEqual(["25.0 %", "75.0 %"]);
+		expect(slot(countdown, "set", "mmm:ss.s", at(25))).toBe("1:40.0");
+	});
+
+	it("odd slots in storage go back to the defaults", () =>
+	{
+		expect(timersFrom({ timerSlots: [["left", "nope"]] }).timerSlots).toEqual(newTimers().timerSlots);
+		expect(timersFrom({ alarmSlots: [["set", "ssss.s"], ["since", "mmm:ss.s"], ["done", "ssss.s"]] }).alarmSlots[0]).toEqual(["set", "ssss.s"]);
 	});
 });

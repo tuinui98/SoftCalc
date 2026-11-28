@@ -712,6 +712,41 @@ export class Calculator
 		}
 	}
 
+	// The countdown page's Change time (owner 2026-11-28): the new length or time read by the engine as its
+	// :timer / :alarm line; a timer counts from now or from its start. null, or the error to show.
+	async changeTime(countdown: Countdown, text: string, fromStart: boolean): Promise<string | null>
+	{
+		const answer = await this.engine.send("eval", { input: `:${countdown.kind} ${text}` });
+		const action = answer.ok ? answer.timer as Record<string, unknown> | undefined : undefined;
+		if (!answer.ok || answer.kind === "error" || !action || typeof action.seconds !== "number")
+		{
+			const said = String(answer.ok ? answer.text : answer.error ?? "");
+			return said.startsWith("ERROR:") ? said.slice(6) : "Write a length or a time";
+		}
+		const now = Date.now();
+		const start = countdown.kind === "timer" && fromStart ? countdown.set : now;
+		if (start + action.seconds * 1000 <= now)
+		{
+			return "That time is already past";
+		}
+		countdown.set = start;
+		countdown.due = start + action.seconds * 1000;
+		countdown.label = typeof action.label === "string" ? action.label : text;
+		if (!this.timers.countdowns.includes(countdown))
+		{
+			this.timers.countdowns.push(countdown);    // done already: it runs again
+		}
+		this.timers.countdowns.sort((a, b) => a.due - b.due);
+		this.notice(`${clocks.title(countdown)}, time changed`, `ends ${clocks.stamp(countdown.due)}`);
+		this.timersChanged();
+		return null;
+	}
+
+	saveTimers()
+	{
+		this.timersChanged();
+	}
+
 	setSound(sound: string)
 	{
 		this.timers.sound = sound;
