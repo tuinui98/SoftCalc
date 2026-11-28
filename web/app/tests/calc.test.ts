@@ -57,6 +57,8 @@ class FakeEngine implements EngineLike
 			}
 			case "eval":
 				return ok(this.evaluate(String(args.input)));
+			case "record":    // a stopwatch's measure (engine timers): the value is the line
+				return ok({ kind: "result", input: args.value, display_input: `${args.label}, ${args.note}`, text: args.value });
 			case "hint":
 			{
 				const left = String(args.text).slice(0, Number(args.caret));
@@ -69,6 +71,15 @@ class FakeEngine implements EngineLike
 
 	private evaluate(input: string): Record<string, unknown>
 	{
+		// :sw, :sw *, :timer 5m "name", as the engine's timers.py answers them
+		const timer = /^:(sw|timer) ?(\*|\d+m)?(?: "(\w+)")?$/.exec(input);
+		if (timer)
+		{
+			const action = timer[2] === "*" ? { kind: timer[1] === "sw" ? "stopwatch" : "timer", do: "list" }
+				: timer[1] === "sw" ? { kind: "stopwatch", do: "toggle" }
+				: { kind: "timer", do: "start", seconds: Number(timer[2].slice(0, -1)) * 60, label: timer[2], name: timer[3] ?? null };
+			return { kind: "definition", input, display_input: input, text: "Timer", timer: action };
+		}
 		const typed = /^:prec (\d+)$/.exec(input);    // a settings line, as the engine's commands.py
 		if (typed)
 		{
@@ -228,6 +239,25 @@ describe("keys", () =>
 		calc.clearSelection();    // after the press: a later function pick does not wrap
 		await calc.insertFunction("gamma");
 		expect(calc.text).toBe("gamma(x+1");    // at the caret, as before
+	});
+
+	it(":sw * and :timer * list what is going; :sw records its time (owner 2026-11-28)", async () =>
+	{
+		const { calc } = await started();
+		await calc.submit(":sw *");
+		expect(calc.entries.at(-1)?.text).toBe("Nothing running");
+		await calc.submit(":sw");
+		await calc.submit(':timer 5m "tea"');
+		await calc.submit(':timer 9m "tea"');    // the name in use: set again, not a second one
+		expect(calc.entries.at(-1)?.text).toMatch(/^Timer "tea" set again to 9m, done at /);
+		await calc.submit(":sw *");
+		const listed = calc.entries.slice(-3).map(entry => entry.kind === "notice" ? entry.input : entry.text);
+		expect(listed[0]).toBe("stopwatch running, 1 timer");
+		expect(listed[1]).toMatch(/^Stopwatch 0:00:00\.\d$/);
+		expect(listed[2]).toBe('Timer 9m "tea"');
+		await calc.submit(":sw");
+		expect(calc.entries.at(-1)?.kind).toBe("result");
+		expect(calc.entries.at(-1)?.display).toBe("Stopwatch, ");
 	});
 
 	it("2nd ( ) and ans type [ ] and -> for a conversion", async () =>

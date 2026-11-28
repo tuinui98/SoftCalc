@@ -115,7 +115,7 @@ internal sealed partial class MainForm
 		var action = reply.Timer!;
 		string kind = (string?)action["kind"] ?? "";
 		string does = (string?)action["do"] ?? "";
-		if (kind == "stopwatch")
+		if (kind == "stopwatch" && does != "list")    // :sw * lists all, as :timer * does
 		{
 			await StopwatchAsync(does, input);
 			return;

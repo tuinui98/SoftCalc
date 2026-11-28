@@ -547,7 +547,7 @@ export class Calculator
 	{
 		const kind = String(action.kind ?? "");
 		const does = String(action.do ?? "");
-		if (kind === "stopwatch")
+		if (kind === "stopwatch" && does !== "list")    // :sw * lists all, as :timer * does
 		{
 			await this.stopwatch(does, input);
 			return;
