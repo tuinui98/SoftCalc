@@ -879,7 +879,18 @@ ends 1:1, the drag insert line is visible enough on dark.
       the app's own Theme setting (`activity-alias`: kills the app,
       shortcuts may go).
 
-## Stopwatch, timer and alarm (owner 2026-11-27, plan 2026-11-28; to confirm before building)
+## Stopwatch, timer and alarm (owner 2026-11-27, plan 2026-11-28; built 2026-11-28)
+- [x] Built on branch timers: engine timers.py and `record`; desktop
+      TimerState, MainForm.Timers, TimersWindow, CountdownPage; web
+      timers.ts, TimersView; help 08 (Stopwatch, timer and alarm), 15,
+      web 01. Owner's changes while testing: a name in use sets its time
+      again, `"` shows the names, `*` lists what is going, `:sw last`,
+      no lap while paused, a countdown page per timer or alarm (mock
+      OK'd) whose three numbers can show the start, the end or the clock.
+- [ ] Later (owner 2026-11-28): let the owner choose the stopwatch key
+      instead of F8 (one base key; Shift/Ctrl as now); a desktop global
+      hotkey (off by default); APK notifications in the background.
+The plan as written before building:
 Three kinds: a stopwatch, a countdown timer, an alarm at a clock time.
 Everything works typed in Input in every view (History mode included);
 a separate window shows the running numbers, the laps and buttons.

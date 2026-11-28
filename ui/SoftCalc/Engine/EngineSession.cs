@@ -14,7 +14,7 @@ namespace SoftCalc.Engine;
 
 // SettingsChanged: a `:` line changed the settings (owner 2026-11-26); Settings already holds them
 internal sealed record EvalReply(string Kind, string Input, string DisplayInput, string Text, string Note = "",
-	bool SettingsChanged = false);
+	bool SettingsChanged = false, JsonObject? Timer = null);    // Timer: a :sw/:timer/:alarm line's action (engine timers.py)
 
 internal sealed record NamedValue(string Name, string Value);
 
@@ -126,7 +126,7 @@ internal sealed class EngineSession : IDisposable
 		var result = new EvalReply(
 			(string?)reply["kind"] ?? "error", (string?)reply["input"] ?? input,
 			(string?)reply["display_input"] ?? input, (string?)reply["text"] ?? "", (string?)reply["note"] ?? "",
-			reply["settings"] is JsonObject);
+			reply["settings"] is JsonObject, reply["timer"]?.DeepClone() as JsonObject);
 		if (reply["settings"] is JsonObject changed)
 		{
 			foreach (var (key, value) in changed)
@@ -139,6 +139,22 @@ internal sealed class EngineSession : IDisposable
 			await SnapshotDefinitionsAsync();
 		}
 		return result;
+	}
+
+	// A stopwatch's measure into History (protocol `record`): kept as answer and $n, shown under its label
+	public async Task<EvalReply> RecordAsync(string label, string value, string note)
+	{
+		try
+		{
+			var reply = await RequestAsync("record", new JsonObject { ["label"] = label, ["value"] = value, ["note"] = note }, QuickTimeout);
+			return new EvalReply((string?)reply["kind"] ?? "error", label, (string?)reply["display_input"] ?? note,
+				(string?)reply["text"] ?? "");
+		}
+		catch (EngineLostException ex)
+		{
+			await RestartAsync(ex.Message);
+			return new EvalReply("error", label, note, "ERROR:The engine stopped and was restarted");
+		}
 	}
 
 	// Fetch once, hand the rates over, evaluate again

@@ -185,6 +185,7 @@ internal sealed class AppSettings
 	public CompoundPrefs Compound { get; set; } = new();
 	public RandomPrefs Random { get; set; } = new();
 	public CryptoPrefs Crypto { get; set; } = new();
+	public TimerState Timers { get; set; } = new();    // stopwatch, timers, alarms (owner 2026-11-28)
 
 	// Customize Ribbon layout; null = the default (design/ribbon_plan.md)
 	public List<RibbonGroup>? Ribbon { get; set; }
@@ -327,6 +328,32 @@ internal static class SettingsStore
 		s.Random ??= new RandomPrefs();
 		s.KeypadHeight = Math.Clamp(s.KeypadHeight, AppSettings.KeypadLeast, 1000);
 		s.Crypto ??= new CryptoPrefs();
+		s.Timers ??= new TimerState();
+		s.Timers.Laps ??= new List<Lap>();
+		s.Timers.Pauses ??= new List<double>();
+		s.Timers.Countdowns ??= new List<Countdown>();
+		s.Timers.Countdowns.RemoveAll(c => c == null);
+		foreach (string kind in new[] { "timer", "alarm" })
+		{
+			var slots = s.Timers.Slots(kind);
+			bool good = slots is { Count: 3 } && slots.All(slot => slot is { Length: 2 }
+				&& TimerState.Shows.Contains(slot[0]) && TimerState.FormatsOf(slot[0]).Contains(slot[1]));
+			if (!good)
+			{
+				if (kind == "alarm")
+				{
+					s.Timers.AlarmSlots = TimerState.DefaultSlots(kind);
+				}
+				else
+				{
+					s.Timers.TimerSlots = TimerState.DefaultSlots(kind);
+				}
+			}
+		}
+		if (!TimerState.Sounds.Contains(s.Timers.Sound))
+		{
+			s.Timers.Sound = "once";
+		}
 		if (s.Crypto.Tab is not ("address" or "balance" or "watch" or "fees"))
 		{
 			s.Crypto.Tab = "address";

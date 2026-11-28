@@ -107,6 +107,7 @@ class Dispatcher:
         self.apart = None    # the web app's Seed draws (`draws` with apart), made on first use
         self.handlers = {
             "eval": self.op_eval,
+            "record": self.op_record,
             "clear_history": self.op_clear_history,
             "settings": self.op_settings,
             "state": lambda request: self.engine.state(),
@@ -155,7 +156,17 @@ class Dispatcher:
                  "display_input": result.display_input, "text": result.text, "note": result.note}
         if result.settings_changed:
             reply["settings"] = self.current_settings()    # a `:` line (commands.py); the UI keeps them
+        if result.timer is not None:
+            reply["timer"] = result.timer    # a stopwatch, timer or alarm line (timers.py); the UI acts
         return reply
+
+    def op_record(self, request):
+        """A stopwatch's measure into History: {label, value, note}, kept as answer and $n;
+        input is the value, display_input the label and note."""
+        result = self.engine.record(argument(request, "label", str), argument(request, "value", str),
+                                    argument(request, "note", str, "", required=False))
+        return {"kind": result.kind, "input": result.input, "display_input": result.display_input,
+                "text": result.text, "note": ""}
 
     def current_settings(self):
         return {name: getattr(self.engine.settings, name) for name in Settings.__dataclass_fields__}

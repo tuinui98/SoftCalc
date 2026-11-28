@@ -35,6 +35,23 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		Assert.Equal(("result", "2x+1", "(2*5)+1", "11"), (reply.Kind, reply.Input, reply.DisplayInput, reply.Text));
 	}
 
+	// :timer and record over the real pipe (owner 2026-11-28): the action comes with the reply, a record is answer
+	[Fact]
+	public async Task TimerLinesSendTheirActionAndRecordKeepsAnswer()
+	{
+		var timer = await Session.EvalAsync(":timer 0:05*3 \"tea\"");
+		Assert.Equal("definition", timer.Kind);
+		Assert.NotNull(timer.Timer);
+		Assert.Equal(("timer", "start", 900.0, "tea"), ((string?)timer.Timer!["kind"], (string?)timer.Timer["do"],
+			(double?)timer.Timer["seconds"], (string?)timer.Timer["name"]));
+		var list = await Session.EvalAsync(":sw *");
+		Assert.Equal(("stopwatch", "list"), ((string?)list.Timer!["kind"], (string?)list.Timer["do"]));
+		Assert.Equal("ERROR:A timer needs a length, not a number", (await Session.EvalAsync(":timer 90")).Text.Split(';')[0]);
+		var record = await Session.RecordAsync("Lap 2", "0:00:41.20", "total 0:01:23.45");
+		Assert.Equal(("result", "0:00:41.2", "Lap 2, total 0:01:23.45"), (record.Kind, record.Text, record.DisplayInput));
+		Assert.Equal("0:01:22.4", (await Session.EvalAsync("answer*2")).Text);
+	}
+
 	// card() (owner 2026-11-24): the decks go to the engine before a line when they changed
 	[Fact]
 	public async Task CardDrawsFromTheDecksHandedOver()

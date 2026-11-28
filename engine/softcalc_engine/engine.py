@@ -32,6 +32,7 @@ from .rpn import parse_rpn
 from .units import RNW_NAMES, canonical, convert, rnw_text, rnw_value
 from . import crypto
 from . import commands
+from . import timers
 from . import currency
 from . import fastplot
 
@@ -126,6 +127,7 @@ class EvalResult:
     note: the ECB rate date when a currency rate was used, else "".
     settings_changed: a `:` line changed the settings (commands.py); the
     server then sends them with the reply.
+    timer: a stopwatch, timer or alarm line's action for the UI (timers.py).
     """
 
     kind: str
@@ -135,6 +137,7 @@ class EvalResult:
     value: object = field(default=None, repr=False)
     note: str = ""
     settings_changed: bool = False
+    timer: dict = None
 
 
 @dataclass
@@ -227,6 +230,8 @@ class Engine:
 
         It is a "definition" to the UI: a message in History, no `$n`, no answer.
         """
+        if timers.is_timer(text):
+            return self.timer_command(text)
         try:
             changes = commands.parse(text)
         except CalcError as exc:
@@ -237,6 +242,36 @@ class Engine:
             setattr(self.settings, name, value)
         said = ", ".join(dict.fromkeys(commands.describe(name, getattr(self.settings, name)) for name, _ in changes))
         return EvalResult("definition", text, said, text, settings_changed=True)
+
+    def timer_command(self, text):
+        """A stopwatch, timer or alarm line (timers.py): a message, and the action for the UI."""
+        try:
+            action, said = timers.parse(text, self.value_of)
+        except CalcError as exc:
+            return EvalResult("error", text, f"ERROR:{exc}", text)
+        return EvalResult("definition", text, said, text, timer=action)
+
+    def value_of(self, text):
+        """The value of an expression, kept nowhere (not answer, not $n): a timer's length."""
+        with mpmath.workdps(working_digits(self.settings.precision, self.settings.base) + GUARD_DIGITS):
+            builtins = Functions(self.settings.angle, self.settings.word_size)
+            tree = self.parse(text, builtins)
+            if tree[0] in ("assign", "define"):
+                raise CalcError("A definition is not a time")
+            return self.eval_node(tree, builtins, {}, 0)
+
+    def record(self, label, value_text, note=""):
+        """What the stopwatch measured (protocol `record`): `Lap 2` = 0:00:41.2, kept as answer
+        and $n as a typed line is (owner 2026-11-28). The line is the value, so a click on it in
+        History brings back a number that calculates; the label and note show faint on the right."""
+        shown = f"{label}, {note}" if note else label
+        try:
+            value = self.value_of(value_text)
+        except CalcError as exc:
+            return EvalResult("error", value_text, f"ERROR:{exc}", shown)
+        self.answer = value
+        self.results.append(value)
+        return EvalResult("result", value_text, self.format_value(value), shown, value)
 
     def repeat(self, text, count, unique, give_up):
         """The Random window's Seed draws (server `draws`): the line parsed
