@@ -586,28 +586,22 @@ export class Calculator
 		this.timersChanged();
 	}
 
-	// `*` after :sw, :timer or :alarm (owner 2026-11-28): the stopwatch (now, or its last run), every timer and alarm
+	// `*` after :sw, :timer or :alarm (owner 2026-11-28): what is going: the stopwatch, every timer and alarm
 	private listAll(input: string, now: number)
 	{
 		const s = this.timers;
 		const timers = s.countdowns.filter(c => c.kind === "timer").length;
 		const alarms = s.countdowns.length - timers;
-		const state = clocks.running(s) ? "running" : clocks.started(s) ? "paused" : "stopped";
-		this.add({ kind: "definition", input, display: input,
-			text: `Stopwatch ${state}, ${timers} timer${timers === 1 ? "" : "s"}, ${alarms} alarm${alarms === 1 ? "" : "s"}` });
+		const going = [
+			...(clocks.started(s) ? [clocks.running(s) ? "stopwatch running" : "stopwatch paused"] : []),
+			...(timers > 0 ? [`${timers} timer${timers === 1 ? "" : "s"}`] : []),
+			...(alarms > 0 ? [`${alarms} alarm${alarms === 1 ? "" : "s"}`] : []),
+		];
+		this.add({ kind: "definition", input, display: input, text: going.length > 0 ? going.join(", ") : "Nothing running" });
 		if (clocks.started(s))
 		{
 			this.notice(`Stopwatch ${clocks.clock(clocks.elapsed(s, now), 1)}`, clocks.running(s) ? "running" : "paused");
 			this.marks(s.laps, s.pauses);
-		}
-		else if (s.lastRun)
-		{
-			this.notice(`Stopwatch, last run ${clocks.clock(s.lastRun.total, 2)}`, `ended ${clocks.at(s.lastRun.ended, true)}`);
-			this.marks(s.lastRun.laps, s.lastRun.pauses);
-		}
-		else
-		{
-			this.notice("No stopwatch record", "");
 		}
 		for (const countdown of s.countdowns)
 		{
@@ -638,7 +632,18 @@ export class Calculator
 			does = clocks.running(s) ? "stop" : "start";    // a paused one goes on
 		}
 		let message: string | null = null;
-		if (does === "start" || does === "go")
+		if (does === "last")    // the last run, kept over a restart (owner 2026-11-28)
+		{
+			if (s.lastRun)
+			{
+				this.add({ kind: "definition", input, display: input,
+					text: `Stopwatch, last run ${clocks.clock(s.lastRun.total, 2)}, ended ${clocks.at(s.lastRun.ended, true)}` });
+				this.marks(s.lastRun.laps, s.lastRun.pauses);
+			}
+			else
+				message = "No stopwatch record";
+		}
+		else if (does === "start" || does === "go")
 		{
 			message = clocks.started(s) ? `Stopwatch goes on at ${clocks.clock(clocks.elapsed(s, now), 1)}` : "Stopwatch started";
 			clocks.start(s, now);

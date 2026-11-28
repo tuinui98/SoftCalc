@@ -20,6 +20,7 @@ def action(line, now=NOW):
 @pytest.mark.parametrize("line, does", [
     (":sw", "toggle"), (":stopwatch", "toggle"), (":SW", "toggle"), (":sw pause", "pause"), (":sw go", "go"),
     (":sw start", "start"), (":sw stop", "stop"), (":sw reset", "reset"), (":sw lap", "lap"), (":lap", "lap"),
+    (":sw last", "last"),
 ])
 def test_stopwatch_lines(line, does):
     assert action(line)[0] == {"kind": "stopwatch", "do": does}

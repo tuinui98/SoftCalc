@@ -31,7 +31,7 @@ LAP = ("lap",)
 TIMER = ("timer",)
 ALARM = ("alarm",)
 WORDS = STOPWATCH + LAP + TIMER + ALARM
-STOPWATCH_DOES = ("start", "stop", "pause", "go", "reset", "lap")
+STOPWATCH_DOES = ("start", "stop", "pause", "go", "reset", "lap", "last")    # last: the last run (owner 2026-11-28)
 OFF = ("off", "cancel")
 MAX_SECONDS = 366 * 86400    # a year and a day: longer is a slip
 SHORT = re.compile(r"^\s*(?:(\d+(?:\.\d+)?)\s*h)?\s*(?:(\d+(?:\.\d+)?)\s*m(?:in)?)?\s*(?:(\d+(?:\.\d+)?)\s*s)?\s*$",
@@ -161,5 +161,5 @@ def hint(left):
     if word in ALARM:
         return 'alarm: :alarm 14:30, 29.11.2026 7:00, now+0:15; "name" sets it again; off; * all'
     if word in STOPWATCH + LAP:
-        return "stopwatch: :sw starts or stops; :sw pause, go, lap, reset; :lap; * lists all; F8"
+        return "stopwatch: :sw starts or stops; :sw pause, go, lap, reset, last; * lists all; F8"
     return HINT

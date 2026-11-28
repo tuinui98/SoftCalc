@@ -152,26 +152,28 @@ internal sealed partial class MainForm
 		WakeTimers();
 	}
 
-	// `*` after :sw, :timer or :alarm (owner 2026-11-28): the stopwatch (now, or its last run), every timer and alarm
+	// `*` after :sw, :timer or :alarm (owner 2026-11-28): what is going, the stopwatch and every timer and alarm
 	private void ListAll(string input, DateTime now)
 	{
 		int timers = Timers.Of("timer").Count(), alarms = Timers.Of("alarm").Count();
-		_history.Append(Stamp(new HistoryEntry("definition", input, input,
-			$"Stopwatch {(Timers.Running ? "running" : Timers.Started ? "paused" : "stopped")}, {timers} timer{(timers == 1 ? "" : "s")}, "
-			+ $"{alarms} alarm{(alarms == 1 ? "" : "s")}")));
+		var going = new List<string>();
+		if (Timers.Started)
+		{
+			going.Add(Timers.Running ? "stopwatch running" : "stopwatch paused");
+		}
+		if (timers > 0)
+		{
+			going.Add($"{timers} timer{(timers == 1 ? "" : "s")}");
+		}
+		if (alarms > 0)
+		{
+			going.Add($"{alarms} alarm{(alarms == 1 ? "" : "s")}");
+		}
+		_history.Append(Stamp(new HistoryEntry("definition", input, input, going.Count > 0 ? string.Join(", ", going) : "Nothing running")));
 		if (Timers.Started)
 		{
 			Notice($"Stopwatch {TimerState.Clock(Timers.Elapsed(now), 1)}", Timers.Running ? "running" : "paused");
 			Marks(Timers.Laps, Timers.Pauses);
-		}
-		else if (Timers.LastRun is StopwatchRun run)
-		{
-			Notice($"Stopwatch, last run {TimerState.Clock(run.Total, 2)}", $"ended {run.Ended.ToLocalTime():dd.MM.yyyy HH:mm:ss}");
-			Marks(run.Laps, run.Pauses);
-		}
-		else
-		{
-			Notice("No stopwatch record", "");
 		}
 		foreach (var countdown in Timers.Countdowns)
 		{
@@ -201,6 +203,18 @@ internal sealed partial class MainForm
 		string? message = null;
 		switch (does)
 		{
+			case "last":    // the last run, kept over a restart (owner 2026-11-28)
+				if (Timers.LastRun is StopwatchRun run)
+				{
+					_history.Append(Stamp(new HistoryEntry("definition", input, input,
+						$"Stopwatch, last run {TimerState.Clock(run.Total, 2)}, ended {run.Ended.ToLocalTime():dd.MM.yyyy HH:mm:ss}")));
+					Marks(run.Laps, run.Pauses);
+				}
+				else
+				{
+					message = "No stopwatch record";
+				}
+				break;
 			case "start":
 			case "go":
 				message = Timers.Started ? $"Stopwatch goes on at {TimerState.Clock(Timers.Elapsed(now), 1)}" : "Stopwatch started";
