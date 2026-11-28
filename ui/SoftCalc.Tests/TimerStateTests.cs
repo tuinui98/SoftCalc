@@ -152,6 +152,12 @@ public class TimerStateTests
 		Assert.Equal("25.0 %", TimerState.Slot(countdown, "done", "", T0.AddSeconds(25)));
 		Assert.Equal("75.0 %", TimerState.Slot(countdown, "remain", "", T0.AddSeconds(25)));
 		Assert.Equal("1:40.0", TimerState.Slot(countdown, "set", "mmm:ss.s", T0.AddSeconds(25)));
+		// times of day, local (owner 2026-11-28: the clock beside the end time)
+		string ends = T0.AddSeconds(100).ToLocalTime().ToString("HH:mm:ss");
+		Assert.Equal(ends + ".0", TimerState.Slot(countdown, "ends", "HH:mm:ss.s", T0));
+		Assert.Equal(ends, TimerState.Slot(countdown, "ends", "HH:mm:ss", T0));
+		Assert.Equal(T0.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss") + ".0", TimerState.Slot(countdown, "started", "dd.MM.yyyy HH:mm:ss.s", T0));
+		Assert.Equal(T0.AddSeconds(3.45).ToLocalTime().ToString("HH:mm:ss") + ".4", TimerState.Slot(countdown, "clock", "HH:mm:ss.s", T0.AddSeconds(3.45)));
 	}
 
 	[Fact]

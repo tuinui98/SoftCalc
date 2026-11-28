@@ -55,9 +55,16 @@ internal sealed class TimerState
 	public List<string[]> AlarmSlots { get; set; } = DefaultSlots("alarm");
 	public bool QuietCountdown { get; set; }    // no ticks in the last 10 seconds
 
-	public static readonly string[] Shows = { "left", "since", "done", "remain", "set" };
-	public static readonly string[] ShowNames = { "Time left", "Since start", "% done", "% left", "Set length" };
+	public static readonly string[] Shows = { "left", "since", "done", "remain", "set", "started", "ends", "clock" };
+	public static readonly string[] ShowNames = { "Time left", "Since start", "% done", "% left", "Set length", "Started", "Ends", "Clock" };
 	public static readonly string[] Formats = { "ddd hh:mm:ss.s", "hhh:mm:ss.s", "mmm:ss.s", "ssss.s" };
+	// a time of day (owner 2026-11-28: the clock beside the end time): started, ends, the computer's clock
+	public static readonly string[] ClockFormats = { "HH:mm:ss.s", "HH:mm:ss", "dd.MM.yyyy HH:mm:ss.s" };
+
+	public static bool IsClock(string show) => show is "started" or "ends" or "clock";
+
+	/// <summary>The formats a show takes: lengths, or times of day.</summary>
+	public static string[] FormatsOf(string show) => IsClock(show) ? ClockFormats : Formats;
 
 	public static List<string[]> DefaultSlots(string kind)
 	{
@@ -282,7 +289,23 @@ internal sealed class TimerState
 			"since" => Span(since, format, false),
 			"done" => done.ToString("0.0", CultureInfo.InvariantCulture) + " %",
 			"remain" => (100 - done).ToString("0.0", CultureInfo.InvariantCulture) + " %",
+			"started" => TimeOfDay(countdown.Set, format),
+			"ends" => TimeOfDay(countdown.Due, format),
+			"clock" => TimeOfDay(now, format),
 			_ => Span(total, format, false),
+		};
+	}
+
+	/// <summary>A moment in one of ClockFormats, local time: 14:03:12.4.</summary>
+	public static string TimeOfDay(DateTime utc, string format)
+	{
+		var local = utc.ToLocalTime();
+		string tenth = "." + local.Millisecond / 100;
+		return format switch
+		{
+			"HH:mm:ss" => local.ToString("HH:mm:ss", CultureInfo.InvariantCulture),
+			"dd.MM.yyyy HH:mm:ss.s" => local.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture) + tenth,
+			_ => local.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + tenth,
 		};
 	}
 

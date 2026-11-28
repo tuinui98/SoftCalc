@@ -145,6 +145,12 @@ describe("the countdown page (owner 2026-11-28), as the desktop's", () =>
 		expect(slot(countdown, "since", "hhh:mm:ss.s", at(10))).toBe("0:00:10.0");
 		expect([slot(countdown, "done", "", at(25)), slot(countdown, "remain", "", at(25))]).toEqual(["25.0 %", "75.0 %"]);
 		expect(slot(countdown, "set", "mmm:ss.s", at(25))).toBe("1:40.0");
+		// times of day, local (owner 2026-11-28: the clock beside the end time)
+		const local = (ms: number) => { const d = new Date(ms); return [d.getHours(), d.getMinutes(), d.getSeconds()].map(n => String(n).padStart(2, "0")).join(":"); };
+		expect(slot(countdown, "ends", "HH:mm:ss.s", T0)).toBe(`${local(at(100))}.0`);
+		expect(slot(countdown, "ends", "HH:mm:ss", T0)).toBe(local(at(100)));
+		expect(slot(countdown, "clock", "HH:mm:ss.s", at(3.45))).toBe(`${local(at(3.45))}.4`);
+		expect(slot(countdown, "started", "dd.MM.yyyy HH:mm:ss.s", T0)).toMatch(/^\d\d\.\d\d\.2026 \d\d:\d\d:\d\d\.0$/);
 	});
 
 	it("odd slots in storage go back to the defaults", () =>

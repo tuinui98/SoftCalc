@@ -337,7 +337,7 @@ internal static class SettingsStore
 		{
 			var slots = s.Timers.Slots(kind);
 			bool good = slots is { Count: 3 } && slots.All(slot => slot is { Length: 2 }
-				&& TimerState.Shows.Contains(slot[0]) && TimerState.Formats.Contains(slot[1]));
+				&& TimerState.Shows.Contains(slot[0]) && TimerState.FormatsOf(slot[0]).Contains(slot[1]));
 			if (!good)
 			{
 				if (kind == "alarm")

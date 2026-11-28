@@ -36,9 +36,21 @@ export interface StopwatchRun
 export const SOUNDS = ["once", "repeat", "off"] as const;
 
 // The countdown page's three numbers (owner 2026-11-28): what each shows and its format, kept per kind
-export const SHOWS = ["left", "since", "done", "remain", "set"] as const;
-export const SHOW_NAMES: Record<string, string> = { left: "Time left", since: "Since start", done: "% done", remain: "% left", set: "Set length" };
+export const SHOWS = ["left", "since", "done", "remain", "set", "started", "ends", "clock"] as const;
+export const SHOW_NAMES: Record<string, string> = {
+	left: "Time left", since: "Since start", done: "% done", remain: "% left", set: "Set length", started: "Started", ends: "Ends", clock: "Clock",
+};
 export const FORMATS = ["ddd hh:mm:ss.s", "hhh:mm:ss.s", "mmm:ss.s", "ssss.s"] as const;
+// a time of day (owner 2026-11-28: the clock beside the end time): started, ends, this device's clock
+export const CLOCK_FORMATS = ["HH:mm:ss.s", "HH:mm:ss", "dd.MM.yyyy HH:mm:ss.s"] as const;
+
+export const isClock = (show: string) => show === "started" || show === "ends" || show === "clock";
+
+// The formats a show takes: lengths, or times of day
+export function formatsOf(show: string): readonly string[]
+{
+	return isClock(show) ? CLOCK_FORMATS : FORMATS;
+}
 export type Slot = [string, string];
 
 export function defaultSlots(kind: string): Slot[]
@@ -50,7 +62,7 @@ export function defaultSlots(kind: string): Slot[]
 function slotsFrom(stored: unknown, kind: string): Slot[]
 {
 	const good = Array.isArray(stored) && stored.length === 3 && stored.every(slot => Array.isArray(slot) && slot.length === 2
-		&& (SHOWS as readonly string[]).includes(slot[0]) && (FORMATS as readonly string[]).includes(slot[1]));
+		&& (SHOWS as readonly string[]).includes(slot[0]) && formatsOf(slot[0]).includes(slot[1]));
 	return good ? (stored as Slot[]).map(([a, b]) => [a, b] as Slot) : defaultSlots(kind);
 }
 
@@ -325,6 +337,18 @@ export function slot(countdown: Countdown, show: string, format: string, now: nu
 		case "since": return span(since, format, false);
 		case "done": return `${done.toFixed(1)} %`;
 		case "remain": return `${(100 - done).toFixed(1)} %`;
+		case "started": return timeOfDay(countdown.set, format);
+		case "ends": return timeOfDay(countdown.due, format);
+		case "clock": return timeOfDay(now, format);
 		default: return span(total, format, false);
 	}
+}
+
+// A moment in one of CLOCK_FORMATS, local time: 14:03:12.4
+export function timeOfDay(ms: number, format: string): string
+{
+	const full = stamp(ms);    // dd.MM.yyyy HH:mm:ss.s
+	if (format === "dd.MM.yyyy HH:mm:ss.s")
+		return full;
+	return format === "HH:mm:ss" ? full.slice(11, 19) : full.slice(11);
 }

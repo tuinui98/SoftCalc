@@ -182,17 +182,28 @@ internal sealed class CountdownPage : UserControl
 		for (int i = 0; i < TimerState.Shows.Length; i++)
 		{
 			string show = TimerState.Shows[i];
-			string extra = show == "left" ? " (counts down)" : show == "since" ? " (counts up)" : "";
-			menu.Items.Add(new ToolStripMenuItem(TimerState.ShowNames[i] + extra, null, (_, _) => slots[slot][0] = show) { Checked = slots[slot][0] == show });
-		}
-		menu.Items.Add(new ToolStripSeparator());
-		menu.Items.Add(new ToolStripLabel("Format") { ForeColor = SystemColors.GrayText });
-		foreach (string format in TimerState.Formats)
-		{
-			menu.Items.Add(new ToolStripMenuItem(format, null, (_, _) => slots[slot][1] = format)
+			if (show == "started")
 			{
-				Checked = slots[slot][1] == format && slots[slot][0] is not ("done" or "remain"),
-			});
+				menu.Items.Add(new ToolStripSeparator());    // times of day below
+			}
+			string extra = show == "left" ? " (counts down)" : show == "since" ? " (counts up)" : show == "clock" ? " (this computer)" : "";
+			menu.Items.Add(new ToolStripMenuItem(TimerState.ShowNames[i] + extra, null, (_, _) =>
+			{
+				if (TimerState.IsClock(show) != TimerState.IsClock(slots[slot][0]))
+				{
+					slots[slot][1] = TimerState.FormatsOf(show)[0];    // a length's format does not fit a time of day
+				}
+				slots[slot][0] = show;
+			}) { Checked = slots[slot][0] == show });
+		}
+		if (slots[slot][0] is not ("done" or "remain"))
+		{
+			menu.Items.Add(new ToolStripSeparator());
+			menu.Items.Add(new ToolStripLabel("Format") { ForeColor = SystemColors.GrayText });
+			foreach (string format in TimerState.FormatsOf(slots[slot][0]))
+			{
+				menu.Items.Add(new ToolStripMenuItem(format, null, (_, _) => slots[slot][1] = format) { Checked = slots[slot][1] == format });
+			}
 		}
 		menu.Closed += (_, _) => BeginInvoke(menu.Dispose);
 		menu.Show(under, new Point(under.Width / 2 - 80, under.Height / 2));

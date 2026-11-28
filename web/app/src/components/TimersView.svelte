@@ -126,6 +126,8 @@
 	function choose(which: number, show: string | null, format: string | null)
 	{
 		const slot = slotsOf(opened!.kind)[which];
+		if (show && clocks.isClock(show) !== clocks.isClock(slot[0]))
+			slot[1] = clocks.formatsOf(show)[0];    // a length's format does not fit a time of day
 		if (show)
 			slot[0] = show;
 		if (format)
@@ -200,16 +202,17 @@
 							<h4>Show</h4>
 							{#each clocks.SHOWS as show}
 								<button class:on={current[0] === show} onclick={() => choose(menuFor!, show, null)}>
-									{clocks.SHOW_NAMES[show]}{show === "left" ? " (counts down)" : show === "since" ? " (counts up)" : ""}</button>
+									{clocks.SHOW_NAMES[show]}{show === "left" ? " (counts down)" : show === "since" ? " (counts up)" : show === "clock" ? " (this device)" : ""}</button>
 							{/each}
 						</div>
-						<div class="menu-col">
-							<h4>Format</h4>
-							{#each clocks.FORMATS as format}
-								<button class="fmt" class:on={current[1] === format && current[0] !== "done" && current[0] !== "remain"}
-									onclick={() => choose(menuFor!, current[0] === "done" || current[0] === "remain" ? "left" : null, format)}>{format}</button>
-							{/each}
-						</div>
+						{#if current[0] !== "done" && current[0] !== "remain"}
+							<div class="menu-col">
+								<h4>Format</h4>
+								{#each clocks.formatsOf(current[0]) as format}
+									<button class="fmt" class:on={current[1] === format} onclick={() => choose(menuFor!, null, format)}>{format}</button>
+								{/each}
+							</div>
+						{/if}
 					</div>
 				{/if}
 				{#if left <= 0 && !dismissed}
