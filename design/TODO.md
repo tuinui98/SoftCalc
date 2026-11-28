@@ -942,6 +942,23 @@ a separate window shows the running numbers, the laps and buttons.
 - Help: a new section in help 08 (or its own topic), keys in help 15,
   hints for the commands.
 
+## Compound interest: rate and length units (owner 2026-11-28)
+- [ ] The rate field takes a unit: interest rate % **daily / weekly /
+      monthly / yearly** (now `Annual rate %` only).
+- [ ] The length field (now `Years`) takes a unit: **days / weeks /
+      months / years**.
+- Compounding and contribution stay as they are (owner: already OK).
+- [ ] The chart follows the choice: the X axis in the length's unit
+      (`days`, `weeks`, `months`, `years`, now always `years`), ticks
+      that fit it; the table and CSV the same.
+- Where: desktop CompoundWindow + CompoundChart, web CompoundView, the
+  engine's compound op (or the UI converts before it), help, prefs.
+- To discuss before building: a daily rate as nominal (× 365 for a
+  year) or effective (compounded); days in a year (365, 365.25) and in
+  a month (year / 12); what happens when the length is not a whole
+  number of compounding periods (e.g. 10 days, monthly compounding);
+  whether the chart's unit follows the length or the compounding.
+
 ## Widgets (owner 2026-11-27; to think about later, nothing chosen)
 A widget cannot run the engine (Pyodide in a WebView; desktop engine in
 its own process), so it can show a value or open the app, not calculate.
