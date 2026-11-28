@@ -1,6 +1,6 @@
 # SoftCalc - project status (handoff)
 
-Updated 2026-11-27: version 1.11.2 released (implicit products bracketed in History, "Finished in", vdot, direct references for the inverses). Everything below is committed on `main` and
+Updated 2026-11-28: version 1.12.0 released (stopwatch, timers and alarms with a countdown page; keypad keys around a selection, = on the Sci page). Everything below is committed on `main` and
 pushed to the GitHub repo https://github.com/tuinui98/SoftCalc (public: see TODO section 10).
 
 Open work is listed in `design/TODO.md`.
@@ -208,6 +208,15 @@ Input says how long each line took ("Took 0.23 s", "Working... 1.4 s").
 Help 01, 14, 17.
 
 Tests: UI `dotnet test` 489 passed; web 140.
+
+Version 1.12.0 (2026-11-28): stopwatch, timers and alarms (engine
+timers.py and `record`; desktop TimerState, MainForm.Timers,
+TimersWindow, CountdownPage; web timers.ts, TimersView): `:sw`, `:lap`,
+`:timer`, `:alarm` with calculations, names, `*` and `:sw last`; the
+readout at the right of the hint line; F8 keys; a countdown page per
+timer or alarm. Keypad keys go around a selection (WrapRules.cs /
+wrap.ts); the web's Sci page has = over log. Help 05 (output base and
+input), 08, 13, 15, web 01.
 
 Version 1.11.2 (2026-11-27): History brackets an implicit product that
 holds a name (`1/2x` as `1/(2*3)`; not when it is the whole line or
