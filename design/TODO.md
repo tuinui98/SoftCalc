@@ -953,11 +953,12 @@ a separate window shows the running numbers, the laps and buttons.
       that fit it; the table and CSV the same.
 - Where: desktop CompoundWindow + CompoundChart, web CompoundView, the
   engine's compound op (or the UI converts before it), help, prefs.
-- To discuss before building: a daily rate as nominal (× 365 for a
-  year) or effective (compounded); days in a year (365, 365.25) and in
-  a month (year / 12); what happens when the length is not a whole
-  number of compounding periods (e.g. 10 days, monthly compounding);
-  whether the chart's unit follows the length or the compounding.
+- Decided (owner 2026-11-28): a daily / weekly / monthly rate turns
+  into a yearly one compounded, `(1 + r)^n - 1`, not `r × n`; a year is
+  365 days (a month is year / 12, a week 7 days); a length that is not
+  a whole number of compounding periods is cut to the whole periods
+  (10 days with monthly compounding: 0 periods); the chart's X axis
+  takes the length's unit.
 
 ## Widgets (owner 2026-11-27; to think about later, nothing chosen)
 A widget cannot run the engine (Pyodide in a WebView; desktop engine in
