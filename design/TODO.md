@@ -890,6 +890,13 @@ ends 1:1, the drag insert line is visible enough on dark.
 - [ ] Later (owner 2026-11-28): let the owner choose the stopwatch key
       instead of F8 (one base key; Shift/Ctrl as now); a desktop global
       hotkey (off by default); APK notifications in the background.
+- [ ] Countdown page, the main number (owner 2026-11-28): the decimals
+      after the seconds (`.4` of `0:04:12.4`) in a smaller font, and a
+      choice per page kind (timer / alarm, kept like the slots): decimals
+      **show** (same size), **small**, or **hide**. Desktop CountdownPage
+      (FitText draws two runs), web TimersView. To discuss: does it apply
+      to the two smaller numbers too, and does hide round or cut (`4:12.9`
+      shows `4:12` while counting down, so T+0 lands on the second).
 The plan as written before building:
 Three kinds: a stopwatch, a countdown timer, an alarm at a clock time.
 Everything works typed in Input in every view (History mode included);
