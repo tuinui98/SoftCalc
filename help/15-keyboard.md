@@ -22,6 +22,17 @@
 | Ctrl+C | copy the selected entry |
 | right-click | Use Expression, Insert Result, copy, Delete, Clear History |
 
+## Stopwatch
+
+In the main window and the Stopwatch & Timers window (Dates and time):
+
+| key | does |
+|---|---|
+| F8 | start the stopwatch, or stop it (the time goes to History) |
+| Shift+F8 | a lap |
+| Ctrl+F8 | pause, or go on |
+| Ctrl+Shift+F8 | reset |
+
 ## Graph window
 
 | key or mouse | does |
