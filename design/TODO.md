@@ -894,9 +894,10 @@ ends 1:1, the drag insert line is visible enough on dark.
       after the seconds (`.4` of `0:04:12.4`) in a smaller font, and a
       choice per page kind (timer / alarm, kept like the slots): decimals
       **show** (same size), **small**, or **hide**. Desktop CountdownPage
-      (FitText draws two runs), web TimersView. To discuss: does it apply
-      to the two smaller numbers too, and does hide round or cut (`4:12.9`
-      shows `4:12` while counting down, so T+0 lands on the second).
+      (FitText draws two runs), web TimersView. Owner 2026-11-28: all
+      three numbers, not only the main one; hide cuts, not rounds
+      (`4:12.9` shows `4:12` while counting down, so T+0 lands on the
+      second).
 The plan as written before building:
 Three kinds: a stopwatch, a countdown timer, an alarm at a clock time.
 Everything works typed in Input in every view (History mode included);
