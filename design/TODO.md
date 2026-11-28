@@ -949,12 +949,12 @@ a separate window shows the running numbers, the laps and buttons.
   help 09, protocol.md. The table keeps its Period column. Picture
   `help/img/compound.*.png` still shows the old labels (redo when the
   owner is done with the topic).
-- [ ] The rate field takes a unit: interest rate % **daily / weekly /
+- [x] The rate field takes a unit: interest rate % **daily / weekly /
       monthly / yearly** (now `Annual rate %` only).
-- [ ] The length field (now `Years`) takes a unit: **days / weeks /
+- [x] The length field (now `Years`) takes a unit: **days / weeks /
       months / years**.
 - Compounding and contribution stay as they are (owner: already OK).
-- [ ] The chart follows the choice: the X axis in the length's unit
+- [x] The chart follows the choice: the X axis in the length's unit
       (`days`, `weeks`, `months`, `years`, now always `years`), ticks
       that fit it; the table and CSV the same.
 - Where: desktop CompoundWindow + CompoundChart, web CompoundView, the
