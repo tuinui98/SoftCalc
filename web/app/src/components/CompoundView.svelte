@@ -13,7 +13,7 @@
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		chartScale, resultText, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
 		type Schedule,
 	} from "../lib/compound";
 	import { copyText } from "../lib/clipboard";
@@ -431,6 +431,14 @@
 		}
 	}
 
+	async function copyResult()
+	{
+		if (await copyText(resultText(resultLines)))
+		{
+			say("Copied the result");
+		}
+	}
+
 	async function copySummary()
 	{
 		if (schedule && await copyText(summary($state.snapshot(inputs) as CompoundInputs, schedule)))
@@ -571,6 +579,8 @@
 							<span>{line.label}</span><b>{line.value}</b>
 						</button>
 					{/each}
+					<!-- owner 2026-11-29: the box's lines as text -->
+					<button class="copy-result" use:tap={() => void copyResult()}>Copy result</button>
 				</div>
 			{/if}
 			{#if note}<p class="note">{note}</p>{/if}
@@ -645,6 +655,11 @@
 	.pair { display: flex; gap: 6px; min-width: 0; }
 	.solved input { font-weight: 600; border-color: var(--select); }
 	.solved em { font-style: normal; color: var(--select); }
+	.copy-result
+	{
+		align-self: flex-end; height: 34px; padding: 0 14px; border: 1px solid var(--line); border-radius: 17px;
+		background: none; color: var(--ink); font: inherit; font-size: 15px; cursor: pointer; touch-action: manipulation;
+	}
 	.total.result span, .total.result b { color: var(--select); font-weight: 600; }
 	.switch.mode { padding: 0 0 8px; }
 	.places { margin-left: auto; align-self: center; color: var(--faint); font-size: 14px; }

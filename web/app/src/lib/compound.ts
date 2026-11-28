@@ -208,6 +208,12 @@ export function toCsv(rows: ScheduleRow[]): string
 	return [HEADER, ...rows.map(cells)].map(line => line.map(quote).join(",") + "\r\n").join("");
 }
 
+// The Result box as text (owner 2026-11-29; CompoundTable.ResultText): "Principal (result): 50000.00", CRLF
+export function resultText(lines: { label: string; value: string }[]): string
+{
+	return lines.map(line => `${line.label}: ${line.value}\r\n`).join("");
+}
+
 export function toTabs(rows: ScheduleRow[]): string
 {
 	return [HEADER, ...rows.map(cells)].map(line => line.join("\t") + "\r\n").join("");

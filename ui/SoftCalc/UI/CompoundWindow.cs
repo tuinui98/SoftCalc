@@ -60,6 +60,7 @@ internal sealed class CompoundWindow : Form
 	private readonly System.Windows.Forms.Timer _delay = new() { Interval = 300 };
 	private IReadOnlyList<ScheduleRow> _rows = Array.Empty<ScheduleRow>();
 	private ScheduleReply? _last;
+	private string _resultText = "";    // the Result box as text, for Copy result
 	private string _lengthYmd = "";
 	private int _request;
 	private bool _loading = true;
@@ -157,6 +158,16 @@ internal sealed class CompoundWindow : Form
 			_resultNames[row] = (Label)AddRow(totals, row, "", _resultValues[row])[0];
 		}
 		totals.RowStyles.Add(new RowStyle(SizeType.Percent, 100));    // spare height stays below the rows
+		// owner 2026-11-29: the box's lines as text, one "name: value" a line
+		var copy = new Button { Text = "Cop&y result", AutoSize = true, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
+		copy.Click += (_, _) =>
+		{
+			if (_resultText.Length > 0)
+			{
+				Clipboard.SetText(_resultText);
+			}
+		};
+		totals.Controls.Add(copy, 1, ResultRows);
 		var box = new GroupBox { Text = "Result", Dock = DockStyle.Fill };
 		box.Controls.Add(totals);
 		grid.Controls.Add(box, 3, 0);
@@ -295,6 +306,7 @@ internal sealed class CompoundWindow : Form
 		}
 		lines.Add(("Total contributions", reply.TotalContributions, false));
 		lines.Add(("Total interest", reply.TotalInterest, false));
+		_resultText = CompoundTable.ResultText(lines.Select(line => (line.Name, line.Value)));
 		for (int row = 0; row < ResultRows; row++)
 		{
 			bool used = row < lines.Count;

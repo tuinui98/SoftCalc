@@ -383,6 +383,14 @@ public sealed class ToolsTests : IDisposable
 		Assert.Equal(("target", "must be positive"), CompoundTable.RouteError("target: must be positive"));
 	}
 
+	// owner 2026-11-29: Copy result takes the Result box's lines in their order
+	[Fact]
+	public void ResultTextIsOneLineEach()
+	{
+		Assert.Equal("Principal (result): 50.00\r\nTarget: 100.00\r\n",
+			CompoundTable.ResultText(new[] { ("Principal (result)", "50.00"), ("Target", "100.00") }));
+	}
+
 	// owner 2026-11-28: the rate per day, week, month or year; the length in days, weeks, months or years
 	[Fact]
 	public void CompoundUnitsRoundTripAndBadOnesGoBack()

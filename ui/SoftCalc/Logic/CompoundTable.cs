@@ -49,6 +49,12 @@ internal static class CompoundTable
 		return text.ToString();
 	}
 
+	// The Result box as text (owner 2026-11-29): "Principal (result): 50000.00", one line each, CRLF
+	public static string ResultText(IEnumerable<(string Name, string Value)> lines)
+	{
+		return string.Concat(lines.Select(line => $"{line.Name}: {line.Value}\r\n"));
+	}
+
 	internal static string Quote(string cell)
 	{
 		if (cell.IndexOfAny(new[] { ',', '"', '\r', '\n' }) < 0)
