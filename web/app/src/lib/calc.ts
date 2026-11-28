@@ -16,7 +16,7 @@
 import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
-import { inputsFrom, type CompoundInputs, type Schedule } from "./compound";
+import { inputsFrom, request as compoundRequest, type CompoundInputs, type Schedule } from "./compound";
 import { cardsFrom, engineDecks, type CardsState, type Deck } from "./cards";
 import { pictureName, READY_PICTURE, readyPictureUrl } from "./covers";
 import { decksZip, importDecks, readDecks, report, usedPictures, type Pictures } from "./decks";
@@ -1128,7 +1128,7 @@ export class Calculator
 		this.compound = { ...inputs };
 		this.save(this.store.put("compound", { ...inputs }));
 		await this.started;
-		const answer = await this.engine.send("schedule", { ...inputs });
+		const answer = await this.engine.send("schedule", compoundRequest(inputs));
 		return answer.ok ? { schedule: answer as unknown as Schedule, error: null } : { schedule: null, error: answer.error ?? "Not worked out" };
 	}
 

@@ -344,6 +344,45 @@ public sealed class ToolsTests : IDisposable
 		Assert.Equal(("monthly", "monthly"), (loaded.Compound.Compounding, loaded.Compound.ContributionFreq));
 	}
 
+	// owner 2026-11-28: goal mode works out the field set longest ago; setting one makes it the most important
+	[Fact]
+	public void GoalOrderPutsTheLastSetLast()
+	{
+		var prefs = new CompoundPrefs();
+		Assert.Equal("target", prefs.GoalOrder[0]);
+		prefs.SetGoalField("target");
+		Assert.Equal("principal", prefs.GoalOrder[0]);
+		prefs.SetGoalField("principal");
+		prefs.SetGoalField("annual_rate");
+		Assert.Equal(new[] { "years", "contribution", "target", "principal", "annual_rate" }, prefs.GoalOrder);
+	}
+
+	[Fact]
+	public void GoalPrefsRoundTripAndBadOnesGoBack()
+	{
+		string path = Path.Combine(_dir, "settings.json");
+		var settings = new AppSettings();
+		settings.Compound.Mode = "goal";
+		settings.Compound.TableDecimals = null;
+		settings.Compound.SetGoalField("target");
+		SettingsStore.Save(path, settings);
+		var (loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("goal", (int?)null), (loaded.Compound.Mode, loaded.Compound.TableDecimals));
+		Assert.Equal(settings.Compound.GoalOrder, loaded.Compound.GoalOrder);
+		File.WriteAllText(path, """{"compound": {"mode": "x", "table_decimals": 99, "goal_order": ["years", "years", "nope"]}}""");
+		(loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("normal", (int?)2), (loaded.Compound.Mode, loaded.Compound.TableDecimals));
+		Assert.Equal(new[] { "target", "principal", "annual_rate", "contribution", "years" }, loaded.Compound.GoalOrder);
+	}
+
+	[Fact]
+	public void APartRowShowsItsShare()
+	{
+		var row = new ScheduleRow(8, "1", "2", "0", "3", "0.2725");
+		Assert.Equal("8 (0.2725)", CompoundTable.Cells(row).First());
+		Assert.Equal(("target", "must be positive"), CompoundTable.RouteError("target: must be positive"));
+	}
+
 	// owner 2026-11-28: the rate per day, week, month or year; the length in days, weeks, months or years
 	[Fact]
 	public void CompoundUnitsRoundTripAndBadOnesGoBack()

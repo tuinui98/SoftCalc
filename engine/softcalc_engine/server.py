@@ -17,6 +17,7 @@ from .dates import ZONES
 from .cards import decks_from
 from .engine import Engine, Settings
 from .errors import CalcError
+from .formatting import format_number
 
 PROTOCOL_VERSION = 1
 SEED = re.compile(r"-?[0-9]{1,40}(\.[0-9]{1,40})?")
@@ -386,29 +387,65 @@ class Dispatcher:
                                    ("length_unit", length_unit, finance.LENGTH_UNITS)):
             if value not in table:
                 raise RequestError(f"'{name}' must be one of {list(table)}")
+        # owner 2026-11-28: the table's own decimal places, a number or "all"; left out, the View's
+        table_decimals = request.get("table_decimals", "view")
+        if not (table_decimals in ("view", "all") or (type(table_decimals) is int and 0 <= table_decimals <= 30)):
+            raise RequestError("'table_decimals' must be 0 to 30 or \"all\"")
+        mode = argument(request, "mode", str, "normal", required=False)
+        if mode not in ("normal", "goal"):
+            raise RequestError("'mode' must be normal or goal")
+        at_start = argument(request, "at_start", bool, False, required=False)
         with engine.working_context():
-            plan = finance.schedule(
-                number("principal"), number("annual_rate") / 100, number("years"),
-                compounding, number("contribution", "0"), contribution_freq,
-                argument(request, "at_start", bool, False, required=False), rate_unit, length_unit)
+            solved = None
+            if mode == "goal":
+                # owner 2026-11-28: four fields give the fifth; the rate's unit is the compounding
+                solve = argument(request, "solve", str)
+                if solve not in finance.GOAL_FIELDS:
+                    raise RequestError(f"'solve' must be one of {list(finance.GOAL_FIELDS)}")
+                values = {name: None if name == solve else number(name, "0" if name == "contribution" else None)
+                          for name in finance.GOAL_FIELDS}
+                result = finance.goal(values, solve, rate_unit, length_unit, contribution_freq, at_start)
+                plan = result.plan
+                solved = {"field": solve, "value": engine.format_value(result.values[solve]),
+                          "length_ymd": finance.years_text(result.years)}
+            else:
+                plan = finance.schedule(
+                    number("principal"), number("annual_rate") / 100, number("years"),
+                    compounding, number("contribution", "0"), contribution_freq,
+                    at_start, rate_unit, length_unit)
             show = engine.format_value
+            s = engine.settings
+            if table_decimals == "view":
+                cell = show
+            else:
+                places = None if table_decimals == "all" else table_decimals
+
+                def cell(value):
+                    return format_number(value, s.precision, s.base, places, places is not None)
             principal = plan.rows[0].start if plan.rows else 0
             rows, contributions, interest = [], [], []
             paid, earned = principal, 0
             for row in plan.rows:
                 paid += row.contribution
                 earned += row.interest
-                rows.append({"period": row.index, "start": show(row.start), "interest": show(row.interest),
-                             "contribution": show(row.contribution), "end": show(row.end)})
+                line = {"period": row.index, "start": cell(row.start), "interest": cell(row.interest),
+                        "contribution": cell(row.contribution), "end": cell(row.end)}
+                if row.part is not None:
+                    line["part"] = format_number(row.part, 4)    # a last row shorter than a period: 0.3
+                rows.append(line)
                 contributions.append(float(paid))
                 interest.append(float(earned))
-            return {"future_value": show(plan.future_value),
-                    "total_contributions": show(plan.total_contributions),
-                    "total_interest": show(plan.total_interest),
-                    "rows": rows, "periods_per_year": plan.periods_per_year,
-                    "periods_per_unit": float(plan.periods_per_unit), "length_unit": length_unit,
-                    "series": {"principal": float(principal), "contributions": contributions,
-                               "interest": interest}}
+            reply = {"future_value": show(plan.future_value),
+                     "total_contributions": show(plan.total_contributions),
+                     "total_interest": show(plan.total_interest),
+                     "rows": rows, "periods_per_year": float(plan.periods_per_year),
+                     "periods_per_unit": float(plan.periods_per_unit), "length_unit": length_unit,
+                     "partial": float(plan.partial),
+                     "series": {"principal": float(principal), "contributions": contributions,
+                                "interest": interest}}
+            if solved:
+                reply["solved"] = solved
+            return reply
 
 
 #----------------------------------------------------------------------

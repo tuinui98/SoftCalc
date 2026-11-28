@@ -18,12 +18,17 @@ internal sealed record EvalReply(string Kind, string Input, string DisplayInput,
 
 internal sealed record NamedValue(string Name, string Value);
 
-internal sealed record ScheduleRow(int Period, string Start, string Interest, string Contribution, string End);
+// Part: the share of a period in a last row shorter than the rest (goal mode), "0.27"
+internal sealed record ScheduleRow(int Period, string Start, string Interest, string Contribution, string End, string? Part = null);
+
+// Goal mode (owner 2026-11-28): the field worked out, its value, and the length as "7 y 3 m 18 d"
+internal sealed record GoalSolved(string Field, string Value, string LengthYmd);
 
 internal sealed record ScheduleReply(
 	string FutureValue, string TotalContributions, string TotalInterest,
 	IReadOnlyList<ScheduleRow> Rows, double Principal, IReadOnlyList<double> Contributions,
-	IReadOnlyList<double> Interest, int PeriodsPerYear, double PeriodsPerUnit = 0, string LengthUnit = "years");
+	IReadOnlyList<double> Interest, double PeriodsPerYear, double PeriodsPerUnit = 0, string LengthUnit = "years",
+	double Partial = 0, GoalSolved? Solved = null);
 
 internal sealed record UserFunction(string Name, IReadOnlyList<string> Parameters, string Head, string Body);
 
@@ -253,13 +258,16 @@ internal sealed class EngineSession : IDisposable
 		var reply = await GuardedAsync("schedule", arguments);
 		var rows = reply["rows"]?.AsArray().Select(r => new ScheduleRow(
 			(int?)r?["period"] ?? 0, (string?)r?["start"] ?? "", (string?)r?["interest"] ?? "",
-			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "")).ToList() ?? new List<ScheduleRow>();
+			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "", (string?)r?["part"])).ToList() ?? new List<ScheduleRow>();
 		var series = reply["series"];
 		return new ScheduleReply(
 			(string?)reply["future_value"] ?? "", (string?)reply["total_contributions"] ?? "",
 			(string?)reply["total_interest"] ?? "", rows, (double?)series?["principal"] ?? 0,
-			Numbers(series?["contributions"]), Numbers(series?["interest"]), (int?)reply["periods_per_year"] ?? 1,
-			(double?)reply["periods_per_unit"] ?? 0, (string?)reply["length_unit"] ?? "years");
+			Numbers(series?["contributions"]), Numbers(series?["interest"]), (double?)reply["periods_per_year"] ?? 1,
+			(double?)reply["periods_per_unit"] ?? 0, (string?)reply["length_unit"] ?? "years", (double?)reply["partial"] ?? 0,
+			reply["solved"] is JsonObject solved
+				? new GoalSolved((string?)solved["field"] ?? "", (string?)solved["value"] ?? "", (string?)solved["length_ymd"] ?? "")
+				: null);
 	}
 
 	private static List<double> Numbers(JsonNode? node)

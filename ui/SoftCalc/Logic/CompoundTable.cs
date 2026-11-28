@@ -12,11 +12,12 @@ namespace SoftCalc.Logic;
 internal static class CompoundTable
 {
 	public static readonly string[] Header = { "Period", "Start balance", "Interest", "Contribution", "End balance" };
-	public static readonly string[] Fields = { "principal", "annual_rate", "years", "contribution" };
+	public static readonly string[] Fields = { "target", "principal", "annual_rate", "years", "contribution" };
 
 	public static IEnumerable<string> Cells(ScheduleRow row)
 	{
-		yield return row.Period.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		string period = row.Period.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		yield return row.Part == null ? period : $"{period} ({row.Part})";    // a part period: 8 (0.27)
 		yield return row.Start;
 		yield return row.Interest;
 		yield return row.Contribution;

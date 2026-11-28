@@ -1,7 +1,7 @@
 // compound.test.ts - ⋮ > Compound's inputs, errors, graph scale and text forms (desktop CompoundTable tests)
 
 import { describe, expect, it } from "vitest";
-import { chartScale, firstInputs, inputsFrom, routeError, rowAt, short, summary, toCsv, toTabs, type Schedule } from "../src/lib/compound";
+import { chartScale, firstInputs, inputsFrom, request, routeError, rowAt, setGoalField, short, summary, toCsv, toTabs, xOf, type Schedule } from "../src/lib/compound";
 
 const SCHEDULE: Schedule = {
 	future_value: "1102.5", total_contributions: "1000", total_interest: "102.5",
@@ -54,6 +54,36 @@ describe("compound", () =>
 		expect(summary(inputs, SCHEDULE)).toBe(
 			"10000 at 5% a year for 10 years, monthly, +100/month at the start: future value 1102.5 (contributions 1000, interest 102.5)");
 		expect(summary(firstInputs(), SCHEDULE)).toBe("10000 at 5% a year for 10 years, monthly: future value 1102.5 (contributions 1000, interest 102.5)");
+	});
+
+	it("goal mode (owner 2026-11-28): the field set longest ago is worked out; what goes to the engine", () =>
+	{
+		const inputs = firstInputs();
+		expect(inputs.goal_order[0]).toBe("target");
+		setGoalField(inputs, "target");
+		setGoalField(inputs, "principal");
+		expect(inputs.goal_order).toEqual(["annual_rate", "years", "contribution", "target", "principal"]);
+		const sent = request({ ...inputs, mode: "goal", table_decimals: null });
+		expect(sent.solve).toBe("annual_rate");
+		expect(sent.table_decimals).toBe("all");
+		expect(sent).not.toHaveProperty("goal_order");
+		expect(request(inputs).table_decimals).toBe(2);
+		const back = inputsFrom({ mode: "goal", goal_order: ["years", "years", "nope"], table_decimals: 99 });
+		expect(back.mode).toBe("goal");
+		expect(back.goal_order).toEqual(["target", "principal", "annual_rate", "contribution", "years"]);
+		expect(back.table_decimals).toBe(2);
+		expect(inputsFrom({ table_decimals: null }).table_decimals).toBeNull();
+		expect(routeError("target: must be positive")).toEqual({ field: "target", message: "must be positive" });
+	});
+
+	it("a part last row: its share in the table, its place on the x axis", () =>
+	{
+		const part: Schedule = { ...SCHEDULE, partial: 0.25,
+			rows: [SCHEDULE.rows[0], { ...SCHEDULE.rows[1], part: "0.25" }] };
+		expect(toCsv(part.rows).split("\r\n")[2].startsWith("2 (0.25),")).toBe(true);
+		expect(xOf(part, 0)).toBe(1);
+		expect(xOf(part, 1)).toBe(1.25);
+		expect(chartScale(part, 300, 200).years).toBe(1.25);
 	});
 
 	it("rate and length units (owner 2026-11-28): kept when known, the chart in the length's unit", () =>

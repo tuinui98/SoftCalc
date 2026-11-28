@@ -326,10 +326,26 @@ public sealed class EngineSessionTests : IAsyncLifetime
 			["principal"] = "1000", ["annual_rate"] = "12", ["years"] = "1", ["compounding"] = "quarterly",
 		});
 		Assert.Equal(4, reply.Rows.Count);
-		Assert.Equal((4, 1000.0), (reply.PeriodsPerYear, reply.Principal));
+		Assert.Equal((4.0, 1000.0), (reply.PeriodsPerYear, reply.Principal));
 		Assert.Equal(reply.FutureValue, reply.Rows[^1].End);
 		Assert.Equal(4, reply.Interest.Count);
 		Assert.Equal((4.0, "years"), (reply.PeriodsPerUnit, reply.LengthUnit));
+	}
+
+	// owner 2026-11-28: goal mode works out one field; a length may end in a part period
+	[Fact]
+	public async Task GoalWorksOutTheLengthWithAPartRow()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["mode"] = "goal", ["solve"] = "years", ["target"] = "2000", ["principal"] = "1000", ["annual_rate"] = "10",
+			["years"] = "", ["rate_unit"] = "yearly", ["length_unit"] = "years", ["table_decimals"] = 2,
+		});
+		Assert.NotNull(reply.Solved);
+		Assert.Equal(("years", "7 y 3 m 8 d"), (reply.Solved!.Field, reply.Solved.LengthYmd));
+		Assert.Equal(7.2725409, double.Parse(reply.Solved.Value, System.Globalization.CultureInfo.InvariantCulture), 6);
+		Assert.Equal((8, "0.2725", "2000.00"), (reply.Rows.Count, reply.Rows[^1].Part, reply.Rows[^1].End));
+		Assert.Equal(0.2725, reply.Partial, 4);
 	}
 
 	// owner 2026-11-28: 1% a month for 18 months, monthly; the chart's x in months

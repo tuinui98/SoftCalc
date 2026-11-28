@@ -78,6 +78,24 @@ internal sealed class CompoundPrefs
 	public string Contribution { get; set; } = "0";
 	public string ContributionFreq { get; set; } = "monthly";
 	public bool AtStart { get; set; }
+
+	// owner 2026-11-28: the table's own decimal places, null for all
+	public int? TableDecimals { get; set; } = 2;
+
+	// Goal mode (owner 2026-11-28): four fields give the fifth. GoalOrder lists the five, the
+	// one set longest ago first: that one is worked out.
+	public string Mode { get; set; } = "normal";
+	public string Target { get; set; } = "1000000";
+	public List<string> GoalOrder { get; set; } = new(GoalFields);
+
+	public static readonly string[] GoalFields = { "target", "principal", "annual_rate", "years", "contribution" };
+
+	/// <summary>A field was set: it goes last (the most important); the first is worked out.</summary>
+	public void SetGoalField(string field)
+	{
+		GoalOrder.Remove(field);
+		GoalOrder.Add(field);
+	}
 }
 
 // Last options of the Random window (design/random_plan.md); never the results
@@ -395,11 +413,11 @@ internal static class SettingsStore
 		c.Rate ??= "";
 		c.Years ??= "";
 		c.Contribution ??= "";
-		if (c.Compounding is not ("yearly" or "quarterly" or "monthly" or "daily" or "continuous"))
+		if (c.Compounding is not ("yearly" or "quarterly" or "monthly" or "weekly" or "daily" or "continuous"))
 		{
 			c.Compounding = "monthly";
 		}
-		if (c.ContributionFreq is not ("yearly" or "quarterly" or "monthly" or "daily"))
+		if (c.ContributionFreq is not ("yearly" or "quarterly" or "monthly" or "weekly" or "daily"))
 		{
 			c.ContributionFreq = "monthly";
 		}
@@ -411,6 +429,18 @@ internal static class SettingsStore
 		{
 			c.LengthUnit = "years";
 		}
+		if (c.TableDecimals is < 0 or > 15)
+		{
+			c.TableDecimals = 2;
+		}
+		c.Target ??= "";
+		if (c.Mode is not ("normal" or "goal"))
+		{
+			c.Mode = "normal";
+		}
+		// the five fields once each, in their order; unknown or missing ones go first (worked out first)
+		var order = (c.GoalOrder ?? new List<string>()).Where(CompoundPrefs.GoalFields.Contains).Distinct().ToList();
+		c.GoalOrder = CompoundPrefs.GoalFields.Where(field => !order.Contains(field)).Concat(order).ToList();
 	}
 
 	private static void SanitizeRandom(RandomPrefs r)

@@ -220,6 +220,106 @@ def test_schedule_part_period_is_cut(dispatcher):
     assert short["error"].startswith("years: shorter than one month")
 
 
+def test_schedule_weekly(dispatcher):
+    # owner 2026-11-28: weekly for compounding and contributions; 52 weeks of a 365-day year
+    response = ask(dispatcher, "schedule", principal="0", annual_rate="0", years="1",
+                   compounding="weekly", contribution="10", contribution_freq="weekly")
+    assert len(response["rows"]) == 52
+    assert response["periods_per_year"] == pytest.approx(365 / 7)
+
+
+def test_schedule_table_decimals(dispatcher):
+    # owner 2026-11-28: the table's own places; the totals keep the View's
+    two = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="1",
+              compounding="monthly", table_decimals=2)
+    assert two["rows"][-1]["end"] == "1126.83"
+    assert two["rows"][0]["contribution"] == "0.00"
+    assert two["future_value"] == ask(dispatcher, "schedule", principal="1000", annual_rate="12",
+                                      years="1", compounding="monthly")["future_value"]
+    every = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="1",
+                compounding="monthly", table_decimals="all")
+    assert every["rows"][-1]["end"].startswith("1126.825030")
+    assert ask(dispatcher, "schedule", principal="1000", annual_rate="5", years="1",
+               table_decimals=-1)["ok"] is False
+
+
+#----------------------------------------------------------------------
+#  Goal mode (owner 2026-11-28): four fields give the fifth
+#----------------------------------------------------------------------
+GOAL = {"mode": "goal", "target": "10000000", "principal": "50000", "annual_rate": "0.5",
+        "years": "20", "contribution": "15000", "rate_unit": "monthly", "length_unit": "years",
+        "contribution_freq": "monthly"}
+
+
+def goal(dispatcher, solve, **changes):
+    return ask(dispatcher, "schedule", **{**GOAL, "solve": solve, **changes})
+
+
+def test_goal_target_is_the_balance(dispatcher):
+    response = goal(dispatcher, "target")
+    assert response["solved"]["field"] == "target"
+    assert response["solved"]["value"] == response["future_value"]
+    assert len(response["rows"]) == 240
+
+
+@pytest.mark.parametrize("solve", ["principal", "annual_rate", "contribution", "years"])
+def test_goal_each_field_comes_back(dispatcher, solve):
+    # work out the target, then each other field from it: each gives its value back
+    target = goal(dispatcher, "target")["solved"]["value"]
+    response = goal(dispatcher, solve, target=target, **{solve: ""})
+    assert float(response["solved"]["value"]) == pytest.approx(float(GOAL[solve]), rel=1e-9)
+    assert float(response["future_value"]) == pytest.approx(float(target), rel=1e-12)
+
+
+def test_goal_principal_for_ten_million(dispatcher):
+    # the owner's example: a 10M goal, the principal it needs
+    response = goal(dispatcher, "principal", principal="")
+    assert float(response["future_value"]) == pytest.approx(1e7, rel=1e-15)
+
+
+def test_goal_length_ends_in_a_part_period(dispatcher):
+    # 1000 at 10% a year to 2000: ln 2 / ln 1.1 = 7.2725 years, the last row 0.2725 of a year
+    response = ask(dispatcher, "schedule", mode="goal", solve="years", target="2000", principal="1000",
+                   annual_rate="10", rate_unit="yearly", length_unit="years")
+    assert float(response["solved"]["value"]) == pytest.approx(7.272540897)
+    assert response["solved"]["length_ymd"] == "7 y 3 m 8 d"
+    assert len(response["rows"]) == 8
+    assert response["rows"][-1]["part"] == "0.2725"
+    assert response["partial"] == pytest.approx(0.272540897)
+    assert float(response["future_value"]) == pytest.approx(2000, rel=1e-15)
+    months = ask(dispatcher, "schedule", mode="goal", solve="years", target="2000", principal="1000",
+                 annual_rate="10", rate_unit="yearly", length_unit="months")
+    assert float(months["solved"]["value"]) == pytest.approx(7.272540897 * 12)
+
+
+def test_goal_given_length_may_end_in_a_part_period(dispatcher):
+    response = ask(dispatcher, "schedule", mode="goal", solve="target", principal="1000",
+                   annual_rate="10", years="1.5", rate_unit="yearly")
+    assert len(response["rows"]) == 2
+    assert float(response["future_value"]) == pytest.approx(1000 * 1.1 ** 1.5)
+
+
+def test_years_text():
+    from softcalc_engine import finance
+    import mpmath
+    assert finance.years_text(mpmath.mpf("7.3")) == "7 y 3 m 18 d"
+    assert finance.years_text(mpmath.mpf(2)) == "2 y"
+    assert finance.years_text(mpmath.mpf(0)) == "0 d"
+
+
+@pytest.mark.parametrize("changes, prefix", [
+    ({"solve": "years", "annual_rate": "0", "contribution": "0", "years": ""}, "years:"),
+    ({"solve": "years", "target": "50000", "years": ""}, "years:"),
+    ({"solve": "annual_rate", "target": "-5", "annual_rate": ""}, "annual_rate:"),
+    ({"solve": "principal", "target": "", "principal": ""}, "target:"),
+    ({"solve": "target", "years": "0"}, "years:"),
+])
+def test_goal_errors_name_the_field(dispatcher, changes, prefix):
+    response = ask(dispatcher, "schedule", **{**GOAL, **changes})
+    assert response["ok"] is False
+    assert response["error"].startswith(prefix)
+
+
 @pytest.mark.parametrize("arguments", [
     {"principal": "1000", "annual_rate": "5", "years": "0"},
     {"principal": "abc", "annual_rate": "5", "years": "1"},

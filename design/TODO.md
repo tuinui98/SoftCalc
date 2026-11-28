@@ -965,7 +965,17 @@ a separate window shows the running numbers, the laps and buttons.
   a whole number of compounding periods is cut to the whole periods
   (10 days with monthly compounding: 0 periods); the chart's X axis
   takes the length's unit.
-- [ ] Desktop: dragging the splitter between the chart and the table
+- Then (owner 2026-11-28, built on the same branch): weekly for
+  Compounding and Contribution every (quarterly kept); the table's own
+  decimal places (Fewer / More / All, default 2; the totals keep the
+  View's); a **Goal** mode beside Normal: Target, Principal, Interest
+  rate, Length, Contribution, four give the fifth, the one set longest
+  ago (typing in a field or changing its unit sets it; the order is kept
+  in the settings); the rate's unit is the compounding there; a worked-out
+  length may end in a part period (`7.27` years, `7 y 3 m 8 d`, the last
+  row `8 (0.2725)`), a given one too. Help waits until the owner is done
+  testing (owner 2026-11-29).
+- [x] Desktop: dragging the splitter between the chart and the table
       redraws the chart as it moves (owner 2026-11-28), not only on
       release (SplitContainer shows a ghost line; set SplitterDistance in
       SplitterMoving). Resizing the window already redraws live.

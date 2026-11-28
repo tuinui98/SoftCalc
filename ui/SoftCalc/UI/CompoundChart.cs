@@ -24,6 +24,7 @@ internal sealed class CompoundChart : Control
 	private IReadOnlyList<double> _interest = Array.Empty<double>();
 	private double _perUnit = 1;    // periods (rows) per x unit
 	private string _unit = "years";
+	private double _partial;    // goal mode: the last row's share of a period
 
 	public CompoundChart()
 	{
@@ -33,14 +34,23 @@ internal sealed class CompoundChart : Control
 	}
 
 	// paid and interest are cumulative per period; point 0 is the principal alone
-	public void SetData(double principal, IReadOnlyList<double> paid, IReadOnlyList<double> interest, double perUnit, string unit = "years")
+	public void SetData(double principal, IReadOnlyList<double> paid, IReadOnlyList<double> interest, double perUnit, string unit = "years",
+		double partial = 0)
 	{
 		_principal = principal;
 		_paid = paid;
 		_interest = interest;
 		_perUnit = perUnit > 0 ? perUnit : 1;
 		_unit = unit;
+		_partial = partial is > 0 and < 1 ? partial : 0;
 		Invalidate();
+	}
+
+	// Where row i ends on the x axis; a part last row ends part of a period on
+	private double X(int i)
+	{
+		bool part = _partial > 0 && i == _paid.Count - 1;
+		return (i + (part ? _partial : 1.0)) / _perUnit;
 	}
 
 	public static double NiceStep(double range, int maxTicks)
@@ -66,7 +76,7 @@ internal sealed class CompoundChart : Control
 			return;
 		}
 		int count = _paid.Count;
-		double years = count / _perUnit;    // in the length's unit
+		double years = X(count - 1);    // in the length's unit
 		double top = 0;
 		for (int i = 0; i < count; i++)
 		{
@@ -122,7 +132,7 @@ internal sealed class CompoundChart : Control
 		}
 		void AddPoint(int i)
 		{
-			double year = (i + 1.0) / _perUnit;
+			double year = X(i);
 			lower.Add(At(year, _paid[i]));
 			upper.Add(At(year, _paid[i] + _interest[i]));
 		}

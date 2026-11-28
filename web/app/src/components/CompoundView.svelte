@@ -5,12 +5,15 @@
      cannot read shows why under it, and the last good result stays). The totals go to Input with a
      tap. Chart: paid in below, interest above, so the top edge is the balance; a finger or the
      mouse on it reads a period. Table: every period, drawn only where it is on screen, so daily
-     periods over decades stay quick. A tablet on its side shows the inputs beside the chart. -->
+     periods over decades stay quick. A tablet on its side shows the inputs beside the chart.
+     Goal (owner 2026-11-28): four of Target, Principal, Interest rate, Length and Contribution give
+     the fifth, the one set longest ago; typing in a field or changing its unit sets it. The rate's
+     unit is the compounding period there, and a length may end in a part period. -->
 <script lang="ts">
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, perUnit, RATE_UNITS, routeError, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
 		type Schedule,
 	} from "../lib/compound";
 	import { copyText } from "../lib/clipboard";
@@ -34,8 +37,31 @@
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
 
 	const LABELS: [Field, string][] = [
-		["principal", "Principal"], ["annual_rate", "Interest rate %"], ["years", "Length"], ["contribution", "Contribution"],
+		["target", "Target"], ["principal", "Principal"], ["annual_rate", "Interest rate %"], ["years", "Length"],
+		["contribution", "Contribution"],
 	];
+	const solving = $derived(inputs.mode === "goal" ? inputs.goal_order[0] : null);
+	let lengthYmd = $state("");
+
+	// field: the one the person just set (goal mode: it becomes the most important)
+	function set(field: Field)
+	{
+		if (inputs.mode === "goal")
+		{
+			if (field === solving)
+			{
+				lengthYmd = "";
+			}
+			setGoalField(inputs, field);
+		}
+		changed();
+	}
+
+	function decimals(places: number | null)
+	{
+		inputs.table_decimals = places;
+		changed();
+	}
 
 	//==================================================================
 	//  Working it out: 300 ms after the last change, newest answer only
@@ -63,6 +89,13 @@
 		{
 			schedule = answer.schedule;
 			picked = null;
+			const solved = answer.schedule.solved;
+			if (solved)
+			{
+				inputs[solved.field] = solved.value;    // worked out, not set
+				lengthYmd = solved.length_ymd;
+				calc.compound = $state.snapshot(inputs) as CompoundInputs;
+			}
 		}
 		else
 		{
@@ -160,7 +193,7 @@
 		context.textBaseline = "middle";
 		context.fillText(`x: ${s.length_unit ?? "years"}`, plot.right, 14);
 		// stacked areas, at most one point per pixel column
-		const { count, perYear } = scale;
+		const { count } = scale;
 		const step = Math.max(1, Math.floor(count / Math.max(1, plot.right - plot.left)));
 		const indices: number[] = [];
 		for (let i = 0; i < count; i += step)
@@ -180,8 +213,8 @@
 			context.closePath();
 			context.fill();
 		};
-		const lower = [at(0, s.series.principal), ...indices.map(i => at((i + 1) / perYear, paid[i]))];
-		const upper = [at(0, s.series.principal), ...indices.map(i => at((i + 1) / perYear, paid[i] + interest[i]))];
+		const lower = [at(0, s.series.principal), ...indices.map(i => at(xOf(s, i), paid[i]))];
+		const upper = [at(0, s.series.principal), ...indices.map(i => at(xOf(s, i), paid[i] + interest[i]))];
 		area([...upper, ...[...lower].reverse()], INTEREST);
 		area([at(0, 0), ...lower, at(scale.years, 0)], PAID);
 		context.strokeStyle = c.faint;
@@ -205,7 +238,7 @@
 		// the period read
 		if (picked !== null && picked < count)
 		{
-			const p = at((picked + 1) / perYear, paid[picked] + interest[picked]);
+			const p = at(xOf(s, picked), paid[picked] + interest[picked]);
 			context.strokeStyle = c.ink;
 			context.setLineDash([4, 3]);
 			context.beginPath();
@@ -229,7 +262,7 @@
 		const box = canvas.getBoundingClientRect();
 		const x = event.clientX - box.left;
 		const width = size.width - MARGIN.left - MARGIN.right;
-		const years = schedule.series.contributions.length / perUnit(schedule);    // in the length's unit
+		const years = xOf(schedule, schedule.series.contributions.length - 1);    // in the length's unit
 		const year = Math.min(years, Math.max(0, (x - MARGIN.left) / width * years));
 		picked = rowAt(schedule, year);
 	}
@@ -246,7 +279,7 @@
 		{
 			return "";
 		}
-		const at = Math.round(row.period / perUnit(schedule) * 100) / 100;
+		const at = Math.round(xOf(schedule, picked!) * 100) / 100;
 		const unit = (schedule.length_unit ?? "years").replace(/s$/, "");
 		return `Period ${row.period} (${unit} ${at}): balance ${row.end}, interest ${row.interest}`;
 	});
@@ -437,18 +470,22 @@
 	</div>
 	<div class="body">
 		<div class="side">
+			<div class="switch mode">
+				<button class:on={inputs.mode === "normal"} use:tap={() => { inputs.mode = "normal"; changed(); }}>Normal</button>
+				<button class:on={inputs.mode === "goal"} use:tap={() => { inputs.mode = "goal"; changed(); }}>Goal</button>
+			</div>
 			<div class="fields">
-				{#each LABELS as [field, label] (field)}
-					<label class="field">
-						<span>{label}</span>
+				{#each LABELS.filter(([field]) => field !== "target" || inputs.mode === "goal") as [field, label] (field)}
+					<label class="field" class:solved={field === solving}>
+						<span>{label}{#if field === solving}<em> = result{field === "years" && lengthYmd ? `, ${lengthYmd}` : ""}</em>{/if}</span>
 						<div class="pair">
-							<input bind:value={inputs[field]} oninput={changed} autocapitalize="off" autocomplete="off" spellcheck="false" />
+							<input bind:value={inputs[field]} oninput={() => set(field)} autocapitalize="off" autocomplete="off" spellcheck="false" />
 							{#if field === "annual_rate"}
-								<select bind:value={inputs.rate_unit} onchange={changed} aria-label="Rate per">
+								<select bind:value={inputs.rate_unit} onchange={() => set("annual_rate")} aria-label="Rate per">
 									{#each RATE_UNITS as choice (choice)}<option value={choice}>{choice}</option>{/each}
 								</select>
 							{:else if field === "years"}
-								<select bind:value={inputs.length_unit} onchange={changed} aria-label="Length in">
+								<select bind:value={inputs.length_unit} onchange={() => set("years")} aria-label="Length in">
 									{#each LENGTH_UNITS as choice (choice)}<option value={choice}>{choice}</option>{/each}
 								</select>
 							{/if}
@@ -456,15 +493,17 @@
 						{#if errors[field]}<span class="error">{errors[field]}</span>{/if}
 					</label>
 				{/each}
-				<label class="field">
-					<span>Compounding</span>
-					<select bind:value={inputs.compounding} onchange={changed}>
-						{#each COMPOUNDING as choice (choice)}<option value={choice}>{choice}</option>{/each}
-					</select>
-				</label>
+				{#if inputs.mode === "normal"}
+					<label class="field">
+						<span>Compounding</span>
+						<select bind:value={inputs.compounding} onchange={changed}>
+							{#each COMPOUNDING as choice (choice)}<option value={choice}>{choice}</option>{/each}
+						</select>
+					</label>
+				{/if}
 				<label class="field">
 					<span>Contribution every</span>
-					<select bind:value={inputs.contribution_freq} onchange={changed}>
+					<select bind:value={inputs.contribution_freq} onchange={() => set("contribution")}>
 						{#each CONTRIBUTION_EVERY as choice (choice)}<option value={choice}>{choice}</option>{/each}
 					</select>
 				</label>
@@ -490,6 +529,13 @@
 			<div class="switch">
 				<button class:on={!showTable} use:tap={() => { showTable = false; }}>Chart</button>
 				<button class:on={showTable} use:tap={() => { showTable = true; }}>Table</button>
+				{#if showTable}
+					<!-- owner 2026-11-28: the table's own decimal places, as View > Decimal Places -->
+					<span class="places">Decimals {inputs.table_decimals ?? "all"}</span>
+					<button use:tap={() => decimals(inputs.table_decimals === null ? MOST_DECIMALS : Math.max(0, inputs.table_decimals - 1))}>−</button>
+					<button use:tap={() => decimals(inputs.table_decimals !== null && inputs.table_decimals < MOST_DECIMALS ? inputs.table_decimals + 1 : null)}>+</button>
+					<button class:on={inputs.table_decimals === null} use:tap={() => decimals(null)}>All</button>
+				{/if}
 			</div>
 			{#if !showTable}
 				<div class="chart" bind:this={chartBox}>
@@ -502,7 +548,7 @@
 					<div style:height="{rowCount * ROW}px" style:position="relative">
 						{#each shownRows as row, index (row.period)}
 							<div class="row" style:top="{(first + index) * ROW}px">
-								<span>{row.period}</span><span>{row.start}</span><span>{row.interest}</span><span>{row.contribution}</span><span>{row.end}</span>
+								<span>{row.part ? `${row.period} (${row.part})` : row.period}</span><span>{row.start}</span><span>{row.interest}</span><span>{row.contribution}</span><span>{row.end}</span>
 							</div>
 						{/each}
 					</div>
@@ -547,6 +593,10 @@
 		background: var(--page); color: var(--ink); min-width: 0;
 	}
 	.pair { display: flex; gap: 6px; min-width: 0; }
+	.solved input { font-weight: 600; border-color: var(--select); }
+	.solved em { font-style: normal; color: var(--select); }
+	.switch.mode { padding: 0 0 8px; }
+	.places { margin-left: auto; align-self: center; color: var(--faint); font-size: 14px; }
 	.pair input { flex: 1; width: 0; }
 	.pair select { flex: none; width: 92px; }
 	.check { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 14px; }
