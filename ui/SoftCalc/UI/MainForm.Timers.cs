@@ -235,7 +235,7 @@ internal sealed partial class MainForm
 				}
 				else
 				{
-					message = "The stopwatch was not started";
+					message = Timers.Started ? "The stopwatch is paused; :sw go goes on" : "The stopwatch was not started";
 				}
 				break;
 			case "stop":

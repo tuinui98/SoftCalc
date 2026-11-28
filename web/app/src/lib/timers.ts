@@ -120,10 +120,10 @@ export function stop(s: TimerState, now: number): number | null
 	return total;
 }
 
-// A new lap, or null when the stopwatch has not started
+// A new lap, or null when the stopwatch is not running (paused: the same time again, owner 2026-11-28)
 export function addLap(s: TimerState, now: number): Lap | null
 {
-	if (!started(s))
+	if (!running(s))
 	{
 		return null;
 	}

@@ -17,6 +17,7 @@ public class TimerStateTests
 		Assert.Equal(12.5, state.Elapsed(T0.AddSeconds(12.5)), 6);
 		state.Pause(T0.AddSeconds(10));
 		Assert.Equal(10, state.Elapsed(T0.AddSeconds(99)), 6);    // paused: the time stays
+		Assert.Null(state.AddLap(T0.AddSeconds(99)));               // no lap while paused (owner 2026-11-28)
 		state.Start(T0.AddSeconds(100));
 		var lap1 = state.AddLap(T0.AddSeconds(105))!;
 		var lap2 = state.AddLap(T0.AddSeconds(112))!;

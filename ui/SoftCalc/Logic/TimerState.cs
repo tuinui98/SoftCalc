@@ -97,10 +97,10 @@ internal sealed class TimerState
 		Pauses = new List<double>();
 	}
 
-	/// <summary>A new lap, or null when the stopwatch has not started.</summary>
+	/// <summary>A new lap, or null when the stopwatch is not running (paused: the same time again, owner 2026-11-28).</summary>
 	public Lap? AddLap(DateTime now)
 	{
-		if (!Started)
+		if (!Running)
 		{
 			return null;
 		}

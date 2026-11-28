@@ -22,7 +22,13 @@
 	let entry = $state("");
 	let name = $state("");
 	let version = $state(0);    // bumped after a change, so the lists are read again
-	const s = () => { void version; void now; return calc.timers; };
+	// a copy each time: the lists change in place, and the same object would not show a new lap (owner 2026-11-28)
+	const s = () =>
+	{
+		void version; void now;
+		const t = calc.timers;
+		return { ...t, laps: [...t.laps], pauses: [...t.pauses], countdowns: [...t.countdowns] };
+	};
 
 	onMount(() =>
 	{
@@ -79,7 +85,7 @@
 				<button class="main" onclick={() => watch(clocks.running(sw) ? "stop" : "start")}>{clocks.running(sw) ? "Stop" : "Start"}</button>
 				<button disabled={!clocks.started(sw)} onclick={() => watch(clocks.running(sw) ? "pause" : "go")}>
 					{clocks.running(sw) ? "Pause" : "Go on"}</button>
-				<button disabled={!clocks.started(sw)} onclick={() => watch("lap")}>Lap</button>
+				<button disabled={!clocks.running(sw)} onclick={() => watch("lap")}>Lap</button>
 				<button disabled={!clocks.started(sw)} onclick={() => watch("reset")}>Reset</button>
 			</div>
 			<table class="list">

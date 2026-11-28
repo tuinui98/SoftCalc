@@ -18,6 +18,7 @@ describe("timers", () =>
 		expect(elapsed(s, at(12.5))).toBeCloseTo(12.5);
 		pause(s, at(10));
 		expect(elapsed(s, at(99))).toBeCloseTo(10);    // paused: the time stays
+		expect(addLap(s, at(99))).toBeNull();          // no lap while paused (owner 2026-11-28)
 		start(s, at(100));
 		expect(addLap(s, at(105))).toEqual({ number: 1, seconds: 15, total: 15 });
 		expect(addLap(s, at(112))).toEqual({ number: 2, seconds: 7, total: 22 });

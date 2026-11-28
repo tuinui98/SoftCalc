@@ -664,7 +664,7 @@ export class Calculator
 			if (lap)
 				await this.record(`Lap ${lap.number}`, clocks.clock(lap.seconds, 2), `total ${clocks.clock(lap.total, 2)}`);
 			else
-				message = "The stopwatch was not started";
+				message = clocks.started(s) ? "The stopwatch is paused; :sw go goes on" : "The stopwatch was not started";
 		}
 		else if (does === "stop")
 		{

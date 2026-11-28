@@ -21,6 +21,7 @@ internal sealed class TimersWindow : Form
 	private readonly Label _clock = new() { AutoSize = false, Dock = DockStyle.Top, Height = 70, TextAlign = ContentAlignment.MiddleCenter };
 	private readonly Button _startStop = new() { AutoSize = true };
 	private readonly Button _pause = new() { AutoSize = true };
+	private readonly Button _lapButton = new() { Text = "&Lap", AutoSize = true };
 	private readonly ListView _laps = Table(("Lap", 60), ("Time", 110), ("Total", 110));
 	private readonly Dictionary<string, ListView> _lists = new();
 	private readonly ComboBox _sound = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 90 };
@@ -91,16 +92,12 @@ internal sealed class TimersWindow : Form
 		var buttons = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(4) };
 		_startStop.Click += (_, _) => _stopwatch(_state.Running ? "stop" : "start");
 		_pause.Click += (_, _) => _stopwatch(_state.Running ? "pause" : "go");
-		var lap = new Button { Text = "&Lap", AutoSize = true };
+		var lap = _lapButton;
 		lap.Click += (_, _) => _stopwatch("lap");
 		var reset = new Button { Text = "&Reset", AutoSize = true };
 		reset.Click += (_, _) => _stopwatch("reset");
 		buttons.Controls.AddRange(new Control[] { _startStop, _pause, lap, reset });
-		var keys = new Label
-		{
-			Dock = DockStyle.Bottom, AutoSize = true, Padding = new Padding(4), ForeColor = SystemColors.GrayText,
-			Text = "F8 start / stop, Shift+F8 lap, Ctrl+F8 pause / go on, Ctrl+Shift+F8 reset. Stop and Lap go to History.",
-		};
+		var keys = Footnote("F8 start / stop, Shift+F8 lap, Ctrl+F8 pause / go on, Ctrl+Shift+F8 reset. Stop and Lap go to History.");
 		page.Controls.Add(_laps);
 		page.Controls.Add(buttons);
 		page.Controls.Add(_clock);
@@ -146,15 +143,32 @@ internal sealed class TimersWindow : Form
 		};
 		var row = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(4) };
 		row.Controls.AddRange(new Control[] { entry, name, start, cancel });
-		var help = new Label
-		{
-			Dock = DockStyle.Bottom, AutoSize = true, Padding = new Padding(4), ForeColor = SystemColors.GrayText,
-			Text = kind == "alarm" ? "In Input: :alarm 14:30 \"name\", :alarm off" : "In Input: :timer 5m \"name\", :timer off",
-		};
+		var help = Footnote(kind == "alarm" ? "In Input: :alarm 14:30 \"name\", :alarm off" : "In Input: :timer 5m \"name\", :timer off");
 		page.Controls.Add(list);
 		page.Controls.Add(row);
 		page.Controls.Add(help);
 		return page;
+	}
+
+	// A grey note under a page, wrapped to the window's width and as tall as its lines
+	// (owner 2026-11-28: on a narrow window an AutoSize label ran past the edge, cut)
+	private static Label Footnote(string text)
+	{
+		var label = new Label
+		{
+			Dock = DockStyle.Bottom, AutoSize = false, Padding = new Padding(4), ForeColor = SystemColors.GrayText, Text = text,
+		};
+		label.SizeChanged += (_, _) =>
+		{
+			int width = Math.Max(1, label.ClientSize.Width - label.Padding.Horizontal);
+			int height = TextRenderer.MeasureText(label.Text, label.Font, new Size(width, 0), TextFormatFlags.WordBreak).Height
+				+ label.Padding.Vertical;
+			if (label.Height != height)
+			{
+				label.Height = height;
+			}
+		};
+		return label;
 	}
 
 	private static ListView Table(params (string Title, int Width)[] columns)
@@ -176,6 +190,7 @@ internal sealed class TimersWindow : Form
 		_startStop.Text = state.Running ? "St&op" : "&Start";
 		_pause.Text = state.Running ? "&Pause" : "&Go on";
 		_pause.Enabled = state.Started;
+		_lapButton.Enabled = state.Running;    // a lap while paused would repeat the last time (owner 2026-11-28)
 		_quietButton.Enabled = sounding;
 		// this run's laps and pauses, or the last run's when none is going (owner 2026-11-28)
 		var laps = state.Started || state.LastRun == null ? state.Laps : state.LastRun.Laps;
