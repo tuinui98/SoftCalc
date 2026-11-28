@@ -973,9 +973,9 @@ a separate window shows the running numbers, the laps and buttons.
   ago (typing in a field or changing its unit sets it; the order is kept
   in the settings); the rate's unit is the compounding there; a worked-out
   length may end in a part period (`7.27` years, `7 y 3 m 8 d`, the last
-  row `8 (0.2725)`), a given one too. Help waits until the owner is done
-  testing (owner 2026-11-29).
-- [ ] Plan (owner 2026-11-29, not started): **Copy for Excel**: tab text
+  row `8 (0.2725)`), a given one too. Help 09 written 2026-11-29, after the
+  owner's testing.
+- [x] Built 2026-11-29 (owner checked 18k rows in OnlyOffice): **Copy for Excel**: tab text
       pasted at A1 gives the inputs (in the Result box's order), helper
       cells and the whole table as formulas, so Excel recalculates when
       an input changes. A worked-out field other than Target goes in as
@@ -983,7 +983,7 @@ a separate window shows the running numbers, the laps and buttons.
       fixed; no number formats (General); LibreOffice needs "Evaluate
       formulas"; a locale with a decimal comma breaks it. Engine op
       `schedule_sheet` from the last schedule; a button on both apps.
-- [ ] Proposed (owner 2026-11-29, waiting): load the rest of the table in
+- [x] Built 2026-11-29: load the rest of the table in
       the background, 200 rows at a time, after the first answer.
 - [x] Desktop: dragging the splitter between the chart and the table
       redraws the chart as it moves (owner 2026-11-28), not only on
