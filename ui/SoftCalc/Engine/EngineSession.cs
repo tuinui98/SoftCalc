@@ -18,12 +18,24 @@ internal sealed record EvalReply(string Kind, string Input, string DisplayInput,
 
 internal sealed record NamedValue(string Name, string Value);
 
-internal sealed record ScheduleRow(int Period, string Start, string Interest, string Contribution, string End);
+// Part: the share of a period in a last row shorter than the rest (goal mode), "0.27"
+internal sealed record ScheduleRow(int Period, string Start, string Interest, string Contribution, string End, string? Part = null);
+
+// Goal mode (owner 2026-11-28): the field worked out, its value, and the length as "7 y 3 m 18 d"
+// Value in the page's decimal places, Exact with every digit (kept if the field is set later),
+// Values all five in the places (owner 2026-11-29)
+internal sealed record GoalSolved(string Field, string Value, string LengthYmd, string Exact = "",
+	IReadOnlyDictionary<string, string>? Values = null);
 
 internal sealed record ScheduleReply(
 	string FutureValue, string TotalContributions, string TotalInterest,
 	IReadOnlyList<ScheduleRow> Rows, double Principal, IReadOnlyList<double> Contributions,
-	IReadOnlyList<double> Interest, int PeriodsPerYear);
+	IReadOnlyList<double> Interest, double PeriodsPerYear, double PeriodsPerUnit = 0, string LengthUnit = "years",
+	double Partial = 0, GoalSolved? Solved = null, int RowCount = -1, int ScheduleId = 0)
+{
+	/// <summary>All the rows, also those not sent yet (row_limit).</summary>
+	public int TotalRows => RowCount >= 0 ? RowCount : Rows.Count;
+}
 
 internal sealed record UserFunction(string Name, IReadOnlyList<string> Parameters, string Head, string Body);
 
@@ -251,14 +263,41 @@ internal sealed class EngineSession : IDisposable
 	public async Task<ScheduleReply> ScheduleAsync(JsonObject arguments)
 	{
 		var reply = await GuardedAsync("schedule", arguments);
-		var rows = reply["rows"]?.AsArray().Select(r => new ScheduleRow(
-			(int?)r?["period"] ?? 0, (string?)r?["start"] ?? "", (string?)r?["interest"] ?? "",
-			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "")).ToList() ?? new List<ScheduleRow>();
+		var rows = Rows(reply["rows"]);
 		var series = reply["series"];
 		return new ScheduleReply(
 			(string?)reply["future_value"] ?? "", (string?)reply["total_contributions"] ?? "",
 			(string?)reply["total_interest"] ?? "", rows, (double?)series?["principal"] ?? 0,
-			Numbers(series?["contributions"]), Numbers(series?["interest"]), (int?)reply["periods_per_year"] ?? 1);
+			Numbers(series?["contributions"]), Numbers(series?["interest"]), (double?)reply["periods_per_year"] ?? 1,
+			(double?)reply["periods_per_unit"] ?? 0, (string?)reply["length_unit"] ?? "years", (double?)reply["partial"] ?? 0,
+			reply["solved"] is JsonObject solved
+				? new GoalSolved((string?)solved["field"] ?? "", (string?)solved["value"] ?? "", (string?)solved["length_ymd"] ?? "",
+					(string?)solved["exact"] ?? (string?)solved["value"] ?? "",
+					(solved["values"] as JsonObject)?.ToDictionary(pair => pair.Key, pair => (string?)pair.Value ?? ""))
+				: null,
+			(int?)reply["row_count"] ?? -1, (int?)reply["schedule_id"] ?? 0);
+	}
+
+	// owner 2026-11-29: rows first .. first+count-1 of the last schedule, sent when shown or exported;
+	// EngineRequestException when a newer schedule replaced it
+	public async Task<IReadOnlyList<ScheduleRow>> ScheduleRowsAsync(int scheduleId, int first, int count)
+	{
+		var reply = await GuardedAsync("schedule_rows", new JsonObject { ["schedule_id"] = scheduleId, ["first"] = first, ["count"] = count });
+		return Rows(reply["rows"]);
+	}
+
+	// owner 2026-11-29: Copy for Excel, the last schedule as tab text with formulas to paste at A1
+	public async Task<string> ScheduleSheetAsync(int scheduleId)
+	{
+		var reply = await GuardedAsync("schedule_sheet", new JsonObject { ["schedule_id"] = scheduleId });
+		return (string?)reply["text"] ?? "";
+	}
+
+	private static List<ScheduleRow> Rows(JsonNode? node)
+	{
+		return node?.AsArray().Select(r => new ScheduleRow(
+			(int?)r?["period"] ?? 0, (string?)r?["start"] ?? "", (string?)r?["interest"] ?? "",
+			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "", (string?)r?["part"])).ToList() ?? new List<ScheduleRow>();
 	}
 
 	private static List<double> Numbers(JsonNode? node)

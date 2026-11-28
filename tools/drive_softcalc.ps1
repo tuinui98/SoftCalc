@@ -148,10 +148,11 @@ if ($OpenCompound)
 		{
 			$item.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
 			Start-Sleep -Seconds 3
-			$window = [Win]::TopWindowsOf([uint32]$proc.Id) | Where-Object { [Win]::Text($_) -eq "Compound Interest" } | Select-Object -First 1
-			if ($window)
+			# not $window: names are case-blind, and that is the [string]$Window parameter
+			$compound = [Win]::TopWindowsOf([uint32]$proc.Id) | Where-Object { [Win]::Text($_) -eq "Compound Interest" } | Select-Object -First 1
+			if ($compound)
 			{
-				Save-WindowShot $window (Join-Path $root "spec\raw\softcalc_compound.png")
+				Save-WindowShot $compound (Join-Path $root "spec\raw\softcalc_compound.png")
 				"saved softcalc_compound.png"
 			}
 		}

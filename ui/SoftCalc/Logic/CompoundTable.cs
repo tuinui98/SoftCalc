@@ -12,11 +12,12 @@ namespace SoftCalc.Logic;
 internal static class CompoundTable
 {
 	public static readonly string[] Header = { "Period", "Start balance", "Interest", "Contribution", "End balance" };
-	public static readonly string[] Fields = { "principal", "annual_rate", "years", "contribution" };
+	public static readonly string[] Fields = { "target", "principal", "annual_rate", "years", "contribution" };
 
 	public static IEnumerable<string> Cells(ScheduleRow row)
 	{
-		yield return row.Period.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		string period = row.Period.ToString(System.Globalization.CultureInfo.InvariantCulture);
+		yield return row.Part == null ? period : $"{period} ({row.Part})";    // a part period: 8 (0.27)
 		yield return row.Start;
 		yield return row.Interest;
 		yield return row.Contribution;
@@ -46,6 +47,24 @@ internal static class CompoundTable
 			text.Append(string.Join("\t", Cells(row))).Append("\r\n");
 		}
 		return text.ToString();
+	}
+
+	// owner 2026-11-29: the places as a sample, 0.00 for 2; past 5, the number; All for every digit
+	public static string PlacesSample(int? places)
+	{
+		return places switch
+		{
+			null => "All",
+			0 => "0",
+			<= 5 => "0." + new string('0', places.Value),
+			_ => places.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
+		};
+	}
+
+	// The Result box as text (owner 2026-11-29): "Principal (result): 50000.00", one line each, CRLF
+	public static string ResultText(IEnumerable<(string Name, string Value)> lines)
+	{
+		return string.Concat(lines.Select(line => $"{line.Name}: {line.Value}\r\n"));
 	}
 
 	internal static string Quote(string cell)

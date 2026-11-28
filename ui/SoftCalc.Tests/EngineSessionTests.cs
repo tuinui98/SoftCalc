@@ -326,9 +326,80 @@ public sealed class EngineSessionTests : IAsyncLifetime
 			["principal"] = "1000", ["annual_rate"] = "12", ["years"] = "1", ["compounding"] = "quarterly",
 		});
 		Assert.Equal(4, reply.Rows.Count);
-		Assert.Equal((4, 1000.0), (reply.PeriodsPerYear, reply.Principal));
+		Assert.Equal((4.0, 1000.0), (reply.PeriodsPerYear, reply.Principal));
 		Assert.Equal(reply.FutureValue, reply.Rows[^1].End);
 		Assert.Equal(4, reply.Interest.Count);
+		Assert.Equal((4.0, "years"), (reply.PeriodsPerUnit, reply.LengthUnit));
+	}
+
+	// owner 2026-11-29: long tables come a block at a time; a newer schedule makes the old rows stale
+	[Fact]
+	public async Task ScheduleRowsComeWhenAskedFor()
+	{
+		var arguments = new JsonObject
+		{
+			["principal"] = "1000", ["annual_rate"] = "12", ["years"] = "3", ["compounding"] = "monthly",
+			["table_decimals"] = 2, ["row_limit"] = 10,
+		};
+		var reply = await Session.ScheduleAsync(arguments);
+		Assert.Equal((10, 36), (reply.Rows.Count, reply.TotalRows));
+		var rest = await Session.ScheduleRowsAsync(reply.ScheduleId, 30, 10);
+		Assert.Equal((6, 31, reply.FutureValue), (rest.Count, rest[0].Period, rest[^1].End));
+		var newer = await Session.ScheduleAsync(arguments.DeepClone().AsObject());
+		Assert.NotEqual(reply.ScheduleId, newer.ScheduleId);
+		await Assert.ThrowsAsync<EngineRequestException>(() => Session.ScheduleRowsAsync(reply.ScheduleId, 0, 5));
+	}
+
+	// owner 2026-11-29: Copy for Excel, the order the window sends gives the inputs' order
+	[Fact]
+	public async Task ScheduleSheetIsTabTextWithFormulas()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["mode"] = "goal", ["solve"] = "principal", ["target"] = "2000", ["principal"] = "", ["annual_rate"] = "10",
+			["years"] = "2", ["rate_unit"] = "yearly", ["row_limit"] = 0,
+			["order"] = new JsonArray("principal", "years", "target", "contribution", "annual_rate"),
+		});
+		string text = await Session.ScheduleSheetAsync(reply.ScheduleId);
+		var lines = text.Split("\r\n");
+		Assert.StartsWith("Principal (result)\t", lines[2]);
+		Assert.StartsWith("Interest rate %\t10\t", lines[3]);
+		Assert.Contains("\t=B", text);
+		Assert.EndsWith("\r\n", text);
+	}
+
+	// owner 2026-11-28: goal mode works out one field; a length may end in a part period
+	[Fact]
+	public async Task GoalWorksOutTheLengthWithAPartRow()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["mode"] = "goal", ["solve"] = "years", ["target"] = "2000", ["principal"] = "1000", ["annual_rate"] = "10",
+			["years"] = "", ["rate_unit"] = "yearly", ["length_unit"] = "years", ["table_decimals"] = 2,
+		});
+		Assert.NotNull(reply.Solved);
+		Assert.Equal(("years", "7 y 3 m 8 d"), (reply.Solved!.Field, reply.Solved.LengthYmd));
+		// owner 2026-11-29: the worked-out field in the page's places, every digit kept; all five back
+		Assert.Equal("7.27", reply.Solved.Value);
+		Assert.Equal(7.2725409, double.Parse(reply.Solved.Exact, System.Globalization.CultureInfo.InvariantCulture), 6);
+		Assert.Equal(("2000.00", "1000.00"), (reply.Solved.Values!["target"], reply.Solved.Values["principal"]));
+		Assert.Equal("2000.00", reply.FutureValue);
+		Assert.Equal((8, "0.2725", "2000.00"), (reply.Rows.Count, reply.Rows[^1].Part, reply.Rows[^1].End));
+		Assert.Equal(0.2725, reply.Partial, 4);
+	}
+
+	// owner 2026-11-28: 1% a month for 18 months, monthly; the chart's x in months
+	[Fact]
+	public async Task ScheduleTakesRateAndLengthUnits()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["principal"] = "1000", ["annual_rate"] = "1", ["years"] = "18", ["compounding"] = "monthly",
+			["rate_unit"] = "monthly", ["length_unit"] = "months",
+		});
+		Assert.Equal(18, reply.Rows.Count);
+		Assert.Equal((1.0, "months"), (reply.PeriodsPerUnit, reply.LengthUnit));
+		Assert.Equal(1000 * Math.Pow(1.01, 18), double.Parse(reply.FutureValue, System.Globalization.CultureInfo.InvariantCulture), 6);
 	}
 
 	[Fact]

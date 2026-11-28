@@ -343,4 +343,79 @@ public sealed class ToolsTests : IDisposable
 		var (loaded, _) = SettingsStore.Load(path);
 		Assert.Equal(("monthly", "monthly"), (loaded.Compound.Compounding, loaded.Compound.ContributionFreq));
 	}
+
+	// owner 2026-11-28: goal mode works out the field set longest ago; setting one makes it the most important
+	[Fact]
+	public void GoalOrderPutsTheLastSetLast()
+	{
+		var prefs = new CompoundPrefs();
+		Assert.Equal("target", prefs.GoalOrder[0]);
+		prefs.SetGoalField("target");
+		Assert.Equal("principal", prefs.GoalOrder[0]);
+		prefs.SetGoalField("principal");
+		prefs.SetGoalField("annual_rate");
+		Assert.Equal(new[] { "years", "contribution", "target", "principal", "annual_rate" }, prefs.GoalOrder);
+	}
+
+	[Fact]
+	public void GoalPrefsRoundTripAndBadOnesGoBack()
+	{
+		string path = Path.Combine(_dir, "settings.json");
+		var settings = new AppSettings();
+		settings.Compound.Mode = "goal";
+		settings.Compound.TableDecimals = null;
+		settings.Compound.SetGoalField("target");
+		SettingsStore.Save(path, settings);
+		var (loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("goal", (int?)null), (loaded.Compound.Mode, loaded.Compound.TableDecimals));
+		Assert.Equal(settings.Compound.GoalOrder, loaded.Compound.GoalOrder);
+		File.WriteAllText(path, """{"compound": {"mode": "x", "table_decimals": 99, "goal_order": ["years", "years", "nope"]}}""");
+		(loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("normal", (int?)2), (loaded.Compound.Mode, loaded.Compound.TableDecimals));
+		Assert.Equal(new[] { "target", "principal", "annual_rate", "contribution", "years" }, loaded.Compound.GoalOrder);
+	}
+
+	[Fact]
+	public void APartRowShowsItsShare()
+	{
+		var row = new ScheduleRow(8, "1", "2", "0", "3", "0.2725");
+		Assert.Equal("8 (0.2725)", CompoundTable.Cells(row).First());
+		Assert.Equal(("target", "must be positive"), CompoundTable.RouteError("target: must be positive"));
+	}
+
+	[Theory]
+	[InlineData(null, "All")]
+	[InlineData(0, "0")]
+	[InlineData(2, "0.00")]
+	[InlineData(5, "0.00000")]
+	[InlineData(6, "6")]
+	public void PlacesShowAsASample(int? places, string shown)    // owner 2026-11-29
+	{
+		Assert.Equal(shown, CompoundTable.PlacesSample(places));
+	}
+
+	// owner 2026-11-29: Copy result takes the Result box's lines in their order
+	[Fact]
+	public void ResultTextIsOneLineEach()
+	{
+		Assert.Equal("Principal (result): 50.00\r\nTarget: 100.00\r\n",
+			CompoundTable.ResultText(new[] { ("Principal (result)", "50.00"), ("Target", "100.00") }));
+	}
+
+	// owner 2026-11-28: the rate per day, week, month or year; the length in days, weeks, months or years
+	[Fact]
+	public void CompoundUnitsRoundTripAndBadOnesGoBack()
+	{
+		string path = Path.Combine(_dir, "settings.json");
+		var settings = new AppSettings();
+		settings.Compound.RateUnit = "daily";
+		settings.Compound.LengthUnit = "weeks";
+		SettingsStore.Save(path, settings);
+		var (loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("daily", "weeks"), (loaded.Compound.RateUnit, loaded.Compound.LengthUnit));
+		File.WriteAllText(path, """{"compound": {"rate_unit": "hourly", "length_unit": "decades"}}""");
+		(loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("yearly", "years"), (loaded.Compound.RateUnit, loaded.Compound.LengthUnit));
+		Assert.Equal(("yearly", "years"), (new CompoundPrefs().RateUnit, new CompoundPrefs().LengthUnit));
+	}
 }

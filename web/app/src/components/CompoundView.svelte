@@ -1,16 +1,20 @@
 <!-- CompoundView.svelte - ⋮ > Compound: savings with compound interest (owner 2026-11-20, C1).
-     The desktop's Compound Interest window: Principal, Annual rate %, Years and Contribution take any
+     The desktop's Compound Interest window: Principal, Interest rate % (per year, month, week or day),
+     Length (in years, months, weeks or days) and Contribution take any
      expression; the engine's `schedule` works it out 300 ms after the last change (a field it
      cannot read shows why under it, and the last good result stays). The totals go to Input with a
      tap. Chart: paid in below, interest above, so the top edge is the balance; a finger or the
      mouse on it reads a period. Table: every period, drawn only where it is on screen, so daily
-     periods over decades stay quick. A tablet on its side shows the inputs beside the chart. -->
+     periods over decades stay quick. A tablet on its side shows the inputs beside the chart.
+     Goal (owner 2026-11-28): four of Target, Principal, Interest rate, Length and Contribution give
+     the fifth, the one set longest ago; typing in a field or changing its unit sets it. The rate's
+     unit is the compounding period there, and a length may end in a part period. -->
 <script lang="ts">
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, routeError, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
-		type Schedule,
+		BLOCK, chartScale, placesSample, resultText, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		type Schedule, type ScheduleRow,
 	} from "../lib/compound";
 	import { copyText } from "../lib/clipboard";
 	import { saveFiles } from "../lib/files";
@@ -33,8 +37,80 @@
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
 
 	const LABELS: [Field, string][] = [
-		["principal", "Principal"], ["annual_rate", "Annual rate %"], ["years", "Years"], ["contribution", "Contribution"],
+		["target", "Target"], ["principal", "Principal"], ["annual_rate", "Interest rate %"], ["years", "Length"],
+		["contribution", "Contribution"],
 	];
+	const solving = $derived(inputs.mode === "goal" ? inputs.goal_order[0] : null);
+	const NAMES: Record<Field, string> = Object.fromEntries(LABELS.map(([field, label]) => [field, label.replace(" %", "")])) as Record<Field, string>;
+	const EVERY: Record<string, string> = { yearly: "year", quarterly: "quarter", monthly: "month", weekly: "week", daily: "day" };
+
+	// owner 2026-11-29: in goal, the worked-out field first, then the others from the one set last to the one
+	// set longest ago, then the totals; insert: what a tap puts in Input
+	const resultLines = $derived.by(() =>
+	{
+		const s = schedule as Schedule | null;
+		if (!s)
+			return [];
+		const lines: { label: string; value: string; insert: string; result: boolean }[] = [];
+		const values = s.solved?.values;
+		if (inputs.mode === "goal" && values)
+		{
+			const order = [inputs.goal_order[0], ...inputs.goal_order.slice(1).reverse()];
+			for (const field of order)
+			{
+				const value = values[field] ?? "";
+				const shown = field === "annual_rate" ? `${value} % ${inputs.rate_unit}`
+					: field === "years" ? `${value} ${inputs.length_unit}${field === solving && lengthYmd ? ` (${lengthYmd})` : ""}`
+					: field === "contribution" ? `${value} / ${EVERY[inputs.contribution_freq] ?? inputs.contribution_freq}` : value;
+				lines.push({ label: NAMES[field] + (field === solving ? " (result)" : ""), value: shown, insert: value, result: field === solving });
+			}
+		}
+		else
+		{
+			lines.push({ label: "Future value", value: s.future_value, insert: s.future_value, result: false });
+		}
+		lines.push({ label: "Total contributions", value: s.total_contributions, insert: s.total_contributions, result: false });
+		lines.push({ label: "Total interest", value: s.total_interest, insert: s.total_interest, result: false });
+		return lines;
+	});
+	let lengthYmd = $state("");
+
+	// field: the one the person just set (goal mode: it becomes the most important)
+	// owner 2026-11-29: a worked-out value shows in the page's places; every digit is kept and sent while
+	// its box still shows it, so setting another field later does not round it
+	let workedOut: Partial<Record<Field, { shown: string; exact: string }>> = {};
+
+	function kept(): CompoundInputs
+	{
+		const sent = $state.snapshot(inputs) as CompoundInputs;
+		for (const [field, value] of Object.entries(workedOut) as [Field, { shown: string; exact: string }][])
+		{
+			if (sent[field] === value.shown)
+				sent[field] = value.exact;
+			else
+				delete workedOut[field];    // typed over
+		}
+		return sent;
+	}
+
+	function set(field: Field)
+	{
+		if (inputs.mode === "goal")
+		{
+			if (field === solving)
+			{
+				lengthYmd = "";
+			}
+			setGoalField(inputs, field);
+		}
+		changed();
+	}
+
+	function decimals(places: number | null)
+	{
+		inputs.table_decimals = places;
+		changed();
+	}
 
 	//==================================================================
 	//  Working it out: 300 ms after the last change, newest answer only
@@ -51,7 +127,8 @@
 	async function work()
 	{
 		const mine = ++request;
-		const answer = await calc.schedule($state.snapshot(inputs) as CompoundInputs);
+		const sent = kept();
+		const answer = await calc.schedule(sent);
 		if (mine !== request)
 		{
 			return;
@@ -62,6 +139,19 @@
 		{
 			schedule = answer.schedule;
 			picked = null;
+			const all: (ScheduleRow | undefined)[] = new Array(answer.schedule.row_count ?? answer.schedule.rows.length);
+			answer.schedule.rows.forEach((row, index) => { all[index] = row; });
+			rowCache = all;
+			asked = new Set();
+			void loadRest(answer.schedule.schedule_id);
+			const solved = answer.schedule.solved;
+			if (solved)
+			{
+				inputs[solved.field] = solved.value;    // worked out, not set
+				workedOut[solved.field] = { shown: solved.value, exact: solved.exact ?? solved.value };
+				lengthYmd = solved.length_ymd;
+				calc.compound = { ...sent, [solved.field]: solved.exact ?? solved.value };
+			}
 		}
 		else
 		{
@@ -157,9 +247,9 @@
 		context.stroke();
 		context.textAlign = "right";
 		context.textBaseline = "middle";
-		context.fillText("x: years", plot.right, 14);
+		context.fillText(`x: ${s.length_unit ?? "years"}`, plot.right, 14);
 		// stacked areas, at most one point per pixel column
-		const { count, perYear } = scale;
+		const { count } = scale;
 		const step = Math.max(1, Math.floor(count / Math.max(1, plot.right - plot.left)));
 		const indices: number[] = [];
 		for (let i = 0; i < count; i += step)
@@ -179,8 +269,8 @@
 			context.closePath();
 			context.fill();
 		};
-		const lower = [at(0, s.series.principal), ...indices.map(i => at((i + 1) / perYear, paid[i]))];
-		const upper = [at(0, s.series.principal), ...indices.map(i => at((i + 1) / perYear, paid[i] + interest[i]))];
+		const lower = [at(0, s.series.principal), ...indices.map(i => at(xOf(s, i), paid[i]))];
+		const upper = [at(0, s.series.principal), ...indices.map(i => at(xOf(s, i), paid[i] + interest[i]))];
 		area([...upper, ...[...lower].reverse()], INTEREST);
 		area([at(0, 0), ...lower, at(scale.years, 0)], PAID);
 		context.strokeStyle = c.faint;
@@ -204,7 +294,7 @@
 		// the period read
 		if (picked !== null && picked < count)
 		{
-			const p = at((picked + 1) / perYear, paid[picked] + interest[picked]);
+			const p = at(xOf(s, picked), paid[picked] + interest[picked]);
 			context.strokeStyle = c.ink;
 			context.setLineDash([4, 3]);
 			context.beginPath();
@@ -228,7 +318,7 @@
 		const box = canvas.getBoundingClientRect();
 		const x = event.clientX - box.left;
 		const width = size.width - MARGIN.left - MARGIN.right;
-		const years = schedule.series.contributions.length / Math.max(1, schedule.periods_per_year);
+		const years = xOf(schedule, schedule.series.contributions.length - 1);    // in the length's unit
 		const year = Math.min(years, Math.max(0, (x - MARGIN.left) / width * years));
 		picked = rowAt(schedule, year);
 	}
@@ -240,13 +330,16 @@
 
 	const pickedText = $derived.by(() =>
 	{
-		const row = picked !== null ? schedule?.rows[picked] : undefined;
+		const row = picked !== null ? rowCache[picked] : undefined;
+		if (picked !== null && !row)
+			void fetchBlock(Math.floor(picked / BLOCK));
 		if (!row || !schedule)
 		{
 			return "";
 		}
-		const year = Math.round(row.period / Math.max(1, schedule.periods_per_year) * 100) / 100;
-		return `Period ${row.period} (year ${year}): balance ${row.end}, interest ${row.interest}`;
+		const at = Math.round(xOf(schedule, picked!) * 100) / 100;
+		const unit = (schedule.length_unit ?? "years").replace(/s$/, "");
+		return `Period ${row.period} (${unit} ${at}): balance ${row.end}, interest ${row.interest}`;
 	});
 
 	$effect(() =>
@@ -287,7 +380,9 @@
 	{
 		if (schedule)
 		{
-			await save(exportNames().compound, "text/csv", new TextEncoder().encode(toCsv(schedule.rows)));
+			const rows = await allRows();
+			if (rows)
+				await save(exportNames().compound, "text/csv", new TextEncoder().encode(toCsv(rows)));
 		}
 	}
 
@@ -345,6 +440,25 @@
 		}
 	}
 
+	async function copyResult()
+	{
+		if (await copyText(resultText(resultLines)))
+		{
+			say("Copied the result");
+		}
+	}
+
+	// owner 2026-11-29: inputs, totals and the table as formulas, to paste at A1 of an empty sheet
+	async function copyForExcel()
+	{
+		const id = schedule?.schedule_id;
+		if (id === undefined)
+			return;
+		const text = await calc.scheduleSheet(id);
+		if (text && schedule?.schedule_id === id && await copyText(text))
+			say("Copied for a spreadsheet: paste at A1 of an empty sheet");
+	}
+
 	async function copySummary()
 	{
 		if (schedule && await copyText(summary($state.snapshot(inputs) as CompoundInputs, schedule)))
@@ -361,9 +475,71 @@
 	let scrollTop = $state(0);
 	let tableHeight = $state(400);
 	const first = $derived(Math.max(0, Math.floor(scrollTop / ROW) - 5));
-	const rows = $derived((schedule as Schedule | null)?.rows ?? []);
-	const rowCount = $derived(rows.length);
-	const shownRows = $derived(rows.slice(first, first + Math.ceil(tableHeight / ROW) + 10));
+	// every row, filled as blocks come (owner 2026-11-29)
+	let rowCache: (ScheduleRow | undefined)[] = $state.raw([]);
+	let asked = new Set<number>();
+	const rowCount = $derived(rowCache.length);
+	const shownRows = $derived.by(() =>
+	{
+		const shown: ScheduleRow[] = [];
+		const last = Math.min(rowCount, first + Math.ceil(tableHeight / ROW) + 10);
+		for (let i = first; i < last; i++)
+			shown.push(rowCache[i] ?? { period: i + 1, start: "", interest: "", contribution: "", end: "" });
+		return shown;
+	});
+
+	$effect(() =>
+	{
+		const last = Math.min(rowCount, first + Math.ceil(tableHeight / ROW) + 10);
+		for (let i = first; i < last; i++)
+		{
+			if (!rowCache[i])
+				void fetchBlock(Math.floor(i / BLOCK));
+		}
+	});
+
+	async function fetchBlock(block: number)
+	{
+		const id = schedule?.schedule_id;
+		if (id === undefined || asked.has(block))
+			return;
+		asked.add(block);
+		const start = block * BLOCK;
+		const rows = await calc.scheduleRows(id, start, Math.min(BLOCK, rowCache.length - start));
+		if (!rows || schedule?.schedule_id !== id)
+			return;
+		const all = [...rowCache];
+		rows.forEach((row, index) => { all[start + index] = row; });
+		rowCache = all;
+	}
+
+	// owner 2026-11-29: after the first rows, the rest a block at a time in the background, so scrolling and
+	// the CSV find them there; a newer schedule stops it
+	async function loadRest(id: number | undefined)
+	{
+		for (let block = 0; block * BLOCK < rowCache.length; block++)
+		{
+			if (id === undefined || schedule?.schedule_id !== id)
+				return;
+			const last = Math.min(rowCache.length, (block + 1) * BLOCK) - 1;
+			if (!rowCache[block * BLOCK] || !rowCache[last])
+				await fetchBlock(block);
+		}
+	}
+
+	// every row, for the CSV; null when a newer schedule came meanwhile
+	async function allRows(): Promise<ScheduleRow[] | null>
+	{
+		const id = schedule?.schedule_id;
+		if (id !== undefined && rowCache.some(row => !row))
+		{
+			const rows = await calc.scheduleRows(id, 0, rowCache.length);
+			if (!rows || schedule?.schedule_id !== id)
+				return null;
+			rowCache = rows;
+		}
+		return rowCache as ScheduleRow[];
+	}
 
 	//==================================================================
 	//  Size
@@ -429,29 +605,47 @@
 		<div class="tools">
 			<button use:tap={() => void exportCsv()} disabled={!schedule}>CSV</button>
 			<button use:tap={() => void exportPicture()} disabled={!schedule}>PNG</button>
+			<button use:tap={() => void copyForExcel()} disabled={!schedule}>Excel</button>
 			<button use:tap={() => void copySummary()} disabled={!schedule}>Copy</button>
 		</div>
 		<button class="bar" use:tap={onclose}>Done</button>
 	</div>
 	<div class="body">
 		<div class="side">
+			<div class="switch mode">
+				<button class:on={inputs.mode === "normal"} use:tap={() => { inputs.mode = "normal"; changed(); }}>Normal</button>
+				<button class:on={inputs.mode === "goal"} use:tap={() => { inputs.mode = "goal"; changed(); }}>Goal</button>
+			</div>
 			<div class="fields">
-				{#each LABELS as [field, label] (field)}
-					<label class="field">
-						<span>{label}</span>
-						<input bind:value={inputs[field]} oninput={changed} autocapitalize="off" autocomplete="off" spellcheck="false" />
+				{#each LABELS.filter(([field]) => field !== "target" || inputs.mode === "goal") as [field, label] (field)}
+					<label class="field" class:solved={field === solving}>
+						<span>{label}{#if field === solving}<em> = result{field === "years" && lengthYmd ? `, ${lengthYmd}` : ""}</em>{/if}</span>
+						<div class="pair">
+							<input bind:value={inputs[field]} oninput={() => set(field)} autocapitalize="off" autocomplete="off" spellcheck="false" />
+							{#if field === "annual_rate"}
+								<select bind:value={inputs.rate_unit} onchange={() => set("annual_rate")} aria-label="Rate per">
+									{#each RATE_UNITS as choice (choice)}<option value={choice}>{choice}</option>{/each}
+								</select>
+							{:else if field === "years"}
+								<select bind:value={inputs.length_unit} onchange={() => set("years")} aria-label="Length in">
+									{#each LENGTH_UNITS as choice (choice)}<option value={choice}>{choice}</option>{/each}
+								</select>
+							{/if}
+						</div>
 						{#if errors[field]}<span class="error">{errors[field]}</span>{/if}
 					</label>
 				{/each}
-				<label class="field">
-					<span>Compounding</span>
-					<select bind:value={inputs.compounding} onchange={changed}>
-						{#each COMPOUNDING as choice (choice)}<option value={choice}>{choice}</option>{/each}
-					</select>
-				</label>
+				{#if inputs.mode === "normal"}
+					<label class="field">
+						<span>Compounding</span>
+						<select bind:value={inputs.compounding} onchange={changed}>
+							{#each COMPOUNDING as choice (choice)}<option value={choice}>{choice}</option>{/each}
+						</select>
+					</label>
+				{/if}
 				<label class="field">
 					<span>Contribution every</span>
-					<select bind:value={inputs.contribution_freq} onchange={changed}>
+					<select bind:value={inputs.contribution_freq} onchange={() => set("contribution")}>
 						{#each CONTRIBUTION_EVERY as choice (choice)}<option value={choice}>{choice}</option>{/each}
 					</select>
 				</label>
@@ -463,12 +657,13 @@
 			{#if general}<p class="error general">{general}</p>{/if}
 			{#if schedule}
 				<div class="totals">
-					{#each [["Future value", schedule.future_value], ["Total contributions", schedule.total_contributions],
-						["Total interest", schedule.total_interest]] as [label, value] (label)}
-						<button class="total" use:tap={() => oninsert(value)} title="Tap: put it in Input">
-							<span>{label}</span><b>{value}</b>
+					{#each resultLines as line (line.label)}
+						<button class="total" class:result={line.result} use:tap={() => oninsert(line.insert)} title="Tap: put it in Input">
+							<span>{line.label}</span><b>{line.value}</b>
 						</button>
 					{/each}
+					<!-- owner 2026-11-29: the box's lines as text -->
+					<button class="copy-result" use:tap={() => void copyResult()}>Copy result</button>
 				</div>
 			{/if}
 			{#if note}<p class="note">{note}</p>{/if}
@@ -477,6 +672,21 @@
 			<div class="switch">
 				<button class:on={!showTable} use:tap={() => { showTable = false; }}>Chart</button>
 				<button class:on={showTable} use:tap={() => { showTable = true; }}>Table</button>
+				{#if showTable}
+					<!-- owner 2026-11-28: the table's own decimal places, as View > Decimal Places -->
+					<!-- owner 2026-11-29: the View's icons (ui/SoftCalc/Icons decimal-*.svg, IconMCP, MIT); from All
+					     either starts at 2; the places as a sample -->
+					<span class="places">{placesSample(inputs.table_decimals)}</span>
+					<button class="icon" aria-label="Fewer decimal places" title="Fewer decimal places"
+						use:tap={() => decimals(inputs.table_decimals === null ? 2 : Math.max(0, inputs.table_decimals - 1))}>
+						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.833" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.25" cy="7.25" r="0.55" fill="currentColor" stroke="none"/><ellipse cx="9.25" cy="5" rx="1.25" ry="2.75"/><line x1="13.75" y1="12" x2="2.75" y2="12"/><path d="M3.987 13.237 L2.75 12 L3.987 10.763"/></svg>
+					</button>
+					<button class="icon" aria-label="More decimal places" title="More decimal places"
+						use:tap={() => decimals(inputs.table_decimals === null ? 2 : Math.min(MOST_DECIMALS, inputs.table_decimals + 1))}>
+						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.833" stroke-linecap="round" stroke-linejoin="round"><circle cx="2.75" cy="7.25" r="0.55" fill="currentColor" stroke="none"/><ellipse cx="6.75" cy="5" rx="1.25" ry="2.75"/><ellipse cx="11.75" cy="5" rx="1.25" ry="2.75"/><line x1="2.25" y1="12" x2="13.25" y2="12"/><path d="M12.013 10.763 L13.25 12 L12.013 13.237"/></svg>
+					</button>
+					<button class:on={inputs.table_decimals === null} use:tap={() => decimals(null)}>All</button>
+				{/if}
 			</div>
 			{#if !showTable}
 				<div class="chart" bind:this={chartBox}>
@@ -489,7 +699,7 @@
 					<div style:height="{rowCount * ROW}px" style:position="relative">
 						{#each shownRows as row, index (row.period)}
 							<div class="row" style:top="{(first + index) * ROW}px">
-								<span>{row.period}</span><span>{row.start}</span><span>{row.interest}</span><span>{row.contribution}</span><span>{row.end}</span>
+								<span>{row.part ? `${row.period} (${row.part})` : row.period}</span><span>{row.start}</span><span>{row.interest}</span><span>{row.contribution}</span><span>{row.end}</span>
 							</div>
 						{/each}
 					</div>
@@ -533,6 +743,21 @@
 		font: inherit; font-size: 16px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px;
 		background: var(--page); color: var(--ink); min-width: 0;
 	}
+	.pair { display: flex; gap: 6px; min-width: 0; }
+	.solved input { font-weight: 600; border-color: var(--select); }
+	.solved em { font-style: normal; color: var(--select); }
+	.copy-result
+	{
+		align-self: flex-end; height: 34px; padding: 0 14px; border: 1px solid var(--line); border-radius: 17px;
+		background: none; color: var(--ink); font: inherit; font-size: 15px; cursor: pointer; touch-action: manipulation;
+	}
+	.total.result span, .total.result b { color: var(--select); font-weight: 600; }
+	.switch.mode { padding: 0 0 8px; }
+	.places { margin-left: auto; align-self: center; color: var(--faint); font-size: 14px; }
+	.switch button.icon { padding: 0 8px; display: flex; align-items: center; }
+	.switch button.icon svg { width: 26px; height: 26px; }
+	.pair input { flex: 1; width: 0; }
+	.pair select { flex: none; width: 92px; }
 	.check { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 14px; }
 	.check input { width: 20px; height: 20px; }
 	.error { color: var(--error); font-size: 13px; }

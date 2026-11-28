@@ -16,7 +16,7 @@
 import type { Answer } from "./engine";
 import { PriceSource } from "./prices";
 import { RatesSource } from "./rates";
-import { inputsFrom, type CompoundInputs, type Schedule } from "./compound";
+import { inputsFrom, request as compoundRequest, type CompoundInputs, type Schedule, type ScheduleRow } from "./compound";
 import { cardsFrom, engineDecks, type CardsState, type Deck } from "./cards";
 import { pictureName, READY_PICTURE, readyPictureUrl } from "./covers";
 import { decksZip, importDecks, readDecks, report, usedPictures, type Pictures } from "./decks";
@@ -1128,8 +1128,22 @@ export class Calculator
 		this.compound = { ...inputs };
 		this.save(this.store.put("compound", { ...inputs }));
 		await this.started;
-		const answer = await this.engine.send("schedule", { ...inputs });
+		const answer = await this.engine.send("schedule", compoundRequest(inputs));
 		return answer.ok ? { schedule: answer as unknown as Schedule, error: null } : { schedule: null, error: answer.error ?? "Not worked out" };
+	}
+
+	// Copy for Excel (owner 2026-11-29): the last schedule as tab text with formulas; null when a newer one replaced it
+	async scheduleSheet(scheduleId: number): Promise<string | null>
+	{
+		const answer = await this.engine.send("schedule_sheet", { schedule_id: scheduleId });
+		return answer.ok ? String(answer.text) : null;
+	}
+
+	// Rows first .. first+count-1 of the last schedule; null when a newer one replaced it
+	async scheduleRows(scheduleId: number, first: number, count: number): Promise<ScheduleRow[] | null>
+	{
+		const answer = await this.engine.send("schedule_rows", { schedule_id: scheduleId, first, count });
+		return answer.ok ? (answer.rows as ScheduleRow[]) : null;
 	}
 
 	// The Graph's state, kept when the Graph changes it (graph.ts GraphState)
