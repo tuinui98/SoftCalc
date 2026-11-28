@@ -177,14 +177,21 @@ internal sealed class TimersWindow : Form
 		_pause.Text = state.Running ? "&Pause" : "&Go on";
 		_pause.Enabled = state.Started;
 		_quietButton.Enabled = sounding;
-		if (_shownLaps != state.Laps.Count)
+		// this run's laps and pauses, or the last run's when none is going (owner 2026-11-28)
+		var laps = state.Started || state.LastRun == null ? state.Laps : state.LastRun.Laps;
+		var pauses = state.Started || state.LastRun == null ? state.Pauses : state.LastRun.Pauses;
+		int shown = laps.Count * 1000 + pauses.Count + (ReferenceEquals(laps, state.Laps) ? 0 : 500);
+		if (_shownLaps != shown)
 		{
-			_shownLaps = state.Laps.Count;
+			_shownLaps = shown;
 			_laps.BeginUpdate();
 			_laps.Items.Clear();
-			foreach (var lap in state.Laps.AsEnumerable().Reverse())    // the newest on top
+			var marks = laps.Select(l => (l.Total, Row: new[] { l.Number.ToString(), TimerState.Clock(l.Seconds, 2), TimerState.Clock(l.Total, 2) }))
+				.Concat(pauses.Select(p => (Total: p, Row: new[] { "⏸", "paused", TimerState.Clock(p, 1) })))
+				.OrderByDescending(m => m.Total);    // the newest on top
+			foreach (var (_, row) in marks)
 			{
-				_laps.Items.Add(new ListViewItem(new[] { lap.Number.ToString(), TimerState.Clock(lap.Seconds, 2), TimerState.Clock(lap.Total, 2) }));
+				_laps.Items.Add(new ListViewItem(row));
 			}
 			_laps.EndUpdate();
 		}

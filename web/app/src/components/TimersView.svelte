@@ -72,6 +72,8 @@
 	<div class="body">
 		{#if tab === "stopwatch"}
 			{@const sw = s()}
+			<!-- this run's laps and pauses, or the last run's when none is going (owner 2026-11-28) -->
+			{@const run = clocks.started(sw) || !sw.lastRun ? { laps: sw.laps, pauses: sw.pauses } : sw.lastRun}
 			<div class="clock">{clocks.clock(clocks.elapsed(sw, now), 1)}</div>
 			<div class="buttons">
 				<button class="main" onclick={() => watch(clocks.running(sw) ? "stop" : "start")}>{clocks.running(sw) ? "Stop" : "Start"}</button>
@@ -83,8 +85,9 @@
 			<table class="list">
 				<thead><tr><th>Lap</th><th>Time</th><th>Total</th></tr></thead>
 				<tbody>
-					{#each [...sw.laps].reverse() as lap (lap.number)}
-						<tr><td>{lap.number}</td><td>{clocks.clock(lap.seconds, 2)}</td><td>{clocks.clock(lap.total, 2)}</td></tr>
+					{#each [...run.laps.map(l => ({ total: l.total, cells: [String(l.number), clocks.clock(l.seconds, 2), clocks.clock(l.total, 2)] })),
+						...run.pauses.map(p => ({ total: p, cells: ["⏸", "paused", clocks.clock(p, 1)] }))].sort((a, b) => b.total - a.total) as row}
+						<tr>{#each row.cells as cell}<td>{cell}</td>{/each}</tr>
 					{/each}
 				</tbody>
 			</table>

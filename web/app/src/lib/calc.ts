@@ -320,8 +320,9 @@ export class Calculator
 		}
 		this.hintFor = key;
 		const asked = ++this.hintAsked;
-		let next = "";
-		if (this.caret > 0)    // nothing left of the caret: no hint, no need to ask
+		// a timer's or alarm's name in quotes: the names in use (owner 2026-11-28); the engine does not know them
+		let next = clocks.nameHint(this.timers, this.text.slice(0, this.caret)) ?? "";
+		if (next === "" && this.caret > 0)    // nothing left of the caret: no hint, no need to ask
 		{
 			const answer = await this.engine.send("hint", { text: this.text, caret: this.caret });
 			next = answer.ok && typeof answer.text === "string" ? answer.text : "";
@@ -554,9 +555,21 @@ export class Calculator
 		const name = typeof action.name === "string" ? action.name : null;
 		const now = Date.now();
 		let text = said;
+		if (does === "list")
+		{
+			this.listAll(input, now);
+			this.timersChanged();
+			return;
+		}
 		if (does === "start")
 		{
-			clocks.add(this.timers, kind as Countdown["kind"], String(action.label ?? ""), name, Number(action.seconds ?? 0), now);
+			const label = String(action.label ?? "");
+			const { countdown, changed } = clocks.add(this.timers, kind as Countdown["kind"], label, name, Number(action.seconds ?? 0), now);
+			if (changed)    // a name in use: that one's time is set again (owner 2026-11-28)
+			{
+				const due = clocks.at(countdown.due, kind === "alarm");
+				text = kind === "alarm" ? `Alarm "${name}" set again to ${due}` : `Timer "${name}" set again to ${label}, done at ${due}`;
+			}
 		}
 		else if (does === "off")
 		{
@@ -571,6 +584,48 @@ export class Calculator
 		}
 		this.add({ kind: "definition", input, display: input, text });
 		this.timersChanged();
+	}
+
+	// `*` after :sw, :timer or :alarm (owner 2026-11-28): the stopwatch (now, or its last run), every timer and alarm
+	private listAll(input: string, now: number)
+	{
+		const s = this.timers;
+		const timers = s.countdowns.filter(c => c.kind === "timer").length;
+		const alarms = s.countdowns.length - timers;
+		const state = clocks.running(s) ? "running" : clocks.started(s) ? "paused" : "stopped";
+		this.add({ kind: "definition", input, display: input,
+			text: `Stopwatch ${state}, ${timers} timer${timers === 1 ? "" : "s"}, ${alarms} alarm${alarms === 1 ? "" : "s"}` });
+		if (clocks.started(s))
+		{
+			this.notice(`Stopwatch ${clocks.clock(clocks.elapsed(s, now), 1)}`, clocks.running(s) ? "running" : "paused");
+			this.marks(s.laps, s.pauses);
+		}
+		else if (s.lastRun)
+		{
+			this.notice(`Stopwatch, last run ${clocks.clock(s.lastRun.total, 2)}`, `ended ${clocks.at(s.lastRun.ended, true)}`);
+			this.marks(s.lastRun.laps, s.lastRun.pauses);
+		}
+		else
+		{
+			this.notice("No stopwatch record", "");
+		}
+		for (const countdown of s.countdowns)
+		{
+			this.notice(clocks.title(countdown), `${clocks.left(countdown, now)} left, at ${clocks.at(countdown.due, countdown.kind === "alarm")}`);
+		}
+	}
+
+	private marks(laps: clocks.Lap[], pauses: number[])
+	{
+		for (const [title, detail] of clocks.marks(laps, pauses))
+		{
+			this.notice(title, detail);
+		}
+	}
+
+	private notice(title: string, detail: string)
+	{
+		this.add({ kind: "notice", input: title, display: title, text: detail });
 	}
 
 	// does: toggle, start, go, pause, stop, lap, reset; input: the line History shows
@@ -611,7 +666,10 @@ export class Calculator
 			const laps = s.laps.length;
 			const total = clocks.stop(s, now);
 			if (total !== null)
+			{
 				await this.record("Stopwatch", clocks.clock(total, 2), laps > 0 ? `${laps} laps` : "");
+				this.marks(s.lastRun!.laps, s.lastRun!.pauses);    // the run's laps and pauses (owner 2026-11-28)
+			}
 			else
 				message = "The stopwatch was not started";
 		}

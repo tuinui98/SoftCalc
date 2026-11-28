@@ -2,7 +2,10 @@
 
 `:sw` / `:stopwatch` (start or stop; `pause`, `go`, `reset`, `lap`), `:lap`,
 `:timer 5m`, `:timer 1h30m "tea"`, `:timer off`, `:alarm 14:30`,
-`:alarm now+0:15:0`, `:alarm off "tea"`. The engine only reads the line:
+`:alarm now+0:15:0`, `:alarm off "tea"`, and `*` after any of them (`:sw *`,
+`:timer *`) to list the stopwatch, the timers and the alarms all together.
+A name already in use sets that timer's time again (the UI's choice).
+The engine only reads the line:
 the UI keeps the clock (design/TODO.md, Stopwatch, timer and alarm), so a
 line gives an action for the UI, sent with the eval reply as "timer".
 
@@ -58,6 +61,9 @@ def parse(text, value_of, clock=datetime.now):
     """
     word = first_word(text)
     rest = text.strip()[1:].strip()[len(word):].strip()
+    if rest == "*":    # owner 2026-11-28: any of them with * lists all three
+        kind = "stopwatch" if word in STOPWATCH + LAP else word
+        return {"kind": kind, "do": "list"}, "Stopwatch, timers and alarms"
     if word in STOPWATCH + LAP:
         does = rest.lower() if rest else ("lap" if word in LAP else "toggle")
         if word in LAP and rest:
@@ -151,9 +157,9 @@ def hint(left):
     """The hint line for a stopwatch, timer or alarm line."""
     word = first_word(left)
     if word in TIMER:
-        return 'timer: :timer 5m, 90s, 1h30m, 0:05*3, now+0:15; "name" after; :timer off'
+        return 'timer: :timer 5m, 90s, 0:05*3, now+0:15; "name" sets it again; off; * all'
     if word in ALARM:
-        return 'alarm: :alarm 14:30, 29.11.2026 7:00, now+0:15; "name" after; :alarm off'
+        return 'alarm: :alarm 14:30, 29.11.2026 7:00, now+0:15; "name" sets it again; off; * all'
     if word in STOPWATCH + LAP:
-        return "stopwatch: :sw starts or stops; :sw pause, go, lap, reset; :lap; key F8"
+        return "stopwatch: :sw starts or stops; :sw pause, go, lap, reset; :lap; * lists all; F8"
     return HINT

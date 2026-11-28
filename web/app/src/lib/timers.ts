@@ -24,6 +24,15 @@ export interface Countdown
 	set: number;            // ms, when it was set
 }
 
+// A finished stopwatch run, kept so `:sw *` shows it after a restart (owner 2026-11-28)
+export interface StopwatchRun
+{
+	total: number;
+	laps: Lap[];
+	pauses: number[];    // the time shown at each pause
+	ended: number;       // ms
+}
+
 export const SOUNDS = ["once", "repeat", "off"] as const;
 
 export interface TimerState
@@ -31,13 +40,15 @@ export interface TimerState
 	before: number;               // seconds measured before the current run
 	runningSince: number | null;  // ms; null when stopped or paused
 	laps: Lap[];
+	pauses: number[];             // the time shown at each pause of this run
+	lastRun: StopwatchRun | null;
 	countdowns: Countdown[];
 	sound: string;                // when one is done (owner 2026-11-28: an option)
 }
 
 export function newTimers(): TimerState
 {
-	return { before: 0, runningSince: null, laps: [], countdowns: [], sound: "once" };
+	return { before: 0, runningSince: null, laps: [], pauses: [], lastRun: null, countdowns: [], sound: "once" };
 }
 
 // A stored state, checked: anything odd starts afresh
@@ -53,6 +64,11 @@ export function timersFrom(stored: unknown): TimerState
 		before: typeof s.before === "number" && s.before >= 0 ? s.before : 0,
 		runningSince: typeof s.runningSince === "number" ? s.runningSince : null,
 		laps: Array.isArray(s.laps) ? s.laps.filter(lap => typeof lap?.total === "number") : [],
+		pauses: Array.isArray(s.pauses) ? s.pauses.filter(p => typeof p === "number") : [],
+		lastRun: s.lastRun && typeof s.lastRun === "object" && typeof s.lastRun.total === "number"
+			? { total: s.lastRun.total, laps: Array.isArray(s.lastRun.laps) ? s.lastRun.laps : [],
+				pauses: Array.isArray(s.lastRun.pauses) ? s.lastRun.pauses : [], ended: Number(s.lastRun.ended) || 0 }
+			: null,
 		countdowns: Array.isArray(s.countdowns)
 			? s.countdowns.filter(c => typeof c?.due === "number" && (c.kind === "timer" || c.kind === "alarm")) : [],
 		sound: SOUNDS.includes(s.sound as typeof SOUNDS[number]) ? s.sound! : "once",
@@ -79,6 +95,7 @@ export function pause(s: TimerState, now: number)
 	{
 		s.before = elapsed(s, now);
 		s.runningSince = null;
+		s.pauses.push(s.before);
 	}
 }
 
@@ -87,6 +104,7 @@ export function reset(s: TimerState)
 	s.before = 0;
 	s.runningSince = null;
 	s.laps = [];
+	s.pauses = [];
 }
 
 // The time measured, and the stopwatch cleared; null when it never started
@@ -97,6 +115,7 @@ export function stop(s: TimerState, now: number): number | null
 		return null;
 	}
 	const total = elapsed(s, now);
+	s.lastRun = { total, laps: [...s.laps], pauses: [...s.pauses], ended: now };
 	reset(s);
 	return total;
 }
@@ -114,12 +133,45 @@ export function addLap(s: TimerState, now: number): Lap | null
 	return lap;
 }
 
-export function add(s: TimerState, kind: Countdown["kind"], label: string, name: string | null, seconds: number, now: number): Countdown
+// A new timer or alarm; a name already in use sets that one again (owner 2026-11-28). changed: it was there.
+export function add(s: TimerState, kind: Countdown["kind"], label: string, name: string | null, seconds: number, now: number)
+	: { countdown: Countdown; changed: boolean }
 {
-	const countdown = { kind, label, name, due: now + seconds * 1000, set: now };
-	s.countdowns.push(countdown);
+	const found = name === null ? undefined : s.countdowns.find(c => c.kind === kind && c.name?.toLowerCase() === name.toLowerCase());
+	const countdown = found ?? { kind, label, name, due: 0, set: 0 };
+	Object.assign(countdown, { label, due: now + seconds * 1000, set: now });
+	if (!found)
+		s.countdowns.push(countdown);
 	s.countdowns.sort((a, b) => a.due - b.due);
-	return countdown;
+	return { countdown, changed: found !== undefined };
+}
+
+// A run's laps and pauses in order, as History lists them: ["Lap 1  0:00:12.30", "total 0:00:12.30"]
+export function marks(laps: Lap[], pauses: number[]): [string, string][]
+{
+	return [
+		...laps.map(l => ({ total: l.total, order: 0, title: `Lap ${l.number}  ${clock(l.seconds, 2)}`, detail: `total ${clock(l.total, 2)}` })),
+		...pauses.map(p => ({ total: p, order: 1, title: `Paused at ${clock(p, 1)}`, detail: "" })),
+	].sort((a, b) => a.total - b.total || a.order - b.order).map(m => [m.title, m.detail]);
+}
+
+// The hint for a name being typed in quotes: `:timer 5m "te` lists the timers' names (owner 2026-11-28)
+export function nameHint(s: TimerState, left: string): string | null
+{
+	const match = /^\s*:(timer|alarm)\b[^"]*"([^"]*)$/i.exec(left);
+	if (!match)
+	{
+		return null;
+	}
+	const kind = match[1].toLowerCase();
+	const typed = match[2].toLowerCase();
+	const names = [...new Set(s.countdowns.filter(c => c.kind === kind && c.name !== null && c.name.toLowerCase().startsWith(typed))
+		.map(c => c.name!))];
+	if (names.length === 0)
+	{
+		return `${kind} names: none${typed.length > 0 ? " like that" : " yet"}; a new name starts a new ${kind}`;
+	}
+	return `${kind} names: ${names.join(", ")}  (one of them sets its time again)`;
 }
 
 // Cancels the timers or alarms of a kind, all or by name; how many went

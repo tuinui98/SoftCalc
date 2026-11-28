@@ -108,3 +108,10 @@ def test_hints():
     for text, starts in ((":timer 5", "timer:"), (":alarm ", "alarm:"), (":sw ", "stopwatch:"), (":deg", ":deg")):
         hint = dispatcher.handle({"op": "hint", "text": text, "caret": len(text)})["text"]
         assert hint.startswith(starts) and (starts == ":deg" or len(hint) <= 82), hint
+
+
+@pytest.mark.parametrize("line, kind", [(":sw *", "stopwatch"), (":stopwatch *", "stopwatch"), (":lap *", "stopwatch"),
+                                        (":timer *", "timer"), (":alarm  * ", "alarm")])
+def test_star_lists_all_three(line, kind):
+    """Owner 2026-11-28: * after any of them lists the stopwatch, timers and alarms together."""
+    assert action(line)[0] == {"kind": kind, "do": "list"}

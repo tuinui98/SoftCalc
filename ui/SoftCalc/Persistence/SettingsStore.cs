@@ -330,6 +330,7 @@ internal static class SettingsStore
 		s.Crypto ??= new CryptoPrefs();
 		s.Timers ??= new TimerState();
 		s.Timers.Laps ??= new List<Lap>();
+		s.Timers.Pauses ??= new List<double>();
 		s.Timers.Countdowns ??= new List<Countdown>();
 		s.Timers.Countdowns.RemoveAll(c => c == null);
 		if (!TimerState.Sounds.Contains(s.Timers.Sound))

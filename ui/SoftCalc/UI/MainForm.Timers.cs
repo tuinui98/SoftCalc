@@ -125,8 +125,18 @@ internal sealed partial class MainForm
 		string text = reply.Text;
 		switch (does)
 		{
+			case "list":
+				ListAll(input, now);
+				WakeTimers();
+				return;
 			case "start":
-				Timers.Add(kind, (string?)action["label"] ?? "", name, (double?)action["seconds"] ?? 0, now);
+				string label = (string?)action["label"] ?? "";
+				var (countdown, changed) = Timers.Add(kind, label, name, (double?)action["seconds"] ?? 0, now);
+				if (changed)    // a name in use: that one's time is set again (owner 2026-11-28)
+				{
+					string due = countdown.Due.ToLocalTime().ToString(kind == "alarm" ? "dd.MM.yyyy HH:mm:ss" : "HH:mm:ss");
+					text = kind == "alarm" ? $"Alarm \"{name}\" set again to {due}" : $"Timer \"{name}\" set again to {label}, done at {due}";
+				}
 				break;
 			case "off":
 				int gone = Timers.Cancel(kind, name);
@@ -141,6 +151,44 @@ internal sealed partial class MainForm
 		_history.Append(Stamp(new HistoryEntry("definition", input, input, text)));
 		WakeTimers();
 	}
+
+	// `*` after :sw, :timer or :alarm (owner 2026-11-28): the stopwatch (now, or its last run), every timer and alarm
+	private void ListAll(string input, DateTime now)
+	{
+		int timers = Timers.Of("timer").Count(), alarms = Timers.Of("alarm").Count();
+		_history.Append(Stamp(new HistoryEntry("definition", input, input,
+			$"Stopwatch {(Timers.Running ? "running" : Timers.Started ? "paused" : "stopped")}, {timers} timer{(timers == 1 ? "" : "s")}, "
+			+ $"{alarms} alarm{(alarms == 1 ? "" : "s")}")));
+		if (Timers.Started)
+		{
+			Notice($"Stopwatch {TimerState.Clock(Timers.Elapsed(now), 1)}", Timers.Running ? "running" : "paused");
+			Marks(Timers.Laps, Timers.Pauses);
+		}
+		else if (Timers.LastRun is StopwatchRun run)
+		{
+			Notice($"Stopwatch, last run {TimerState.Clock(run.Total, 2)}", $"ended {run.Ended.ToLocalTime():dd.MM.yyyy HH:mm:ss}");
+			Marks(run.Laps, run.Pauses);
+		}
+		else
+		{
+			Notice("No stopwatch record", "");
+		}
+		foreach (var countdown in Timers.Countdowns)
+		{
+			string at = countdown.Due.ToLocalTime().ToString(countdown.Kind == "alarm" ? "dd.MM.yyyy HH:mm:ss" : "HH:mm:ss");
+			Notice(TimerState.Title(countdown), $"{TimerState.Left(countdown, now)} left, at {at}");
+		}
+	}
+
+	private void Marks(IReadOnlyList<Lap> laps, IReadOnlyList<double> pauses)
+	{
+		foreach (var (title, detail) in TimerState.Marks(laps, pauses))
+		{
+			Notice(title, detail);
+		}
+	}
+
+	private void Notice(string title, string detail) => _history.Append(new HistoryEntry("notice", "", title, detail));
 
 	// does: toggle, start, go, pause, stop, lap, reset; input: the line History shows
 	private async Task StopwatchAsync(string does, string input)
@@ -181,6 +229,7 @@ internal sealed partial class MainForm
 				if (Timers.Stop(now) is double total)
 				{
 					await RecordAsync("Stopwatch", TimerState.Clock(total, 2), laps > 0 ? $"{laps} laps" : "");
+					Marks(Timers.LastRun!.Laps, Timers.LastRun.Pauses);    // the run's laps and pauses (owner 2026-11-28)
 				}
 				else
 				{

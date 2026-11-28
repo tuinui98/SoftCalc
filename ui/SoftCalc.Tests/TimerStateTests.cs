@@ -75,6 +75,52 @@ public class TimerStateTests
 	}
 
 	[Fact]
+	public void ANameInUseSetsItsTimeAgain()    // owner 2026-11-28; without a name each is new
+	{
+		var state = new TimerState();
+		var (first, changed1) = state.Add("timer", "5m", "tea", 300, T0);
+		var (again, changed2) = state.Add("timer", "10m", "TEA", 600, T0);
+		state.Add("alarm", "8:00", "tea", 60, T0);    // an alarm is another list
+		state.Add("timer", "1m", null, 60, T0);
+		state.Add("timer", "1m", null, 60, T0);
+		Assert.Same(first, again);
+		Assert.Equal((false, true), (changed1, changed2));
+		Assert.Equal(("10m", T0.AddSeconds(600)), (again.Label, again.Due));
+		Assert.Equal(3, state.Of("timer").Count());
+	}
+
+	[Fact]
+	public void LastRunKeepsLapsAndPausesInOrder()
+	{
+		var state = new TimerState();
+		Assert.Null(state.LastRun);
+		state.Start(T0);
+		state.AddLap(T0.AddSeconds(12.3));
+		state.Pause(T0.AddSeconds(20));
+		state.Start(T0.AddSeconds(30));
+		state.AddLap(T0.AddSeconds(51.5));
+		state.Stop(T0.AddSeconds(60));
+		var run = state.LastRun!;
+		Assert.Equal((50.0, 2, 1), (run.Total, run.Laps.Count, run.Pauses.Count));
+		Assert.Empty(state.Pauses);
+		Assert.Equal(new[] { "Lap 1  0:00:12.30", "Paused at 0:00:20.0", "Lap 2  0:00:29.20" },
+			TimerState.Marks(run.Laps, run.Pauses).Select(m => m.Title));
+	}
+
+	[Fact]
+	public void NameHintListsTheNamesInUse()
+	{
+		var state = new TimerState();
+		state.Add("timer", "5m", "tea", 300, T0);
+		state.Add("timer", "9m", "eggs", 540, T0);
+		Assert.Equal("timer names: tea, eggs  (one of them sets its time again)", state.NameHint(":timer 10m \""));
+		Assert.StartsWith("timer names: eggs", state.NameHint(":timer 10m \"E"));
+		Assert.Equal("alarm names: none yet; a new name starts a new alarm", state.NameHint(":alarm 7:00 \""));
+		Assert.Null(state.NameHint(":timer 10m \"tea\" "));    // the quotes are closed
+		Assert.Null(state.NameHint(":sw \""));
+	}
+
+	[Fact]
 	public void SurvivesSettingsJson()
 	{
 		var state = new TimerState();
