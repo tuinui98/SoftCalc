@@ -114,7 +114,7 @@ export function timersFrom(stored: unknown): TimerState
 }
 
 export const running = (s: TimerState) => s.runningSince !== null;
-export const started = (s: TimerState) => running(s) || s.before > 0 || s.laps.length > 0;
+export const started = (s: TimerState) => running(s) || s.before > 0 || s.laps.length > 0 || s.pauses.length > 0;    // paused at 0 is still started
 export const active = (s: TimerState) => started(s) || s.countdowns.length > 0;
 
 export function elapsed(s: TimerState, now: number): number
@@ -271,6 +271,18 @@ export function clock(seconds: number, places: number): string
 	const rest = rounded - hours * 3600 - minutes * 60;
 	const text = rest.toFixed(places).padStart(places > 0 ? places + 3 : 2, "0");
 	return `${hours}:${String(minutes).padStart(2, "0")}:${text}`;
+}
+
+// Seconds from now to an alarm's time as the engine sends it ("28.11.2026 10:50:00", local), or fallback.
+// The engine's own seconds count from its whole-second now, so an alarm set at 10:49:12.7 for 10:50 would
+// ring at 10:50:00.7 (owner 2026-11-28).
+export function secondsTo(at: unknown, fallback: number, now: number): number
+{
+	const m = typeof at === "string" ? /^(\d\d)\.(\d\d)\.(\d{4}) (\d\d):(\d\d):(\d\d)$/.exec(at) : null;
+	if (!m)
+		return fallback;
+	const local = new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5], +m[6]).getTime();
+	return (local - now) / 1000;
 }
 
 // What a countdown is called in History: Timer 5m "tea"

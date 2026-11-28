@@ -564,7 +564,10 @@ export class Calculator
 		if (does === "start")
 		{
 			const label = String(action.label ?? "");
-			const { countdown, changed } = clocks.add(this.timers, kind as Countdown["kind"], label, name, Number(action.seconds ?? 0), now);
+			let seconds = Number(action.seconds ?? 0);
+			if (kind === "alarm")
+				seconds = clocks.secondsTo(action.at, seconds, now);    // on the second it names
+			const { countdown, changed } = clocks.add(this.timers, kind as Countdown["kind"], label, name, seconds, now);
 			if (changed)    // a name in use: that one's time is set again (owner 2026-11-28)
 			{
 				const due = clocks.at(countdown.due, kind === "alarm");
@@ -724,13 +727,14 @@ export class Calculator
 			return said.startsWith("ERROR:") ? said.slice(6) : "Write a length or a time";
 		}
 		const now = Date.now();
+		const seconds = countdown.kind === "alarm" ? clocks.secondsTo(action.at, action.seconds, now) : action.seconds;
 		const start = countdown.kind === "timer" && fromStart ? countdown.set : now;
-		if (start + action.seconds * 1000 <= now)
+		if (start + seconds * 1000 <= now)
 		{
 			return "That time is already past";
 		}
 		countdown.set = start;
-		countdown.due = start + action.seconds * 1000;
+		countdown.due = start + seconds * 1000;
 		countdown.label = typeof action.label === "string" ? action.label : text;
 		if (!this.timers.countdowns.includes(countdown))
 		{

@@ -78,7 +78,7 @@ internal sealed class TimerState
 	public bool Running => RunningSince != null;
 
 	[JsonIgnore]
-	public bool Started => Running || Before > 0 || Laps.Count > 0;
+	public bool Started => Running || Before > 0 || Laps.Count > 0 || Pauses.Count > 0;    // paused at 0 is still started
 
 	[JsonIgnore]
 	public bool Active => Started || Countdowns.Count > 0;
@@ -142,7 +142,7 @@ internal sealed class TimerState
 		bool changed = countdown != null;
 		countdown ??= new Countdown { Kind = kind, Name = name };
 		countdown.Label = label;
-		countdown.Due = now.AddSeconds(seconds);
+		countdown.Due = now.AddTicks((long)Math.Round(seconds * TimeSpan.TicksPerSecond));    // AddSeconds left 10:49:59.999
 		countdown.Set = now;
 		if (!changed)
 		{
@@ -307,6 +307,19 @@ internal sealed class TimerState
 			"dd.MM.yyyy HH:mm:ss.s" => local.ToString("dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture) + tenth,
 			_ => local.ToString("HH:mm:ss", CultureInfo.InvariantCulture) + tenth,
 		};
+	}
+
+	/// <summary>Seconds from now to an alarm's time as the engine sends it ("28.11.2026 10:50:00", local), or
+	/// fallback when it does not read. The engine's own seconds count from its whole-second now, so an alarm
+	/// set at 10:49:12.7 for 10:50 would ring at 10:50:00.7 (owner 2026-11-28).</summary>
+	public static double SecondsTo(string? at, double fallback, DateTime now)
+	{
+		if (at != null && DateTime.TryParseExact(at, "dd.MM.yyyy HH:mm:ss", CultureInfo.InvariantCulture,
+			DateTimeStyles.AssumeLocal, out var local))
+		{
+			return (local.ToUniversalTime() - now).TotalSeconds;
+		}
+		return fallback;
 	}
 
 	/// <summary>What a countdown is called in History: Timer 5m "tea".</summary>

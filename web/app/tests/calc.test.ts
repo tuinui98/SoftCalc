@@ -260,6 +260,31 @@ describe("keys", () =>
 		expect(calc.entries.at(-1)?.display).toBe("Stopwatch, ");
 	});
 
+	it(":sw last, no lap while paused, and Change time (owner 2026-11-28)", async () =>
+	{
+		const { calc } = await started();
+		await calc.stopwatch("last");
+		expect(calc.entries.at(-1)?.text).toBe("No stopwatch record");
+		await calc.stopwatch("start");
+		await calc.stopwatch("pause");
+		await calc.stopwatch("lap");
+		expect(calc.entries.at(-1)?.text).toBe("The stopwatch is paused; :sw go goes on");
+		await calc.stopwatch("go");
+		await calc.stopwatch("lap");
+		await calc.stopwatch("stop");
+		await calc.stopwatch("last");
+		const last = calc.entries.filter(entry => entry.input === ":sw last").at(-1);
+		expect(last?.text).toMatch(/^Stopwatch, last run 0:00:00\.\d\d, ended /);
+		expect(calc.entries.slice(-2).map(entry => entry.input)).toEqual([expect.stringMatching(/^Lap 1 /), expect.stringMatching(/^Paused at /)]);
+
+		await calc.submit(':timer 5m "tea"');
+		const tea = calc.timers.countdowns[0];
+		expect(await calc.changeTime(tea, "10m", false)).toBeNull();
+		expect(Math.round((tea.due - tea.set) / 1000)).toBe(600);
+		expect(calc.timers.countdowns.length).toBe(1);
+		expect(await calc.changeTime(tea, "x", false)).toBe("Unknown");    // the engine's error, without ERROR:
+	});
+
 	it("2nd ( ) and ans type [ ] and -> for a conversion", async () =>
 	{
 		const { calc } = await started();

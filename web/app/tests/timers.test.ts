@@ -3,7 +3,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	add, addLap, cancel, clock, elapsed, left, length, marks, nameHint, newTimers, pause, readout, slot, span, start, started, stop,
-	takeDue, timersFrom,
+	takeDue, timersFrom, secondsTo,
 } from "../src/lib/timers";
 
 const T0 = Date.UTC(2026, 10, 28, 7, 0, 0);
@@ -157,5 +157,17 @@ describe("the countdown page (owner 2026-11-28), as the desktop's", () =>
 	{
 		expect(timersFrom({ timerSlots: [["left", "nope"]] }).timerSlots).toEqual(newTimers().timerSlots);
 		expect(timersFrom({ alarmSlots: [["set", "ssss.s"], ["since", "mmm:ss.s"], ["done", "ssss.s"]] }).alarmSlots[0]).toEqual(["set", "ssss.s"]);
+	});
+});
+
+describe("an alarm rings on the second it names (owner 2026-11-28: 10:50 rang at 10:50:00.7)", () =>
+{
+	it("counts from the alarm's own time, not the engine's whole-second now", () =>
+	{
+		const now = new Date(2026, 10, 28, 10, 49, 12, 700).getTime();
+		const seconds = secondsTo("28.11.2026 10:50:00", 48, now);
+		expect(seconds).toBeCloseTo(47.3);
+		expect(new Date(now + seconds * 1000).getMilliseconds()).toBe(0);
+		expect(secondsTo("junk", 48, now)).toBe(48);
 	});
 });

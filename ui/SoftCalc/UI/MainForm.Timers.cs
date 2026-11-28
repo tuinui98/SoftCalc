@@ -131,7 +131,12 @@ internal sealed partial class MainForm
 				return;
 			case "start":
 				string label = (string?)action["label"] ?? "";
-				var (countdown, changed) = Timers.Add(kind, label, name, (double?)action["seconds"] ?? 0, now);
+				double seconds = (double?)action["seconds"] ?? 0;
+				if (kind == "alarm")
+				{
+					seconds = TimerState.SecondsTo((string?)action["at"], seconds, now);    // on the second it names
+				}
+				var (countdown, changed) = Timers.Add(kind, label, name, seconds, now);
 				if (changed)    // a name in use: that one's time is set again (owner 2026-11-28)
 				{
 					string due = countdown.Due.ToLocalTime().ToString(kind == "alarm" ? "dd.MM.yyyy HH:mm:ss" : "HH:mm:ss");
@@ -280,6 +285,10 @@ internal sealed partial class MainForm
 			return reply.Text.StartsWith("ERROR:", StringComparison.Ordinal) ? reply.Text[6..] : "Write a length or a time";
 		}
 		var now = DateTime.UtcNow;
+		if (countdown.Kind == "alarm")
+		{
+			seconds = TimerState.SecondsTo((string?)action["at"], seconds, now);    // on the second it names
+		}
 		var start = countdown.Kind == "timer" && fromStart ? countdown.Set : now;
 		if (start.AddSeconds(seconds) <= now)
 		{

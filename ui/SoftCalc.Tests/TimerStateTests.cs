@@ -91,6 +91,29 @@ public class TimerStateTests
 	}
 
 	[Fact]
+	public void AnAlarmRingsOnTheSecondItNames()    // owner 2026-11-28: 10:50 rang at 10:50:00.7
+	{
+		var now = new DateTime(2026, 11, 28, 10, 49, 12, 700, DateTimeKind.Local).ToUniversalTime();
+		double seconds = TimerState.SecondsTo("28.11.2026 10:50:00", 48, now);
+		Assert.Equal(47.3, seconds, 6);
+		var state = new TimerState();
+		var (alarm, _) = state.Add("alarm", "10:50:00", null, seconds, now);
+		Assert.Equal(new DateTime(2026, 11, 28, 10, 50, 0, DateTimeKind.Local), alarm.Due.ToLocalTime());
+		Assert.Equal(48, TimerState.SecondsTo("junk", 48, now));
+	}
+
+	[Fact]
+	public void PausedAtZeroIsStillStarted()    // found by the web test: a pause right after the start
+	{
+		var state = new TimerState();
+		state.Start(T0);
+		state.Pause(T0);
+		Assert.True(state.Started);
+		Assert.Null(state.AddLap(T0));
+		Assert.Equal(0, state.Stop(T0));
+	}
+
+	[Fact]
 	public void LastRunKeepsLapsAndPausesInOrder()
 	{
 		var state = new TimerState();
