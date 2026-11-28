@@ -67,6 +67,7 @@ describe("compound", () =>
 		expect(sent.solve).toBe("annual_rate");
 		expect(sent.table_decimals).toBe("all");
 		expect(sent).not.toHaveProperty("goal_order");
+		expect(sent.order).toEqual(["annual_rate", "years", "contribution", "target", "principal"]);
 		expect(request(inputs).table_decimals).toBe(2);
 		const back = inputsFrom({ mode: "goal", goal_order: ["years", "years", "nope"], table_decimals: 99 });
 		expect(back.mode).toBe("goal");

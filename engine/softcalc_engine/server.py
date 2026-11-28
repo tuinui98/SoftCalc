@@ -12,7 +12,7 @@ import sys
 
 import mpmath
 
-from . import __version__, crypto, currency, finance, menu, units
+from . import __version__, compound_sheet, crypto, currency, finance, menu, units
 from .dates import ZONES
 from .cards import decks_from
 from .engine import Engine, Settings
@@ -108,6 +108,7 @@ class Dispatcher:
         self.apart = None    # the web app's Seed draws (`draws` with apart), made on first use
         self.schedule_id = 0
         self.last_schedule = None    # (id, rows, cell formatter) of the last `schedule`, for schedule_rows
+        self.last_sheet = None    # compound_sheet.SheetInput of the last `schedule`, for schedule_sheet
         self.handlers = {
             "eval": self.op_eval,
             "record": self.op_record,
@@ -129,6 +130,7 @@ class Dispatcher:
             "restore_results": self.op_restore_results,
             "schedule": self.op_schedule,
             "schedule_rows": self.op_schedule_rows,
+            "schedule_sheet": self.op_schedule_sheet,
             "set_rates": self.op_set_rates,
             "set_prices": self.op_set_prices,
             "draws": self.op_draws,
@@ -426,11 +428,24 @@ class Dispatcher:
                           "exact": exact(result.values[solve]),
                           "length_ymd": finance.years_text(result.years),
                           "values": {name: cell(value) for name, value in result.values.items()}}
+                sheet_values = result.values
             else:
+                sheet_values = {"principal": number("principal"), "annual_rate": number("annual_rate"),
+                                "years": number("years"), "contribution": number("contribution", "0")}
                 plan = finance.schedule(
-                    number("principal"), number("annual_rate") / 100, number("years"),
-                    compounding, number("contribution", "0"), contribution_freq,
+                    sheet_values["principal"], sheet_values["annual_rate"] / 100, sheet_values["years"],
+                    compounding, sheet_values["contribution"], contribution_freq,
                     at_start, rate_unit, length_unit)
+            # what Copy for Excel needs (owner 2026-11-29); order: the goal fields, set longest ago first
+            order = request.get("order")
+            if not (isinstance(order, list) and sorted(order) == sorted(finance.GOAL_FIELDS)):
+                order = list(finance.GOAL_FIELDS)
+            self.last_sheet = compound_sheet.SheetInput(
+                mode=mode, solve=request.get("solve") if mode == "goal" else None, order=order,
+                values={name: format_number(value, s.precision) for name, value in sheet_values.items()},    # decimal, for any base
+                rate_unit=rate_unit, length_unit=length_unit, compounding=compounding,
+                contribution_freq=contribution_freq, at_start=at_start, rows=plan.rows,
+                periods_per_year=plan.periods_per_year)
             principal = plan.rows[0].start if plan.rows else 0
             contributions, interest = [], []
             paid, earned = principal, 0
@@ -473,6 +488,14 @@ class Dispatcher:
         with self.engine.working_context():
             return {"schedule_id": schedule_id, "first": first,
                     "rows": [schedule_line(row, cell) for row in rows[first:first + count]]}
+
+
+    def op_schedule_sheet(self, request):
+        """The last schedule as tab text with formulas, to paste at A1 (owner 2026-11-29)."""
+        schedule_id = argument(request, "schedule_id", int)
+        if self.last_schedule is None or self.last_schedule[0] != schedule_id or self.last_sheet is None:
+            raise RequestError("that schedule is gone; a newer one was worked out")
+        return {"text": compound_sheet.sheet_text(self.last_sheet)}
 
 
 def schedule_line(row, cell):

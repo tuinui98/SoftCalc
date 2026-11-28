@@ -89,7 +89,8 @@ export function setGoalField(inputs: CompoundInputs, field: Field)
 export function request(inputs: CompoundInputs): Record<string, unknown>
 {
 	const { goal_order, table_decimals, ...rest } = inputs;
-	return { ...rest, table_decimals: table_decimals ?? "all", solve: goal_order[0], row_limit: FIRST_ROWS };
+	// order: for Copy for Excel, the inputs in the Result box's order (owner 2026-11-29)
+	return { ...rest, table_decimals: table_decimals ?? "all", solve: goal_order[0], order: goal_order, row_limit: FIRST_ROWS };
 }
 
 // Saved inputs: what is usable, the first values for the rest

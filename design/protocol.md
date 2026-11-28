@@ -250,6 +250,15 @@ formatting every row took seconds); the reply has `row_count` and
 its places. An older `schedule_id` (a newer schedule was worked out) is
 an error.
 
+### `schedule_sheet`
+`{"schedule_id": 3}` -> `{"text": "..."}`: Copy for Excel (owner
+2026-11-29), the last schedule as tab text, CRLF lines, to paste at A1
+of an empty sheet: the inputs (goal mode in the Result box's order, from
+`schedule`'s `order`, the goal fields set longest ago first), helper
+cells, the totals and every table row as formulas
+(compound_sheet.py). A worked-out field other than Target is a number,
+with an "End balance - target" check cell.
+
 ### `set_rates`
 `{"date": "2026-11-05", "rates": {"USD": "1.0812", "THB": "37.95", ...},
 "stale": false, "next_check": 1762444800}` -> `{}`.

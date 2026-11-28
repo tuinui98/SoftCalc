@@ -286,6 +286,13 @@ internal sealed class EngineSession : IDisposable
 		return Rows(reply["rows"]);
 	}
 
+	// owner 2026-11-29: Copy for Excel, the last schedule as tab text with formulas to paste at A1
+	public async Task<string> ScheduleSheetAsync(int scheduleId)
+	{
+		var reply = await GuardedAsync("schedule_sheet", new JsonObject { ["schedule_id"] = scheduleId });
+		return (string?)reply["text"] ?? "";
+	}
+
 	private static List<ScheduleRow> Rows(JsonNode? node)
 	{
 		return node?.AsArray().Select(r => new ScheduleRow(

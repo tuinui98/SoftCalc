@@ -143,6 +143,7 @@
 			answer.schedule.rows.forEach((row, index) => { all[index] = row; });
 			rowCache = all;
 			asked = new Set();
+			void loadRest(answer.schedule.schedule_id);
 			const solved = answer.schedule.solved;
 			if (solved)
 			{
@@ -447,6 +448,17 @@
 		}
 	}
 
+	// owner 2026-11-29: inputs, totals and the table as formulas, to paste at A1 of an empty sheet
+	async function copyForExcel()
+	{
+		const id = schedule?.schedule_id;
+		if (id === undefined)
+			return;
+		const text = await calc.scheduleSheet(id);
+		if (text && schedule?.schedule_id === id && await copyText(text))
+			say("Copied for a spreadsheet: paste at A1 of an empty sheet");
+	}
+
 	async function copySummary()
 	{
 		if (schedule && await copyText(summary($state.snapshot(inputs) as CompoundInputs, schedule)))
@@ -499,6 +511,20 @@
 		const all = [...rowCache];
 		rows.forEach((row, index) => { all[start + index] = row; });
 		rowCache = all;
+	}
+
+	// owner 2026-11-29: after the first rows, the rest a block at a time in the background, so scrolling and
+	// the CSV find them there; a newer schedule stops it
+	async function loadRest(id: number | undefined)
+	{
+		for (let block = 0; block * BLOCK < rowCache.length; block++)
+		{
+			if (id === undefined || schedule?.schedule_id !== id)
+				return;
+			const last = Math.min(rowCache.length, (block + 1) * BLOCK) - 1;
+			if (!rowCache[block * BLOCK] || !rowCache[last])
+				await fetchBlock(block);
+		}
 	}
 
 	// every row, for the CSV; null when a newer schedule came meanwhile
@@ -579,6 +605,7 @@
 		<div class="tools">
 			<button use:tap={() => void exportCsv()} disabled={!schedule}>CSV</button>
 			<button use:tap={() => void exportPicture()} disabled={!schedule}>PNG</button>
+			<button use:tap={() => void copyForExcel()} disabled={!schedule}>Excel</button>
 			<button use:tap={() => void copySummary()} disabled={!schedule}>Copy</button>
 		</div>
 		<button class="bar" use:tap={onclose}>Done</button>

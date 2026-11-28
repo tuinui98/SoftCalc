@@ -350,6 +350,24 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		await Assert.ThrowsAsync<EngineRequestException>(() => Session.ScheduleRowsAsync(reply.ScheduleId, 0, 5));
 	}
 
+	// owner 2026-11-29: Copy for Excel, the order the window sends gives the inputs' order
+	[Fact]
+	public async Task ScheduleSheetIsTabTextWithFormulas()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["mode"] = "goal", ["solve"] = "principal", ["target"] = "2000", ["principal"] = "", ["annual_rate"] = "10",
+			["years"] = "2", ["rate_unit"] = "yearly", ["row_limit"] = 0,
+			["order"] = new JsonArray("principal", "years", "target", "contribution", "annual_rate"),
+		});
+		string text = await Session.ScheduleSheetAsync(reply.ScheduleId);
+		var lines = text.Split("\r\n");
+		Assert.StartsWith("Principal (result)\t", lines[2]);
+		Assert.StartsWith("Interest rate %\t10\t", lines[3]);
+		Assert.Contains("\t=B", text);
+		Assert.EndsWith("\r\n", text);
+	}
+
 	// owner 2026-11-28: goal mode works out one field; a length may end in a part period
 	[Fact]
 	public async Task GoalWorksOutTheLengthWithAPartRow()

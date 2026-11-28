@@ -247,7 +247,11 @@ internal sealed class CompoundWindow : Form
 				Clipboard.SetText(CompoundTable.ToTabs(rows, header: true));
 			}
 		};
+		// owner 2026-11-29: inputs, totals and the table as formulas, to paste at A1 of an empty sheet
+		var excel = new Button { Text = "Copy for E&xcel", AutoSize = true };
+		excel.Click += async (_, _) => await CopyForExcelAsync();
 		bar.Controls.Add(export);
+		bar.Controls.Add(excel);
 		bar.Controls.Add(copyAll);
 
 		// owner 2026-11-28: the page's own decimal places, as View > Decimal Places: fewer, more, all; the table,
@@ -480,6 +484,7 @@ internal sealed class CompoundWindow : Form
 			["rate_unit"] = _prefs.RateUnit, ["length_unit"] = _prefs.LengthUnit,
 			["table_decimals"] = _prefs.TableDecimals is int places ? places : "all",
 			["row_limit"] = FirstRows,
+			["order"] = new JsonArray(_prefs.GoalOrder.Select(field => (JsonNode)field).ToArray()),    // for Copy for Excel
 		};
 		if (IsGoal)
 		{
@@ -569,6 +574,7 @@ internal sealed class CompoundWindow : Form
 		}
 		_table.RowCount = 0;
 		_table.RowCount = _rows.Length;
+		_ = LoadRestAsync(_scheduleId);
 		_table.Invalidate();
 		_chart.SetData(reply.Principal, reply.Contributions, reply.Interest,
 			reply.PeriodsPerUnit > 0 ? reply.PeriodsPerUnit : reply.PeriodsPerYear, reply.LengthUnit, reply.Partial);
@@ -625,6 +631,50 @@ internal sealed class CompoundWindow : Form
 			_rows[first + i] = rows[i];
 		}
 		_table.Invalidate();
+	}
+
+	// owner 2026-11-29: after the first rows, the rest a block at a time in the background, so scrolling
+	// and exporting find them there; a newer schedule stops it. One block at a time leaves the engine free
+	// for the main window in between.
+	private async Task LoadRestAsync(int id)
+	{
+		for (int block = 0; block * Block < _rows.Length; block++)
+		{
+			if (id != _scheduleId || IsDisposed)
+			{
+				return;
+			}
+			if (_rows[block * Block] == null || _rows[Math.Min(_rows.Length, (block + 1) * Block) - 1] == null)
+			{
+				await FetchBlockAsync(block);
+			}
+		}
+	}
+
+	private async Task CopyForExcelAsync()
+	{
+		if (_rows.Length == 0)
+		{
+			return;
+		}
+		int id = _scheduleId;
+		UseWaitCursor = true;
+		try
+		{
+			string text = await _session.ScheduleSheetAsync(id);
+			if (id == _scheduleId && !IsDisposed && text.Length > 0)
+			{
+				Clipboard.SetText(text);
+			}
+		}
+		catch (EngineException)
+		{
+			// a newer schedule came meanwhile: the person can copy again
+		}
+		finally
+		{
+			UseWaitCursor = false;
+		}
 	}
 
 	// Every row, for Export CSV and Copy all; null when a newer schedule came meanwhile
