@@ -343,7 +343,11 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		});
 		Assert.NotNull(reply.Solved);
 		Assert.Equal(("years", "7 y 3 m 8 d"), (reply.Solved!.Field, reply.Solved.LengthYmd));
-		Assert.Equal(7.2725409, double.Parse(reply.Solved.Value, System.Globalization.CultureInfo.InvariantCulture), 6);
+		// owner 2026-11-29: the worked-out field in the page's places, every digit kept; all five back
+		Assert.Equal("7.27", reply.Solved.Value);
+		Assert.Equal(7.2725409, double.Parse(reply.Solved.Exact, System.Globalization.CultureInfo.InvariantCulture), 6);
+		Assert.Equal(("2000.00", "1000.00"), (reply.Solved.Values!["target"], reply.Solved.Values["principal"]));
+		Assert.Equal("2000.00", reply.FutureValue);
 		Assert.Equal((8, "0.2725", "2000.00"), (reply.Rows.Count, reply.Rows[^1].Part, reply.Rows[^1].End));
 		Assert.Equal(0.2725, reply.Partial, 4);
 	}

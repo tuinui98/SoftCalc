@@ -396,6 +396,19 @@ class Dispatcher:
             raise RequestError("'mode' must be normal or goal")
         at_start = argument(request, "at_start", bool, False, required=False)
         with engine.working_context():
+            s = engine.settings
+            if table_decimals == "view":
+                cell = engine.format_value
+            else:
+                # owner 2026-11-29: the places go for the totals and the worked-out field too
+                places = None if table_decimals == "all" else table_decimals
+
+                def cell(value):
+                    return format_number(value, s.precision, s.base, places, places is not None)
+
+            def exact(value):
+                return format_number(value, s.precision, s.base)    # every digit, to keep when it is set later
+
             solved = None
             if mode == "goal":
                 # owner 2026-11-28: four fields give the fifth; the rate's unit is the compounding
@@ -406,22 +419,15 @@ class Dispatcher:
                           for name in finance.GOAL_FIELDS}
                 result = finance.goal(values, solve, rate_unit, length_unit, contribution_freq, at_start)
                 plan = result.plan
-                solved = {"field": solve, "value": engine.format_value(result.values[solve]),
-                          "length_ymd": finance.years_text(result.years)}
+                solved = {"field": solve, "value": cell(result.values[solve]),
+                          "exact": exact(result.values[solve]),
+                          "length_ymd": finance.years_text(result.years),
+                          "values": {name: cell(value) for name, value in result.values.items()}}
             else:
                 plan = finance.schedule(
                     number("principal"), number("annual_rate") / 100, number("years"),
                     compounding, number("contribution", "0"), contribution_freq,
                     at_start, rate_unit, length_unit)
-            show = engine.format_value
-            s = engine.settings
-            if table_decimals == "view":
-                cell = show
-            else:
-                places = None if table_decimals == "all" else table_decimals
-
-                def cell(value):
-                    return format_number(value, s.precision, s.base, places, places is not None)
             principal = plan.rows[0].start if plan.rows else 0
             rows, contributions, interest = [], [], []
             paid, earned = principal, 0
@@ -435,9 +441,9 @@ class Dispatcher:
                 rows.append(line)
                 contributions.append(float(paid))
                 interest.append(float(earned))
-            reply = {"future_value": show(plan.future_value),
-                     "total_contributions": show(plan.total_contributions),
-                     "total_interest": show(plan.total_interest),
+            reply = {"future_value": cell(plan.future_value),
+                     "total_contributions": cell(plan.total_contributions),
+                     "total_interest": cell(plan.total_interest),
                      "rows": rows, "periods_per_year": float(plan.periods_per_year),
                      "periods_per_unit": float(plan.periods_per_unit), "length_unit": length_unit,
                      "partial": float(plan.partial),

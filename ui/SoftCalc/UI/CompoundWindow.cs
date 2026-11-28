@@ -40,9 +40,12 @@ internal sealed class CompoundWindow : Form
 	private readonly RadioButton _normal = new() { Text = "&Normal", AutoSize = true };
 	private readonly RadioButton _goal = new() { Text = "&Goal", AutoSize = true };
 	private readonly CheckBox _atStart = new() { Text = "Contribution at the start of each period", AutoSize = true };
-	private readonly TextBox _futureValue = Output();
-	private readonly TextBox _totalContributions = Output();
-	private readonly TextBox _totalInterest = Output();
+	// Result: normal the three totals; goal the worked-out field first, then the others from the one set
+	// last to the one set longest ago, then the totals (owner 2026-11-29)
+	private const int ResultRows = 7;
+	private readonly Label[] _resultNames = new Label[ResultRows];
+	private readonly TextBox[] _resultValues = new TextBox[ResultRows];
+	private readonly Dictionary<string, (string Shown, string Exact)> _workedOut = new();    // the places shown, every digit kept
 	private readonly Label _generalError = new() { AutoSize = true, ForeColor = Theme.Error };
 	private readonly Label _decimals = new() { AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 0, 0) };
 	private readonly CompoundChart _chart = new() { Dock = DockStyle.Fill };
@@ -56,6 +59,7 @@ internal sealed class CompoundWindow : Form
 	};
 	private readonly System.Windows.Forms.Timer _delay = new() { Interval = 300 };
 	private IReadOnlyList<ScheduleRow> _rows = Array.Empty<ScheduleRow>();
+	private ScheduleReply? _last;
 	private string _lengthYmd = "";
 	private int _request;
 	private bool _loading = true;
@@ -72,7 +76,8 @@ internal sealed class CompoundWindow : Form
 		ShowInTaskbar = false;
 		Icon = SvgIcon.ProgramIcon();
 
-		var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal };
+		// owner 2026-11-28: the chart and the table follow the splitter as it moves, not only on release
+		var split = new LiveSplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Horizontal, Panel1MinSize = 60, Panel2MinSize = 60 };
 		split.Panel1.Controls.Add(_chart);
 		split.Panel2.Controls.Add(_table);
 		var layout = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 3 };
@@ -84,14 +89,6 @@ internal sealed class CompoundWindow : Form
 		layout.Controls.Add(BuildButtons(), 0, 2);
 		Controls.Add(layout);
 		Load += (_, _) => split.SplitterDistance = split.Height / 2;
-		// owner 2026-11-28: the chart and the table follow the splitter as it moves, not only on release
-		split.SplitterMoving += (_, e) =>
-		{
-			if (e.SplitY > 0 && e.SplitY != split.SplitterDistance)
-			{
-				split.SplitterDistance = e.SplitY;
-			}
-		};
 
 		foreach (string header in CompoundTable.Header)
 		{
@@ -150,21 +147,20 @@ internal sealed class CompoundWindow : Form
 		grid.Controls.Add(_generalError, 1, 9);
 		grid.SetColumnSpan(_generalError, 3);
 
-		var totals = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 4 };
+		var totals = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = ResultRows + 1 };
 		totals.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 		totals.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-		for (int row = 0; row < 3; row++)
+		for (int row = 0; row < ResultRows; row++)
 		{
-			totals.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
+			totals.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+			_resultValues[row] = Output();
+			_resultNames[row] = (Label)AddRow(totals, row, "", _resultValues[row])[0];
 		}
 		totals.RowStyles.Add(new RowStyle(SizeType.Percent, 100));    // spare height stays below the rows
-		AddRow(totals, 0, "Future value", _futureValue);
-		AddRow(totals, 1, "Total contributions", _totalContributions);
-		AddRow(totals, 2, "Total interest", _totalInterest);
 		var box = new GroupBox { Text = "Result", Dock = DockStyle.Fill };
 		box.Controls.Add(totals);
 		grid.Controls.Add(box, 3, 0);
-		grid.SetRowSpan(box, 8);
+		grid.SetRowSpan(box, 9);
 
 		_normal.CheckedChanged += (_, _) => ModeChanged();
 		_compounding.SelectedIndexChanged += (_, _) => Changed();
@@ -227,7 +223,8 @@ internal sealed class CompoundWindow : Form
 		bar.Controls.Add(export);
 		bar.Controls.Add(copyAll);
 
-		// owner 2026-11-28: the table's own decimal places, as View > Decimal Places: fewer, more, all
+		// owner 2026-11-28: the page's own decimal places, as View > Decimal Places: fewer, more, all; the table,
+		// the totals and the worked-out field (owner 2026-11-29)
 		var places = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0, 0, 24, 0) };
 		var fewer = new Button { Text = "Fewer", AutoSize = true };
 		var more = new Button { Text = "More", AutoSize = true };
@@ -235,7 +232,7 @@ internal sealed class CompoundWindow : Form
 		fewer.Click += (_, _) => SetDecimals(_prefs.TableDecimals is int n ? Math.Max(0, n - 1) : MostDecimals);
 		more.Click += (_, _) => SetDecimals(_prefs.TableDecimals is int n && n < MostDecimals ? n + 1 : null);
 		all.Click += (_, _) => SetDecimals(null);
-		places.Controls.Add(new Label { Text = "Table decimals:", AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 0, 0) });
+		places.Controls.Add(new Label { Text = "Decimals:", AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 0, 0) });
 		places.Controls.Add(_decimals);
 		places.Controls.Add(fewer);
 		places.Controls.Add(more);
@@ -254,6 +251,67 @@ internal sealed class CompoundWindow : Form
 	private void ShowDecimals()
 	{
 		_decimals.Text = _prefs.TableDecimals?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "All";
+	}
+
+	private static readonly Dictionary<string, string> FieldNames = new()
+	{
+		["target"] = "Target", ["principal"] = "Principal", ["annual_rate"] = "Interest rate",
+		["years"] = "Length", ["contribution"] = "Contribution",
+	};
+	private static readonly Dictionary<string, string> Every = new()
+	{
+		["yearly"] = "year", ["quarterly"] = "quarter", ["monthly"] = "month", ["weekly"] = "week", ["daily"] = "day",
+	};
+
+	// The Result box's lines, in order
+	private void ShowResultLines()
+	{
+		var lines = new List<(string Name, string Value, bool Bold)>();
+		var reply = _last;
+		if (reply == null)
+		{
+			return;
+		}
+		if (IsGoal && reply.Solved?.Values is { } values)
+		{
+			var order = new List<string> { Solving };
+			order.AddRange(_prefs.GoalOrder.Skip(1).Reverse());    // the one set last first
+			foreach (string field in order)
+			{
+				string value = values.TryGetValue(field, out var text) ? text : "";
+				value = field switch
+				{
+					"annual_rate" => $"{value} % {_prefs.RateUnit}",
+					"years" => $"{value} {_prefs.LengthUnit}" + (field == Solving && _lengthYmd.Length > 0 ? $" ({_lengthYmd})" : ""),
+					"contribution" => $"{value} / {Every.GetValueOrDefault(_prefs.ContributionFreq, _prefs.ContributionFreq)}",
+					_ => value,
+				};
+				lines.Add((FieldNames[field] + (field == Solving ? " (result)" : ""), value, field == Solving));
+			}
+		}
+		else
+		{
+			lines.Add(("Future value", reply.FutureValue, false));
+		}
+		lines.Add(("Total contributions", reply.TotalContributions, false));
+		lines.Add(("Total interest", reply.TotalInterest, false));
+		for (int row = 0; row < ResultRows; row++)
+		{
+			bool used = row < lines.Count;
+			_resultNames[row].Visible = used;
+			_resultValues[row].Visible = used;
+			if (used)
+			{
+				_resultNames[row].Text = lines[row].Name;
+				_resultValues[row].Text = lines[row].Value;
+				var style = lines[row].Bold ? FontStyle.Bold : FontStyle.Regular;
+				if (_resultNames[row].Font.Style != style)
+				{
+					_resultNames[row].Font = new Font(Font, style);
+					_resultValues[row].Font = new Font(Font, style);
+				}
+			}
+		}
 	}
 
 	private static ComboBox Choice(string[] items)
@@ -298,6 +356,7 @@ internal sealed class CompoundWindow : Form
 		}
 		_prefs.Mode = _goal.Checked ? "goal" : "normal";
 		ShowMode();
+		ShowResultLines();
 		Changed();
 	}
 
@@ -322,11 +381,11 @@ internal sealed class CompoundWindow : Form
 		{
 			return;
 		}
-		_prefs.Target = _boxes["target"].Text;
-		_prefs.Principal = _boxes["principal"].Text;
-		_prefs.Rate = _boxes["annual_rate"].Text;
-		_prefs.Years = _boxes["years"].Text;
-		_prefs.Contribution = _boxes["contribution"].Text;
+		_prefs.Target = Kept("target");
+		_prefs.Principal = Kept("principal");
+		_prefs.Rate = Kept("annual_rate");
+		_prefs.Years = Kept("years");
+		_prefs.Contribution = Kept("contribution");
 		_prefs.Compounding = (string?)_compounding.SelectedItem ?? "monthly";
 		_prefs.ContributionFreq = (string?)_contributionFreq.SelectedItem ?? "monthly";
 		_prefs.RateUnit = (string?)_rateUnit.SelectedItem ?? "yearly";
@@ -347,6 +406,22 @@ internal sealed class CompoundWindow : Form
 		ShowMarks();
 		_delay.Stop();
 		_delay.Start();
+	}
+
+	// A box's text, or every digit of a worked-out value still shown in the page's places (owner 2026-11-29:
+	// 0.73 shown, 0.7281... kept, so setting another field later does not round it)
+	private string Kept(string field)
+	{
+		string text = _boxes[field].Text;
+		if (_workedOut.TryGetValue(field, out var value))
+		{
+			if (value.Shown == text)
+			{
+				return value.Exact;
+			}
+			_workedOut.Remove(field);    // typed over
+		}
+		return text;
 	}
 
 	// Settings changed in the main window (precision, base, decimals)
@@ -449,9 +524,7 @@ internal sealed class CompoundWindow : Form
 
 	private void ShowResult(ScheduleReply reply)
 	{
-		_futureValue.Text = reply.FutureValue;
-		_totalContributions.Text = reply.TotalContributions;
-		_totalInterest.Text = reply.TotalInterest;
+		_last = reply;
 		_rows = reply.Rows;
 		_table.RowCount = 0;
 		_table.RowCount = _rows.Count;
@@ -461,10 +534,12 @@ internal sealed class CompoundWindow : Form
 		if (reply.Solved is { } solved && _boxes.TryGetValue(solved.Field, out var box))
 		{
 			_lengthYmd = solved.LengthYmd;
+			_workedOut[solved.Field] = (solved.Value, solved.Exact);
 			_writing = true;
 			box.Text = solved.Value;
 			_writing = false;
 		}
+		ShowResultLines();
 	}
 
 	private void OnCellValueNeeded(object? sender, DataGridViewCellValueEventArgs e)

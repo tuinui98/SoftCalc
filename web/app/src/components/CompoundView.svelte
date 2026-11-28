@@ -41,9 +41,58 @@
 		["contribution", "Contribution"],
 	];
 	const solving = $derived(inputs.mode === "goal" ? inputs.goal_order[0] : null);
+	const NAMES: Record<Field, string> = Object.fromEntries(LABELS.map(([field, label]) => [field, label.replace(" %", "")])) as Record<Field, string>;
+	const EVERY: Record<string, string> = { yearly: "year", quarterly: "quarter", monthly: "month", weekly: "week", daily: "day" };
+
+	// owner 2026-11-29: in goal, the worked-out field first, then the others from the one set last to the one
+	// set longest ago, then the totals; insert: what a tap puts in Input
+	const resultLines = $derived.by(() =>
+	{
+		const s = schedule as Schedule | null;
+		if (!s)
+			return [];
+		const lines: { label: string; value: string; insert: string; result: boolean }[] = [];
+		const values = s.solved?.values;
+		if (inputs.mode === "goal" && values)
+		{
+			const order = [inputs.goal_order[0], ...inputs.goal_order.slice(1).reverse()];
+			for (const field of order)
+			{
+				const value = values[field] ?? "";
+				const shown = field === "annual_rate" ? `${value} % ${inputs.rate_unit}`
+					: field === "years" ? `${value} ${inputs.length_unit}${field === solving && lengthYmd ? ` (${lengthYmd})` : ""}`
+					: field === "contribution" ? `${value} / ${EVERY[inputs.contribution_freq] ?? inputs.contribution_freq}` : value;
+				lines.push({ label: NAMES[field] + (field === solving ? " (result)" : ""), value: shown, insert: value, result: field === solving });
+			}
+		}
+		else
+		{
+			lines.push({ label: "Future value", value: s.future_value, insert: s.future_value, result: false });
+		}
+		lines.push({ label: "Total contributions", value: s.total_contributions, insert: s.total_contributions, result: false });
+		lines.push({ label: "Total interest", value: s.total_interest, insert: s.total_interest, result: false });
+		return lines;
+	});
 	let lengthYmd = $state("");
 
 	// field: the one the person just set (goal mode: it becomes the most important)
+	// owner 2026-11-29: a worked-out value shows in the page's places; every digit is kept and sent while
+	// its box still shows it, so setting another field later does not round it
+	let workedOut: Partial<Record<Field, { shown: string; exact: string }>> = {};
+
+	function kept(): CompoundInputs
+	{
+		const sent = $state.snapshot(inputs) as CompoundInputs;
+		for (const [field, value] of Object.entries(workedOut) as [Field, { shown: string; exact: string }][])
+		{
+			if (sent[field] === value.shown)
+				sent[field] = value.exact;
+			else
+				delete workedOut[field];    // typed over
+		}
+		return sent;
+	}
+
 	function set(field: Field)
 	{
 		if (inputs.mode === "goal")
@@ -78,7 +127,8 @@
 	async function work()
 	{
 		const mine = ++request;
-		const answer = await calc.schedule($state.snapshot(inputs) as CompoundInputs);
+		const sent = kept();
+		const answer = await calc.schedule(sent);
 		if (mine !== request)
 		{
 			return;
@@ -93,8 +143,9 @@
 			if (solved)
 			{
 				inputs[solved.field] = solved.value;    // worked out, not set
+				workedOut[solved.field] = { shown: solved.value, exact: solved.exact ?? solved.value };
 				lengthYmd = solved.length_ymd;
-				calc.compound = $state.snapshot(inputs) as CompoundInputs;
+				calc.compound = { ...sent, [solved.field]: solved.exact ?? solved.value };
 			}
 		}
 		else
@@ -515,10 +566,9 @@
 			{#if general}<p class="error general">{general}</p>{/if}
 			{#if schedule}
 				<div class="totals">
-					{#each [["Future value", schedule.future_value], ["Total contributions", schedule.total_contributions],
-						["Total interest", schedule.total_interest]] as [label, value] (label)}
-						<button class="total" use:tap={() => oninsert(value)} title="Tap: put it in Input">
-							<span>{label}</span><b>{value}</b>
+					{#each resultLines as line (line.label)}
+						<button class="total" class:result={line.result} use:tap={() => oninsert(line.insert)} title="Tap: put it in Input">
+							<span>{line.label}</span><b>{line.value}</b>
 						</button>
 					{/each}
 				</div>
@@ -595,6 +645,7 @@
 	.pair { display: flex; gap: 6px; min-width: 0; }
 	.solved input { font-weight: 600; border-color: var(--select); }
 	.solved em { font-style: normal; color: var(--select); }
+	.total.result span, .total.result b { color: var(--select); font-weight: 600; }
 	.switch.mode { padding: 0 0 8px; }
 	.places { margin-left: auto; align-self: center; color: var(--faint); font-size: 14px; }
 	.pair input { flex: 1; width: 0; }

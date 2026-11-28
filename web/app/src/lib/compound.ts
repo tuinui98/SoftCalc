@@ -58,7 +58,8 @@ export interface Schedule
 	periods_per_unit?: number;    // rows per length unit, the chart's x
 	length_unit?: string;
 	partial?: number;    // the last row's share of a period, 0 when whole
-	solved?: { field: Field; value: string; length_ymd: string };
+	// the worked-out field in the page's places, every digit, all five in the places (owner 2026-11-29)
+	solved?: { field: Field; value: string; length_ymd: string; exact?: string; values?: Partial<Record<Field, string>> };
 	series: { principal: number; contributions: number[]; interest: number[] };
 }
 

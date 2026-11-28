@@ -234,8 +234,8 @@ def test_schedule_table_decimals(dispatcher):
               compounding="monthly", table_decimals=2)
     assert two["rows"][-1]["end"] == "1126.83"
     assert two["rows"][0]["contribution"] == "0.00"
-    assert two["future_value"] == ask(dispatcher, "schedule", principal="1000", annual_rate="12",
-                                      years="1", compounding="monthly")["future_value"]
+    assert two["future_value"] == "1126.83"    # owner 2026-11-29: the totals take the places too
+    assert two["total_contributions"] == "0.00"
     every = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="1",
                 compounding="monthly", table_decimals="all")
     assert every["rows"][-1]["end"].startswith("1126.825030")
@@ -269,6 +269,18 @@ def test_goal_each_field_comes_back(dispatcher, solve):
     response = goal(dispatcher, solve, target=target, **{solve: ""})
     assert float(response["solved"]["value"]) == pytest.approx(float(GOAL[solve]), rel=1e-9)
     assert float(response["future_value"]) == pytest.approx(float(target), rel=1e-12)
+
+
+def test_goal_places_and_every_value(dispatcher):
+    # owner 2026-11-29: the worked-out field in the places, every digit kept beside it; all five back
+    response = goal(dispatcher, "annual_rate", annual_rate="", table_decimals=2)
+    solved = response["solved"]
+    assert solved["value"] == "0.73"
+    assert solved["exact"].startswith("0.72") or solved["exact"].startswith("0.73") and len(solved["exact"]) > 10
+    assert solved["values"]["annual_rate"] == "0.73"
+    assert solved["values"]["target"] == "10000000.00"
+    assert solved["values"]["years"] == "20.00"
+    assert response["future_value"] == "10000000.00"
 
 
 def test_goal_principal_for_ten_million(dispatcher):

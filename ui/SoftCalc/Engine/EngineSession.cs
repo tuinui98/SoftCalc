@@ -22,7 +22,10 @@ internal sealed record NamedValue(string Name, string Value);
 internal sealed record ScheduleRow(int Period, string Start, string Interest, string Contribution, string End, string? Part = null);
 
 // Goal mode (owner 2026-11-28): the field worked out, its value, and the length as "7 y 3 m 18 d"
-internal sealed record GoalSolved(string Field, string Value, string LengthYmd);
+// Value in the page's decimal places, Exact with every digit (kept if the field is set later),
+// Values all five in the places (owner 2026-11-29)
+internal sealed record GoalSolved(string Field, string Value, string LengthYmd, string Exact = "",
+	IReadOnlyDictionary<string, string>? Values = null);
 
 internal sealed record ScheduleReply(
 	string FutureValue, string TotalContributions, string TotalInterest,
@@ -266,7 +269,9 @@ internal sealed class EngineSession : IDisposable
 			Numbers(series?["contributions"]), Numbers(series?["interest"]), (double?)reply["periods_per_year"] ?? 1,
 			(double?)reply["periods_per_unit"] ?? 0, (string?)reply["length_unit"] ?? "years", (double?)reply["partial"] ?? 0,
 			reply["solved"] is JsonObject solved
-				? new GoalSolved((string?)solved["field"] ?? "", (string?)solved["value"] ?? "", (string?)solved["length_ymd"] ?? "")
+				? new GoalSolved((string?)solved["field"] ?? "", (string?)solved["value"] ?? "", (string?)solved["length_ymd"] ?? "",
+					(string?)solved["exact"] ?? (string?)solved["value"] ?? "",
+					(solved["values"] as JsonObject)?.ToDictionary(pair => pair.Key, pair => (string?)pair.Value ?? ""))
 				: null);
 	}
 
