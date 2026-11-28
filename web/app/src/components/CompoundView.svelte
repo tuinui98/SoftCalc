@@ -13,8 +13,8 @@
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		chartScale, resultText, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
-		type Schedule,
+		BLOCK, chartScale, resultText, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		type Schedule, type ScheduleRow,
 	} from "../lib/compound";
 	import { copyText } from "../lib/clipboard";
 	import { saveFiles } from "../lib/files";
@@ -139,6 +139,10 @@
 		{
 			schedule = answer.schedule;
 			picked = null;
+			const all: (ScheduleRow | undefined)[] = new Array(answer.schedule.row_count ?? answer.schedule.rows.length);
+			answer.schedule.rows.forEach((row, index) => { all[index] = row; });
+			rowCache = all;
+			asked = new Set();
 			const solved = answer.schedule.solved;
 			if (solved)
 			{
@@ -325,7 +329,9 @@
 
 	const pickedText = $derived.by(() =>
 	{
-		const row = picked !== null ? schedule?.rows[picked] : undefined;
+		const row = picked !== null ? rowCache[picked] : undefined;
+		if (picked !== null && !row)
+			void fetchBlock(Math.floor(picked / BLOCK));
 		if (!row || !schedule)
 		{
 			return "";
@@ -373,7 +379,9 @@
 	{
 		if (schedule)
 		{
-			await save(exportNames().compound, "text/csv", new TextEncoder().encode(toCsv(schedule.rows)));
+			const rows = await allRows();
+			if (rows)
+				await save(exportNames().compound, "text/csv", new TextEncoder().encode(toCsv(rows)));
 		}
 	}
 
@@ -455,9 +463,57 @@
 	let scrollTop = $state(0);
 	let tableHeight = $state(400);
 	const first = $derived(Math.max(0, Math.floor(scrollTop / ROW) - 5));
-	const rows = $derived((schedule as Schedule | null)?.rows ?? []);
-	const rowCount = $derived(rows.length);
-	const shownRows = $derived(rows.slice(first, first + Math.ceil(tableHeight / ROW) + 10));
+	// every row, filled as blocks come (owner 2026-11-29)
+	let rowCache: (ScheduleRow | undefined)[] = $state.raw([]);
+	let asked = new Set<number>();
+	const rowCount = $derived(rowCache.length);
+	const shownRows = $derived.by(() =>
+	{
+		const shown: ScheduleRow[] = [];
+		const last = Math.min(rowCount, first + Math.ceil(tableHeight / ROW) + 10);
+		for (let i = first; i < last; i++)
+			shown.push(rowCache[i] ?? { period: i + 1, start: "", interest: "", contribution: "", end: "" });
+		return shown;
+	});
+
+	$effect(() =>
+	{
+		const last = Math.min(rowCount, first + Math.ceil(tableHeight / ROW) + 10);
+		for (let i = first; i < last; i++)
+		{
+			if (!rowCache[i])
+				void fetchBlock(Math.floor(i / BLOCK));
+		}
+	});
+
+	async function fetchBlock(block: number)
+	{
+		const id = schedule?.schedule_id;
+		if (id === undefined || asked.has(block))
+			return;
+		asked.add(block);
+		const start = block * BLOCK;
+		const rows = await calc.scheduleRows(id, start, Math.min(BLOCK, rowCache.length - start));
+		if (!rows || schedule?.schedule_id !== id)
+			return;
+		const all = [...rowCache];
+		rows.forEach((row, index) => { all[start + index] = row; });
+		rowCache = all;
+	}
+
+	// every row, for the CSV; null when a newer schedule came meanwhile
+	async function allRows(): Promise<ScheduleRow[] | null>
+	{
+		const id = schedule?.schedule_id;
+		if (id !== undefined && rowCache.some(row => !row))
+		{
+			const rows = await calc.scheduleRows(id, 0, rowCache.length);
+			if (!rows || schedule?.schedule_id !== id)
+				return null;
+			rowCache = rows;
+		}
+		return rowCache as ScheduleRow[];
+	}
 
 	//==================================================================
 	//  Size

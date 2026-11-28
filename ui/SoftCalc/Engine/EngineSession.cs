@@ -31,7 +31,11 @@ internal sealed record ScheduleReply(
 	string FutureValue, string TotalContributions, string TotalInterest,
 	IReadOnlyList<ScheduleRow> Rows, double Principal, IReadOnlyList<double> Contributions,
 	IReadOnlyList<double> Interest, double PeriodsPerYear, double PeriodsPerUnit = 0, string LengthUnit = "years",
-	double Partial = 0, GoalSolved? Solved = null);
+	double Partial = 0, GoalSolved? Solved = null, int RowCount = -1, int ScheduleId = 0)
+{
+	/// <summary>All the rows, also those not sent yet (row_limit).</summary>
+	public int TotalRows => RowCount >= 0 ? RowCount : Rows.Count;
+}
 
 internal sealed record UserFunction(string Name, IReadOnlyList<string> Parameters, string Head, string Body);
 
@@ -259,9 +263,7 @@ internal sealed class EngineSession : IDisposable
 	public async Task<ScheduleReply> ScheduleAsync(JsonObject arguments)
 	{
 		var reply = await GuardedAsync("schedule", arguments);
-		var rows = reply["rows"]?.AsArray().Select(r => new ScheduleRow(
-			(int?)r?["period"] ?? 0, (string?)r?["start"] ?? "", (string?)r?["interest"] ?? "",
-			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "", (string?)r?["part"])).ToList() ?? new List<ScheduleRow>();
+		var rows = Rows(reply["rows"]);
 		var series = reply["series"];
 		return new ScheduleReply(
 			(string?)reply["future_value"] ?? "", (string?)reply["total_contributions"] ?? "",
@@ -272,7 +274,23 @@ internal sealed class EngineSession : IDisposable
 				? new GoalSolved((string?)solved["field"] ?? "", (string?)solved["value"] ?? "", (string?)solved["length_ymd"] ?? "",
 					(string?)solved["exact"] ?? (string?)solved["value"] ?? "",
 					(solved["values"] as JsonObject)?.ToDictionary(pair => pair.Key, pair => (string?)pair.Value ?? ""))
-				: null);
+				: null,
+			(int?)reply["row_count"] ?? -1, (int?)reply["schedule_id"] ?? 0);
+	}
+
+	// owner 2026-11-29: rows first .. first+count-1 of the last schedule, sent when shown or exported;
+	// EngineRequestException when a newer schedule replaced it
+	public async Task<IReadOnlyList<ScheduleRow>> ScheduleRowsAsync(int scheduleId, int first, int count)
+	{
+		var reply = await GuardedAsync("schedule_rows", new JsonObject { ["schedule_id"] = scheduleId, ["first"] = first, ["count"] = count });
+		return Rows(reply["rows"]);
+	}
+
+	private static List<ScheduleRow> Rows(JsonNode? node)
+	{
+		return node?.AsArray().Select(r => new ScheduleRow(
+			(int?)r?["period"] ?? 0, (string?)r?["start"] ?? "", (string?)r?["interest"] ?? "",
+			(string?)r?["contribution"] ?? "", (string?)r?["end"] ?? "", (string?)r?["part"])).ToList() ?? new List<ScheduleRow>();
 	}
 
 	private static List<double> Numbers(JsonNode? node)

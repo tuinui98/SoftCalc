@@ -14,6 +14,10 @@ export const CONTRIBUTION_EVERY = ["yearly", "quarterly", "monthly", "weekly", "
 // target: goal mode only (owner 2026-11-28)
 export const FIELDS = ["target", "principal", "annual_rate", "years", "contribution"] as const;
 export const MOST_DECIMALS = 15;
+// owner 2026-11-29: formatting every row took seconds, so the first rows come with the answer and the
+// others a block at a time when the table shows them (all of them for CSV)
+export const FIRST_ROWS = 200;
+export const BLOCK = 200;
 // owner 2026-11-28: the rate per day, week, month or year; the length in any of them (annual_rate and years keep
 // their names: the protocol's fields)
 export const RATE_UNITS = ["yearly", "monthly", "weekly", "daily"] as const;
@@ -58,6 +62,8 @@ export interface Schedule
 	periods_per_unit?: number;    // rows per length unit, the chart's x
 	length_unit?: string;
 	partial?: number;    // the last row's share of a period, 0 when whole
+	row_count?: number;    // all the rows; `rows` holds the first row_limit (owner 2026-11-29)
+	schedule_id?: number;    // for schedule_rows
 	// the worked-out field in the page's places, every digit, all five in the places (owner 2026-11-29)
 	solved?: { field: Field; value: string; length_ymd: string; exact?: string; values?: Partial<Record<Field, string>> };
 	series: { principal: number; contributions: number[]; interest: number[] };
@@ -83,7 +89,7 @@ export function setGoalField(inputs: CompoundInputs, field: Field)
 export function request(inputs: CompoundInputs): Record<string, unknown>
 {
 	const { goal_order, table_decimals, ...rest } = inputs;
-	return { ...rest, table_decimals: table_decimals ?? "all", solve: goal_order[0] };
+	return { ...rest, table_decimals: table_decimals ?? "all", solve: goal_order[0], row_limit: FIRST_ROWS };
 }
 
 // Saved inputs: what is usable, the first values for the rest

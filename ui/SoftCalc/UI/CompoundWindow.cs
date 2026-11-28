@@ -58,7 +58,13 @@ internal sealed class CompoundWindow : Form
 		AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, BackgroundColor = SystemColors.Window,
 	};
 	private readonly System.Windows.Forms.Timer _delay = new() { Interval = 300 };
-	private IReadOnlyList<ScheduleRow> _rows = Array.Empty<ScheduleRow>();
+	// owner 2026-11-29: formatting every row took seconds, so the reply brings the first ones and the
+	// others come a block at a time when the table shows them (or all, for Export and Copy all)
+	private const int FirstRows = 200;
+	private const int Block = 200;
+	private ScheduleRow?[] _rows = Array.Empty<ScheduleRow?>();
+	private readonly HashSet<int> _asked = new();    // blocks on their way
+	private int _scheduleId;
 	private ScheduleReply? _last;
 	private string _resultText = "";    // the Result box as text, for Copy result
 	private string _lengthYmd = "";
@@ -223,12 +229,13 @@ internal sealed class CompoundWindow : Form
 		var bar = new FlowLayoutPanel { Dock = DockStyle.Fill, AutoSize = true, FlowDirection = FlowDirection.RightToLeft, Padding = new Padding(4) };
 		var export = new Button { Text = "&Export CSV...", AutoSize = true };
 		var copyAll = new Button { Text = "&Copy all", AutoSize = true };
-		export.Click += (_, _) => ExportCsv();
-		copyAll.Click += (_, _) =>
+		export.Click += async (_, _) => await ExportCsvAsync();
+		copyAll.Click += async (_, _) =>
 		{
-			if (_rows.Count > 0)
+			var rows = await AllRowsAsync();
+			if (rows != null && rows.Count > 0)
 			{
-				Clipboard.SetText(CompoundTable.ToTabs(_rows, header: true));
+				Clipboard.SetText(CompoundTable.ToTabs(rows, header: true));
 			}
 		};
 		bar.Controls.Add(export);
@@ -457,6 +464,7 @@ internal sealed class CompoundWindow : Form
 			["contribution_freq"] = _prefs.ContributionFreq, ["at_start"] = _prefs.AtStart,
 			["rate_unit"] = _prefs.RateUnit, ["length_unit"] = _prefs.LengthUnit,
 			["table_decimals"] = _prefs.TableDecimals is int places ? places : "all",
+			["row_limit"] = FirstRows,
 		};
 		if (IsGoal)
 		{
@@ -537,9 +545,15 @@ internal sealed class CompoundWindow : Form
 	private void ShowResult(ScheduleReply reply)
 	{
 		_last = reply;
-		_rows = reply.Rows;
+		_scheduleId = reply.ScheduleId;
+		_asked.Clear();
+		_rows = new ScheduleRow?[reply.TotalRows];
+		for (int i = 0; i < reply.Rows.Count && i < _rows.Length; i++)
+		{
+			_rows[i] = reply.Rows[i];
+		}
 		_table.RowCount = 0;
-		_table.RowCount = _rows.Count;
+		_table.RowCount = _rows.Length;
 		_table.Invalidate();
 		_chart.SetData(reply.Principal, reply.Contributions, reply.Interest,
 			reply.PeriodsPerUnit > 0 ? reply.PeriodsPerUnit : reply.PeriodsPerYear, reply.LengthUnit, reply.Partial);
@@ -556,16 +570,82 @@ internal sealed class CompoundWindow : Form
 
 	private void OnCellValueNeeded(object? sender, DataGridViewCellValueEventArgs e)
 	{
-		if (e.RowIndex < 0 || e.RowIndex >= _rows.Count)
+		if (e.RowIndex < 0 || e.RowIndex >= _rows.Length)
 		{
 			return;
 		}
-		e.Value = CompoundTable.Cells(_rows[e.RowIndex]).ElementAt(e.ColumnIndex);
+		if (_rows[e.RowIndex] is { } row)
+		{
+			e.Value = CompoundTable.Cells(row).ElementAt(e.ColumnIndex);
+			return;
+		}
+		e.Value = "";
+		_ = FetchBlockAsync(e.RowIndex / Block);
 	}
 
-	private void ExportCsv()
+	// One block of rows from the engine; a newer schedule makes it stale, and it is dropped
+	private async Task FetchBlockAsync(int block)
 	{
-		if (_rows.Count == 0)
+		if (!_asked.Add(block))
+		{
+			return;
+		}
+		int id = _scheduleId;
+		int first = block * Block;
+		IReadOnlyList<ScheduleRow> rows;
+		try
+		{
+			rows = await _session.ScheduleRowsAsync(id, first, Math.Min(Block, _rows.Length - first));
+		}
+		catch (EngineException)
+		{
+			return;
+		}
+		if (id != _scheduleId || IsDisposed)
+		{
+			return;
+		}
+		for (int i = 0; i < rows.Count && first + i < _rows.Length; i++)
+		{
+			_rows[first + i] = rows[i];
+		}
+		_table.Invalidate();
+	}
+
+	// Every row, for Export CSV and Copy all; null when a newer schedule came meanwhile
+	private async Task<IReadOnlyList<ScheduleRow>?> AllRowsAsync()
+	{
+		if (_rows.Any(row => row == null))
+		{
+			int id = _scheduleId;
+			UseWaitCursor = true;
+			try
+			{
+				var rows = await _session.ScheduleRowsAsync(id, 0, _rows.Length);
+				if (id != _scheduleId || IsDisposed)
+				{
+					return null;
+				}
+				for (int i = 0; i < rows.Count && i < _rows.Length; i++)
+				{
+					_rows[i] = rows[i];
+				}
+			}
+			catch (EngineException)
+			{
+				return null;
+			}
+			finally
+			{
+				UseWaitCursor = false;
+			}
+		}
+		return _rows.Select(row => row!).ToList();
+	}
+
+	private async Task ExportCsvAsync()
+	{
+		if (_rows.Length == 0)
 		{
 			return;
 		}
@@ -574,9 +654,14 @@ internal sealed class CompoundWindow : Form
 		{
 			return;
 		}
+		var rows = await AllRowsAsync();
+		if (rows == null)
+		{
+			return;
+		}
 		try
 		{
-			DataFolder.WriteAtomic(dialog.FileName, CompoundTable.ToCsv(_rows));
+			DataFolder.WriteAtomic(dialog.FileName, CompoundTable.ToCsv(rows));
 		}
 		catch (IOException ex)
 		{

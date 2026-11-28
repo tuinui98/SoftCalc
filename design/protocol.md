@@ -233,6 +233,23 @@ monthly: 1% a month); less often, it compounds over the longer period
 shorter than one period is an error (`"years: shorter than one month"`).
 `periods_per_unit` is rows per length unit, the graph's x axis.
 
+`table_decimals` (0 to 30 or `"all"`; left out, the View's) sets the
+places of the rows, the totals and the worked-out field (owner
+2026-11-28/29). `mode: "goal"` with `solve` (`target`, `principal`,
+`annual_rate`, `years`, `contribution`) and a `target` works out that
+field from the other four; the reply adds `solved` {field, value (in the
+places), exact (every digit), length_ymd ("7 y 3 m 8 d"), values (all
+five in the places)}, `partial` (the last row's share of a period) and a
+row's `part`. `row_limit` sends only the first rows (owner 2026-11-29:
+formatting every row took seconds); the reply has `row_count` and
+`schedule_id`, and the rest come from `schedule_rows`.
+
+### `schedule_rows`
+`{"schedule_id": 3, "first": 200, "count": 200}` -> `{"schedule_id": 3,
+"first": 200, "rows": [...]}`: rows of the last `schedule`, 0-based, in
+its places. An older `schedule_id` (a newer schedule was worked out) is
+an error.
+
 ### `set_rates`
 `{"date": "2026-11-05", "rates": {"USD": "1.0812", "THB": "37.95", ...},
 "stale": false, "next_check": 1762444800}` -> `{}`.

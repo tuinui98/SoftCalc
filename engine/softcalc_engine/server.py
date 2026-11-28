@@ -106,6 +106,8 @@ class Dispatcher:
     def __init__(self, engine=None):
         self.engine = engine or Engine()
         self.apart = None    # the web app's Seed draws (`draws` with apart), made on first use
+        self.schedule_id = 0
+        self.last_schedule = None    # (id, rows, cell formatter) of the last `schedule`, for schedule_rows
         self.handlers = {
             "eval": self.op_eval,
             "record": self.op_record,
@@ -126,6 +128,7 @@ class Dispatcher:
             "pcf_import": self.op_pcf_import,
             "restore_results": self.op_restore_results,
             "schedule": self.op_schedule,
+            "schedule_rows": self.op_schedule_rows,
             "set_rates": self.op_set_rates,
             "set_prices": self.op_set_prices,
             "draws": self.op_draws,
@@ -429,22 +432,26 @@ class Dispatcher:
                     compounding, number("contribution", "0"), contribution_freq,
                     at_start, rate_unit, length_unit)
             principal = plan.rows[0].start if plan.rows else 0
-            rows, contributions, interest = [], [], []
+            contributions, interest = [], []
             paid, earned = principal, 0
             for row in plan.rows:
                 paid += row.contribution
                 earned += row.interest
-                line = {"period": row.index, "start": cell(row.start), "interest": cell(row.interest),
-                        "contribution": cell(row.contribution), "end": cell(row.end)}
-                if row.part is not None:
-                    line["part"] = format_number(row.part, 4)    # a last row shorter than a period: 0.3
-                rows.append(line)
                 contributions.append(float(paid))
                 interest.append(float(earned))
+            # owner 2026-11-29: formatting every row took seconds for long tables, so with row_limit only
+            # the first rows come now and schedule_rows gives the others when they are shown
+            self.schedule_id += 1
+            self.last_schedule = (self.schedule_id, plan.rows, cell)
+            limit = request.get("row_limit")
+            if limit is not None and not (type(limit) is int and limit >= 0):
+                raise RequestError("'row_limit' must be a whole number 0 or more")
+            shown = plan.rows if limit is None else plan.rows[:limit]
             reply = {"future_value": cell(plan.future_value),
                      "total_contributions": cell(plan.total_contributions),
                      "total_interest": cell(plan.total_interest),
-                     "rows": rows, "periods_per_year": float(plan.periods_per_year),
+                     "rows": [schedule_line(row, cell) for row in shown], "row_count": len(plan.rows),
+                     "schedule_id": self.schedule_id, "periods_per_year": float(plan.periods_per_year),
                      "periods_per_unit": float(plan.periods_per_unit), "length_unit": length_unit,
                      "partial": float(plan.partial),
                      "series": {"principal": float(principal), "contributions": contributions,
@@ -452,6 +459,29 @@ class Dispatcher:
             if solved:
                 reply["solved"] = solved
             return reply
+
+    def op_schedule_rows(self, request):
+        """Rows first .. first+count-1 (0-based) of the last schedule, in its places."""
+        schedule_id = argument(request, "schedule_id", int)
+        first = argument(request, "first", int)
+        count = argument(request, "count", int)
+        if self.last_schedule is None or self.last_schedule[0] != schedule_id:
+            raise RequestError("that schedule is gone; a newer one was worked out")
+        if first < 0 or count < 0:
+            raise RequestError("'first' and 'count' must be 0 or more")
+        _, rows, cell = self.last_schedule
+        with self.engine.working_context():
+            return {"schedule_id": schedule_id, "first": first,
+                    "rows": [schedule_line(row, cell) for row in rows[first:first + count]]}
+
+
+def schedule_line(row, cell):
+    """One table row for the protocol."""
+    line = {"period": row.index, "start": cell(row.start), "interest": cell(row.interest),
+            "contribution": cell(row.contribution), "end": cell(row.end)}
+    if row.part is not None:
+        line["part"] = format_number(row.part, 4)    # a last row shorter than a period: 0.3
+    return line
 
 
 #----------------------------------------------------------------------

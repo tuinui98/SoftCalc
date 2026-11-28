@@ -311,6 +311,32 @@ def test_goal_given_length_may_end_in_a_part_period(dispatcher):
     assert float(response["future_value"]) == pytest.approx(1000 * 1.1 ** 1.5)
 
 
+def test_schedule_rows_on_demand(dispatcher):
+    # owner 2026-11-29: row_limit sends the first rows; schedule_rows the rest when shown
+    full = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="2", compounding="monthly",
+               table_decimals=2)
+    some = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="2", compounding="monthly",
+               table_decimals=2, row_limit=5)
+    assert (len(some["rows"]), some["row_count"]) == (5, 24)
+    assert some["rows"] == full["rows"][:5]
+    assert len(some["series"]["interest"]) == 24
+    part = ask(dispatcher, "schedule_rows", schedule_id=some["schedule_id"], first=20, count=10)
+    assert (part["first"], part["rows"]) == (20, full["rows"][20:])
+    stale = ask(dispatcher, "schedule_rows", schedule_id=some["schedule_id"] - 1, first=0, count=1)
+    assert stale["ok"] is False
+
+
+def test_schedule_rows_fast_for_a_long_table(dispatcher):
+    # 11519 weekly rows (the owner's case, 2026-11-29): no row formatted before it is asked for
+    import time
+    start = time.perf_counter()
+    reply = ask(dispatcher, "schedule", mode="goal", solve="years", target="10000000", principal="100",
+                annual_rate="0.1", rate_unit="weekly", length_unit="weeks", contribution="0",
+                contribution_freq="weekly", at_start=True, table_decimals=2, row_limit=100)
+    assert reply["row_count"] == 11519
+    assert time.perf_counter() - start < 1.5
+
+
 def test_years_text():
     from softcalc_engine import finance
     import mpmath

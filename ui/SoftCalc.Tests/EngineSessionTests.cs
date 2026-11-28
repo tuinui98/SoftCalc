@@ -332,6 +332,24 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		Assert.Equal((4.0, "years"), (reply.PeriodsPerUnit, reply.LengthUnit));
 	}
 
+	// owner 2026-11-29: long tables come a block at a time; a newer schedule makes the old rows stale
+	[Fact]
+	public async Task ScheduleRowsComeWhenAskedFor()
+	{
+		var arguments = new JsonObject
+		{
+			["principal"] = "1000", ["annual_rate"] = "12", ["years"] = "3", ["compounding"] = "monthly",
+			["table_decimals"] = 2, ["row_limit"] = 10,
+		};
+		var reply = await Session.ScheduleAsync(arguments);
+		Assert.Equal((10, 36), (reply.Rows.Count, reply.TotalRows));
+		var rest = await Session.ScheduleRowsAsync(reply.ScheduleId, 30, 10);
+		Assert.Equal((6, 31, reply.FutureValue), (rest.Count, rest[0].Period, rest[^1].End));
+		var newer = await Session.ScheduleAsync(arguments.DeepClone().AsObject());
+		Assert.NotEqual(reply.ScheduleId, newer.ScheduleId);
+		await Assert.ThrowsAsync<EngineRequestException>(() => Session.ScheduleRowsAsync(reply.ScheduleId, 0, 5));
+	}
+
 	// owner 2026-11-28: goal mode works out one field; a length may end in a part period
 	[Fact]
 	public async Task GoalWorksOutTheLengthWithAPartRow()
