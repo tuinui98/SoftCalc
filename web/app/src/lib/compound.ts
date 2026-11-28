@@ -11,6 +11,10 @@ import { niceStep } from "./graph";
 export const COMPOUNDING = ["yearly", "quarterly", "monthly", "daily", "continuous"] as const;
 export const CONTRIBUTION_EVERY = ["yearly", "quarterly", "monthly", "daily"] as const;
 export const FIELDS = ["principal", "annual_rate", "years", "contribution"] as const;
+// owner 2026-11-28: the rate per day, week, month or year; the length in any of them (annual_rate and years keep
+// their names: the protocol's fields)
+export const RATE_UNITS = ["yearly", "monthly", "weekly", "daily"] as const;
+export const LENGTH_UNITS = ["years", "months", "weeks", "days"] as const;
 export type Field = typeof FIELDS[number];
 
 export interface CompoundInputs
@@ -18,6 +22,8 @@ export interface CompoundInputs
 	principal: string;
 	annual_rate: string;
 	years: string;
+	rate_unit: string;
+	length_unit: string;
 	contribution: string;
 	compounding: string;
 	contribution_freq: string;
@@ -40,6 +46,8 @@ export interface Schedule
 	total_interest: string;
 	rows: ScheduleRow[];
 	periods_per_year: number;
+	periods_per_unit?: number;    // rows per length unit, the chart's x
+	length_unit?: string;
 	series: { principal: number; contributions: number[]; interest: number[] };
 }
 
@@ -47,7 +55,7 @@ export interface Schedule
 export function firstInputs(): CompoundInputs
 {
 	return {
-		principal: "10000", annual_rate: "5", years: "10", contribution: "0",
+		principal: "10000", annual_rate: "5", years: "10", rate_unit: "yearly", length_unit: "years", contribution: "0",
 		compounding: "monthly", contribution_freq: "monthly", at_start: false,
 	};
 }
@@ -76,6 +84,14 @@ export function inputsFrom(saved: unknown): CompoundInputs
 	{
 		inputs.contribution_freq = s.contribution_freq as string;
 	}
+	if ((RATE_UNITS as readonly string[]).includes(s.rate_unit as string))
+	{
+		inputs.rate_unit = s.rate_unit as string;
+	}
+	if ((LENGTH_UNITS as readonly string[]).includes(s.length_unit as string))
+	{
+		inputs.length_unit = s.length_unit as string;
+	}
 	inputs.at_start = s.at_start === true;
 	return inputs;
 }
@@ -95,10 +111,16 @@ export function routeError(error: string): { field: Field | null; message: strin
 //==================================================================
 //  The growth graph's scale (CompoundChart.cs)
 //==================================================================
+// Rows per x unit: the length's unit when the engine says it, else years
+export function perUnit(schedule: Schedule): number
+{
+	return schedule.periods_per_unit && schedule.periods_per_unit > 0 ? schedule.periods_per_unit : Math.max(1, schedule.periods_per_year);
+}
+
 export function chartScale(schedule: Schedule, width: number, height: number)
 {
 	const count = schedule.series.contributions.length;
-	const perYear = Math.max(1, schedule.periods_per_year);
+	const perYear = perUnit(schedule);    // per x unit (the name stays from when it was years)
 	const years = count / perYear;
 	let top = schedule.series.principal;
 	for (let i = 0; i < count; i++)
@@ -119,11 +141,11 @@ export function short(value: number): string
 	return size >= 1e9 ? two(value / 1e9) + "G" : size >= 1e6 ? two(value / 1e6) + "M" : size >= 1e3 ? two(value / 1e3) + "k" : two(value);
 }
 
-// The row a point on the graph's x axis (in years) falls in: the period ending at or after it
+// The row a point on the graph's x axis (in the length's unit) falls in: the period ending at or after it
 export function rowAt(schedule: Schedule, year: number): number
 {
 	const count = schedule.rows.length;
-	const index = Math.ceil(year * Math.max(1, schedule.periods_per_year)) - 1;
+	const index = Math.ceil(year * perUnit(schedule)) - 1;
 	return Math.min(count - 1, Math.max(0, index));
 }
 
@@ -151,10 +173,11 @@ export function toTabs(rows: ScheduleRow[]): string
 
 const EVERY: Record<string, string> = { yearly: "year", quarterly: "quarter", monthly: "month", daily: "day" };
 
-// One line to paste in a chat: 10000 at 5% for 10 years, monthly, +100/month: future value ...
+// One line to paste in a chat: 10000 at 5% a year for 10 years, monthly, +100/month: future value ...
 export function summary(inputs: CompoundInputs, schedule: Schedule): string
 {
-	const parts = [`${inputs.principal} at ${inputs.annual_rate}% for ${inputs.years} years, ${inputs.compounding}`];
+	const per = ({ yearly: "a year", monthly: "a month", weekly: "a week", daily: "a day" } as Record<string, string>)[inputs.rate_unit] ?? "a year";
+	const parts = [`${inputs.principal} at ${inputs.annual_rate}% ${per} for ${inputs.years} ${inputs.length_unit}, ${inputs.compounding}`];
 	if (inputs.contribution.trim() !== "" && Number(inputs.contribution) !== 0)
 	{
 		parts.push(`+${inputs.contribution}/${EVERY[inputs.contribution_freq] ?? inputs.contribution_freq}${inputs.at_start ? " at the start" : ""}`);

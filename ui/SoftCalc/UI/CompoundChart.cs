@@ -2,7 +2,8 @@
 //
 // Stacked areas over time: money paid in (principal and contributions)
 // below, interest earned above, so the top edge is the balance. X is in
-// years, Y in money; both axes get round-number ticks.
+// the length's unit (years, months, weeks or days, owner 2026-11-28), Y in
+// money; both axes get round-number ticks.
 
 using System.Drawing.Drawing2D;
 using System.Globalization;
@@ -21,7 +22,8 @@ internal sealed class CompoundChart : Control
 	private double _principal;
 	private IReadOnlyList<double> _paid = Array.Empty<double>();
 	private IReadOnlyList<double> _interest = Array.Empty<double>();
-	private int _perYear = 1;
+	private double _perUnit = 1;    // periods (rows) per x unit
+	private string _unit = "years";
 
 	public CompoundChart()
 	{
@@ -31,12 +33,13 @@ internal sealed class CompoundChart : Control
 	}
 
 	// paid and interest are cumulative per period; point 0 is the principal alone
-	public void SetData(double principal, IReadOnlyList<double> paid, IReadOnlyList<double> interest, int perYear)
+	public void SetData(double principal, IReadOnlyList<double> paid, IReadOnlyList<double> interest, double perUnit, string unit = "years")
 	{
 		_principal = principal;
 		_paid = paid;
 		_interest = interest;
-		_perYear = Math.Max(1, perYear);
+		_perUnit = perUnit > 0 ? perUnit : 1;
+		_unit = unit;
 		Invalidate();
 	}
 
@@ -63,7 +66,7 @@ internal sealed class CompoundChart : Control
 			return;
 		}
 		int count = _paid.Count;
-		double years = (double)count / _perYear;
+		double years = count / _perUnit;    // in the length's unit
 		double top = 0;
 		for (int i = 0; i < count; i++)
 		{
@@ -76,7 +79,7 @@ internal sealed class CompoundChart : Control
 		}
 		double yStep = NiceStep(top, Math.Max(2, plot.Height / 40));
 		double yMax = Math.Ceiling(top / yStep) * yStep;
-		double xStep = Math.Max(1.0 / _perYear, NiceStep(years, Math.Max(2, plot.Width / 70)));
+		double xStep = Math.Max(1.0 / _perUnit, NiceStep(years, Math.Max(2, plot.Width / 70)));
 
 		PointF At(double year, double money) => new(
 			(float)(plot.Left + year / years * plot.Width),
@@ -119,7 +122,7 @@ internal sealed class CompoundChart : Control
 		}
 		void AddPoint(int i)
 		{
-			double year = (i + 1.0) / _perYear;
+			double year = (i + 1.0) / _perUnit;
 			lower.Add(At(year, _paid[i]));
 			upper.Add(At(year, _paid[i] + _interest[i]));
 		}
@@ -146,7 +149,7 @@ internal sealed class CompoundChart : Control
 		int lx = plot.Left + 6;
 		lx = Legend(g, lx, PaidColor, "Paid in");
 		Legend(g, lx + 12, InterestColor, "Interest");
-		TextRenderer.DrawText(g, "years", Font, new Rectangle(0, plot.Bottom + 4, MarginLeft - 12, 16), SystemColors.GrayText,
+		TextRenderer.DrawText(g, _unit, Font, new Rectangle(0, plot.Bottom + 4, MarginLeft - 12, 16), SystemColors.GrayText,
 			TextFormatFlags.Right | TextFormatFlags.NoPrefix);
 	}
 

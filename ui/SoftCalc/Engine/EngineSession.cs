@@ -23,7 +23,7 @@ internal sealed record ScheduleRow(int Period, string Start, string Interest, st
 internal sealed record ScheduleReply(
 	string FutureValue, string TotalContributions, string TotalInterest,
 	IReadOnlyList<ScheduleRow> Rows, double Principal, IReadOnlyList<double> Contributions,
-	IReadOnlyList<double> Interest, int PeriodsPerYear);
+	IReadOnlyList<double> Interest, int PeriodsPerYear, double PeriodsPerUnit = 0, string LengthUnit = "years");
 
 internal sealed record UserFunction(string Name, IReadOnlyList<string> Parameters, string Head, string Body);
 
@@ -258,7 +258,8 @@ internal sealed class EngineSession : IDisposable
 		return new ScheduleReply(
 			(string?)reply["future_value"] ?? "", (string?)reply["total_contributions"] ?? "",
 			(string?)reply["total_interest"] ?? "", rows, (double?)series?["principal"] ?? 0,
-			Numbers(series?["contributions"]), Numbers(series?["interest"]), (int?)reply["periods_per_year"] ?? 1);
+			Numbers(series?["contributions"]), Numbers(series?["interest"]), (int?)reply["periods_per_year"] ?? 1,
+			(double?)reply["periods_per_unit"] ?? 0, (string?)reply["length_unit"] ?? "years");
 	}
 
 	private static List<double> Numbers(JsonNode? node)

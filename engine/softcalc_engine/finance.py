@@ -19,6 +19,7 @@ from .errors import CalcError
 
 COMPOUNDING = {"yearly": 1, "quarterly": 4, "monthly": 12, "daily": 365}
 MAX_PERIODS = 100000    # table rows; 270 years of daily periods
+PERIOD_NAMES = {"yearly": "year", "quarterly": "quarter", "monthly": "month", "daily": "day"}
 
 
 def real_args(name, args):
@@ -108,24 +109,61 @@ class Schedule:
     total_interest: object
     rows: list
     periods_per_year: int = 1
+    periods_per_unit: object = 1    # rows per length unit (the chart's x axis)
 
 
-def period_rate(annual_rate, compounding, periods_per_year):
+# How many of each fit in a year (owner 2026-11-28: a year is 365 days,
+# a month a twelfth of it, a week 7 days)
+RATE_UNITS = {"yearly": 1, "monthly": 12, "weekly": "365/7", "daily": 365}
+LENGTH_UNITS = {"years": 1, "months": 12, "weeks": "365/7", "days": 365}
+
+
+def per_year(table, unit):
+    """How many of `unit` fit in a year, as mpf."""
+    value = table[unit]
+    if isinstance(value, str):
+        top, bottom = value.split("/")
+        return mpmath.mpf(top) / int(bottom)
+    return mpmath.mpf(value)
+
+
+def period_rate(rate, compounding, periods_per_year, rate_unit="yearly"):
     """Effective rate for one schedule period.
 
-    annual_rate is a fraction (0.05 for 5%). compounding is a key of
-    COMPOUNDING or "continuous".
+    rate is a fraction (0.05 for 5%) per rate_unit. compounding is a key
+    of COMPOUNDING or "continuous". Compounded more often than the rate's
+    unit, the rate is split evenly (5% a year monthly: 5/12% a month, as
+    before); less often, it compounds over the longer period (1% a day
+    monthly: 1.01^(365/12) - 1, owner 2026-11-28, not 1% x 30.4).
     """
+    units = per_year(RATE_UNITS, rate_unit)
     if compounding == "continuous":
-        return mpmath.exp(annual_rate / periods_per_year) - 1
-    per_year = COMPOUNDING[compounding]
-    return mpmath.power(1 + annual_rate / per_year, mpmath.mpf(per_year) / periods_per_year) - 1
+        return mpmath.exp(rate * units / periods_per_year) - 1
+    times = COMPOUNDING[compounding]
+    span = units / times    # rate units in one compounding period
+    if span <= 1:
+        each = rate * span
+    else:
+        each = mpmath.power(1 + rate, span) - 1
+    return mpmath.power(1 + each, mpmath.mpf(times) / periods_per_year) - 1
+
+
+def whole_periods(length, length_unit, periods_per_year):
+    """The whole periods in length; a part period is cut (owner 2026-11-28)."""
+    exact = length * periods_per_year / per_year(LENGTH_UNITS, length_unit)
+    near = mpmath.nint(exact)
+    if abs(exact - near) <= mpmath.mpf(10) ** -9 * max(1, abs(exact)):
+        return int(near)    # 52 weeks of 7/365 years, 12 months: whole despite rounding
+    return int(mpmath.floor(exact))
 
 
 def schedule(principal, annual_rate, years, compounding="yearly",
-             contribution=0, contribution_freq="yearly", at_start=False):
+             contribution=0, contribution_freq="yearly", at_start=False,
+             rate_unit="yearly", length_unit="years"):
     """Grow principal plus regular contributions; one row per period.
 
+    annual_rate is per rate_unit and years is in length_unit (the names
+    stay from when both were yearly; the protocol fields keep them).
     Rows follow the contribution frequency; with no contribution they
     follow the compounding frequency (daily for continuous).
     """
@@ -135,11 +173,14 @@ def schedule(principal, annual_rate, years, compounding="yearly",
         freq_key = "daily" if compounding == "continuous" else compounding
     else:
         freq_key = contribution_freq
-    per_year = COMPOUNDING[freq_key]
-    count = int(mpmath.nint(years * per_year))
+    per_year_count = COMPOUNDING[freq_key]
+    count = whole_periods(mpmath.mpf(years), length_unit, per_year_count)
+    if count == 0:
+        raise CalcError(f"years: shorter than one {PERIOD_NAMES[freq_key]}")
     if count > MAX_PERIODS:
         raise CalcError(f"years: too many periods (at most {MAX_PERIODS})")
-    rate = period_rate(mpmath.mpf(annual_rate), compounding, per_year)
+    per_unit = per_year_count / per_year(LENGTH_UNITS, length_unit)
+    rate = period_rate(mpmath.mpf(annual_rate), compounding, per_year_count, rate_unit)
     balance = mpmath.mpf(principal)
     rows = []
     for index in range(1, count + 1):
@@ -149,4 +190,4 @@ def schedule(principal, annual_rate, years, compounding="yearly",
         balance = start + added_first + interest + (0 if at_start else contribution)
         rows.append(Period(index, start, interest, mpmath.mpf(contribution), balance))
     total_contrib = mpmath.mpf(contribution) * count
-    return Schedule(balance, total_contrib, balance - principal - total_contrib, rows, per_year)
+    return Schedule(balance, total_contrib, balance - principal - total_contrib, rows, per_year_count, per_unit)

@@ -379,11 +379,18 @@ class Dispatcher:
             allowed = list(finance.COMPOUNDING) + (["continuous"] if name == "compounding" else [])
             if value not in allowed:
                 raise RequestError(f"'{name}' must be one of {allowed}")
+        # owner 2026-11-28: the rate per day, week, month or year; the length in any of them
+        rate_unit = argument(request, "rate_unit", str, "yearly", required=False)
+        length_unit = argument(request, "length_unit", str, "years", required=False)
+        for name, value, table in (("rate_unit", rate_unit, finance.RATE_UNITS),
+                                   ("length_unit", length_unit, finance.LENGTH_UNITS)):
+            if value not in table:
+                raise RequestError(f"'{name}' must be one of {list(table)}")
         with engine.working_context():
             plan = finance.schedule(
                 number("principal"), number("annual_rate") / 100, number("years"),
                 compounding, number("contribution", "0"), contribution_freq,
-                argument(request, "at_start", bool, False, required=False))
+                argument(request, "at_start", bool, False, required=False), rate_unit, length_unit)
             show = engine.format_value
             principal = plan.rows[0].start if plan.rows else 0
             rows, contributions, interest = [], [], []
@@ -399,6 +406,7 @@ class Dispatcher:
                     "total_contributions": show(plan.total_contributions),
                     "total_interest": show(plan.total_interest),
                     "rows": rows, "periods_per_year": plan.periods_per_year,
+                    "periods_per_unit": float(plan.periods_per_unit), "length_unit": length_unit,
                     "series": {"principal": float(principal), "contributions": contributions,
                                "interest": interest}}
 

@@ -942,7 +942,13 @@ a separate window shows the running numbers, the laps and buttons.
 - Help: a new section in help 08 (or its own topic), keys in help 15,
   hints for the commands.
 
-## Compound interest: rate and length units (owner 2026-11-28)
+## Compound interest: rate and length units (owner 2026-11-28; built 2026-11-28 on branch compound-units)
+- Built: engine `schedule` takes `rate_unit` / `length_unit`, answers
+  `periods_per_unit` / `length_unit`; desktop and web fields with a unit
+  choice, the chart's x in the length's unit, the splitter redraws live;
+  help 09, protocol.md. The table keeps its Period column. Picture
+  `help/img/compound.*.png` still shows the old labels (redo when the
+  owner is done with the topic).
 - [ ] The rate field takes a unit: interest rate % **daily / weekly /
       monthly / yearly** (now `Annual rate %` only).
 - [ ] The length field (now `Years`) takes a unit: **days / weeks /

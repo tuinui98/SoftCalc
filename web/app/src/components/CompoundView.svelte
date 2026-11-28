@@ -1,5 +1,6 @@
 <!-- CompoundView.svelte - ⋮ > Compound: savings with compound interest (owner 2026-11-20, C1).
-     The desktop's Compound Interest window: Principal, Annual rate %, Years and Contribution take any
+     The desktop's Compound Interest window: Principal, Interest rate % (per year, month, week or day),
+     Length (in years, months, weeks or days) and Contribution take any
      expression; the engine's `schedule` works it out 300 ms after the last change (a field it
      cannot read shows why under it, and the last good result stays). The totals go to Input with a
      tap. Chart: paid in below, interest above, so the top edge is the balance; a finger or the
@@ -9,7 +10,7 @@
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, routeError, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		chartScale, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, perUnit, RATE_UNITS, routeError, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
 		type Schedule,
 	} from "../lib/compound";
 	import { copyText } from "../lib/clipboard";
@@ -33,7 +34,7 @@
 	const tap = (button: HTMLElement, act: () => void) => ({ destroy: tapOn(button, () => act()) });
 
 	const LABELS: [Field, string][] = [
-		["principal", "Principal"], ["annual_rate", "Annual rate %"], ["years", "Years"], ["contribution", "Contribution"],
+		["principal", "Principal"], ["annual_rate", "Interest rate %"], ["years", "Length"], ["contribution", "Contribution"],
 	];
 
 	//==================================================================
@@ -157,7 +158,7 @@
 		context.stroke();
 		context.textAlign = "right";
 		context.textBaseline = "middle";
-		context.fillText("x: years", plot.right, 14);
+		context.fillText(`x: ${s.length_unit ?? "years"}`, plot.right, 14);
 		// stacked areas, at most one point per pixel column
 		const { count, perYear } = scale;
 		const step = Math.max(1, Math.floor(count / Math.max(1, plot.right - plot.left)));
@@ -228,7 +229,7 @@
 		const box = canvas.getBoundingClientRect();
 		const x = event.clientX - box.left;
 		const width = size.width - MARGIN.left - MARGIN.right;
-		const years = schedule.series.contributions.length / Math.max(1, schedule.periods_per_year);
+		const years = schedule.series.contributions.length / perUnit(schedule);    // in the length's unit
 		const year = Math.min(years, Math.max(0, (x - MARGIN.left) / width * years));
 		picked = rowAt(schedule, year);
 	}
@@ -245,8 +246,9 @@
 		{
 			return "";
 		}
-		const year = Math.round(row.period / Math.max(1, schedule.periods_per_year) * 100) / 100;
-		return `Period ${row.period} (year ${year}): balance ${row.end}, interest ${row.interest}`;
+		const at = Math.round(row.period / perUnit(schedule) * 100) / 100;
+		const unit = (schedule.length_unit ?? "years").replace(/s$/, "");
+		return `Period ${row.period} (${unit} ${at}): balance ${row.end}, interest ${row.interest}`;
 	});
 
 	$effect(() =>
@@ -439,7 +441,18 @@
 				{#each LABELS as [field, label] (field)}
 					<label class="field">
 						<span>{label}</span>
-						<input bind:value={inputs[field]} oninput={changed} autocapitalize="off" autocomplete="off" spellcheck="false" />
+						<div class="pair">
+							<input bind:value={inputs[field]} oninput={changed} autocapitalize="off" autocomplete="off" spellcheck="false" />
+							{#if field === "annual_rate"}
+								<select bind:value={inputs.rate_unit} onchange={changed} aria-label="Rate per">
+									{#each RATE_UNITS as choice (choice)}<option value={choice}>{choice}</option>{/each}
+								</select>
+							{:else if field === "years"}
+								<select bind:value={inputs.length_unit} onchange={changed} aria-label="Length in">
+									{#each LENGTH_UNITS as choice (choice)}<option value={choice}>{choice}</option>{/each}
+								</select>
+							{/if}
+						</div>
 						{#if errors[field]}<span class="error">{errors[field]}</span>{/if}
 					</label>
 				{/each}
@@ -533,6 +546,9 @@
 		font: inherit; font-size: 16px; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px;
 		background: var(--page); color: var(--ink); min-width: 0;
 	}
+	.pair { display: flex; gap: 6px; min-width: 0; }
+	.pair input { flex: 1; width: 0; }
+	.pair select { flex: none; width: 92px; }
 	.check { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 14px; }
 	.check input { width: 20px; height: 20px; }
 	.error { color: var(--error); font-size: 13px; }

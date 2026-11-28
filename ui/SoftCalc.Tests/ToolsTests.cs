@@ -343,4 +343,21 @@ public sealed class ToolsTests : IDisposable
 		var (loaded, _) = SettingsStore.Load(path);
 		Assert.Equal(("monthly", "monthly"), (loaded.Compound.Compounding, loaded.Compound.ContributionFreq));
 	}
+
+	// owner 2026-11-28: the rate per day, week, month or year; the length in days, weeks, months or years
+	[Fact]
+	public void CompoundUnitsRoundTripAndBadOnesGoBack()
+	{
+		string path = Path.Combine(_dir, "settings.json");
+		var settings = new AppSettings();
+		settings.Compound.RateUnit = "daily";
+		settings.Compound.LengthUnit = "weeks";
+		SettingsStore.Save(path, settings);
+		var (loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("daily", "weeks"), (loaded.Compound.RateUnit, loaded.Compound.LengthUnit));
+		File.WriteAllText(path, """{"compound": {"rate_unit": "hourly", "length_unit": "decades"}}""");
+		(loaded, _) = SettingsStore.Load(path);
+		Assert.Equal(("yearly", "years"), (loaded.Compound.RateUnit, loaded.Compound.LengthUnit));
+		Assert.Equal(("yearly", "years"), (new CompoundPrefs().RateUnit, new CompoundPrefs().LengthUnit));
+	}
 }

@@ -166,10 +166,66 @@ def test_schedule_with_contributions(dispatcher):
     assert response["series"]["contributions"][-1] == 1200
 
 
+#----------------------------------------------------------------------
+#  Rate and length units (owner 2026-11-28)
+#----------------------------------------------------------------------
+def test_schedule_units_default_to_yearly_and_years(dispatcher):
+    response = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="1",
+                   compounding="quarterly")
+    assert (response["length_unit"], response["periods_per_unit"]) == ("years", 4)
+
+
+def test_schedule_monthly_rate_compounded_monthly(dispatcher):
+    # 1% a month, monthly, 12 months: 1.01^12
+    response = ask(dispatcher, "schedule", principal="1000", annual_rate="1", years="12",
+                   compounding="monthly", rate_unit="monthly", length_unit="months")
+    assert len(response["rows"]) == 12
+    assert float(response["future_value"]) == pytest.approx(1126.82503013197)
+    assert (response["length_unit"], response["periods_per_unit"]) == ("months", 1)
+
+
+def test_schedule_daily_rate_compounds_over_a_longer_period(dispatcher):
+    # 0.1% a day, yearly compounding, 2 years: 1.001^730, not 1 + 0.365 twice
+    response = ask(dispatcher, "schedule", principal="1000", annual_rate="0.1", years="2",
+                   compounding="yearly", rate_unit="daily")
+    assert float(response["future_value"]) == pytest.approx(2074.32384583546)
+
+
+def test_schedule_yearly_rate_split_as_before(dispatcher):
+    # 12% a year monthly over 1 year: 1.01^12, the same as before the units
+    response = ask(dispatcher, "schedule", principal="1000", annual_rate="12", years="1",
+                   compounding="monthly", rate_unit="yearly", length_unit="years")
+    assert float(response["future_value"]) == pytest.approx(1126.82503013197)
+
+
+def test_schedule_length_in_days_and_weeks(dispatcher):
+    days = ask(dispatcher, "schedule", principal="1000", annual_rate="5", years="365",
+               compounding="monthly", length_unit="days")
+    assert len(days["rows"]) == 12
+    assert days["periods_per_unit"] == pytest.approx(12 / 365)
+    weeks = ask(dispatcher, "schedule", principal="1000", annual_rate="0", years="10",
+                compounding="daily", length_unit="weeks")
+    assert len(weeks["rows"]) == 70
+
+
+def test_schedule_part_period_is_cut(dispatcher):
+    # 1.9 years yearly: one year; 100 days monthly: 3 months (a month is 365/12 days)
+    years = ask(dispatcher, "schedule", principal="1000", annual_rate="5", years="1.9")
+    assert len(years["rows"]) == 1
+    days = ask(dispatcher, "schedule", principal="1000", annual_rate="5", years="100",
+               compounding="monthly", length_unit="days")
+    assert len(days["rows"]) == 3
+    short = ask(dispatcher, "schedule", principal="1000", annual_rate="5", years="10",
+                compounding="monthly", length_unit="days")
+    assert short["error"].startswith("years: shorter than one month")
+
+
 @pytest.mark.parametrize("arguments", [
     {"principal": "1000", "annual_rate": "5", "years": "0"},
     {"principal": "abc", "annual_rate": "5", "years": "1"},
     {"principal": "1000", "annual_rate": "5", "years": "1", "compounding": "hourly"},
+    {"principal": "1000", "annual_rate": "5", "years": "1", "rate_unit": "hourly"},
+    {"principal": "1000", "annual_rate": "5", "years": "1", "length_unit": "decades"},
 ])
 def test_schedule_errors(dispatcher, arguments):
     assert ask(dispatcher, "schedule", **arguments)["ok"] is False

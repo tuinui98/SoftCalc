@@ -209,12 +209,13 @@ outside the stack is an error.
 `{"principal": "1000", "annual_rate": "5", "years": "10",
 "compounding": "yearly"|"quarterly"|"monthly"|"daily"|"continuous",
 "contribution": "100", "contribution_freq": "monthly",
-"at_start": false}` ->
+"at_start": false, "rate_unit": "yearly"|"monthly"|"weekly"|"daily",
+"length_unit": "years"|"months"|"weeks"|"days"}` ->
 ```
 {"future_value": "...", "total_contributions": "...", "total_interest": "...",
  "rows": [{"period": 1, "start": "...", "interest": "...",
            "contribution": "...", "end": "..."}, ...],
- "periods_per_year": 12,
+ "periods_per_year": 12, "periods_per_unit": 12.0, "length_unit": "years",
  "series": {"principal": float, "contributions": [float, ...], "interest": [float, ...]}}
 ```
 Inputs are text (any engine expression, e.g. `"5"` or `"10000/12"`);
@@ -223,6 +224,14 @@ settings; `series` holds cumulative contributions (principal included)
 and cumulative interest per row, for the growth graph. An input that
 fails answers `ok: false` with an error starting with the field name
 (`"years: must be positive"`); at most 100000 rows.
+`annual_rate` is per `rate_unit` and `years` is the length in
+`length_unit` (owner 2026-11-28; the field names stay, both default to
+yearly / years). A year is 365 days, a month 365/12, a week 7. Compounded
+more often than the rate's unit, the rate is split evenly (12% a year
+monthly: 1% a month); less often, it compounds over the longer period
+(0.1% a day yearly: 1.001^365 - 1). A part period is cut, and a length
+shorter than one period is an error (`"years: shorter than one month"`).
+`periods_per_unit` is rows per length unit, the graph's x axis.
 
 ### `set_rates`
 `{"date": "2026-11-05", "rates": {"USD": "1.0812", "THB": "37.95", ...},

@@ -329,6 +329,21 @@ public sealed class EngineSessionTests : IAsyncLifetime
 		Assert.Equal((4, 1000.0), (reply.PeriodsPerYear, reply.Principal));
 		Assert.Equal(reply.FutureValue, reply.Rows[^1].End);
 		Assert.Equal(4, reply.Interest.Count);
+		Assert.Equal((4.0, "years"), (reply.PeriodsPerUnit, reply.LengthUnit));
+	}
+
+	// owner 2026-11-28: 1% a month for 18 months, monthly; the chart's x in months
+	[Fact]
+	public async Task ScheduleTakesRateAndLengthUnits()
+	{
+		var reply = await Session.ScheduleAsync(new JsonObject
+		{
+			["principal"] = "1000", ["annual_rate"] = "1", ["years"] = "18", ["compounding"] = "monthly",
+			["rate_unit"] = "monthly", ["length_unit"] = "months",
+		});
+		Assert.Equal(18, reply.Rows.Count);
+		Assert.Equal((1.0, "months"), (reply.PeriodsPerUnit, reply.LengthUnit));
+		Assert.Equal(1000 * Math.Pow(1.01, 18), double.Parse(reply.FutureValue, System.Globalization.CultureInfo.InvariantCulture), 6);
 	}
 
 	[Fact]

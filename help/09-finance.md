@@ -35,10 +35,15 @@ without formulas.
 
 ![The Compound Interest window](img/compound.light.png)
 
-- Fill in Principal, Annual rate %, Years and, if you add money
+- Fill in Principal, Interest rate %, Length and, if you add money
   regularly, Contribution, Contribution every, and whether it comes at
   the start of each period.
 - Compounding: yearly, quarterly, monthly, daily or continuous.
+- The rate is per year, month, week or day, and the length is in years,
+  months, weeks or days (the graph's x axis follows it). A year is 365
+  days, a month a twelfth of it. Compounded less often than the rate's
+  unit, the rate compounds: 0.1% a day, yearly, is 1.001^365 - 1 a year,
+  not 36.5%. A part period is cut: 100 days, monthly, is 3 months.
 - The result updates as you type: future value, total contributions,
   total interest, a growth graph and a table by period.
 - Copy all and Export CSV... take the table (the name carries the date
@@ -52,11 +57,16 @@ without formulas.
 
 ⋮ > Compound works out savings without formulas.
 
-- Fill in Principal, Annual rate %, Years and, if you add money
+- Fill in Principal, Interest rate %, Length and, if you add money
   regularly, Contribution, Contribution every, and whether it comes at
   the start of each period. Each box takes any expression, such as
   `120000/12`; one SoftCalc cannot read says why under it.
 - Compounding: yearly, quarterly, monthly, daily or continuous.
+- The rate is per year, month, week or day, and the length is in years,
+  months, weeks or days (the graph's x axis follows it). A year is 365
+  days, a month a twelfth of it. Compounded less often than the rate's
+  unit, the rate compounds: 0.1% a day, yearly, is 1.001^365 - 1 a year,
+  not 36.5%. A part period is cut: 100 days, monthly, is 3 months.
 - The result updates as you type: future value, total contributions
   and total interest. Tap one to put it in Input.
 - **Chart** shows the money paid in below and the interest above, so

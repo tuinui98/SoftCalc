@@ -17,6 +17,8 @@ internal sealed class CompoundWindow : Form
 {
 	private static readonly string[] CompoundingChoices = { "yearly", "quarterly", "monthly", "daily", "continuous" };
 	private static readonly string[] ContributionChoices = { "yearly", "quarterly", "monthly", "daily" };
+	private static readonly string[] RateUnitChoices = { "yearly", "monthly", "weekly", "daily" };    // owner 2026-11-28
+	private static readonly string[] LengthUnitChoices = { "years", "months", "weeks", "days" };
 
 	private readonly EngineSession _session;
 	private readonly CompoundPrefs _prefs;
@@ -24,6 +26,8 @@ internal sealed class CompoundWindow : Form
 	private readonly Dictionary<string, Label> _errors = new();
 	private readonly ComboBox _compounding = Choice(CompoundingChoices);
 	private readonly ComboBox _contributionFreq = Choice(ContributionChoices);
+	private readonly ComboBox _rateUnit = Choice(RateUnitChoices);
+	private readonly ComboBox _lengthUnit = Choice(LengthUnitChoices);
 	private readonly CheckBox _atStart = new() { Text = "Contribution at the start of each period", AutoSize = true };
 	private readonly TextBox _futureValue = Output();
 	private readonly TextBox _totalContributions = Output();
@@ -66,6 +70,14 @@ internal sealed class CompoundWindow : Form
 		layout.Controls.Add(BuildButtons(), 0, 2);
 		Controls.Add(layout);
 		Load += (_, _) => split.SplitterDistance = split.Height / 2;
+		// owner 2026-11-28: the chart and the table follow the splitter as it moves, not only on release
+		split.SplitterMoving += (_, e) =>
+		{
+			if (e.SplitY > 0 && e.SplitY != split.SplitterDistance)
+			{
+				split.SplitterDistance = e.SplitY;
+			}
+		};
 
 		foreach (string header in CompoundTable.Header)
 		{
@@ -99,12 +111,12 @@ internal sealed class CompoundWindow : Form
 	{
 		var grid = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, AutoSize = true, Padding = new Padding(6) };
 		grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
-		grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150));
+		grid.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 210));
 		grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 35));
 		grid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 65));
 		AddField(grid, 0, "principal", "&Principal");
-		AddField(grid, 1, "annual_rate", "Annual &rate %");
-		AddField(grid, 2, "years", "&Years");
+		AddField(grid, 1, "annual_rate", "Interest &rate %", _rateUnit);
+		AddField(grid, 2, "years", "&Length", _lengthUnit);
 		AddField(grid, 3, "contribution", "C&ontribution");
 		AddRow(grid, 4, "Compounding", _compounding);
 		AddRow(grid, 5, "Contribution every", _contributionFreq);
@@ -131,18 +143,34 @@ internal sealed class CompoundWindow : Form
 
 		_compounding.SelectedIndexChanged += (_, _) => Changed();
 		_contributionFreq.SelectedIndexChanged += (_, _) => Changed();
+		_rateUnit.SelectedIndexChanged += (_, _) => Changed();
+		_lengthUnit.SelectedIndexChanged += (_, _) => Changed();
 		_atStart.CheckedChanged += (_, _) => Changed();
 		return grid;
 	}
 
-	private void AddField(TableLayoutPanel grid, int row, string field, string label)
+	// A field, with its unit's choice beside it when it has one (rate per..., length in...)
+	private void AddField(TableLayoutPanel grid, int row, string field, string label, ComboBox? unit = null)
 	{
 		var box = new TextBox { Dock = DockStyle.Fill };
 		var error = new Label { AutoSize = true, ForeColor = Theme.Error, Anchor = AnchorStyles.Left };
 		box.TextChanged += (_, _) => Changed();
 		_boxes[field] = box;
 		_errors[field] = error;
-		AddRow(grid, row, label, box);
+		Control cell = box;
+		if (unit != null)
+		{
+			var pair = new TableLayoutPanel { ColumnCount = 2, RowCount = 1, AutoSize = true, Margin = new Padding(3, 0, 3, 0) };
+			pair.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+			pair.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 90));
+			box.Margin = new Padding(0, 3, 3, 3);
+			unit.Dock = DockStyle.Fill;
+			unit.Margin = new Padding(0, 3, 0, 3);
+			pair.Controls.Add(box, 0, 0);
+			pair.Controls.Add(unit, 1, 0);
+			cell = pair;
+		}
+		AddRow(grid, row, label, cell);
 		grid.Controls.Add(error, 2, row);
 	}
 
@@ -194,6 +222,8 @@ internal sealed class CompoundWindow : Form
 		_boxes["contribution"].Text = _prefs.Contribution;
 		_compounding.SelectedItem = _prefs.Compounding;
 		_contributionFreq.SelectedItem = _prefs.ContributionFreq;
+		_rateUnit.SelectedItem = _prefs.RateUnit;
+		_lengthUnit.SelectedItem = _prefs.LengthUnit;
 		_atStart.Checked = _prefs.AtStart;
 		_loading = false;
 	}
@@ -210,6 +240,8 @@ internal sealed class CompoundWindow : Form
 		_prefs.Contribution = _boxes["contribution"].Text;
 		_prefs.Compounding = (string?)_compounding.SelectedItem ?? "monthly";
 		_prefs.ContributionFreq = (string?)_contributionFreq.SelectedItem ?? "monthly";
+		_prefs.RateUnit = (string?)_rateUnit.SelectedItem ?? "yearly";
+		_prefs.LengthUnit = (string?)_lengthUnit.SelectedItem ?? "years";
 		_prefs.AtStart = _atStart.Checked;
 		_delay.Stop();
 		_delay.Start();
@@ -234,6 +266,7 @@ internal sealed class CompoundWindow : Form
 			["principal"] = Blank(_prefs.Principal), ["annual_rate"] = Blank(_prefs.Rate), ["years"] = Blank(_prefs.Years),
 			["contribution"] = Blank(_prefs.Contribution, "0"), ["compounding"] = _prefs.Compounding,
 			["contribution_freq"] = _prefs.ContributionFreq, ["at_start"] = _prefs.AtStart,
+			["rate_unit"] = _prefs.RateUnit, ["length_unit"] = _prefs.LengthUnit,
 		};
 		ScheduleReply? reply = null;
 		string? error = null;
@@ -292,7 +325,8 @@ internal sealed class CompoundWindow : Form
 		_table.RowCount = 0;
 		_table.RowCount = _rows.Count;
 		_table.Invalidate();
-		_chart.SetData(reply.Principal, reply.Contributions, reply.Interest, reply.PeriodsPerYear);
+		_chart.SetData(reply.Principal, reply.Contributions, reply.Interest,
+			reply.PeriodsPerUnit > 0 ? reply.PeriodsPerUnit : reply.PeriodsPerYear, reply.LengthUnit);
 	}
 
 	private void OnCellValueNeeded(object? sender, DataGridViewCellValueEventArgs e)

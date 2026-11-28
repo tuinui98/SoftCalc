@@ -52,7 +52,23 @@ describe("compound", () =>
 	{
 		const inputs = { ...firstInputs(), contribution: "100", at_start: true };
 		expect(summary(inputs, SCHEDULE)).toBe(
-			"10000 at 5% for 10 years, monthly, +100/month at the start: future value 1102.5 (contributions 1000, interest 102.5)");
-		expect(summary(firstInputs(), SCHEDULE)).toBe("10000 at 5% for 10 years, monthly: future value 1102.5 (contributions 1000, interest 102.5)");
+			"10000 at 5% a year for 10 years, monthly, +100/month at the start: future value 1102.5 (contributions 1000, interest 102.5)");
+		expect(summary(firstInputs(), SCHEDULE)).toBe("10000 at 5% a year for 10 years, monthly: future value 1102.5 (contributions 1000, interest 102.5)");
+	});
+
+	it("rate and length units (owner 2026-11-28): kept when known, the chart in the length's unit", () =>
+	{
+		expect(inputsFrom({ rate_unit: "daily", length_unit: "months" })).toEqual({ ...firstInputs(), rate_unit: "daily", length_unit: "months" });
+		expect(inputsFrom({ rate_unit: "hourly", length_unit: "decades" })).toEqual(firstInputs());
+		// 24 monthly rows over a length in months: one row a month, x runs to 24
+		const months: Schedule = { ...SCHEDULE, periods_per_year: 12, periods_per_unit: 1, length_unit: "months",
+			rows: Array.from({ length: 24 }, (_, i) => ({ ...SCHEDULE.rows[0], period: i + 1 })),
+			series: { principal: 1000, contributions: Array(24).fill(1000), interest: Array(24).fill(1) } };
+		expect(chartScale(months, 300, 200).years).toBe(24);
+		expect(rowAt(months, 6.5)).toBe(6);
+		// an older engine: no periods_per_unit, years as before
+		expect(chartScale({ ...months, periods_per_unit: undefined }, 300, 200).years).toBe(2);
+		const inputs = { ...firstInputs(), annual_rate: "0.1", rate_unit: "daily", years: "90", length_unit: "days" };
+		expect(summary(inputs, SCHEDULE).startsWith("10000 at 0.1% a day for 90 days, monthly:")).toBe(true);
 	});
 });

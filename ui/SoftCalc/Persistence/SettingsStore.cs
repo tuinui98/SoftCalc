@@ -71,7 +71,9 @@ internal sealed class CompoundPrefs
 {
 	public string Principal { get; set; } = "10000";
 	public string Rate { get; set; } = "5";
-	public string Years { get; set; } = "10";
+	public string Years { get; set; } = "10";    // the length, in LengthUnit
+	public string RateUnit { get; set; } = "yearly";    // owner 2026-11-28: daily, weekly, monthly, yearly
+	public string LengthUnit { get; set; } = "years";    // days, weeks, months, years
 	public string Compounding { get; set; } = "monthly";
 	public string Contribution { get; set; } = "0";
 	public string ContributionFreq { get; set; } = "monthly";
@@ -400,6 +402,14 @@ internal static class SettingsStore
 		if (c.ContributionFreq is not ("yearly" or "quarterly" or "monthly" or "daily"))
 		{
 			c.ContributionFreq = "monthly";
+		}
+		if (c.RateUnit is not ("yearly" or "monthly" or "weekly" or "daily"))
+		{
+			c.RateUnit = "yearly";
+		}
+		if (c.LengthUnit is not ("years" or "months" or "weeks" or "days"))
+		{
+			c.LengthUnit = "years";
 		}
 	}
 
