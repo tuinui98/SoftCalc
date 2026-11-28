@@ -959,6 +959,10 @@ a separate window shows the running numbers, the laps and buttons.
   a whole number of compounding periods is cut to the whole periods
   (10 days with monthly compounding: 0 periods); the chart's X axis
   takes the length's unit.
+- [ ] Desktop: dragging the splitter between the chart and the table
+      redraws the chart as it moves (owner 2026-11-28), not only on
+      release (SplitContainer shows a ghost line; set SplitterDistance in
+      SplitterMoving). Resizing the window already redraws live.
 
 ## Widgets (owner 2026-11-27; to think about later, nothing chosen)
 A widget cannot run the engine (Pyodide in a WebView; desktop engine in
