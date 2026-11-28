@@ -162,10 +162,16 @@ internal sealed class CompoundWindow : Form
 			totals.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 			_resultValues[row] = Output();
 			_resultNames[row] = (Label)AddRow(totals, row, "", _resultValues[row])[0];
+			// owner 2026-11-29: seven lines and Copy fit; a borderless box only a line high, beside its name
+			_resultNames[row].Margin = new Padding(3, 1, 3, 1);
+			_resultValues[row].AutoSize = false;
+			_resultValues[row].Height = Font.Height + 2;
+			_resultValues[row].Margin = new Padding(3, 1, 3, 1);
 		}
 		totals.RowStyles.Add(new RowStyle(SizeType.Percent, 100));    // spare height stays below the rows
-		// owner 2026-11-29: the box's lines as text, one "name: value" a line
-		var copy = new Button { Text = "Cop&y result", AutoSize = true, Anchor = AnchorStyles.Right | AnchorStyles.Bottom };
+		// owner 2026-11-29: the box's lines as text, one "name: value" a line; docked at the bottom so it
+		// stays in sight when the lines take the height
+		var copy = new Button { Text = "Cop&y result", AutoSize = true };
 		copy.Click += (_, _) =>
 		{
 			if (_resultText.Length > 0)
@@ -173,9 +179,12 @@ internal sealed class CompoundWindow : Form
 				Clipboard.SetText(_resultText);
 			}
 		};
-		totals.Controls.Add(copy, 1, ResultRows);
+		var copyBar = new FlowLayoutPanel { Dock = DockStyle.Bottom, AutoSize = true, FlowDirection = FlowDirection.RightToLeft, Margin = new Padding(0) };
+		copyBar.Controls.Add(copy);
 		var box = new GroupBox { Text = "Result", Dock = DockStyle.Fill };
+		box.Controls.Add(copyBar);
 		box.Controls.Add(totals);
+		totals.BringToFront();    // Fill takes what the bottom bar leaves
 		grid.Controls.Add(box, 3, 0);
 		grid.SetRowSpan(box, 9);
 
@@ -244,11 +253,17 @@ internal sealed class CompoundWindow : Form
 		// owner 2026-11-28: the page's own decimal places, as View > Decimal Places: fewer, more, all; the table,
 		// the totals and the worked-out field (owner 2026-11-29)
 		var places = new FlowLayoutPanel { AutoSize = true, WrapContents = false, Margin = new Padding(0, 0, 24, 0) };
-		var fewer = new Button { Text = "Fewer", AutoSize = true };
-		var more = new Button { Text = "More", AutoSize = true };
-		var all = new Button { Text = "All", AutoSize = true };
-		fewer.Click += (_, _) => SetDecimals(_prefs.TableDecimals is int n ? Math.Max(0, n - 1) : MostDecimals);
-		more.Click += (_, _) => SetDecimals(_prefs.TableDecimals is int n && n < MostDecimals ? n + 1 : null);
+		// owner 2026-11-29: the View's icons for fewer and more; from All either starts at 2
+		var fewer = new Button { Image = SvgIcon.Get("decimal-decrease", 16, ForeColor), Size = new Size(30, 26) };
+		var more = new Button { Image = SvgIcon.Get("decimal-increase", 16, ForeColor), Size = new Size(30, 26) };
+		var all = new Button { Text = "All", Size = new Size(44, 26) };
+		var tips = new ToolTip();
+		tips.SetToolTip(fewer, "Fewer decimal places");
+		tips.SetToolTip(more, "More decimal places");
+		tips.SetToolTip(all, "All the digits");
+		FormClosed += (_, _) => tips.Dispose();
+		fewer.Click += (_, _) => SetDecimals(_prefs.TableDecimals is int n ? Math.Max(0, n - 1) : 2);
+		more.Click += (_, _) => SetDecimals(_prefs.TableDecimals is int n ? Math.Min(MostDecimals, n + 1) : 2);
 		all.Click += (_, _) => SetDecimals(null);
 		places.Controls.Add(new Label { Text = "Decimals:", AutoSize = true, Anchor = AnchorStyles.Left, Padding = new Padding(0, 6, 0, 0) });
 		places.Controls.Add(_decimals);
@@ -268,7 +283,7 @@ internal sealed class CompoundWindow : Form
 
 	private void ShowDecimals()
 	{
-		_decimals.Text = _prefs.TableDecimals?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "All";
+		_decimals.Text = CompoundTable.PlacesSample(_prefs.TableDecimals);
 	}
 
 	private static readonly Dictionary<string, string> FieldNames = new()

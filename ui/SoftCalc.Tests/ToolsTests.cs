@@ -383,6 +383,17 @@ public sealed class ToolsTests : IDisposable
 		Assert.Equal(("target", "must be positive"), CompoundTable.RouteError("target: must be positive"));
 	}
 
+	[Theory]
+	[InlineData(null, "All")]
+	[InlineData(0, "0")]
+	[InlineData(2, "0.00")]
+	[InlineData(5, "0.00000")]
+	[InlineData(6, "6")]
+	public void PlacesShowAsASample(int? places, string shown)    // owner 2026-11-29
+	{
+		Assert.Equal(shown, CompoundTable.PlacesSample(places));
+	}
+
 	// owner 2026-11-29: Copy result takes the Result box's lines in their order
 	[Fact]
 	public void ResultTextIsOneLineEach()

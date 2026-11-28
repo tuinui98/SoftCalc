@@ -49,6 +49,18 @@ internal static class CompoundTable
 		return text.ToString();
 	}
 
+	// owner 2026-11-29: the places as a sample, 0.00 for 2; past 5, the number; All for every digit
+	public static string PlacesSample(int? places)
+	{
+		return places switch
+		{
+			null => "All",
+			0 => "0",
+			<= 5 => "0." + new string('0', places.Value),
+			_ => places.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
+		};
+	}
+
 	// The Result box as text (owner 2026-11-29): "Principal (result): 50000.00", one line each, CRLF
 	public static string ResultText(IEnumerable<(string Name, string Value)> lines)
 	{

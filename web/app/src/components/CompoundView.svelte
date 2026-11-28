@@ -13,7 +13,7 @@
 	import { onMount } from "svelte";
 	import type { Calculator } from "../lib/calc";
 	import {
-		BLOCK, chartScale, resultText, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
+		BLOCK, chartScale, placesSample, resultText, COMPOUNDING, CONTRIBUTION_EVERY, LENGTH_UNITS, MOST_DECIMALS, RATE_UNITS, routeError, setGoalField, xOf, rowAt, short, summary, toCsv, type CompoundInputs, type Field,
 		type Schedule, type ScheduleRow,
 	} from "../lib/compound";
 	import { copyText } from "../lib/clipboard";
@@ -647,9 +647,17 @@
 				<button class:on={showTable} use:tap={() => { showTable = true; }}>Table</button>
 				{#if showTable}
 					<!-- owner 2026-11-28: the table's own decimal places, as View > Decimal Places -->
-					<span class="places">Decimals {inputs.table_decimals ?? "all"}</span>
-					<button use:tap={() => decimals(inputs.table_decimals === null ? MOST_DECIMALS : Math.max(0, inputs.table_decimals - 1))}>−</button>
-					<button use:tap={() => decimals(inputs.table_decimals !== null && inputs.table_decimals < MOST_DECIMALS ? inputs.table_decimals + 1 : null)}>+</button>
+					<!-- owner 2026-11-29: the View's icons (ui/SoftCalc/Icons decimal-*.svg, IconMCP, MIT); from All
+					     either starts at 2; the places as a sample -->
+					<span class="places">{placesSample(inputs.table_decimals)}</span>
+					<button class="icon" aria-label="Fewer decimal places" title="Fewer decimal places"
+						use:tap={() => decimals(inputs.table_decimals === null ? 2 : Math.max(0, inputs.table_decimals - 1))}>
+						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.833" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.25" cy="7.25" r="0.55" fill="currentColor" stroke="none"/><ellipse cx="9.25" cy="5" rx="1.25" ry="2.75"/><line x1="13.75" y1="12" x2="2.75" y2="12"/><path d="M3.987 13.237 L2.75 12 L3.987 10.763"/></svg>
+					</button>
+					<button class="icon" aria-label="More decimal places" title="More decimal places"
+						use:tap={() => decimals(inputs.table_decimals === null ? 2 : Math.min(MOST_DECIMALS, inputs.table_decimals + 1))}>
+						<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.833" stroke-linecap="round" stroke-linejoin="round"><circle cx="2.75" cy="7.25" r="0.55" fill="currentColor" stroke="none"/><ellipse cx="6.75" cy="5" rx="1.25" ry="2.75"/><ellipse cx="11.75" cy="5" rx="1.25" ry="2.75"/><line x1="2.25" y1="12" x2="13.25" y2="12"/><path d="M12.013 10.763 L13.25 12 L12.013 13.237"/></svg>
+					</button>
 					<button class:on={inputs.table_decimals === null} use:tap={() => decimals(null)}>All</button>
 				{/if}
 			</div>
@@ -719,6 +727,8 @@
 	.total.result span, .total.result b { color: var(--select); font-weight: 600; }
 	.switch.mode { padding: 0 0 8px; }
 	.places { margin-left: auto; align-self: center; color: var(--faint); font-size: 14px; }
+	.switch button.icon { padding: 0 8px; display: flex; align-items: center; }
+	.switch button.icon svg { width: 26px; height: 26px; }
 	.pair input { flex: 1; width: 0; }
 	.pair select { flex: none; width: 92px; }
 	.check { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; font-size: 14px; }

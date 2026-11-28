@@ -1,7 +1,7 @@
 // compound.test.ts - ⋮ > Compound's inputs, errors, graph scale and text forms (desktop CompoundTable tests)
 
 import { describe, expect, it } from "vitest";
-import { chartScale, firstInputs, inputsFrom, request, resultText, routeError, rowAt, setGoalField, short, summary, toCsv, toTabs, xOf, type Schedule } from "../src/lib/compound";
+import { chartScale, firstInputs, inputsFrom, placesSample, request, resultText, routeError, rowAt, setGoalField, short, summary, toCsv, toTabs, xOf, type Schedule } from "../src/lib/compound";
 
 const SCHEDULE: Schedule = {
 	future_value: "1102.5", total_contributions: "1000", total_interest: "102.5",
@@ -74,6 +74,11 @@ describe("compound", () =>
 		expect(back.table_decimals).toBe(2);
 		expect(inputsFrom({ table_decimals: null }).table_decimals).toBeNull();
 		expect(routeError("target: must be positive")).toEqual({ field: "target", message: "must be positive" });
+	});
+
+	it("the places as a sample (owner 2026-11-29)", () =>
+	{
+		expect([null, 0, 2, 5, 6].map(placesSample)).toEqual(["All", "0", "0.00", "0.00000", "6"]);
 	});
 
 	it("Copy result takes the Result box's lines in their order (owner 2026-11-29)", () =>

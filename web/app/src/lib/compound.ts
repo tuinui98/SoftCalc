@@ -214,6 +214,12 @@ export function toCsv(rows: ScheduleRow[]): string
 	return [HEADER, ...rows.map(cells)].map(line => line.map(quote).join(",") + "\r\n").join("");
 }
 
+// owner 2026-11-29: the places as a sample, 0.00 for 2; past 5, the number; All for every digit (CompoundTable.PlacesSample)
+export function placesSample(places: number | null): string
+{
+	return places === null ? "All" : places === 0 ? "0" : places <= 5 ? "0." + "0".repeat(places) : String(places);
+}
+
 // The Result box as text (owner 2026-11-29; CompoundTable.ResultText): "Principal (result): 50000.00", CRLF
 export function resultText(lines: { label: string; value: string }[]): string
 {
